@@ -1,103 +1,201 @@
-import Image from "next/image";
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Heart, Activity, Apple, TrendingUp, LogIn } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { 
+    isLiffReady, 
+    isLoggedIn, 
+    liffUser, 
+    hasCompletedCounseling,
+    login,
+    isInClient
+  } = useAuth();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleStartCounseling = () => {
+    if (!isLoggedIn) {
+      login();
+      return;
+    }
+    window.location.href = '/counseling';
+  };
+
+  const handleOpenDashboard = () => {
+    window.location.href = '/dashboard';
+  };
+
+  // ログイン済みでカウンセリング完了の場合はダッシュボードへ
+  if (isLiffReady && isLoggedIn && hasCompletedCounseling) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Heart className="h-8 w-8 text-green-600" />
+              <h1 className="text-3xl font-bold text-gray-800">LINE健康管理</h1>
+            </div>
+            <p className="text-gray-600 text-lg">
+              おかえりなさい、{liffUser?.displayName || 'ゲスト'}さん
+            </p>
+          </div>
+
+          <div className="text-center">
+            <Card className="inline-block">
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                  今日の健康管理を続けましょう
+                </h2>
+                <Button 
+                  onClick={handleOpenDashboard}
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                >
+                  ダッシュボードを開く
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* ヘッダー */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Heart className="h-8 w-8 text-green-600" />
+            <h1 className="text-3xl font-bold text-gray-800">LINE健康管理</h1>
+          </div>
+          <p className="text-gray-600 text-lg">
+            AIがあなたの健康をサポートする個人専用アプリ
+          </p>
+        </div>
+
+        {/* メイン機能紹介 */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <Apple className="h-10 w-10 text-green-600 mx-auto mb-2" />
+              <CardTitle className="text-lg">食事管理</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                食事写真を送るだけでAIが栄養分析。カロリーや栄養バランスを自動で記録します。
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <Activity className="h-10 w-10 text-blue-600 mx-auto mb-2" />
+              <CardTitle className="text-lg">運動記録</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                日々の運動や体重変化を記録。目標達成をサポートします。
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader className="text-center">
+              <TrendingUp className="h-10 w-10 text-purple-600 mx-auto mb-2" />
+              <CardTitle className="text-lg">健康レポート</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                週次・月次の健康レポートで改善点を可視化。継続的な健康管理をサポート。
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 開始ボタン */}
+        <div className="text-center mb-8">
+          <Card className="inline-block">
+            <CardContent className="pt-6">
+              {!isLiffReady ? (
+                <>
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    アプリを読み込み中...
+                  </h2>
+                  <Button 
+                    size="lg"
+                    disabled
+                    className="bg-gray-400 text-white px-8 py-3 text-lg"
+                  >
+                    読み込み中...
+                  </Button>
+                </>
+              ) : !isLoggedIn ? (
+                <>
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    LINEでログインして始めましょう
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    LINEアカウントでログインして、あなた専用の健康管理を始めましょう
+                  </p>
+                  <Button 
+                    onClick={login}
+                    size="lg"
+                    className="bg-[#00C300] hover:bg-[#00B200] text-white px-8 py-3 text-lg flex items-center gap-2 mx-auto"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    LINEでログイン
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                    まずは健康カウンセリングから始めましょう
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    あなたに最適な健康管理プランをAIが作成します
+                  </p>
+                  <Button 
+                    onClick={handleStartCounseling}
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                  >
+                    カウンセリングを始める
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 特徴説明 */}
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-center text-gray-800">
+            なぜLINE健康管理を選ぶのか？
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4 text-gray-600">
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
+              <p>LINEで簡単に食事写真を送信するだけで栄養分析</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+              <p>AIによるパーソナライズされた健康アドバイス</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-purple-600 rounded-full mt-2"></div>
+              <p>継続的な記録で健康習慣の定着をサポート</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-orange-600 rounded-full mt-2"></div>
+              <p>視覚的なグラフで進捗状況を分かりやすく表示</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
