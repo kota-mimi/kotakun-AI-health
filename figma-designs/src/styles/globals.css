@@ -1,0 +1,333 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
+  --primary: #4682B4;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #475569;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #334155;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: rgba(70, 130, 180, 0.15);
+  --input: transparent;
+  --input-background: #f8fafc;
+  --switch-background: #cbd5e1;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #4682B4;
+  
+  /* Professional Health App Colors - Steel Blue Based */
+  --health-primary: #4682B4;
+  --health-primary-light: #6ba3d0;
+  --health-primary-dark: #2c5282;
+  --health-primary-50: #f0f6fd;
+  --health-primary-100: #d9e9f7;
+  --health-primary-200: #a6c8e8;
+  --health-primary-600: #3b82c4;
+  --health-primary-700: #2563eb;
+  
+  /* Unified PFC & Nutrition Colors - 分かりやすい色に戻す */
+  --nutrition-protein: #EF4444;
+  --nutrition-fat: #F59E0B;
+  --nutrition-carbs: #10B981;
+  --nutrition-fiber: #8B5CF6;
+  --nutrition-sugar: #EC4899;
+  --nutrition-sodium: #6366F1;
+  
+  /* Exercise & Activity Colors */
+  --exercise-cardio: #4682B4;
+  --exercise-strength: #5d7cba;
+  --exercise-flexibility: #7996c6;
+  --exercise-sports: #95b0d2;
+  
+  /* Status & Progress Colors */
+  --success: #059669;
+  --success-light: #10b981;
+  --warning: #d97706;
+  --warning-light: #f59e0b;
+  --info: #4682B4;
+  --info-light: #6ba3d0;
+  
+  /* Chart Colors - Professional Blue Palette */
+  --chart-1: #4682B4;
+  --chart-2: #5d7cba;
+  --chart-3: #7596c6;
+  --chart-4: #8db0d2;
+  --chart-5: #a5cadd;
+  
+  --radius: 0.625rem;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #4682B4;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #475569;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #4682B4;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #6ba3d0;
+  --primary-foreground: #0f172a;
+  --secondary: #334155;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #f1f5f9;
+  --border: rgba(107, 163, 208, 0.2);
+  --input: #334155;
+  --ring: #6ba3d0;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  
+  /* Dark mode unified colors */
+  --health-primary: #6ba3d0;
+  --health-primary-light: #93c5ff;
+  --health-primary-dark: #4682B4;
+  
+  --nutrition-protein: #F87171;
+  --nutrition-fat: #FBBF24;
+  --nutrition-carbs: #34D399;
+  --nutrition-fiber: #A78BFA;
+  --nutrition-sugar: #F472B6;
+  --nutrition-sodium: #818CF8;
+  
+  --exercise-cardio: #6ba3d0;
+  --exercise-strength: #7996c6;
+  --exercise-flexibility: #95b0d2;
+  --exercise-sports: #b1cadd;
+  
+  --success: #22c55e;
+  --success-light: #4ade80;
+  --warning: #f59e0b;
+  --warning-light: #fbbf24;
+  --info: #6ba3d0;
+  --info-light: #93c5ff;
+  
+  --chart-1: #6ba3d0;
+  --chart-2: #7996c6;
+  --chart-3: #95b0d2;
+  --chart-4: #b1cadd;
+  --chart-5: #cde4e9;
+  
+  --sidebar: #1e293b;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #6ba3d0;
+  --sidebar-primary-foreground: #0f172a;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #475569;
+  --sidebar-ring: #6ba3d0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  
+  /* Professional Health App Color Classes */
+  --color-health-primary: var(--health-primary);
+  --color-health-primary-light: var(--health-primary-light);
+  --color-health-primary-dark: var(--health-primary-dark);
+  --color-health-primary-50: var(--health-primary-50);
+  --color-health-primary-100: var(--health-primary-100);
+  --color-health-primary-200: var(--health-primary-200);
+  --color-health-primary-600: var(--health-primary-600);
+  --color-health-primary-700: var(--health-primary-700);
+  
+  /* Unified Nutrition Colors */
+  --color-nutrition-protein: var(--nutrition-protein);
+  --color-nutrition-fat: var(--nutrition-fat);
+  --color-nutrition-carbs: var(--nutrition-carbs);
+  --color-nutrition-fiber: var(--nutrition-fiber);
+  --color-nutrition-sugar: var(--nutrition-sugar);
+  --color-nutrition-sodium: var(--nutrition-sodium);
+  
+  /* Exercise Colors */
+  --color-exercise-cardio: var(--exercise-cardio);
+  --color-exercise-strength: var(--exercise-strength);
+  --color-exercise-flexibility: var(--exercise-flexibility);
+  --color-exercise-sports: var(--exercise-sports);
+  
+  /* Status Colors */
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+  
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* Professional Health App Custom Classes */
+@layer utilities {
+  /* Health Primary Color Classes */
+  .text-health-primary { color: var(--health-primary); }
+  .bg-health-primary { background-color: var(--health-primary); }
+  .border-health-primary { border-color: var(--health-primary); }
+  .text-health-primary-light { color: var(--health-primary-light); }
+  .bg-health-primary-light { background-color: var(--health-primary-light); }
+  .text-health-primary-dark { color: var(--health-primary-dark); }
+  .bg-health-primary-dark { background-color: var(--health-primary-dark); }
+  
+  /* Unified Nutrition Colors */
+  .text-nutrition-protein { color: var(--nutrition-protein); }
+  .bg-nutrition-protein { background-color: var(--nutrition-protein); }
+  .text-nutrition-fat { color: var(--nutrition-fat); }
+  .bg-nutrition-fat { background-color: var(--nutrition-fat); }
+  .text-nutrition-carbs { color: var(--nutrition-carbs); }
+  .bg-nutrition-carbs { background-color: var(--nutrition-carbs); }
+  .text-nutrition-fiber { color: var(--nutrition-fiber); }
+  .bg-nutrition-fiber { background-color: var(--nutrition-fiber); }
+  .text-nutrition-sugar { color: var(--nutrition-sugar); }
+  .bg-nutrition-sugar { background-color: var(--nutrition-sugar); }
+  .text-nutrition-sodium { color: var(--nutrition-sodium); }
+  .bg-nutrition-sodium { background-color: var(--nutrition-sodium); }
+  
+  /* Exercise Type Colors */
+  .text-exercise-cardio { color: var(--exercise-cardio); }
+  .bg-exercise-cardio { background-color: var(--exercise-cardio); }
+  .text-exercise-strength { color: var(--exercise-strength); }
+  .bg-exercise-strength { background-color: var(--exercise-strength); }
+  .text-exercise-flexibility { color: var(--exercise-flexibility); }
+  .bg-exercise-flexibility { background-color: var(--exercise-flexibility); }
+  .text-exercise-sports { color: var(--exercise-sports); }
+  .bg-exercise-sports { background-color: var(--exercise-sports); }
+  
+  /* Status Colors */
+  .text-success { color: var(--success); }
+  .bg-success { background-color: var(--success); }
+  .text-success-light { color: var(--success-light); }
+  .bg-success-light { background-color: var(--success-light); }
+  .text-warning { color: var(--warning); }
+  .bg-warning { background-color: var(--warning); }
+  .text-warning-light { color: var(--warning-light); }
+  .bg-warning-light { background-color: var(--warning-light); }
+  .text-info { color: var(--info); }
+  .bg-info { background-color: var(--info); }
+  .text-info-light { color: var(--info-light); }
+  .bg-info-light { background-color: var(--info-light); }
+}

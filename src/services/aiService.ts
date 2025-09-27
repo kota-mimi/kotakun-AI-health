@@ -25,7 +25,7 @@ class AIHealthService {
         personalizedAdvice = this.generateStructuredMockAdvice(answers);
       } else {
         try {
-          const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+          const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
           const prompt = this.buildCounselingPrompt(answers);
           const result = await model.generateContent(prompt);
           const response = await result.response;
@@ -529,10 +529,161 @@ class AIHealthService {
 あなたの生活スタイルに合わせて、無理なく継続できる健康習慣を身につけていきましょう。一歩一歩着実に進んでいけば、必ず目標達成できます。応援しています！`;
   }
 
-  // 食事写真を分析（将来の機能）
+  // テキストから食事内容を分析
+  async analyzeMealFromText(mealText: string) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+食事内容のテキスト「${mealText}」を分析して、以下の形式のJSONで返してください：
+
+複数の食事が含まれている場合：
+{
+  "isMultipleMeals": true,
+  "meals": [
+    {
+      "name": "料理名1",
+      "calories": 推定カロリー数値,
+      "protein": タンパク質のグラム数,
+      "carbs": 炭水化物のグラム数,
+      "fat": 脂質のグラム数
+    },
+    {
+      "name": "料理名2", 
+      "calories": 推定カロリー数値,
+      "protein": タンパク質のグラム数,
+      "carbs": 炭水化物のグラム数,
+      "fat": 脂質のグラム数
+    }
+  ],
+  "totalCalories": 合計カロリー,
+  "totalProtein": 合計タンパク質,
+  "totalCarbs": 合計炭水化物,
+  "totalFat": 合計脂質,
+  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+}
+
+単一の食事の場合：
+{
+  "isMultipleMeals": false,
+  "foodItems": ["食品名"],
+  "calories": 推定カロリー数値,
+  "protein": タンパク質のグラム数,
+  "carbs": 炭水化物のグラム数,
+  "fat": 脂質のグラム数,
+  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+}
+
+注意：
+- 「と」「、」「＋」「&」などで複数の食事が結ばれている場合は複数食事として扱う
+- 数値のみを返し、単位は含めない
+- 食品名・料理名は日本語で
+- 推定は一般的な分量で計算
+- アドバイスは栄養バランスや改善点を含める
+`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('食事テキスト分析エラー:', error);
+      // フォールバック値を返す
+      return {
+        foodItems: [mealText],
+        calories: 400,
+        protein: 20,
+        carbs: 50,
+        fat: 15,
+        advice: "バランスの良い食事を心がけましょう"
+      };
+    }
+  }
+
+  // 画像から食事内容を分析
+  async analyzeMealFromImage(imageBuffer: Buffer) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+この食事の写真を分析して、以下の形式のJSONで返してください：
+
+複数の料理が写っている場合：
+{
+  "isMultipleMeals": true,
+  "meals": [
+    {
+      "name": "料理名1",
+      "calories": 推定カロリー数値,
+      "protein": タンパク質のグラム数,
+      "carbs": 炭水化物のグラム数,
+      "fat": 脂質のグラム数
+    },
+    {
+      "name": "料理名2",
+      "calories": 推定カロリー数値,
+      "protein": タンパク質のグラム数,
+      "carbs": 炭水化物のグラム数,
+      "fat": 脂質のグラム数
+    }
+  ],
+  "totalCalories": 合計カロリー,
+  "totalProtein": 合計タンパク質,
+  "totalCarbs": 合計炭水化物,
+  "totalFat": 合計脂質,
+  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+}
+
+単一の料理の場合：
+{
+  "isMultipleMeals": false,
+  "foodItems": ["料理名"],
+  "calories": 推定カロリー数値,
+  "protein": タンパク質のグラム数,
+  "carbs": 炭水化物のグラム数,
+  "fat": 脂質のグラム数,
+  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+}
+
+注意：
+- 複数の料理が明確に分かれて写っている場合は複数食事として扱う
+- 料理名は具体的に（例：「ラーメン」「チャーハン」「唐揚げ」）
+- 詳細な食材名ではなく、料理の名前で答える
+- 数値のみを返し、単位は含めない
+- 推定は一般的な分量で計算
+`;
+
+      const imagePart = {
+        inlineData: {
+          data: imageBuffer.toString('base64'),
+          mimeType: 'image/jpeg',
+        },
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('食事画像分析エラー:', error);
+      // フォールバック値を返す
+      return {
+        foodItems: ['食事'],
+        calories: 400,
+        protein: 20,
+        carbs: 50,
+        fat: 15,
+        advice: "バランスの良い食事を心がけましょう"
+      };
+    }
+  }
+
+  // 食事写真を分析（将来の機能 - 後方互換性のため残す）
   async analyzeMealImage(imageBuffer: Buffer) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
       
       const prompt = `
 この食事の写真を分析して、以下の情報を日本語のJSONで返してください：

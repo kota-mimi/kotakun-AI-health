@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FirestoreService } from '@/services/firestoreService';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const lineUserId = searchParams.get('lineUserId');
+    const { lineUserId } = await request.json();
 
     if (!lineUserId) {
       return NextResponse.json(

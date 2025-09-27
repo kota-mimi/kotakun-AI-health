@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    allowedOrigins: ['kotakun-health.ngrok.io'],
+  },
 };
 
 export default nextConfig;
