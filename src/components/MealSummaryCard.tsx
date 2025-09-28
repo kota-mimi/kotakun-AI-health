@@ -105,7 +105,7 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
                   });
                   
                   if (hasRecords) {
-                    // 記録がある場合は最初の食事の詳細を表示
+                    // 記録がある場合は最初の食事の詳細を表示（MealDetailModalで全記録を表示）
                     onViewMealDetail(mealType, mealItems[0].id);
                   } else {
                     // 記録がない場合は食事追加モーダルを開く

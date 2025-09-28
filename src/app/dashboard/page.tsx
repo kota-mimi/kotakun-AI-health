@@ -256,6 +256,7 @@ export default function DashboardPage() {
         mealType={mealManager.currentMealType}
         onEditMeal={mealManager.handleEditFromDetail}
         onAddSimilarMeal={mealManager.handleAddSimilarMeal}
+        allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 
       <CalendarModal
