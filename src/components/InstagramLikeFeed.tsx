@@ -150,30 +150,24 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
         const totalCalories = mealsOfType.reduce((sum, meal) => sum + meal.calories, 0);
 
         return (
-          <div key={mealType} className="p-4 bg-white/50 rounded-lg border border-white/30">
+          <div key={mealType} className="p-4 bg-slate-50/50 rounded-lg border border-slate-200">
             {/* 食事タイプヘッダー */}
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-slate-800">{mealTimeLabels[mealType]}</h4>
-              {mealsOfType.length > 0 && (
-                <Badge 
-                  variant="secondary" 
-                  className="text-xs"
-                  style={{backgroundColor: 'rgba(70, 130, 180, 0.1)', color: '#4682B4'}}
-                >
-                  {totalCalories}kcal
-                </Badge>
-              )}
+              <h4 className="text-lg font-bold text-slate-800">{mealTimeLabels[mealType]}</h4>
             </div>
 
-            {/* 食事リスト - スクリーンショット風レイアウト */}
-            <div className="space-y-2">
+            {/* 区切り線 */}
+            <div className="border-t border-slate-200 mb-4"></div>
+
+            {/* 食事リスト - 個別フレーム */}
+            <div className="space-y-3">
               {mealsOfType.map((meal) => {
                 const images = meal.images || (meal.image ? [meal.image] : []);
                 
                 return (
-                  <div key={meal.id} className="w-full">
+                  <div key={meal.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
                     <div 
-                      className={`flex items-center p-4 bg-white/60 rounded-xl border border-white/40 cursor-pointer hover:bg-white/80 transition-colors ${images.length > 0 ? 'space-x-3' : ''}`}
+                      className={`flex items-center cursor-pointer hover:opacity-80 transition-opacity ${images.length > 0 ? 'space-x-3' : ''}`}
                       onClick={() => onMealClick?.(meal.mealTime, meal.id)}
                     >
                       {/* 食事画像 - 画像がある場合のみ表示 */}
@@ -215,6 +209,31 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                 );
               })}
             </div>
+
+            {/* 合計表示 */}
+            {mealsOfType.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-slate-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex space-x-2">
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#EF4444'}}>
+                      P {mealsOfType.reduce((sum, meal) => sum + (meal.protein || 0), 0)}g
+                    </Badge>
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#F59E0B'}}>
+                      F {mealsOfType.reduce((sum, meal) => sum + (meal.fat || 0), 0)}g
+                    </Badge>
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#10B981'}}>
+                      C {mealsOfType.reduce((sum, meal) => sum + (meal.carbs || 0), 0)}g
+                    </Badge>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-bold text-blue-600">
+                      {totalCalories}
+                    </span>
+                    <span className="text-sm text-slate-600 ml-1">kcal</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}
