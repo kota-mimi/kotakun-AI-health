@@ -81,6 +81,17 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
             const calories = getMealCalories(mealType);
             const hasRecords = mealItems.length > 0;
 
+            // 画像がある食事を優先的に取得（表示用）
+            const getDisplayMeal = () => {
+              if (!hasRecords) return null;
+              // 画像がある食事を探す
+              const mealWithImage = mealItems.find(meal => meal.images?.[0] || meal.image);
+              // 画像がある食事があればそれを、なければ最初の食事を返す
+              return mealWithImage || mealItems[0];
+            };
+
+            const displayMeal = getDisplayMeal();
+
             return (
               <button
                 key={mealType}
@@ -113,19 +124,16 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
                       <div className="flex items-center space-x-2">
                         {/* 食べ物名と画像 */}
                         <div className="flex items-center space-x-2 flex-1 min-w-0">
-                          {/* 最初の食事に画像がある場合は表示 */}
-                          {mealItems[0] && (() => {
-                            const imageUrl = mealItems[0].images?.[0] || mealItems[0].image || 'https://images.unsplash.com/photo-1546554137-f86b9593a222?w=400&h=400&fit=crop';
-                            return (
-                              <div className="w-6 h-6 bg-slate-200 rounded-lg overflow-hidden flex-shrink-0">
-                                <img
-                                  src={imageUrl}
-                                  alt={mealItems[0].name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            );
-                          })()}
+                          {/* 画像がある食事の画像を優先表示（ダミー画像は使用しない） */}
+                          {displayMeal && (displayMeal.images?.[0] || displayMeal.image) && (
+                            <div className="w-6 h-6 bg-slate-200 rounded-md overflow-hidden flex-shrink-0">
+                              <img
+                                src={displayMeal.images?.[0] || displayMeal.image}
+                                alt={displayMeal.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
                           
                           {/* 食べ物名（最大2つまで表示） */}
                           <div className="text-sm text-slate-600 truncate">

@@ -110,37 +110,42 @@ export function MealDetailModal({
             )}
 
             {/* 個別食事カード - 常に表示、複数食事なら展開 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* 複数食事の場合は個別表示、単一食事の場合はそのまま表示 */}
               {(meal.isMultipleMeals && meal.meals && meal.meals.length > 0) ? 
                 // 複数食事：個別カード表示
                 meal.meals.map((individualMeal: any, index: number) => (
-                  <Card key={index} className="p-4 bg-white border border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-slate-800">{individualMeal.name}</h3>
-                      <div className="flex items-center space-x-1">
-                        <Clock size={14} className="text-slate-500" />
-                        <span className="text-sm text-slate-600">{meal.time}</span>
+                  <Card key={index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-slate-800">{individualMeal.name}</h3>
+                          <div className="flex items-center space-x-1">
+                            <Clock size={12} className="text-slate-500" />
+                            <span className="text-xs text-slate-600">{meal.time}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="text-center mb-3">
-                      <span className="text-2xl font-bold text-blue-600">
-                        {individualMeal.calories || 0}
-                      </span>
-                      <span className="text-sm text-slate-600 ml-1">kcal</span>
-                    </div>
-
-                    <div className="flex justify-center space-x-2">
-                      <Badge className="text-white font-medium" style={{backgroundColor: '#EF4444'}}>
-                        P {individualMeal.protein || 0}g
-                      </Badge>
-                      <Badge className="text-white font-medium" style={{backgroundColor: '#F59E0B'}}>
-                        F {individualMeal.fat || 0}g
-                      </Badge>
-                      <Badge className="text-white font-medium" style={{backgroundColor: '#10B981'}}>
-                        C {individualMeal.carbs || 0}g
-                      </Badge>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex space-x-1">
+                        <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#EF4444'}}>
+                          P {individualMeal.protein || 0}g
+                        </Badge>
+                        <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#F59E0B'}}>
+                          F {individualMeal.fat || 0}g
+                        </Badge>
+                        <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#10B981'}}>
+                          C {individualMeal.carbs || 0}g
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xl font-bold text-blue-600">
+                          {individualMeal.calories || 0}
+                        </span>
+                        <span className="text-sm text-slate-600 ml-1">kcal</span>
+                      </div>
                     </div>
                   </Card>
                 )) 
@@ -179,32 +184,37 @@ export function MealDetailModal({
 
             {/* 合計表示（複数食事の場合のみ） */}
             {(meal.isMultipleMeals && meal.meals && meal.meals.length > 0) && (
-              <Card className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-800">合計</h3>
-                  <div className="flex items-center space-x-1">
-                    <Clock size={14} className="text-slate-500" />
-                    <span className="text-sm text-slate-600">{mealTypeNames[mealType]}</span>
+              <Card className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-slate-800">合計</h3>
+                      <div className="flex items-center space-x-1">
+                        <Clock size={12} className="text-slate-500" />
+                        <span className="text-xs text-slate-600">{mealTypeNames[mealType]}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="text-center mb-3">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {totals.calories}
-                  </span>
-                  <span className="text-sm text-slate-600 ml-1">kcal</span>
-                </div>
-
-                <div className="flex justify-center space-x-2">
-                  <Badge className="text-white font-medium" style={{backgroundColor: '#EF4444'}}>
-                    P {totals.protein}g
-                  </Badge>
-                  <Badge className="text-white font-medium" style={{backgroundColor: '#F59E0B'}}>
-                    F {totals.fat}g
-                  </Badge>
-                  <Badge className="text-white font-medium" style={{backgroundColor: '#10B981'}}>
-                    C {totals.carbs}g
-                  </Badge>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex space-x-1">
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#EF4444'}}>
+                      P {totals.protein}g
+                    </Badge>
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#F59E0B'}}>
+                      F {totals.fat}g
+                    </Badge>
+                    <Badge className="text-white font-medium text-xs" style={{backgroundColor: '#10B981'}}>
+                      C {totals.carbs}g
+                    </Badge>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-bold text-blue-600">
+                      {totals.calories}
+                    </span>
+                    <span className="text-sm text-slate-600 ml-1">kcal</span>
+                  </div>
                 </div>
               </Card>
             )}

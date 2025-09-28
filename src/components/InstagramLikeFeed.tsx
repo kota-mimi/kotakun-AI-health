@@ -21,6 +21,10 @@ interface MealPost {
   images?: string[];
   image?: string;
   foodItems?: any[];
+  isMultipleMeals?: boolean;
+  meals?: any[];
+  originalMealId?: string;
+  mealIndex?: number;
 }
 
 interface InstagramLikeFeedProps {
@@ -51,12 +55,51 @@ const mealTimeEmojis = {
 export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: InstagramLikeFeedProps) {
   const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({});
 
-  // 全ての食事を�����系列順に並べる
+  // 複数食事を個別表示用に展開する関数
+  const expandMultipleMeals = (meals: MealPost[]) => {
+    const expandedMeals: MealPost[] = [];
+    
+    meals.forEach(meal => {
+      if (meal.isMultipleMeals && meal.meals && meal.meals.length > 0) {
+        // 複数食事を個別の食事として展開
+        meal.meals.forEach((individualMeal: any, index: number) => {
+          expandedMeals.push({
+            ...meal,
+            id: `${meal.id}_${index}`,
+            name: individualMeal.name || `食事${index + 1}`,
+            calories: individualMeal.calories || 0,
+            protein: individualMeal.protein || 0,
+            fat: individualMeal.fat || 0,
+            carbs: individualMeal.carbs || 0,
+            foodItems: [individualMeal.name] || [],
+            isMultipleMeals: false, // 個別表示なのでfalse
+            originalMealId: meal.id, // 元の食事IDを保持
+            mealIndex: index // 何番目の食事かを保持
+          });
+        });
+      } else {
+        // 単一食事はそのまま追加
+        expandedMeals.push(meal);
+      }
+    });
+    
+    return expandedMeals;
+  };
+
+  // 食事タイプごとに展開した食事データを作成
+  const expandedMealData = {
+    breakfast: expandMultipleMeals(mealData.breakfast),
+    lunch: expandMultipleMeals(mealData.lunch),
+    dinner: expandMultipleMeals(mealData.dinner),
+    snack: expandMultipleMeals(mealData.snack)
+  };
+
+  // 全ての食事を時系列順に並べる（複数食事を展開）
   const allMeals = [
-    ...mealData.breakfast.map(meal => ({ ...meal, mealType: 'breakfast' as const })),
-    ...mealData.lunch.map(meal => ({ ...meal, mealType: 'lunch' as const })),
-    ...mealData.dinner.map(meal => ({ ...meal, mealType: 'dinner' as const })),
-    ...mealData.snack.map(meal => ({ ...meal, mealType: 'snack' as const }))
+    ...expandedMealData.breakfast.map(meal => ({ ...meal, mealType: 'breakfast' as const })),
+    ...expandedMealData.lunch.map(meal => ({ ...meal, mealType: 'lunch' as const })),
+    ...expandedMealData.dinner.map(meal => ({ ...meal, mealType: 'dinner' as const })),
+    ...expandedMealData.snack.map(meal => ({ ...meal, mealType: 'snack' as const }))
   ].sort((a, b) => a.time.localeCompare(b.time));
 
 
@@ -101,7 +144,7 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
   return (
     <div className="space-y-4">
       {mealTypeOrder.map((mealType) => {
-        const mealsOfType = mealData[mealType];
+        const mealsOfType = expandedMealData[mealType]; // 展開したデータを使用
         if (mealsOfType.length === 0) return null;
 
         const totalCalories = mealsOfType.reduce((sum, meal) => sum + meal.calories, 0);
@@ -130,23 +173,19 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                 return (
                   <div key={meal.id} className="w-full">
                     <div 
-                      className="flex items-center space-x-3 p-4 bg-white/60 rounded-xl border border-white/40 cursor-pointer hover:bg-white/80 transition-colors"
+                      className={`flex items-center p-4 bg-white/60 rounded-xl border border-white/40 cursor-pointer hover:bg-white/80 transition-colors ${images.length > 0 ? 'space-x-3' : ''}`}
                       onClick={() => onMealClick?.(meal.mealTime, meal.id)}
                     >
-                      {/* 食事画像 */}
-                      <div className="flex-shrink-0">
-                        {images.length > 0 ? (
+                      {/* 食事画像 - 画像がある場合のみ表示 */}
+                      {images.length > 0 && (
+                        <div className="flex-shrink-0">
                           <ImageWithFallback
                             src={images[0]}
                             alt={meal.name}
-                            className="w-12 h-12 object-cover rounded-full border-2 border-white/60"
+                            className="w-12 h-12 object-cover rounded-lg border-2 border-white/60"
                           />
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-slate-200 to-slate-300 rounded-full border-2 border-white/60 flex items-center justify-center">
-                            <Camera size={16} className="text-slate-500" />
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* 食事名と件数 */}
                       <div className="flex-1 min-w-0">
@@ -154,10 +193,21 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                         <p className="text-xs text-slate-500">1件</p>
                       </div>
 
-                      {/* カロリー表示 */}
+                      {/* カロリー・PFC表示 */}
                       <div className="text-right">
-                        <div className="text-xl font-bold" style={{color: '#4A90E2'}}>
+                        <div className="text-xl font-bold mb-1" style={{color: '#4A90E2'}}>
                           {meal.calories}kcal
+                        </div>
+                        <div className="flex space-x-1 justify-end" style={{width: '156px'}}>
+                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#EF4444'}}>
+                            P {meal.protein || 0}g
+                          </Badge>
+                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#F59E0B'}}>
+                            F {meal.fat || 0}g
+                          </Badge>
+                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#10B981'}}>
+                            C {meal.carbs || 0}g
+                          </Badge>
                         </div>
                       </div>
                     </div>

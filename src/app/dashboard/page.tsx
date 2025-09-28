@@ -146,16 +146,16 @@ export default function DashboardPage() {
               counselingResult={counselingResult}
             />
 
+            <AIAdviceCard 
+              onNavigateToProfile={() => navigation.setActiveTab('profile')}
+              onViewAllAdvices={() => navigation.setActiveTab('profile')}
+              counselingResult={counselingResult}
+            />
+
             <CalorieCard 
               totalCalories={mealManager.calorieData.totalCalories}
               targetCalories={mealManager.calorieData.targetCalories}
               pfc={mealManager.calorieData.pfc}
-              counselingResult={counselingResult}
-            />
-
-            <AIAdviceCard 
-              onNavigateToProfile={() => navigation.setActiveTab('profile')}
-              onViewAllAdvices={() => navigation.setActiveTab('profile')}
               counselingResult={counselingResult}
             />
 

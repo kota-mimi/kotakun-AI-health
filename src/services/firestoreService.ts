@@ -259,6 +259,31 @@ export class FirestoreService {
     }
   }
 
+  // 食事記録の削除
+  async deleteMeal(lineUserId: string, date: string, mealType: string, mealId: string) {
+    try {
+      // 既存の日次記録を取得
+      const existingRecord = await this.getDailyRecord(lineUserId, date);
+      if (!existingRecord || !existingRecord.meals) {
+        throw new Error('食事記録が見つかりません');
+      }
+
+      // 指定されたmealIdの食事を除外
+      const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== mealId);
+
+      // 日次記録を更新
+      await this.saveDailyRecord(lineUserId, date, {
+        meals: updatedMeals,
+      });
+
+      console.log('食事記録削除完了:', { lineUserId, date, mealType, mealId });
+      return true;
+    } catch (error) {
+      console.error('食事記録削除エラー:', error);
+      throw error;
+    }
+  }
+
   // ローカルストレージからの移行（一度だけ実行）
   async migrateFromLocalStorage(lineUserId: string) {
     try {
