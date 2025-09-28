@@ -142,9 +142,9 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
   ];
 
   const nutritionOptions = [
-    { key: 'protein', label: 'タンパク質', unit: 'g', color: '#FF6B6B' },
-    { key: 'fat', label: '脂質', unit: 'g', color: '#FFD93D' },
-    { key: 'carbs', label: '炭水化物', unit: 'g', color: '#6BCF7F' },
+    { key: 'protein', label: 'タンパク質', unit: 'g', color: '#EF4444' },
+    { key: 'fat', label: '脂質', unit: 'g', color: '#F59E0B' },
+    { key: 'carbs', label: '炭水化物', unit: 'g', color: '#10B981' },
     { key: 'fiber', label: '食物繊維', unit: 'g', color: '#10B981' },
     { key: 'sugar', label: '糖質', unit: 'g', color: '#F97316' },
     { key: 'sodium', label: '塩分', unit: 'mg', color: '#8B5CF6' },
