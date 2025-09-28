@@ -190,11 +190,23 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   // 食事詳細表示処理
   const handleViewMealDetail = (mealType: MealType, mealId: string) => {
+    console.log('🔥 handleViewMealDetail 呼び出し:', {
+      mealType,
+      mealId,
+      mealData: mealData[mealType],
+      mealIds: mealData[mealType].map(m => m.id)
+    });
+    
     const meal = mealData[mealType].find(m => m.id === mealId);
+    console.log('🔥 見つかった食事:', meal);
+    
     if (meal) {
       setCurrentMealType(mealType);
       setCurrentDetailMeal(meal);
       setIsMealDetailModalOpen(true);
+      console.log('🔥 モーダル開いた!');
+    } else {
+      console.log('🔥 食事が見つからない!');
     }
   };
 

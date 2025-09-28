@@ -15,6 +15,10 @@ interface MealItem {
   images?: string[];
   mealTime?: string;
   foodItems?: any[];
+  isMultipleMeals?: boolean;
+  meals?: any[];
+  originalMealId?: string;
+  mealIndex?: number;
 }
 
 interface MealData {
@@ -81,6 +85,14 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
               <button
                 key={mealType}
                 onClick={() => {
+                  console.log('🔥 朝食クリック!', {
+                    mealType,
+                    hasRecords,
+                    mealItems,
+                    firstMealId: mealItems[0]?.id,
+                    firstMealData: mealItems[0]
+                  });
+                  
                   if (hasRecords) {
                     // 記録がある場合は最初の食事の詳細を表示
                     onViewMealDetail(mealType, mealItems[0].id);
