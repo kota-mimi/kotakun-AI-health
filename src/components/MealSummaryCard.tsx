@@ -112,7 +112,7 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
                     onAddMeal(mealType);
                   }
                 }}
-                className="w-full p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 hover:bg-white transition-colors duration-200 text-left"
+                className="w-full p-2.5 bg-white rounded-xl border border-slate-200 hover:bg-blue-50/30 transition-colors duration-200 text-left shadow-sm"
               >
                 <div className="flex items-center justify-between">
                   {/* 左側：食事情報 */}
@@ -121,31 +121,32 @@ export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigate
                     <div className="font-medium text-slate-900 mb-1">{mealTimeLabels[mealType]}</div>
                     
                     {hasRecords ? (
-                      <div className="flex items-center space-x-2">
-                        {/* 食べ物名と画像 */}
-                        <div className="flex items-center space-x-2 flex-1 min-w-0">
-                          {/* 画像がある食事の画像を優先表示（ダミー画像は使用しない） */}
-                          {displayMeal && (displayMeal.images?.[0] || displayMeal.image) && (
-                            <div className="w-6 h-6 bg-slate-200 rounded-md overflow-hidden flex-shrink-0">
-                              <img
-                                src={displayMeal.images?.[0] || displayMeal.image}
-                                alt={displayMeal.name}
-                                className="w-full h-full object-cover"
-                              />
+                      <div className="flex items-center space-x-3">
+                        {/* 画像を大きく表示 */}
+                        {displayMeal && (displayMeal.images?.[0] || displayMeal.image) && (
+                          <div className="w-12 h-12 bg-slate-200 rounded-lg overflow-hidden flex-shrink-0">
+                            <img
+                              src={displayMeal.images?.[0] || displayMeal.image}
+                              alt={displayMeal.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        
+                        {/* 食べ物名と件数 */}
+                        <div className="flex-1 min-w-0">
+                          {/* 食べ物名（1つだけ表示） */}
+                          <div className="text-sm text-slate-600 truncate">
+                            {displayMeal?.name || mealItems[0]?.name}
+                          </div>
+                          
+                          {/* 件数表示 */}
+                          {mealItems.length > 1 && (
+                            <div className="text-xs text-slate-500 mt-0.5">
+                              ({mealItems.length}件)
                             </div>
                           )}
-                          
-                          {/* 食べ物名（最大2つまで表示） */}
-                          <div className="text-sm text-slate-600 truncate">
-                            {mealItems.slice(0, 2).map(item => item.name).join(', ')}
-                            {mealItems.length > 2 && ` 他${mealItems.length - 2}件`}
-                          </div>
                         </div>
-                        
-                        {/* 件数バッジ */}
-                        <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600 flex-shrink-0">
-                          {mealItems.length}件
-                        </Badge>
                       </div>
                     ) : (
                       <div className="text-sm text-slate-500">未記録</div>

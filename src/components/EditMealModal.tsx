@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
-import { Camera, Upload, Save, X, Loader2, Sparkles, Trash2 } from 'lucide-react';
+import { Camera, Upload, Save, X, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface MealItem {
@@ -64,25 +64,12 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsAnalyzing(true);
-      
       // 画像をプレビュー用にセット
       const reader = new FileReader();
       reader.onload = (e) => {
         setUploadedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-
-      // AI解析のシミュレーション（2秒後に栄養素を更新）
-      setTimeout(() => {
-        // 現在の値を少し調整したダミーデータで更新
-        const currentCalories = parseInt(calories) || 400;
-        setCalories((currentCalories + Math.floor(Math.random() * 100 - 50)).toString());
-        setProtein((parseInt(protein) || 20 + Math.floor(Math.random() * 10 - 5)).toString());
-        setFat((parseInt(fat) || 15 + Math.floor(Math.random() * 8 - 4)).toString());
-        setCarbs((parseInt(carbs) || 45 + Math.floor(Math.random() * 15 - 7)).toString());
-        setIsAnalyzing(false);
-      }, 2000);
     }
   };
 
@@ -127,7 +114,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span>{mealTypeLabels[mealType]}を編集</span>
-              {isAnalyzing && <Loader2 className="w-4 h-4 animate-spin" style={{color: '#4682B4'}} />}
             </div>
             <Button
               variant="ghost"
@@ -143,15 +129,20 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
         <div className="space-y-4">
           {/* 画像アップロード */}
           <div className="space-y-3">
-            <Label>写真から再解析</Label>
+            <Label>写真を変更</Label>
             
             {uploadedImage ? (
               <Card className="relative">
-                <ImageWithFallback
-                  src={uploadedImage}
-                  alt="編集中の食事"
-                  className="w-full h-40 object-cover rounded-lg"
-                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-40 block"
+                >
+                  <ImageWithFallback
+                    src={uploadedImage}
+                    alt="編集中の食事"
+                    className="w-full h-full object-cover rounded-lg hover:opacity-90 transition-opacity"
+                  />
+                </button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -160,14 +151,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 >
                   <X size={14} />
                 </Button>
-                {isAnalyzing && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                    <div className="text-white text-center">
-                      <Sparkles className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                      <p className="text-sm">AI解析中...</p>
-                    </div>
-                  </div>
-                )}
               </Card>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -210,7 +193,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 value={mealName}
                 onChange={(e) => setMealName(e.target.value)}
                 placeholder="例: サーモンアボカド丼"
-                disabled={isAnalyzing}
               />
             </div>
 
@@ -219,10 +201,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Label htmlFor="time">時刻</Label>
                 <Input
                   id="time"
+                  type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   placeholder="19:30"
-                  disabled={isAnalyzing}
                 />
               </div>
               <div className="col-span-2">
@@ -230,10 +212,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="calories"
                   type="number"
+                  inputMode="numeric"
                   value={calories}
                   onChange={(e) => setCalories(e.target.value)}
                   placeholder="520"
-                  disabled={isAnalyzing}
                 />
               </div>
             </div>
@@ -244,10 +226,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="protein"
                   type="number"
+                  inputMode="numeric"
                   value={protein}
                   onChange={(e) => setProtein(e.target.value)}
                   placeholder="28"
-                  disabled={isAnalyzing}
                 />
               </div>
               <div>
@@ -255,10 +237,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="fat"
                   type="number"
+                  inputMode="numeric"
                   value={fat}
                   onChange={(e) => setFat(e.target.value)}
                   placeholder="18"
-                  disabled={isAnalyzing}
                 />
               </div>
               <div>
@@ -266,10 +248,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="carbs"
                   type="number"
+                  inputMode="numeric"
                   value={carbs}
                   onChange={(e) => setCarbs(e.target.value)}
                   placeholder="45"
-                  disabled={isAnalyzing}
                 />
               </div>
             </div>
@@ -284,7 +266,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             </Button>
             <Button
               onClick={handleUpdate}
-              disabled={!mealName || !calories || isAnalyzing}
+              disabled={!mealName || !calories}
               className="flex-1"
               style={{backgroundColor: '#4682B4'}}
             >

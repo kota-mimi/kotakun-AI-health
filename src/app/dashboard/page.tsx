@@ -256,6 +256,10 @@ export default function DashboardPage() {
         mealType={mealManager.currentMealType}
         onEditMeal={mealManager.handleEditFromDetail}
         onAddSimilarMeal={mealManager.handleAddSimilarMeal}
+        onUpdateSummary={(totals) => {
+          // TODO: 合計値の更新処理を実装
+          console.log('Summary update:', totals);
+        }}
         allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 

@@ -167,19 +167,21 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                 return (
                   <div key={meal.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
                     <div 
-                      className={`flex items-center cursor-pointer hover:opacity-80 transition-opacity ${images.length > 0 ? 'space-x-3' : ''}`}
+                      className="flex items-center cursor-pointer hover:opacity-80 transition-opacity space-x-3"
                       onClick={() => onMealClick?.(meal.mealTime, meal.id)}
                     >
-                      {/* 食事画像 - 画像がある場合のみ表示 */}
-                      {images.length > 0 && (
-                        <div className="flex-shrink-0">
+                      {/* 食事画像 - 画像がある場合のみ表示、ない場合は同じ幅のスペース */}
+                      <div className="flex-shrink-0 w-12 h-12">
+                        {images.length > 0 ? (
                           <ImageWithFallback
                             src={images[0]}
                             alt={meal.name}
-                            className="w-12 h-12 object-cover rounded-lg border-2 border-white/60"
+                            className="w-full h-full object-cover rounded-lg border-2 border-white/60"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="w-full h-full"></div>
+                        )}
+                      </div>
 
                       {/* 食事名と件数 */}
                       <div className="flex-1 min-w-0">
@@ -187,21 +189,21 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                         <p className="text-xs text-slate-500">1件</p>
                       </div>
 
-                      {/* カロリー・PFC表示 */}
+                      {/* PFC・カロリー表示 */}
                       <div className="text-right">
-                        <div className="text-xl font-bold mb-1" style={{color: '#4A90E2'}}>
-                          {meal.calories}kcal
-                        </div>
-                        <div className="flex space-x-1 justify-end" style={{width: '156px'}}>
-                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#EF4444'}}>
+                        <div className="flex space-x-1 mb-1" style={{width: '156px', justifyContent: 'flex-end'}}>
+                          <Badge className="text-white font-medium text-xs px-2 py-1 text-center" style={{backgroundColor: '#EF4444', minWidth: '2.5rem'}}>
                             P {meal.protein || 0}g
                           </Badge>
-                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#F59E0B'}}>
+                          <Badge className="text-white font-medium text-xs px-2 py-1 text-center" style={{backgroundColor: '#F59E0B', minWidth: '2.5rem'}}>
                             F {meal.fat || 0}g
                           </Badge>
-                          <Badge className="text-white font-medium text-xs w-10 text-center" style={{backgroundColor: '#10B981'}}>
+                          <Badge className="text-white font-medium text-xs px-2 py-1 text-center" style={{backgroundColor: '#10B981', minWidth: '2.5rem'}}>
                             C {meal.carbs || 0}g
                           </Badge>
+                        </div>
+                        <div className="text-xl font-bold" style={{color: '#4A90E2'}}>
+                          {meal.calories}kcal
                         </div>
                       </div>
                     </div>

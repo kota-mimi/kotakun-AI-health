@@ -6,14 +6,16 @@ import { Badge } from './ui/badge';
 import { Edit2, Plus, X, Sparkles, Clock, Utensils } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ImageViewModal } from './ImageViewModal';
+import { SummaryEditModal } from './SummaryEditModal';
 
 interface MealDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   meal: any;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  onEditMeal: () => void;
+  onEditMeal: (mealId?: string, individualMealIndex?: number) => void;
   onAddSimilarMeal: () => void;
+  onUpdateSummary?: (totals: { calories: number; protein: number; fat: number; carbs: number }) => void;
   allMealsOfType?: any[]; // 同じ食事タイプの全記録
 }
 
@@ -24,10 +26,12 @@ export function MealDetailModal({
   mealType,
   onEditMeal,
   onAddSimilarMeal,
+  onUpdateSummary,
   allMealsOfType = []
 }: MealDetailModalProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isImageViewOpen, setIsImageViewOpen] = useState(false);
+  const [isSummaryEditOpen, setIsSummaryEditOpen] = useState(false);
 
   if (!meal) return null;
 
@@ -150,7 +154,11 @@ export function MealDetailModal({
                     {(mealRecord.isMultipleMeals && mealRecord.meals && mealRecord.meals.length > 0) ? 
                       // 複数食事：個別カード表示
                       mealRecord.meals.map((individualMeal: any, index: number) => (
-                        <Card key={index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                        <Card 
+                          key={index} 
+                          className="p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => onEditMeal(mealRecord.id, index)}
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <h3 className="font-semibold text-slate-800">{individualMeal.name}</h3>
@@ -180,7 +188,10 @@ export function MealDetailModal({
                       )) 
                       :
                       // 単一食事
-                      <Card className="p-3 bg-white border border-gray-200 rounded-lg">
+                      <Card 
+                        className="p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => onEditMeal(mealRecord.id)}
+                      >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h3 className="font-semibold text-slate-800">{mealRecord.name}</h3>
@@ -214,7 +225,10 @@ export function MealDetailModal({
 
               {/* 全体の合計表示（複数記録がある場合のみ） */}
               {allMeals.length > 1 && (
-                <Card className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <Card 
+                  className="p-3 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                  onClick={() => setIsSummaryEditOpen(true)}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-800">{mealTypeNames[mealType]}の合計</h3>
@@ -243,26 +257,6 @@ export function MealDetailModal({
                 </Card>
               )}
 
-              {/* アクションボタン */}
-              <div className="grid grid-cols-2 gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={onEditMeal}
-                  className="flex items-center justify-center space-x-2"
-                  style={{borderColor: 'rgba(70, 130, 180, 0.3)', color: '#4682B4'}}
-                >
-                  <Edit2 size={16} />
-                  <span>編集</span>
-                </Button>
-                <Button
-                  onClick={onAddSimilarMeal}
-                  className="flex items-center justify-center space-x-2"
-                  style={{backgroundColor: '#4682B4'}}
-                >
-                  <Plus size={16} />
-                  <span>これを追加</span>
-                </Button>
-              </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -274,6 +268,18 @@ export function MealDetailModal({
         images={meal.images || (meal.image ? [meal.image] : [])}
         initialIndex={selectedImageIndex}
         title={meal.name}
+      />
+
+      {/* 合計編集モーダル */}
+      <SummaryEditModal
+        isOpen={isSummaryEditOpen}
+        onClose={() => setIsSummaryEditOpen(false)}
+        mealType={mealType}
+        currentTotals={grandTotals}
+        onUpdateTotals={(totals) => {
+          onUpdateSummary?.(totals);
+          setIsSummaryEditOpen(false);
+        }}
       />
     </>
   );

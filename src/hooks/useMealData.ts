@@ -210,9 +210,37 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
   };
 
-  const handleEditFromDetail = () => {
+  const handleEditFromDetail = (mealId?: string, individualMealIndex?: number) => {
     setIsMealDetailModalOpen(false);
-    setCurrentEditMeal(currentDetailMeal);
+    
+    if (mealId && individualMealIndex !== undefined) {
+      // 個別食事の編集：複数食事から特定の食事だけを編集
+      const allMeals = [...mealData.breakfast, ...mealData.lunch, ...mealData.dinner, ...mealData.snack];
+      const targetMeal = allMeals.find(meal => meal.id === mealId);
+      if (targetMeal && targetMeal.isMultipleMeals && targetMeal.meals) {
+        const individualMeal = targetMeal.meals[individualMealIndex];
+        if (individualMeal) {
+          // 個別食事をMeal形式に変換
+          const editMeal = {
+            id: `${mealId}_${individualMealIndex}`, // 個別食事のID
+            name: individualMeal.name,
+            calories: individualMeal.calories || 0,
+            protein: individualMeal.protein || 0,
+            fat: individualMeal.fat || 0,
+            carbs: individualMeal.carbs || 0,
+            time: targetMeal.time,
+            image: targetMeal.image,
+            originalMealId: mealId, // 元の食事IDを保持
+            individualMealIndex: individualMealIndex // インデックスを保持
+          };
+          setCurrentEditMeal(editMeal);
+        }
+      }
+    } else {
+      // 通常の編集（全体の食事）
+      setCurrentEditMeal(currentDetailMeal);
+    }
+    
     setIsEditMealModalOpen(true);
   };
 
