@@ -24,11 +24,11 @@ const tabs = [
 
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (
-    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm">
+    <div className="fixed bottom-0 left-0 w-full">
       <div className="backdrop-blur-xl bg-white/95 border-t border-slate-200/50 shadow-lg">
         {/* セーフエリア対応のパディング */}
-        <div className="px-4 pt-2 pb-6">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="px-0 pt-2 pb-6">
+          <div className="flex w-full">
             {tabs.map((tab) => {
               const IconComponent = tab.icon;
               const isActive = activeTab === tab.id;
@@ -38,7 +38,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                   key={tab.id}
                   variant="ghost"
                   onClick={() => onTabChange(tab.id)}
-                  className={`h-14 flex flex-col items-center justify-center space-y-0.5 rounded-lg transition-all duration-200 ${
+                  className={`h-14 flex-1 flex flex-col items-center justify-center space-y-0.5 rounded-none transition-all duration-200 ${
                     isActive 
                       ? 'bg-health-primary/10 text-health-primary' 
                       : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'

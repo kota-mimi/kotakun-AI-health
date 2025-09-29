@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
+import { Badge } from './ui/badge';
 import { Camera, Upload, Plus, X, Loader2, Sparkles, Trash2, Clock, Edit2, Search } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { generateId } from '@/lib/utils';
@@ -461,16 +462,6 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               <span>{mealTypeLabels[mealType]}を追加</span>
               {isAnalyzing && <Loader2 className="w-4 h-4 animate-spin" style={{color: '#4682B4'}} />}
             </div>
-            {(showTextInput || showManualInput || showAnalysisResult || showPastRecords) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToSelection}
-                className="text-xs text-slate-500 hover:text-slate-700"
-              >
-                ← 選択に戻る
-              </Button>
-            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -491,14 +482,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               </div>
             )}
             
-            {showManualInput && uploadedImages.length === 0 && (
-              <div className="flex items-center justify-between">
-                <Label>写真を追加（任意）</Label>
-              </div>
-            )}
             
-            {/* 複数画像表示 */}
-            {uploadedImages.length > 0 && (
+            {/* 複数画像表示（解析結果表示中は非表示） */}
+            {uploadedImages.length > 0 && foodItems.length === 0 && (
               <div className="grid grid-cols-3 gap-2">
                 {uploadedImages.map((image, index) => (
                   <Card key={index} className="relative">
@@ -521,22 +507,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
             )}
 
             {/* 手動入力時の写真追加ボタン */}
-            {showManualInput && uploadedImages.length < 5 && (
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center space-x-2"
-                  style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
-                >
-                  <Camera size={16} style={{color: '#4682B4'}} />
-                  <span className="text-sm" style={{color: '#4682B4'}}>写真を追加</span>
-                </Button>
-              </div>
-            )}
             
-            {/* 記録方法選択フレーム - 初期画面のみ表示 */}
-            {uploadedImages.length < 5 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && (
+            {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示） */}
+            {uploadedImages.length < 5 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
               <div className="space-y-3">
                 {/* メイン記録方法 */}
                 <div className="grid grid-cols-2 gap-3">
@@ -589,11 +562,12 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               </div>
             )}
             
+            {/* 画像解析中表示 */}
             {isAnalyzing && (
               <Card className="p-4">
                 <div className="text-center" style={{color: '#4682B4'}}>
                   <Sparkles className="w-6 h-6 mx-auto mb-2 animate-pulse" />
-                  <p className="text-sm">AI解析中...</p>
+                  <p className="text-sm">解析中...</p>
                 </div>
               </Card>
             )}
@@ -612,24 +586,56 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           {/* 検出された食品一覧 */}
           {foodItems.length > 0 && (
             <div className="space-y-2">
-              <Label>検出された食品</Label>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {foodItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{item.name}</p>
-                      <p className="text-xs text-slate-600">
-                        {item.calories}kcal • P{item.protein}g F{item.fat}g C{item.carbs}g
-                      </p>
+                  <div key={item.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
+                    <div className="flex items-center space-x-3">
+                      {/* 食事画像（画像がある場合のみ表示） */}
+                      {uploadedImages.length > 0 && (
+                        <div className="flex-shrink-0 w-12 h-12">
+                          <img
+                            src={uploadedImages[0]}
+                            alt={item.name}
+                            className="w-full h-full object-cover rounded-lg border border-slate-200"
+                          />
+                        </div>
+                      )}
+
+                      {/* 食事情報 */}
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-semibold text-base text-slate-800 break-words leading-tight mb-1.5">
+                          {item.name}
+                        </h5>
+                        
+                        {/* PFC・カロリー */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex space-x-1">
+                            <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#EF4444'}}>
+                              P{item.protein || 0}
+                            </Badge>
+                            <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#F59E0B'}}>
+                              F{item.fat || 0}
+                            </Badge>
+                            <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#10B981'}}>
+                              C{item.carbs || 0}
+                            </Badge>
+                          </div>
+                          <div className="text-sm font-bold text-blue-600">
+                            {item.calories}kcal
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 削除ボタン */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFoodItem(item.id)}
+                        className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFoodItem(item.id)}
-                      className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 size={12} />
-                    </Button>
                   </div>
                 ))}
               </div>
@@ -643,13 +649,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               <Textarea
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="例: 今日の昼食はサーモン丼を食べました。野菜サラダも一緒に。複数の料理がある場合は詳しく書いてください。"
+                placeholder=""
                 className="h-24"
                 disabled={isTextAnalyzing}
               />
-              <div className="text-xs text-slate-500 p-2 bg-slate-50 rounded-lg">
-                💡 複数の料理を食べた場合は「サーモン丼、野菜サラダ、味噌汁」のように詳細に記録すると、それぞれを個別に解析できます
-              </div>
               <Button
                 onClick={handleTextAnalysis}
                 disabled={!textInput.trim() || isTextAnalyzing}
@@ -664,22 +667,13 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    複数食事を解析する
+                    解析する
                   </>
                 )}
               </Button>
             </div>
           )}
 
-          {/* 解析中表示 */}
-          {isTextAnalyzing && (
-            <Card className="p-4">
-              <div className="text-center" style={{color: '#4682B4'}}>
-                <Sparkles className="w-6 h-6 mx-auto mb-2 animate-pulse" />
-                <p className="text-sm">テキストを解析しています...</p>
-              </div>
-            </Card>
-          )}
 
           {/* 過去の記録から選択 */}
           {showPastRecords && (
@@ -701,53 +695,60 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               {/* 過去の記録リスト */}
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {filteredPastMeals.length > 0 ? (
-                  filteredPastMeals.map((meal) => (
-                    <div
-                      key={meal.id}
-                      onClick={() => handleSelectPastMeal(meal)}
-                      className="flex items-center space-x-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                    >
-                      {/* 食事画像 */}
-                      <div className="flex-shrink-0 w-12 h-12 bg-slate-200 rounded-lg flex items-center justify-center overflow-hidden">
-                        {meal.image ? (
-                          <img
-                            src={meal.image}
-                            alt={meal.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="text-slate-400 text-xs">画像なし</div>
-                        )}
-                      </div>
-                      
-                      {/* 食事情報 */}
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-slate-800 truncate mb-1">
-                          {meal.name}
-                        </h5>
-                        <div className="text-xs text-slate-500 mb-1">
-                          {meal.date} {meal.time}
-                        </div>
-                        <div className="text-xs text-slate-600">
-                          {meal.calories}kcal • P{meal.protein}g F{meal.fat}g C{meal.carbs}g
-                        </div>
-                      </div>
-                      
-                      {/* 選択ボタン */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectPastMeal(meal);
-                        }}
-                        className="text-xs"
-                        style={{borderColor: 'rgba(70, 130, 180, 0.3)', color: '#4682B4'}}
+                  filteredPastMeals.map((meal) => {
+                    const images = meal.images || (meal.image ? [meal.image] : []);
+                    
+                    return (
+                      <div
+                        key={meal.id}
+                        onClick={() => handleSelectPastMeal(meal)}
+                        className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
                       >
-                        選択
-                      </Button>
-                    </div>
-                  ))
+                        <div className="flex items-center space-x-3">
+                          {/* 食事画像（画像がある場合のみ表示） */}
+                          {images.length > 0 && (
+                            <div className="flex-shrink-0 w-12 h-12">
+                              <img
+                                src={images[0]}
+                                alt={meal.name}
+                                className="w-full h-full object-cover rounded-lg border border-slate-200"
+                              />
+                            </div>
+                          )}
+
+                          {/* 食事情報 */}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-semibold text-base text-slate-800 break-words leading-tight mb-1.5">
+                              {meal.name}
+                            </h5>
+                            
+                            {/* 日付と時刻 */}
+                            <div className="text-xs text-slate-500 mb-1.5">
+                              {meal.date} {meal.time}
+                            </div>
+                            
+                            {/* PFC・カロリー */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex space-x-1">
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#EF4444'}}>
+                                  P{meal.protein || 0}
+                                </Badge>
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#F59E0B'}}>
+                                  F{meal.fat || 0}
+                                </Badge>
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#10B981'}}>
+                                  C{meal.carbs || 0}
+                                </Badge>
+                              </div>
+                              <div className="text-sm font-bold text-blue-600">
+                                {meal.calories}kcal
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-slate-500">
                     <Clock size={24} className="mx-auto mb-2 text-slate-400" />
