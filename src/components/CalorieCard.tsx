@@ -1,6 +1,6 @@
 import { Card } from './ui/card';
 import { Progress } from './ui/progress';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PFCData {
   protein: number;
@@ -33,17 +33,26 @@ interface CalorieCardProps {
 
 export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult }: CalorieCardProps) {
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  // ハイドレーションエラー回避のため、マウント前は0を表示
+  const displayTotalCalories = isMounted ? totalCalories : 0;
+  const displayPfc = isMounted ? pfc : { protein: 0, fat: 0, carbs: 0, proteinTarget: 0, fatTarget: 0, carbsTarget: 0 };
   
   // カウンセリング結果があればそれを優先、なければ既存データを使用
   const finalTargetCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || targetCalories;
-  const finalProteinTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || pfc.proteinTarget;
-  const finalFatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || pfc.fatTarget;
-  const finalCarbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || pfc.carbsTarget;
+  const finalProteinTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || displayPfc.proteinTarget;
+  const finalFatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || displayPfc.fatTarget;
+  const finalCarbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || displayPfc.carbsTarget;
   
-  const intakeProgress = (totalCalories / finalTargetCalories) * 100;
-  const proteinProgress = (pfc.protein / finalProteinTarget) * 100;
-  const fatProgress = (pfc.fat / finalFatTarget) * 100;
-  const carbsProgress = (pfc.carbs / finalCarbsTarget) * 100;
+  const intakeProgress = (displayTotalCalories / finalTargetCalories) * 100;
+  const proteinProgress = (displayPfc.protein / finalProteinTarget) * 100;
+  const fatProgress = (displayPfc.fat / finalFatTarget) * 100;
+  const carbsProgress = (displayPfc.carbs / finalCarbsTarget) * 100;
 
   // 消費カロリーデータ（カウンセリング結果に基づく動的計算）
   const basalMetabolismBase = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
@@ -109,7 +118,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
               <div className="flex items-center justify-between mb-3">
                 <span className="font-medium text-slate-900">摂取カロリー</span>
                 <div className="text-right">
-                  <span className="font-bold text-health-primary">{totalCalories}</span>
+                  <span className="font-bold text-health-primary">{displayTotalCalories}</span>
                   <span className="text-slate-500"> / {finalTargetCalories}kcal</span>
                 </div>
               </div>
@@ -134,7 +143,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                       <span className="text-sm text-slate-700">タンパク質</span>
                     </div>
                     <span className="text-sm">
-                      <span className="font-bold text-nutrition-protein">{pfc.protein}g</span>
+                      <span className="font-bold text-nutrition-protein">{displayPfc.protein}g</span>
                       <span className="text-slate-500"> / {finalProteinTarget}g</span>
                     </span>
                   </div>
@@ -154,7 +163,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                       <span className="text-sm text-slate-700">脂質</span>
                     </div>
                     <span className="text-sm">
-                      <span className="font-bold text-nutrition-fat">{pfc.fat}g</span>
+                      <span className="font-bold text-nutrition-fat">{displayPfc.fat}g</span>
                       <span className="text-slate-500"> / {finalFatTarget}g</span>
                     </span>
                   </div>
@@ -174,7 +183,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                       <span className="text-sm text-slate-700">炭水化物</span>
                     </div>
                     <span className="text-sm">
-                      <span className="font-bold text-nutrition-carbs">{pfc.carbs}g</span>
+                      <span className="font-bold text-nutrition-carbs">{displayPfc.carbs}g</span>
                       <span className="text-slate-500"> / {finalCarbsTarget}g</span>
                     </span>
                   </div>

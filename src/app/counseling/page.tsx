@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { generateId } from '@/lib/utils';
 import type { CounselingAnswer, UserProfile } from '@/types';
 
 const questions = [
@@ -244,7 +245,7 @@ export default function CounselingPage() {
 
       // AI分析APIを呼び出し
       // LIFF User IDがない場合はモックIDを使用
-      const userId = lineUserId || `mock_user_${Date.now()}`;
+      const userId = lineUserId || `mock_user_${generateId()}`;
       
       try {
         const response = await fetch('/api/counseling/analyze', {

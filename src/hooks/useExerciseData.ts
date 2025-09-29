@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { generateId } from '@/lib/utils';
 
 interface Exercise {
   id: string;
@@ -48,7 +49,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   // 運動記録を追加する関数
   const handleAddExercise = (exercise: Omit<Exercise, 'id' | 'time'>) => {
     const newExercise = {
-      id: Date.now().toString(),
+      id: generateId(),
       time: new Date().toTimeString().slice(0, 5),
       calories: exercise.calories || 0,
       ...exercise
@@ -81,7 +82,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   // 運動プランを追加する関数（localStorage自動保存）
   const handleAddPlan = (plan: Omit<WorkoutPlan, 'id'>) => {
     const newPlan = {
-      id: Date.now().toString(),
+      id: generateId(),
       ...plan
     };
     workoutPlansStorage.setValue(prev => [...prev, newPlan]);
@@ -95,7 +96,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   // プランのエクササイズを追加する関数（localStorage自動保存）
   const handleAddExerciseToPlan = (planId: string, exercise: Omit<WorkoutPlan['exercises'][0], 'id'>) => {
     const newExercise = {
-      id: Date.now().toString(),
+      id: generateId(),
       ...exercise
     };
     workoutPlansStorage.setValue(prev => 

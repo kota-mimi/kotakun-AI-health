@@ -13,6 +13,7 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { generateId } from '@/lib/utils';
 import type { User, UserProfile, CounselingAnswer, DailyRecord } from '@/types';
 
 export class FirestoreService {
@@ -196,7 +197,7 @@ export class FirestoreService {
       // 新しい食事を追加
       meals.push({
         ...mealData,
-        id: `meal_${Date.now()}`,
+        id: `meal_${generateId()}`,
         timestamp: new Date(),
       });
 
@@ -221,7 +222,7 @@ export class FirestoreService {
       
       exercises.push({
         ...exerciseData,
-        id: `exercise_${Date.now()}`,
+        id: `exercise_${generateId()}`,
         timestamp: new Date(),
       });
 

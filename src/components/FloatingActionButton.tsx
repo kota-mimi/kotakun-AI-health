@@ -61,7 +61,7 @@ export function FloatingActionButton({
   ];
 
   return (
-    <div className="fixed bottom-24 right-6 z-40">
+    <div className="fixed bottom-28 right-6 z-[9999]">
       {/* 背景オーバーレイ */}
       {isOpen && (
         <div 

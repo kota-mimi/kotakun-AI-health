@@ -6,6 +6,7 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
+import { generateId } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -590,7 +591,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         const base64Data = compressedImage.toString('base64');
         
         // 一意のIDを生成
-        imageId = `meal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        imageId = `meal_${generateId()}`;
         
         try {
           // Firestoreの画像コレクションに保存を試行
@@ -629,7 +630,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     let mealData;
     if (analysis.isMultipleMeals) {
       mealData = {
-        id: Date.now().toString(),
+        id: generateId(),
         name: tempData.text || analysis.meals?.map((m: any) => m.name).join('、') || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
         time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
@@ -649,7 +650,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       };
     } else {
       mealData = {
-        id: Date.now().toString(),
+        id: generateId(),
         name: tempData.text || (analysis.foodItems?.[0]) || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
         time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),

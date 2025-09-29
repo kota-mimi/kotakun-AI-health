@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { generateId } from '@/lib/utils';
 
 interface FoodItem {
   id: string;
@@ -55,6 +56,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   const [currentDetailMeal, setCurrentDetailMeal] = useState<Meal | null>(null);
   const [firestoreMealData, setFirestoreMealData] = useState<MealData>({ breakfast: [], lunch: [], dinner: [], snack: [] });
   const [isLoading, setIsLoading] = useState(true);
+  const [addMealInitialMode, setAddMealInitialMode] = useState<'camera' | 'text' | 'album' | 'manual' | 'default'>('default');
 
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
@@ -143,7 +145,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   const handleAddMealSubmit = (meal: Omit<Meal, 'id'>) => {
     const newMeal = {
-      id: Date.now().toString(),
+      id: generateId(),
       ...meal
     };
 
@@ -257,6 +259,31 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
   };
 
+  // 各記録方法に対応するハンドラー
+  const handleCameraRecord = (mealType: MealType) => {
+    setCurrentMealType(mealType);
+    setAddMealInitialMode('camera');
+    setIsAddMealModalOpen(true);
+  };
+
+  const handleTextRecord = (mealType: MealType) => {
+    setCurrentMealType(mealType);
+    setAddMealInitialMode('text');
+    setIsAddMealModalOpen(true);
+  };
+
+  const handlePastRecord = (mealType: MealType) => {
+    setCurrentMealType(mealType);
+    setAddMealInitialMode('album');
+    setIsAddMealModalOpen(true);
+  };
+
+  const handleManualRecord = (mealType: MealType) => {
+    setCurrentMealType(mealType);
+    setAddMealInitialMode('manual');
+    setIsAddMealModalOpen(true);
+  };
+
   // モーダル閉じる処理
   const closeMealModals = () => {
     setIsAddMealModalOpen(false);
@@ -264,6 +291,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     setIsMealDetailModalOpen(false);
     setCurrentEditMeal(null);
     setCurrentDetailMeal(null);
+    setAddMealInitialMode('default');
   };
 
   return {
@@ -283,6 +311,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     // アクション
     handleAddMeal,
     handleAddMealSubmit,
+    handleCameraRecord,
+    handleTextRecord,
+    handlePastRecord,
+    handleManualRecord,
     handleEditMeal,
     handleUpdateMeal,
     handleDeleteMeal,
@@ -290,6 +322,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     handleEditFromDetail,
     handleAddSimilarMeal,
     closeMealModals,
+    addMealInitialMode,
     
     // セッター（必要に応じて）
     setIsAddMealModalOpen,

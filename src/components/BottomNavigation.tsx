@@ -2,35 +2,17 @@ import { Button } from './ui/button';
 import { Home, Utensils, Scale, Dumbbell, User } from 'lucide-react';
 
 interface BottomNavigationProps {
-  activeTab: 'home' | 'meal' | 'weight' | 'exercise' | 'profile';
-  onTabChange: (tab: 'home' | 'meal' | 'weight' | 'exercise' | 'profile') => void;
+  activeTab: 'home' | 'profile';
+  onTabChange: (tab: 'home' | 'profile') => void;
 }
 
-// タブ定義：全部ホーム画面に飛ぶが、見た目でカテゴリ分けしている
+// タブ定義：ホームと設定の2タブ構成
 const tabs = [
   {
     id: 'home' as const,
     label: 'ホーム',
     icon: Home,
     description: 'メイン画面'
-  },
-  {
-    id: 'meal' as const,
-    label: '食事',
-    icon: Utensils,
-    description: 'ホーム（食事フォーカス）'
-  },
-  {
-    id: 'weight' as const,
-    label: '体重',
-    icon: Scale,
-    description: 'ホーム（体重フォーカス）'
-  },
-  {
-    id: 'exercise' as const,
-    label: '運動',
-    icon: Dumbbell,
-    description: 'ホーム（運動フォーカス）'
   },
   {
     id: 'profile' as const,
@@ -46,7 +28,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
       <div className="backdrop-blur-xl bg-white/95 border-t border-slate-200/50 shadow-lg">
         {/* セーフエリア対応のパディング */}
         <div className="px-4 pt-2 pb-6">
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-2 gap-4">
             {tabs.map((tab) => {
               const IconComponent = tab.icon;
               const isActive = activeTab === tab.id;

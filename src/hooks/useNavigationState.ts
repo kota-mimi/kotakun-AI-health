@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 
-export type TabType = 'home' | 'meal' | 'weight' | 'exercise' | 'profile';
+export type TabType = 'home' | 'profile';
 
 export function useNavigationState() {
   const [selectedDate, setSelectedDate] = useState(new Date());

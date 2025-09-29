@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const dateBasedDataManager = useDateBasedData();
   
   const [isDataManagementModalOpen, setIsDataManagementModalOpen] = React.useState(false);
+  const [isMealMenuOpen, setIsMealMenuOpen] = React.useState(false);
   
   const currentDateData = dateBasedDataManager.getCurrentDateData(navigation.selectedDate);
   
@@ -63,6 +64,17 @@ export default function DashboardPage() {
     dateBasedDataManager.dateBasedData,
     updateDateData
   );
+
+  // 現在の時間に基づいて適切な食事タイプを判定
+  const getCurrentMealType = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    if (hour >= 5 && hour < 11) return 'breakfast'; // 5:00-10:59 朝食
+    if (hour >= 11 && hour < 15) return 'lunch';    // 11:00-14:59 昼食
+    if (hour >= 15 && hour < 19) return 'snack';    // 15:00-18:59 間食
+    return 'dinner'; // 19:00-4:59 夕食
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -115,64 +127,115 @@ export default function DashboardPage() {
         </>
       )}
 
-      {/* 他のタブは全部ホーム画面を表示 */}
-      {(navigation.activeTab === 'home' || navigation.activeTab === 'meal' || navigation.activeTab === 'weight' || navigation.activeTab === 'exercise') && (
+      {/* ホームタブ */}
+      {navigation.activeTab === 'home' && (
         <>
-          <CompactHeader
-            currentDate={navigation.selectedDate}
-            onDateSelect={navigation.handleDateSelect}
-            onCalendar={navigation.handleCalendar}
-            onNavigateToProfile={() => navigation.setActiveTab('profile')}
-            onNavigateToData={() => {}} // 削除：データページなし
-          />
+          <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+            <CompactHeader
+              currentDate={navigation.selectedDate}
+              onDateSelect={navigation.handleDateSelect}
+              onCalendar={navigation.handleCalendar}
+              onNavigateToProfile={() => navigation.setActiveTab('profile')}
+              onNavigateToData={() => {}} // 削除：データページなし
+            />
+          </div>
 
           <div className="relative px-4 py-4 pb-20 space-y-4">
             {/* 体重カード - クリックで体重入力モーダル */}
-            <WeightCard 
-              data={weightManager.weightData} 
-              onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
-              counselingResult={counselingResult}
-            />
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <WeightCard 
+                data={weightManager.weightData} 
+                onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
+                counselingResult={counselingResult}
+              />
+            </div>
 
             {/* AIアドバイスカード */}
-            <AIAdviceCard 
-              onNavigateToProfile={() => navigation.setActiveTab('profile')}
-              onViewAllAdvices={() => navigation.setActiveTab('profile')}
-              counselingResult={counselingResult}
-            />
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <AIAdviceCard 
+                onNavigateToProfile={() => navigation.setActiveTab('profile')}
+                onViewAllAdvices={() => navigation.setActiveTab('profile')}
+                counselingResult={counselingResult}
+              />
+            </div>
 
             {/* カロリーカード */}
-            <CalorieCard 
-              totalCalories={mealManager.calorieData.totalCalories}
-              targetCalories={mealManager.calorieData.targetCalories}
-              pfc={mealManager.calorieData.pfc}
-              counselingResult={counselingResult}
-            />
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <CalorieCard 
+                totalCalories={mealManager.calorieData.totalCalories}
+                targetCalories={mealManager.calorieData.targetCalories}
+                pfc={mealManager.calorieData.pfc}
+                counselingResult={counselingResult}
+              />
+            </div>
 
             {/* 食事カード */}
             <MealSummaryCard
               meals={mealManager.mealData}
               onAddMeal={mealManager.handleAddMeal}
+              onCameraRecord={mealManager.handleCameraRecord}
+              onTextRecord={mealManager.handleTextRecord}
+              onPastRecord={mealManager.handlePastRecord}
+              onManualRecord={mealManager.handleManualRecord}
               onViewMealDetail={mealManager.handleViewMealDetail}
+              onEditMeal={mealManager.handleEditMeal}
+              onEditIndividualMeal={mealManager.handleEditFromDetail}
               onNavigateToMeal={() => {}} // 削除：専用ページなし
+              onMenuOpenChange={setIsMealMenuOpen}
             />
 
             {/* 運動カード */}
-            <WorkoutSummaryCard 
-              exerciseData={exerciseManager.exerciseData}
-              onNavigateToWorkout={() => {}} // 削除：専用ページなし
-            />
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <WorkoutSummaryCard 
+                exerciseData={exerciseManager.exerciseData}
+                onNavigateToWorkout={() => {}} // 削除：専用ページなし
+              />
+            </div>
           </div>
+
         </>
       )}
 
       {/* ボトムナビゲーション */}
-      <BottomNavigation
-        activeTab={navigation.activeTab}
-        onTabChange={navigation.setActiveTab}
+      <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+        <BottomNavigation
+          activeTab={navigation.activeTab}
+          onTabChange={navigation.setActiveTab}
+        />
+      </div>
+
+      {/* 共通モーダル群 */}
+      <CalendarModal
+        isOpen={navigation.isCalendarModalOpen}
+        onClose={() => navigation.setIsCalendarModalOpen(false)}
+        selectedDate={navigation.selectedDate}
+        onDateSelect={navigation.handleDateSelect}
       />
 
-      {/* モーダル群 */}
+      <WeightEntryModal
+        isOpen={weightManager.isWeightEntryModalOpen}
+        onClose={() => weightManager.setIsWeightEntryModalOpen(false)}
+        onSubmit={weightManager.handleAddWeightEntry}
+        currentWeight={weightManager.weightData.current}
+      />
+
+      <WeightSettingsModal
+        isOpen={weightManager.isWeightSettingsModalOpen}
+        onClose={() => weightManager.setIsWeightSettingsModalOpen(false)}
+        currentSettings={weightManager.weightSettings}
+        onUpdateSettings={weightManager.handleUpdateWeightSettings}
+      />
+
+      <DataManagementModal
+        isOpen={isDataManagementModalOpen}
+        onClose={() => setIsDataManagementModalOpen(false)}
+        onExportData={dateBasedDataManager.exportData}
+        onImportData={dateBasedDataManager.importData}
+        onClearAllData={dateBasedDataManager.clearAllData}
+      />
+
+
+      {/* 食事記録モーダル群 - 全タブで共通 */}
       <AddMealModal
         isOpen={mealManager.isAddMealModalOpen}
         onClose={() => mealManager.setIsAddMealModalOpen(false)}
@@ -210,34 +273,7 @@ export default function DashboardPage() {
         allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 
-      <CalendarModal
-        isOpen={navigation.isCalendarModalOpen}
-        onClose={() => navigation.setIsCalendarModalOpen(false)}
-        selectedDate={navigation.selectedDate}
-        onDateSelect={navigation.handleDateSelect}
-      />
 
-      <WeightEntryModal
-        isOpen={weightManager.isWeightEntryModalOpen}
-        onClose={() => weightManager.setIsWeightEntryModalOpen(false)}
-        onSubmit={weightManager.handleAddWeightEntry}
-        currentWeight={weightManager.weightData.current}
-      />
-
-      <WeightSettingsModal
-        isOpen={weightManager.isWeightSettingsModalOpen}
-        onClose={() => weightManager.setIsWeightSettingsModalOpen(false)}
-        currentSettings={weightManager.weightSettings}
-        onUpdateSettings={weightManager.handleUpdateWeightSettings}
-      />
-
-      <DataManagementModal
-        isOpen={isDataManagementModalOpen}
-        onClose={() => setIsDataManagementModalOpen(false)}
-        onExportData={dateBasedDataManager.exportData}
-        onImportData={dateBasedDataManager.importData}
-        onClearAllData={dateBasedDataManager.clearAllData}
-      />
     </div>
   );
 }

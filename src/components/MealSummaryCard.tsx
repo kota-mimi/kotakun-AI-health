@@ -1,7 +1,12 @@
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ChevronRight, Utensils } from 'lucide-react';
+import { 
+  Plus,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 
 interface MealItem {
   id: string;
@@ -31,8 +36,15 @@ interface MealData {
 interface MealSummaryCardProps {
   meals: MealData;
   onAddMeal: (mealType: keyof MealData) => void;
+  onCameraRecord: (mealType: keyof MealData) => void;
+  onTextRecord: (mealType: keyof MealData) => void;
+  onPastRecord: (mealType: keyof MealData) => void;
+  onManualRecord: (mealType: keyof MealData) => void;
   onViewMealDetail: (mealType: keyof MealData, mealId: string) => void;
+  onEditMeal: (mealType: keyof MealData, mealId: string) => void;
+  onEditIndividualMeal: (mealId: string, individualMealIndex: number) => void;
   onNavigateToMeal: () => void;
+  onMenuOpenChange?: (isOpen: boolean) => void;
 }
 
 const mealTimeLabels = {
@@ -42,132 +54,205 @@ const mealTimeLabels = {
   snack: '間食'
 };
 
-const mealTimeIcons = {
-  breakfast: '🌅',
-  lunch: '☀️', 
-  dinner: '🌙',
-  snack: '🍪'
-};
 
-export function MealSummaryCard({ meals, onAddMeal, onViewMealDetail, onNavigateToMeal }: MealSummaryCardProps) {
-  // 各食事の合計カロリー計算
-  const getMealCalories = (mealType: keyof MealData) => {
-    return meals[mealType].reduce((sum, item) => sum + item.calories, 0);
+export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord, onPastRecord, onManualRecord, onViewMealDetail, onEditMeal, onEditIndividualMeal, onNavigateToMeal, onMenuOpenChange }: MealSummaryCardProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // 複数食事を個別表示用に展開する関数
+  const expandMultipleMeals = (mealItems: MealItem[]) => {
+    const expandedMeals: MealItem[] = [];
+    
+    mealItems.forEach(meal => {
+      if (meal.isMultipleMeals && meal.meals && meal.meals.length > 0) {
+        // 複数食事を個別の食事として展開
+        meal.meals.forEach((individualMeal: any, index: number) => {
+          expandedMeals.push({
+            ...meal,
+            id: `${meal.id}_${index}`,
+            name: individualMeal.name || `食事${index + 1}`,
+            calories: individualMeal.calories || 0,
+            protein: individualMeal.protein || 0,
+            fat: individualMeal.fat || 0,
+            carbs: individualMeal.carbs || 0,
+            foodItems: [individualMeal.name] || [],
+            isMultipleMeals: false, // 個別表示なのでfalse
+            originalMealId: meal.id, // 元の食事IDを保持
+            mealIndex: index // 何番目の食事かを保持
+          });
+        });
+      } else {
+        // 単一食事はそのまま追加
+        expandedMeals.push(meal);
+      }
+    });
+    
+    return expandedMeals;
   };
 
-  // 総カロリー計算
-  const totalCalories = Object.values(meals).flat().reduce((sum, meal) => sum + meal.calories, 0);
+  // 食事タイプごとに展開した食事データを作成 - ハイドレーションエラー回避
+  const expandedMealData = isMounted ? {
+    breakfast: expandMultipleMeals(meals.breakfast),
+    lunch: expandMultipleMeals(meals.lunch),
+    dinner: expandMultipleMeals(meals.dinner),
+    snack: expandMultipleMeals(meals.snack)
+  } : {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snack: []
+  };
+
+  // 各食事の合計カロリー計算（展開後）
+  const getMealCalories = (mealType: keyof MealData) => {
+    return expandedMealData[mealType].reduce((sum, item) => sum + item.calories, 0);
+  };
+
+  // 総カロリー計算（展開後） - ハイドレーションエラー回避
+  const totalCalories = isMounted ? Object.values(expandedMealData).flat().reduce((sum, meal) => sum + meal.calories, 0) : 0;
+
+  // 食事タイプ順に並び替え（朝食→昼食→夕食→間食）
+  const mealTypeOrder: Array<keyof MealData> = ['breakfast', 'lunch', 'dinner', 'snack'];
 
   return (
-    <Card className="backdrop-blur-xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-sm overflow-hidden">
-      {/* ヘッダー */}
-      <div className="p-3 pb-0">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h3 className="font-semibold text-slate-900">今日の食事</h3>
+    <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Button
+        onClick={() => setIsExpanded(!isExpanded)}
+        variant="ghost"
+        className="w-full justify-start p-0 h-auto hover:bg-transparent"
+      >
+        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
+          <div className="flex items-center space-x-2">
+            <h3 className="font-semibold text-slate-900">今日の食事記録</h3>
+            <span className="text-sm text-slate-500">({totalCalories}kcal)</span>
           </div>
-          <div className="text-right">
-            <div className="font-bold text-health-primary">合計 {totalCalories}</div>
-            <div className="text-xs text-slate-500 tracking-wide">kcal</div>
-          </div>
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-slate-500" />
+          ) : (
+            <ChevronDown size={16} className="text-slate-500" />
+          )}
         </div>
-      </div>
+      </Button>
+      
+      {/* 食事フレーム - 開閉可能 */}
+      {isExpanded && (
+        <div className="p-4 space-y-3">
+        {mealTypeOrder.map((mealType) => {
+          const mealItems = expandedMealData[mealType];
+          const totalCaloriesForType = getMealCalories(mealType);
+          const totalProtein = mealItems.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+          const totalFat = mealItems.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+          const totalCarbs = mealItems.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
 
-      {/* 食事概要 */}
-      <div className="p-3 pt-0">
-        <div className="space-y-2">
-          {(Object.keys(mealTimeLabels) as Array<keyof MealData>).map(mealType => {
-            const mealItems = meals[mealType];
-            const calories = getMealCalories(mealType);
-            const hasRecords = mealItems.length > 0;
-
-            // 画像がある食事を優先的に取得（表示用）
-            const getDisplayMeal = () => {
-              if (!hasRecords) return null;
-              // 画像がある食事を探す
-              const mealWithImage = mealItems.find(meal => meal.images?.[0] || meal.image);
-              // 画像がある食事があればそれを、なければ最初の食事を返す
-              return mealWithImage || mealItems[0];
-            };
-
-            const displayMeal = getDisplayMeal();
-
-            return (
-              <button
-                key={mealType}
-                onClick={() => {
-                  console.log('🔥 朝食クリック!', {
-                    mealType,
-                    hasRecords,
-                    mealItems,
-                    firstMealId: mealItems[0]?.id,
-                    firstMealData: mealItems[0]
-                  });
-                  
-                  if (hasRecords) {
-                    // 記録がある場合は最初の食事の詳細を表示（MealDetailModalで全記録を表示）
-                    onViewMealDetail(mealType, mealItems[0].id);
-                  } else {
-                    // 記録がない場合は食事追加モーダルを開く
-                    onAddMeal(mealType);
-                  }
-                }}
-                className="w-full p-2.5 bg-white rounded-xl border border-slate-200 hover:bg-blue-50/30 transition-colors duration-200 text-left shadow-sm"
+          return (
+            <div key={mealType} className="space-y-2">
+              {/* 食事タイプヘッダー - クリック可能 */}
+              <Button
+                onClick={() => onAddMeal(mealType)}
+                variant="ghost"
+                className="w-full justify-start p-0 h-auto hover:bg-transparent"
               >
-                <div className="flex items-center justify-between">
-                  {/* 左側：食事情報 */}
-                  <div className="flex-1 min-w-0">
-                    {/* 食事名 */}
-                    <div className="font-medium text-slate-900 mb-1">{mealTimeLabels[mealType]}</div>
-                    
-                    {hasRecords ? (
-                      <div className="flex items-center space-x-3">
-                        {/* 画像を大きく表示 */}
-                        {displayMeal && (displayMeal.images?.[0] || displayMeal.image) && (
-                          <div className="w-12 h-12 bg-slate-200 rounded-lg overflow-hidden flex-shrink-0">
-                            <img
-                              src={displayMeal.images?.[0] || displayMeal.image}
-                              alt={displayMeal.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        
-                        {/* 食べ物名と件数 */}
-                        <div className="flex-1 min-w-0">
-                          {/* 食べ物名（1つだけ表示） */}
-                          <div className="text-sm text-slate-600 truncate">
-                            {displayMeal?.name || mealItems[0]?.name}
-                          </div>
-                          
-                          {/* 件数表示 */}
-                          {mealItems.length > 1 && (
-                            <div className="text-xs text-slate-500 mt-0.5">
-                              ({mealItems.length}件)
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-slate-500">未記録</div>
-                    )}
-                  </div>
-                  
-                  {/* 右側：カロリー */}
-                  <div className="text-right ml-3">
-                    {hasRecords ? (
-                      <div className="font-bold text-health-primary">{calories}kcal</div>
-                    ) : (
-                      <div className="text-sm text-slate-400">--kcal</div>
+                <div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <h4 className="text-base font-semibold text-slate-800">{mealTimeLabels[mealType]}</h4>
+                    {totalCaloriesForType > 0 && (
+                      <span className="text-sm text-slate-500">({totalCaloriesForType}kcal)</span>
                     )}
                   </div>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              </Button>
 
-      </div>
+              {/* 食事リスト */}
+              {mealItems.length > 0 && (
+                <div className="space-y-2">
+                  {mealItems.map((meal) => {
+                    const images = meal.images || (meal.image ? [meal.image] : []);
+                    
+                    return (
+                      <div 
+                        key={meal.id} 
+                        className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
+                        onClick={() => {
+                          // 複数食事の個別食事の場合は個別編集
+                          if (meal.originalMealId && meal.mealIndex !== undefined) {
+                            onEditIndividualMeal(meal.originalMealId, meal.mealIndex);
+                          } else {
+                            // 単一食事の場合は通常編集
+                            onEditMeal(mealType, meal.id);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          {/* 食事画像 */}
+                          <div className="flex-shrink-0 w-10 h-10">
+                            {images.length > 0 && (
+                              <img
+                                src={images[0]}
+                                alt={meal.name}
+                                className="w-full h-full object-cover rounded-lg border border-slate-200 transition-colors duration-200"
+                              />
+                            )}
+                          </div>
+
+                          {/* 食事情報 */}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-medium text-slate-800 break-words leading-tight mb-1">
+                              {meal.name}
+                            </h5>
+                            
+                            {/* PFC・カロリー */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex space-x-1">
+                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#EF4444'}}>
+                                  P{meal.protein || 0}
+                                </Badge>
+                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#F59E0B'}}>
+                                  F{meal.fat || 0}
+                                </Badge>
+                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#10B981'}}>
+                                  C{meal.carbs || 0}
+                                </Badge>
+                              </div>
+                              <div className="text-sm font-bold text-blue-600">
+                                {meal.calories}kcal
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* 合計表示 */}
+                  <div className="pt-2 border-t border-slate-200">
+                    <div className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                      <div className="flex space-x-1">
+                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#EF4444'}}>
+                          P {totalProtein}g
+                        </Badge>
+                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#F59E0B'}}>
+                          F {totalFat}g
+                        </Badge>
+                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#10B981'}}>
+                          C {totalCarbs}g
+                        </Badge>
+                      </div>
+                      <div className="text-sm font-bold text-blue-600">
+                        {totalCaloriesForType}kcal
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        </div>
+      )}
     </Card>
   );
 }

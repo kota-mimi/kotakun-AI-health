@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { generateId } from '@/lib/utils';
 
 interface WeightEntry {
   id: string;
@@ -122,7 +123,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   // 体重記録を追加
   const handleAddWeightEntry = (data: { weight: number; bodyFat?: number; note?: string; photo?: string }) => {
     const newEntry: WeightEntry = {
-      id: Date.now().toString(),
+      id: generateId(),
       date: getDateKey(selectedDate),
       weight: data.weight,
       bodyFat: data.bodyFat,

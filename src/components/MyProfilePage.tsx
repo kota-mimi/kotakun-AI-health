@@ -281,6 +281,7 @@ export function MyProfilePage({
 
       {/* データ管理 */}
       {renderSection('データ管理', dataMenuItems)}
+
     </div>
   );
 }

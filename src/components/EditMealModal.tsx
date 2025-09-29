@@ -109,7 +109,11 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-sm mx-auto max-h-[50vh] overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -213,6 +217,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   id="calories"
                   type="number"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   value={calories}
                   onChange={(e) => setCalories(e.target.value)}
                   placeholder="520"
@@ -227,6 +232,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   id="protein"
                   type="number"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   value={protein}
                   onChange={(e) => setProtein(e.target.value)}
                   placeholder="28"
@@ -238,6 +244,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   id="fat"
                   type="number"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   value={fat}
                   onChange={(e) => setFat(e.target.value)}
                   placeholder="18"
@@ -249,6 +256,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   id="carbs"
                   type="number"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   value={carbs}
                   onChange={(e) => setCarbs(e.target.value)}
                   placeholder="45"
