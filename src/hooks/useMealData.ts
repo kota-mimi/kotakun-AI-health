@@ -143,17 +143,71 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     setIsAddMealModalOpen(true);
   };
 
-  const handleAddMealSubmit = (meal: Omit<Meal, 'id'>) => {
+  const handleAddMealSubmit = async (meal: Omit<Meal, 'id'>) => {
     const newMeal = {
       id: generateId(),
-      ...meal
+      ...meal,
+      createdAt: new Date(),
+      mealType: currentMealType
     };
+
+    try {
+      // Firestoreに保存
+      const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      
+      const response = await fetch('/api/meals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          mealType: currentMealType,
+          mealData: newMeal
+        }),
+      });
+
+      if (response.ok) {
+        // Firestoreデータを更新
+        setFirestoreMealData(prev => ({
+          ...prev,
+          [currentMealType]: [...prev[currentMealType], newMeal]
+        }));
+      } else {
+        // Firestoreエラー時はローカルストレージに保存
+        const currentData = getCurrentDateData();
+        updateDateData({
+          mealData: {
+            ...currentData.mealData,
+            [currentMealType]: [...currentData.mealData[currentMealType], newMeal]
+          }
+        });
+      }
+    } catch (error) {
+      console.error('食事保存エラー:', error);
+      // エラー時はローカルストレージに保存
+      const currentData = getCurrentDateData();
+      updateDateData({
+        mealData: {
+          ...currentData.mealData,
+          [currentMealType]: [...currentData.mealData[currentMealType], newMeal]
+        }
+      });
+    }
+  };
+
+  // 複数食事追加処理
+  const handleAddMultipleMeals = (meals: Omit<Meal, 'id'>[]) => {
+    const newMeals = meals.map(meal => ({
+      id: generateId(),
+      ...meal
+    }));
 
     const currentData = getCurrentDateData();
     updateDateData({
       mealData: {
         ...currentData.mealData,
-        [currentMealType]: [...currentData.mealData[currentMealType], newMeal]
+        [currentMealType]: [...currentData.mealData[currentMealType], ...newMeals]
       }
     });
   };
@@ -168,7 +222,49 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
   };
 
-  const handleUpdateMeal = (updatedMeal: Meal) => {
+  const handleUpdateMeal = async (updatedMeal: Meal) => {
+    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const dateStr = selectedDate.toISOString().split('T')[0];
+    
+    // Firestoreデータに該当する食事があるかチェック
+    const isFirestoreMeal = firestoreMealData[currentMealType].some(meal => meal.id === updatedMeal.id);
+    
+    if (isFirestoreMeal) {
+      try {
+        console.log('🔧 Updating Firestore meal:', updatedMeal.id);
+        const response = await fetch('/api/meals', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr,
+            mealType: currentMealType,
+            mealData: updatedMeal
+          }),
+        });
+
+        if (response.ok) {
+          console.log('🔧 Firestore update successful, updating local state');
+          // Firestore更新成功時のみローカルstateを更新
+          setFirestoreMealData(prev => ({
+            ...prev,
+            [currentMealType]: prev[currentMealType].map(meal => 
+              meal.id === updatedMeal.id ? updatedMeal : meal
+            )
+          }));
+        } else {
+          console.error('🔧 Firestore update failed:', response.status);
+          throw new Error('Firestore update failed');
+        }
+        return;
+      } catch (error) {
+        console.error('Firestore更新エラー:', error);
+        // エラー時はローカルデータの更新にフォールバック
+      }
+    }
+    
+    // ローカルデータの更新
+    console.log('🔧 Updating local meal data');
     const currentData = getCurrentDateData();
     updateDateData({
       mealData: {
@@ -180,14 +276,132 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     });
   };
 
-  const handleDeleteMeal = (mealId: string) => {
+  const handleUpdateMealFromEdit = async (updatedMeal: Meal) => {
+    await handleUpdateMeal(updatedMeal);
+  };
+
+  const handleDeleteMealFromEdit = async (mealId: string) => {
+    await handleDeleteMeal(mealId);
+  };
+
+  const handleDeleteMeal = async (mealId: string) => {
+    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const dateStr = selectedDate.toISOString().split('T')[0];
+    
+    // 複数食事の個別削除かチェック（仮想IDの場合）
+    let originalMealId = mealId;
+    let individualMealIndex;
+    
+    if (mealId.includes('_')) {
+      const parts = mealId.split('_');
+      const lastPart = parts[parts.length - 1];
+      if (!isNaN(Number(lastPart))) {
+        originalMealId = parts.slice(0, -1).join('_');
+        individualMealIndex = Number(lastPart);
+      }
+    }
+    
+    // Firestoreデータに該当する食事があるかチェック（元のIDで確認）
+    const isFirestoreMeal = firestoreMealData[currentMealType].some(meal => meal.id === originalMealId);
+    
+    if (isFirestoreMeal) {
+      try {
+        console.log('🚨 Deleting Firestore meal:', { mealId, originalMealId, individualMealIndex });
+        const response = await fetch('/api/meals', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr,
+            mealType: currentMealType,
+            mealId,
+            individualMealIndex
+          }),
+        });
+
+        if (response.ok) {
+          console.log('🚨 Firestore delete successful, refreshing data');
+          // 削除成功時はデータを再取得
+          const fetchResponse = await fetch('/api/meals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lineUserId, date: dateStr }),
+          });
+
+          if (fetchResponse.ok) {
+            const data = await fetchResponse.json();
+            if (data.success && data.mealData) {
+              setFirestoreMealData(data.mealData);
+            }
+          }
+        } else {
+          console.error('🚨 Firestore delete failed:', response.status);
+          throw new Error('Firestore delete failed');
+        }
+        return;
+      } catch (error) {
+        console.error('食事削除エラー:', error);
+        // エラー時はローカルデータの削除にフォールバック
+      }
+    }
+    
+    // ローカルデータから削除
+    console.log('🚨 Deleting local meal data');
     const currentData = getCurrentDateData();
     updateDateData({
       mealData: {
         ...currentData.mealData,
-        [currentMealType]: currentData.mealData[currentMealType].filter(meal => meal.id !== mealId)
+        [currentMealType]: currentData.mealData[currentMealType].filter((meal: any) => meal.id !== mealId)
       }
     });
+  };
+
+  const handleDeleteIndividualMeal = (originalMealId: string, individualMealIndex: number) => {
+    // 複数食事から個別の食事を削除
+    const currentData = getCurrentDateData();
+    const allMealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+    
+    for (const mealType of allMealTypes) {
+      const mealIndex = currentData.mealData[mealType].findIndex(meal => meal.id === originalMealId);
+      if (mealIndex !== -1) {
+        const targetMeal = currentData.mealData[mealType][mealIndex];
+        if (targetMeal.isMultipleMeals && targetMeal.meals) {
+          // 該当する個別食事を削除
+          const updatedMeals = targetMeal.meals.filter((_, index) => index !== individualMealIndex);
+          
+          if (updatedMeals.length === 0) {
+            // 全て削除された場合は食事全体を削除
+            updateDateData({
+              mealData: {
+                ...currentData.mealData,
+                [mealType]: currentData.mealData[mealType].filter(meal => meal.id !== originalMealId)
+              }
+            });
+          } else {
+            // 一部削除の場合は更新
+            const updatedMeal = { 
+              ...targetMeal, 
+              meals: updatedMeals,
+              // 栄養価も再計算
+              calories: updatedMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0),
+              protein: updatedMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0),
+              fat: updatedMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0),
+              carbs: updatedMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0)
+            };
+            
+            updateDateData({
+              mealData: {
+                ...currentData.mealData,
+                [mealType]: currentData.mealData[mealType].map(meal => 
+                  meal.id === originalMealId ? updatedMeal : meal
+                )
+              }
+            });
+          }
+        }
+        break;
+      }
+    }
   };
 
   // 食事詳細表示処理
@@ -311,13 +525,17 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     // アクション
     handleAddMeal,
     handleAddMealSubmit,
+    handleAddMultipleMeals,
     handleCameraRecord,
     handleTextRecord,
     handlePastRecord,
     handleManualRecord,
     handleEditMeal,
     handleUpdateMeal,
+    handleUpdateMealFromEdit,
     handleDeleteMeal,
+    handleDeleteMealFromEdit,
+    handleDeleteIndividualMeal,
     handleViewMealDetail,
     handleEditFromDetail,
     handleAddSimilarMeal,

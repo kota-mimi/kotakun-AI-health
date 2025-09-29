@@ -141,40 +141,70 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       const results = await Promise.all(fileReaders);
       setUploadedImages(prev => [...prev, ...results]);
 
-      // AI解析のシミュレーション（複数食品を検出）
-      setTimeout(() => {
-        if (uploadedImages.length === 0) {
-          // 初回アップロード時のダミーデータ
-          setMealName('サーモンアボカド丼');
-          setFoodItems([
-            {
+      // AI画像解析をAPI経由で実行
+      try {
+        const file = files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/api/analyze/image', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const analysis = data.analysis;
+          
+          if (analysis.isMultipleMeals && analysis.meals) {
+            // 複数食事の場合
+            setMealName(analysis.meals.map((meal: any) => meal.name).join('、'));
+            const foodItemsData = analysis.meals.map((meal: any) => ({
               id: generateId(),
-              name: 'サーモン',
-              calories: 180,
-              protein: 25,
-              fat: 8,
-              carbs: 0
-            },
-            {
+              name: meal.name,
+              calories: meal.calories || 0,
+              protein: meal.protein || 0,
+              fat: meal.fat || 0,
+              carbs: meal.carbs || 0
+            }));
+            setFoodItems(foodItemsData);
+            // 合計値も計算して設定
+            setTimeout(calculateTotals, 100);
+          } else {
+            // 単一食事の場合
+            setMealName(analysis.foodItems?.[0] || '食事');
+            setFoodItems([{
               id: generateId(),
-              name: 'アボカド',
-              calories: 160,
-              protein: 2,
-              fat: 15,
-              carbs: 9
-            },
-            {
-              id: generateId(),
-              name: '白米',
-              calories: 180,
-              protein: 3,
-              fat: 0,
-              carbs: 38
-            }
-          ]);
+              name: analysis.foodItems?.[0] || '食事',
+              calories: analysis.calories || 0,
+              protein: analysis.protein || 0,
+              fat: analysis.fat || 0,
+              carbs: analysis.carbs || 0
+            }]);
+            // 合計値も計算して設定
+            setTimeout(calculateTotals, 100);
+          }
+        } else {
+          throw new Error('API解析失敗');
         }
-        setIsAnalyzing(false);
-      }, 2000);
+      } catch (error) {
+        console.error('AI画像解析エラー:', error);
+        // フォールバック - ダミーデータ
+        setMealName('食事');
+        setFoodItems([{
+          id: generateId(),
+          name: '食事',
+          calories: 400,
+          protein: 20,
+          fat: 15,
+          carbs: 50
+        }]);
+        // 合計値も計算して設定
+        setTimeout(calculateTotals, 100);
+      }
+      
+      setIsAnalyzing(false);
+      setShowManualInput(true); // AI解析後は手動入力モードに切り替え
     }
   };
 
@@ -195,170 +225,69 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
     
     setIsTextAnalyzing(true);
     
-    // AI解析のシミュレーション - 複数食事対応
-    setTimeout(() => {
-      // カンマやその他の区切り文字で複数食事を検出
-      const detectedMeals = [];
+    try {
+      const response = await fetch('/api/analyze/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: textInput }),
+      });
       
-      if (textInput.includes('、') || textInput.includes(',') || textInput.includes('と')) {
-        // 複数の料理が含まれている場合
-        if ((textInput.includes('サーモン') || textInput.includes('鮭')) && textInput.includes('サラダ')) {
-          setMealName('サーモン丼とサラダセット');
-          setFoodItems([
-            {
-              id: generateId(),
-              name: 'サーモン',
-              calories: 200,
-              protein: 28,
-              fat: 9,
-              carbs: 0
-            },
-            {
-              id: generateId(),
-              name: '白米',
-              calories: 180,
-              protein: 3,
-              fat: 0,
-              carbs: 38
-            },
-            {
-              id: generateId(),
-              name: 'サラダ',
-              calories: 25,
-              protein: 1,
-              fat: 0,
-              carbs: 5
-            },
-            {
-              id: generateId(),
-              name: 'ドレッシング',
-              calories: 30,
-              protein: 0,
-              fat: 3,
-              carbs: 2
-            }
-          ]);
-        } else if (textInput.includes('チキン') && textInput.includes('味噌汁')) {
-          setMealName('チキンと味噌汁定食');
-          setFoodItems([
-            {
-              id: generateId(),
-              name: 'チキン',
-              calories: 165,
-              protein: 31,
-              fat: 3,
-              carbs: 0
-            },
-            {
-              id: generateId(),
-              name: '味噌汁',
-              calories: 35,
-              protein: 2,
-              fat: 1,
-              carbs: 4
-            },
-            {
-              id: generateId(),
-              name: '白米',
-              calories: 180,
-              protein: 3,
-              fat: 0,
-              carbs: 38
-            }
-          ]);
+      if (response.ok) {
+        const data = await response.json();
+        const analysis = data.analysis;
+        
+        if (analysis.isMultipleMeals && analysis.meals) {
+          // 複数食事の場合
+          setMealName(analysis.meals.map((meal: any) => meal.name).join('、'));
+          const foodItemsData = analysis.meals.map((meal: any) => ({
+            id: generateId(),
+            name: meal.name,
+            calories: meal.calories || 0,
+            protein: meal.protein || 0,
+            fat: meal.fat || 0,
+            carbs: meal.carbs || 0
+          }));
+          setFoodItems(foodItemsData);
         } else {
-          // 一般的な複数食事の組み合わせ
-          setMealName('複数料理の組み合わせ');
-          setFoodItems([
-            {
-              id: generateId(),
-              name: 'メイン料理',
-              calories: 300,
-              protein: 25,
-              fat: 10,
-              carbs: 20
-            },
-            {
-              id: generateId(),
-              name: 'サイドディッシュ',
-              calories: 120,
-              protein: 3,
-              fat: 5,
-              carbs: 15
-            },
-            {
-              id: generateId(),
-              name: 'ご飯・パン類',
-              calories: 150,
-              protein: 3,
-              fat: 1,
-              carbs: 30
-            }
-          ]);
+          // 単一食事の場合
+          setMealName(analysis.foodItems?.[0] || textInput);
+          setFoodItems([{
+            id: generateId(),
+            name: analysis.foodItems?.[0] || textInput,
+            calories: analysis.calories || 0,
+            protein: analysis.protein || 0,
+            fat: analysis.fat || 0,
+            carbs: analysis.carbs || 0
+          }]);
         }
       } else {
-        // 単一食事の場合（従来のロジック）
-        if (textInput.includes('サーモン') || textInput.includes('鮭')) {
-          setMealName('サーモン丼');
-          setFoodItems([
-            {
-              id: generateId(),
-              name: 'サーモン',
-              calories: 200,
-              protein: 28,
-              fat: 9,
-              carbs: 0
-            },
-            {
-              id: generateId(),
-              name: '白米',
-              calories: 180,
-              protein: 3,
-              fat: 0,
-              carbs: 38
-            }
-          ]);
-        } else if (textInput.includes('チキン') || textInput.includes('鶏')) {
-          setMealName('チキンサラダ');
-          setFoodItems([
-            {
-              id: generateId(),
-              name: 'チキン',
-              calories: 165,
-              protein: 31,
-              fat: 3,
-              carbs: 0
-            },
-            {
-              id: generateId(),
-              name: 'サラダ',
-              calories: 20,
-              protein: 1,
-              fat: 0,
-              carbs: 4
-            }
-          ]);
-        } else {
-          setMealName(textInput.length > 20 ? textInput.substring(0, 20) + '...' : textInput);
-          setFoodItems([
-            {
-              id: generateId(),
-              name: '推定された食事',
-              calories: 400,
-              protein: 20,
-              fat: 15,
-              carbs: 45
-            }
-          ]);
-        }
+        throw new Error('API解析失敗');
       }
       
       // 合計値も自動計算
       setTimeout(calculateTotals, 100);
-      setIsTextAnalyzing(false);
       setShowTextInput(false); // 解析後は入力エリアを非表示
-      setShowAnalysisResult(true); // 解析結果画面を表示
-    }, 2000);
+      setShowManualInput(true); // 解析結果を手動入力モードで表示
+    } catch (error) {
+      console.error('AIテキスト解析エラー:', error);
+      // フォールバック - 基本的なデータ
+      setMealName(textInput.length > 20 ? textInput.substring(0, 20) + '...' : textInput);
+      setFoodItems([{
+        id: generateId(),
+        name: textInput,
+        calories: 400,
+        protein: 20,
+        fat: 15,
+        carbs: 45
+      }]);
+      setTimeout(calculateTotals, 100);
+      setShowTextInput(false);
+      setShowManualInput(true);
+    }
+    
+    setIsTextAnalyzing(false);
   };
 
   const addFoodItem = () => {
@@ -399,16 +328,51 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       minute: '2-digit' 
     });
 
-    onAddMeal({
-      name: mealName,
-      calories: parseInt(calories) || 0,
-      protein: parseInt(protein) || 0,
-      fat: parseInt(fat) || 0,
-      carbs: parseInt(carbs) || 0,
-      time: currentTime,
-      images: uploadedImages.length > 0 ? uploadedImages : undefined,
-      foodItems: foodItems.length > 0 ? foodItems : undefined
-    });
+    // 複数食事の場合は別々の食事として送信
+    if (foodItems.length > 1) {
+      const separateMeals = foodItems.map(item => ({
+        name: item.name,
+        calories: item.calories,
+        protein: item.protein,
+        fat: item.fat,
+        carbs: item.carbs,
+        time: currentTime,
+        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        foodItems: [item]
+      }));
+      
+      if (onAddMultipleMeals) {
+        onAddMultipleMeals(separateMeals);
+      }
+    } else {
+      // 単一食事または手動入力の場合
+      const totalCalories = foodItems.length > 0 
+        ? foodItems[0].calories
+        : parseInt(calories) || 0;
+      
+      const totalProtein = foodItems.length > 0 
+        ? foodItems[0].protein
+        : parseInt(protein) || 0;
+      
+      const totalFat = foodItems.length > 0 
+        ? foodItems[0].fat
+        : parseInt(fat) || 0;
+      
+      const totalCarbs = foodItems.length > 0 
+        ? foodItems[0].carbs
+        : parseInt(carbs) || 0;
+
+      onAddMeal({
+        name: mealName,
+        calories: totalCalories,
+        protein: totalProtein,
+        fat: totalFat,
+        carbs: totalCarbs,
+        time: currentTime,
+        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        foodItems: foodItems.length > 0 ? foodItems : undefined
+      });
+    }
 
     // フォームリセット
     setMealName('');
@@ -579,10 +543,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                   <Button
                     variant="outline"
                     onClick={() => {
-                      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                        fileInputRef.current?.setAttribute('capture', 'camera');
+                      if (fileInputRef.current) {
+                        fileInputRef.current.removeAttribute('capture');
+                        fileInputRef.current.click();
                       }
-                      fileInputRef.current?.click();
                     }}
                     className="h-18 flex flex-col items-center justify-center space-y-1"
                     style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
@@ -642,6 +606,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               onChange={handleImageUpload}
               className="hidden"
             />
+            
           </div>
 
           {/* 検出された食品一覧 */}
@@ -812,78 +777,82 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           {/* 手動入力フォーム（条件付き表示） */}
           {showManualInput && (
             <div className="space-y-3">
-              <div>
-                <Label htmlFor="mealName">食事名</Label>
-                <Input
-                  id="mealName"
-                  value={mealName}
-                  onChange={(e) => setMealName(e.target.value)}
-                  placeholder="例: サーモンアボカド丼"
-                  disabled={isAnalyzing}
-                />
-              </div>
+              {/* AI解析結果がない場合のみ食事名入力を表示 */}
+              {foodItems.length === 0 && (
+                <div>
+                  <Label htmlFor="mealName">食事名</Label>
+                  <Input
+                    id="mealName"
+                    value={mealName}
+                    onChange={(e) => setMealName(e.target.value)}
+                    placeholder="例: サーモンアボカド丼"
+                    disabled={isAnalyzing}
+                  />
+                </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="calories">カロリー (kcal)</Label>
-                  <Input
-                    id="calories"
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={calories}
-                    onChange={(e) => setCalories(e.target.value)}
-                    placeholder="520"
-                    disabled={isAnalyzing}
-                    readOnly={foodItems.length > 0}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="protein">タンパク質 (g)</Label>
-                  <Input
-                    id="protein"
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={protein}
-                    onChange={(e) => setProtein(e.target.value)}
-                    placeholder="28"
-                    disabled={isAnalyzing}
-                    readOnly={foodItems.length > 0}
-                  />
-                </div>
-              </div>
+              {/* AI解析結果がない場合のみ栄養素入力欄を表示 */}
+              {foodItems.length === 0 && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="calories">カロリー (kcal)</Label>
+                      <Input
+                        id="calories"
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={calories}
+                        onChange={(e) => setCalories(e.target.value)}
+                        placeholder="520"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="protein">タンパク質 (g)</Label>
+                      <Input
+                        id="protein"
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={protein}
+                        onChange={(e) => setProtein(e.target.value)}
+                        placeholder="28"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="fat">脂質 (g)</Label>
-                  <Input
-                    id="fat"
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={fat}
-                    onChange={(e) => setFat(e.target.value)}
-                    placeholder="18"
-                    disabled={isAnalyzing}
-                    readOnly={foodItems.length > 0}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="carbs">炭水化物 (g)</Label>
-                  <Input
-                    id="carbs"
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={carbs}
-                    onChange={(e) => setCarbs(e.target.value)}
-                    placeholder="45"
-                    disabled={isAnalyzing}
-                    readOnly={foodItems.length > 0}
-                  />
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="fat">脂質 (g)</Label>
+                      <Input
+                        id="fat"
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={fat}
+                        onChange={(e) => setFat(e.target.value)}
+                        placeholder="18"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="carbs">炭水化物 (g)</Label>
+                      <Input
+                        id="carbs"
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={carbs}
+                        onChange={(e) => setCarbs(e.target.value)}
+                        placeholder="45"
+                        disabled={isAnalyzing}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

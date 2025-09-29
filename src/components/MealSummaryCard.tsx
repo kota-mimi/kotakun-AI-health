@@ -157,10 +157,17 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                 className="w-full justify-start p-0 h-auto hover:bg-transparent"
               >
                 <div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-between w-full">
                     <h4 className="text-base font-semibold text-slate-800">{mealTimeLabels[mealType]}</h4>
                     {totalCaloriesForType > 0 && (
-                      <span className="text-sm text-slate-500">({totalCaloriesForType}kcal)</span>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <span className="font-medium text-slate-700">{totalCaloriesForType}kcal</span>
+                        <div className="flex items-center space-x-1.5 text-xs text-slate-500">
+                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">P{totalProtein}g</span>
+                          <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">F{totalFat}g</span>
+                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">C{totalCarbs}g</span>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -188,7 +195,7 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                       >
                         <div className="flex items-center space-x-3">
                           {/* 食事画像 */}
-                          <div className="flex-shrink-0 w-10 h-10">
+                          <div className="flex-shrink-0 w-12 h-12">
                             {images.length > 0 && (
                               <img
                                 src={images[0]}
@@ -200,20 +207,20 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
 
                           {/* 食事情報 */}
                           <div className="flex-1 min-w-0">
-                            <h5 className="font-medium text-slate-800 break-words leading-tight mb-1">
+                            <h5 className="font-semibold text-base text-slate-800 break-words leading-tight mb-1.5">
                               {meal.name}
                             </h5>
                             
                             {/* PFC・カロリー */}
                             <div className="flex items-center justify-between">
                               <div className="flex space-x-1">
-                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#EF4444'}}>
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#EF4444'}}>
                                   P{meal.protein || 0}
                                 </Badge>
-                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#F59E0B'}}>
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#F59E0B'}}>
                                   F{meal.fat || 0}
                                 </Badge>
-                                <Badge className="text-white font-medium text-xs px-1 py-0.5" style={{backgroundColor: '#10B981'}}>
+                                <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#10B981'}}>
                                   C{meal.carbs || 0}
                                 </Badge>
                               </div>
@@ -227,25 +234,6 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                     );
                   })}
 
-                  {/* 合計表示 */}
-                  <div className="pt-2 border-t border-slate-200">
-                    <div className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-                      <div className="flex space-x-1">
-                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#EF4444'}}>
-                          P {totalProtein}g
-                        </Badge>
-                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#F59E0B'}}>
-                          F {totalFat}g
-                        </Badge>
-                        <Badge className="text-white font-medium text-xs px-1.5 py-0.5" style={{backgroundColor: '#10B981'}}>
-                          C {totalCarbs}g
-                        </Badge>
-                      </div>
-                      <div className="text-sm font-bold text-blue-600">
-                        {totalCaloriesForType}kcal
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
