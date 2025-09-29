@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    allowedOrigins: ['kotakun-health.ngrok.io'],
-  },
+  // allowedOriginsは不正なオプションだったので削除
 };
 
 export default nextConfig;

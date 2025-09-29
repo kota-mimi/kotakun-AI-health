@@ -146,15 +146,6 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout }: Workou
           </div>
         )}
 
-        {/* 詳細ボタン */}
-        <Button
-          variant="ghost"
-          onClick={onNavigateToWorkout}
-          className="w-full mt-3 text-health-primary hover:bg-health-primary/5 justify-between"
-        >
-          <span>詳細記録・プラン管理</span>
-          <ChevronRight size={16} />
-        </Button>
       </div>
     </Card>
   );

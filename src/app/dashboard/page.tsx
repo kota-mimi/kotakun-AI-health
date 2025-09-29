@@ -27,9 +27,6 @@ import { PlanSettingsPage } from '@/components/PlanSettingsPage';
 import { PaymentSettingsPage } from '@/components/PaymentSettingsPage';
 import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
-import { MealAnalysisPage } from '@/components/MealAnalysisPage';
-import { WeightDetailPage } from '@/components/WeightDetailPage';
-import { ExercisePage } from '@/components/ExercisePage';
 import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { WeightSettingsModal } from '@/components/WeightSettingsModal';
 import { DataManagementModal } from '@/components/DataManagementModal';
@@ -70,13 +67,14 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen relative">
       
+      {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
         <>
           {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showPaymentSettings && !navigation.showUserGuide && !navigation.showContact ? (
             <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
-                onNavigateToData={() => navigation.setActiveTab('meal')}
+                onNavigateToData={() => {}} // 削除：データページはもうない
                 onNavigateToPlanSettings={navigation.handleNavigateToPlanSettings}
                 onNavigateToPaymentSettings={navigation.handleNavigateToPaymentSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
@@ -85,73 +83,65 @@ export default function DashboardPage() {
               />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
-            <>
-              <div className="relative px-4 py-4 pb-20 space-y-4">
-                <SettingsPage 
-                  onBack={navigation.handleBackFromSettings} 
-                  onNavigateToNutritionSettings={navigation.handleNavigateToNutritionSettings}
-                />
-              </div>
-            </>
+            <div className="relative px-4 py-4 pb-20 space-y-4">
+              <SettingsPage 
+                onBack={navigation.handleBackFromSettings} 
+                onNavigateToNutritionSettings={navigation.handleNavigateToNutritionSettings}
+              />
+            </div>
           ) : navigation.showNutritionSettings ? (
-            <>
-              <NutritionSettingsPage 
-                onBack={navigation.handleBackFromNutritionSettings}
-                selectedNutrients={navigation.selectedNutrients}
-                onNutrientChange={navigation.handleNutrientChange}
-              />
-            </>
+            <NutritionSettingsPage 
+              onBack={navigation.handleBackFromNutritionSettings}
+              selectedNutrients={navigation.selectedNutrients}
+              onNutrientChange={navigation.handleNutrientChange}
+            />
           ) : navigation.showPlanSettings ? (
-            <>
-              <PlanSettingsPage 
-                onBack={navigation.handleBackFromPlanSettings}
-              />
-            </>
+            <PlanSettingsPage 
+              onBack={navigation.handleBackFromPlanSettings}
+            />
           ) : navigation.showPaymentSettings ? (
-            <>
-              <PaymentSettingsPage 
-                onBack={navigation.handleBackFromPaymentSettings}
-              />
-            </>
+            <PaymentSettingsPage 
+              onBack={navigation.handleBackFromPaymentSettings}
+            />
           ) : navigation.showUserGuide ? (
-            <>
-              <UserGuidePage 
-                onBack={navigation.handleBackFromUserGuide}
-              />
-            </>
+            <UserGuidePage 
+              onBack={navigation.handleBackFromUserGuide}
+            />
           ) : navigation.showContact ? (
-            <>
-              <ContactPage 
-                onBack={navigation.handleBackFromContact}
-              />
-            </>
+            <ContactPage 
+              onBack={navigation.handleBackFromContact}
+            />
           ) : null}
         </>
       )}
 
-      {navigation.activeTab === 'home' && (
+      {/* 他のタブは全部ホーム画面を表示 */}
+      {(navigation.activeTab === 'home' || navigation.activeTab === 'meal' || navigation.activeTab === 'weight' || navigation.activeTab === 'exercise') && (
         <>
           <CompactHeader
             currentDate={navigation.selectedDate}
             onDateSelect={navigation.handleDateSelect}
             onCalendar={navigation.handleCalendar}
             onNavigateToProfile={() => navigation.setActiveTab('profile')}
-            onNavigateToData={() => navigation.setActiveTab('meal')}
+            onNavigateToData={() => {}} // 削除：データページなし
           />
 
           <div className="relative px-4 py-4 pb-20 space-y-4">
+            {/* 体重カード - クリックで体重入力モーダル */}
             <WeightCard 
               data={weightManager.weightData} 
-              onNavigateToWeight={() => navigation.setActiveTab('weight')}
+              onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
               counselingResult={counselingResult}
             />
 
+            {/* AIアドバイスカード */}
             <AIAdviceCard 
               onNavigateToProfile={() => navigation.setActiveTab('profile')}
               onViewAllAdvices={() => navigation.setActiveTab('profile')}
               counselingResult={counselingResult}
             />
 
+            {/* カロリーカード */}
             <CalorieCard 
               totalCalories={mealManager.calorieData.totalCalories}
               targetCalories={mealManager.calorieData.targetCalories}
@@ -159,82 +149,41 @@ export default function DashboardPage() {
               counselingResult={counselingResult}
             />
 
+            {/* 食事カード */}
             <MealSummaryCard
               meals={mealManager.mealData}
               onAddMeal={mealManager.handleAddMeal}
               onViewMealDetail={mealManager.handleViewMealDetail}
-              onNavigateToMeal={() => navigation.setActiveTab('meal')}
+              onNavigateToMeal={() => {}} // 削除：専用ページなし
             />
 
+            {/* 運動カード */}
             <WorkoutSummaryCard 
               exerciseData={exerciseManager.exerciseData}
-              onNavigateToWorkout={() => navigation.setActiveTab('exercise')}
+              onNavigateToWorkout={() => {}} // 削除：専用ページなし
             />
           </div>
         </>
       )}
 
-      {navigation.activeTab === 'meal' && (
-        <>
-          <MealAnalysisPage 
-            onBack={() => navigation.setActiveTab('home')}
-            mealData={mealManager.mealData}
-            selectedDate={navigation.selectedDate}
-            onDateSelect={navigation.handleDateSelect}
-            selectedNutrients={navigation.selectedNutrients}
-            onNavigateToNutritionSettings={navigation.handleNavigateToNutritionSettings}
-            hideHeader={false}
-          />
-        </>
-      )}
-
-      {navigation.activeTab === 'weight' && (
-        <>
-          <WeightDetailPage 
-            onBack={() => navigation.setActiveTab('home')}
-            hideHeader={false}
-            weightData={weightManager.weightTrendData}
-            currentWeight={weightManager.weightData.current}
-            targetWeight={weightManager.weightData.target}
-            onOpenWeightEntry={() => weightManager.setIsWeightEntryModalOpen(true)}
-            onOpenWeightSettings={() => weightManager.setIsWeightSettingsModalOpen(true)}
-          />
-        </>
-      )}
-
-      {navigation.activeTab === 'exercise' && (
-        <>
-          <ExercisePage 
-            onBack={() => navigation.setActiveTab('home')}
-            selectedDate={navigation.selectedDate}
-            onDateSelect={navigation.handleDateSelect}
-            hideHeader={false}
-            exerciseData={exerciseManager.exerciseData}
-            onAddExercise={exerciseManager.handleAddExercise}
-            onDeleteExercise={exerciseManager.handleDeleteExercise}
-            onUpdateExercise={exerciseManager.handleUpdateExercise}
-            workoutPlans={exerciseManager.workoutPlans}
-            onAddPlan={exerciseManager.handleAddPlan}
-            onDeletePlan={exerciseManager.handleDeletePlan}
-            onAddExerciseToPlan={exerciseManager.handleAddExerciseToPlan}
-            onDeleteExerciseFromPlan={exerciseManager.handleDeleteExerciseFromPlan}
-          />
-        </>
-      )}
-
+      {/* ボトムナビゲーション */}
       <BottomNavigation
         activeTab={navigation.activeTab}
         onTabChange={navigation.setActiveTab}
       />
 
+      {/* モーダル群 */}
       <AddMealModal
         isOpen={mealManager.isAddMealModalOpen}
         onClose={() => mealManager.setIsAddMealModalOpen(false)}
         mealType={mealManager.currentMealType}
         onAddMeal={mealManager.handleAddMealSubmit}
+        onAddMultipleMeals={mealManager.handleAddMultipleMeals}
+        allMealsData={mealManager.mealData}
       />
 
       <EditMealModal
+        key={`${mealManager.currentEditMeal?.id || 'empty'}_${mealManager.currentEditMeal?.name || ''}_${mealManager.currentEditMeal?.originalMealId || 'none'}_${mealManager.currentEditMeal?.individualMealIndex || 'single'}`}
         isOpen={mealManager.isEditMealModalOpen}
         onClose={() => {
           mealManager.setIsEditMealModalOpen(false);
@@ -242,8 +191,9 @@ export default function DashboardPage() {
         }}
         mealType={mealManager.currentMealType}
         meal={mealManager.currentEditMeal}
-        onUpdateMeal={mealManager.handleUpdateMeal}
-        onDeleteMeal={mealManager.handleDeleteMeal}
+        onUpdateMeal={mealManager.handleUpdateMealFromEdit}
+        onDeleteMeal={mealManager.handleDeleteMealFromEdit}
+        onDeleteIndividualMeal={mealManager.handleDeleteIndividualMeal}
       />
 
       <MealDetailModal
@@ -256,10 +206,7 @@ export default function DashboardPage() {
         mealType={mealManager.currentMealType}
         onEditMeal={mealManager.handleEditFromDetail}
         onAddSimilarMeal={mealManager.handleAddSimilarMeal}
-        onUpdateSummary={(totals) => {
-          // TODO: 合計値の更新処理を実装
-          console.log('Summary update:', totals);
-        }}
+        onDeleteIndividualMeal={mealManager.handleDeleteIndividualMeal}
         allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 

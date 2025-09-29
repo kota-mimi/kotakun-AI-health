@@ -94,35 +94,12 @@ export function MyProfilePage({
 
   const bmiStatus = getBMIStatus(userProfile.bmi);
 
-  // メニューアイテム - iOS設定風に整理
+  // メニューアイテム - iOS設定風に整理（データページ削除済み）
   const healthMenuItems = [
-    {
-      icon: Scale,
-      label: '体重記録',
-      color: '#4682B4',
-      action: () => onNavigateToData?.()
-    },
-    {
-      icon: Utensils,
-      label: '食事記録',
-      color: '#10B981',
-      action: () => onNavigateToData?.()
-    },
-    {
-      icon: Activity,
-      label: '運動記録',
-      color: '#F59E0B',
-      action: () => onNavigateToData?.()
-    }
+    // データページは削除されたので、健康情報は全てホーム画面で完結
   ];
 
   const analysisMenuItems = [
-    {
-      icon: BarChart3,
-      label: '統計・分析',
-      color: '#4682B4',
-      action: () => onNavigateToData?.()
-    },
     {
       icon: MessageCircle,
       label: 'カウンセリング結果',
@@ -292,9 +269,6 @@ export function MyProfilePage({
           )}
         </Card>
       </div>
-
-      {/* ヘルスケア */}
-      {renderSection('ヘルスケア', healthMenuItems)}
 
       {/* 分析・レポート */}
       {renderSection('分析・レポート', analysisMenuItems)}

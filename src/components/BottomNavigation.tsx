@@ -6,31 +6,37 @@ interface BottomNavigationProps {
   onTabChange: (tab: 'home' | 'meal' | 'weight' | 'exercise' | 'profile') => void;
 }
 
+// タブ定義：全部ホーム画面に飛ぶが、見た目でカテゴリ分けしている
 const tabs = [
   {
     id: 'home' as const,
     label: 'ホーム',
-    icon: Home
+    icon: Home,
+    description: 'メイン画面'
   },
   {
     id: 'meal' as const,
     label: '食事',
-    icon: Utensils
+    icon: Utensils,
+    description: 'ホーム（食事フォーカス）'
   },
   {
     id: 'weight' as const,
     label: '体重',
-    icon: Scale
+    icon: Scale,
+    description: 'ホーム（体重フォーカス）'
   },
   {
     id: 'exercise' as const,
     label: '運動',
-    icon: Dumbbell
+    icon: Dumbbell,
+    description: 'ホーム（運動フォーカス）'
   },
   {
     id: 'profile' as const,
-    label: 'マイページ',
-    icon: User
+    label: '設定',
+    icon: User,
+    description: 'プロフィール・設定'
   }
 ];
 
