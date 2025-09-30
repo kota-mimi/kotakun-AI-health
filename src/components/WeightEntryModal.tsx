@@ -7,30 +7,43 @@ import { X } from 'lucide-react';
 interface WeightEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { weight: number; bodyFat?: number; note?: string; photo?: string }) => void;
+  onSubmit: (data: { weight?: number; bodyFat?: number; note?: string; photo?: string }) => void;
   currentWeight: number;
 }
 
 export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: WeightEntryModalProps) {
-  const [weight, setWeight] = useState(currentWeight.toString());
+  const [weight, setWeight] = useState(currentWeight > 0 ? currentWeight.toString() : '');
   const [bodyFat, setBodyFat] = useState('');
   const [note, setNote] = useState('');
   const [photo, setPhoto] = useState('');
+  const [recordType, setRecordType] = useState<'both' | 'weight' | 'bodyFat'>('both');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const weightValue = parseFloat(weight);
-    if (isNaN(weightValue) || weightValue <= 0 || weightValue > 300) {
-      alert('正しい体重を入力してください（0-300kg）');
-      return;
+    const weightValue = weight ? parseFloat(weight) : undefined;
+    const bodyFatValue = bodyFat ? parseFloat(bodyFat) : undefined;
+
+    // 記録タイプに応じてバリデーション
+    if (recordType === 'weight' || recordType === 'both') {
+      if (!weight || isNaN(weightValue!) || weightValue! <= 0 || weightValue! > 300) {
+        alert('正しい体重を入力してください（0-300kg）');
+        return;
+      }
     }
 
-    const bodyFatValue = bodyFat ? parseFloat(bodyFat) : undefined;
-    if (bodyFat && (isNaN(bodyFatValue!) || bodyFatValue! < 0 || bodyFatValue! > 50)) {
-      alert('正しい体脂肪率を入力してください（0-50%）');
+    if (recordType === 'bodyFat' || recordType === 'both') {
+      if (!bodyFat || isNaN(bodyFatValue!) || bodyFatValue! < 0 || bodyFatValue! > 50) {
+        alert('正しい体脂肪率を入力してください（0-50%）');
+        return;
+      }
+    }
+
+    // 少なくとも一つは入力が必要
+    if (!weightValue && !bodyFatValue) {
+      alert('体重または体脂肪率のいずれかを入力してください');
       return;
     }
 
@@ -42,10 +55,11 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
     });
 
     // フォームリセット
-    setWeight(currentWeight.toString());
+    setWeight(currentWeight > 0 ? currentWeight.toString() : '');
     setBodyFat('');
     setNote('');
     setPhoto('');
+    setRecordType('both');
     onClose();
   };
 
@@ -81,7 +95,7 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-800">体重を記録</h2>
+            <h2 className="text-xl font-semibold text-slate-800">記録する</h2>
             <p className="text-sm text-slate-600">{getCurrentTime()} - 今日</p>
           </div>
           <Button
@@ -94,63 +108,102 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
           </Button>
         </div>
 
+        {/* 記録タイプ選択 */}
+        <div className="space-y-3">
+          <Label className="text-slate-700">記録タイプ</Label>
+          <div className="flex space-x-2">
+            <Button
+              type="button"
+              variant={recordType === 'both' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecordType('both')}
+              className="flex-1 py-2 rounded-xl"
+            >
+              両方
+            </Button>
+            <Button
+              type="button"
+              variant={recordType === 'weight' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecordType('weight')}
+              className="flex-1 py-2 rounded-xl"
+            >
+              体重のみ
+            </Button>
+            <Button
+              type="button"
+              variant={recordType === 'bodyFat' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecordType('bodyFat')}
+              className="flex-1 py-2 rounded-xl"
+            >
+              体脂肪のみ
+            </Button>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 体重入力 */}
-          <div className="space-y-3">
-            <Label className="text-slate-700">
-              体重 (kg)
-            </Label>
-            <div className="relative">
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                max="300"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                className="text-2xl font-semibold text-center py-4 rounded-xl border border-slate-200 focus:border-blue-400"
-                placeholder="0.0"
-                style={{color: '#4682B4'}}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">kg</span>
+          {(recordType === 'weight' || recordType === 'both') && (
+            <div className="space-y-3">
+              <Label className="text-slate-700">
+                体重 (kg) {recordType === 'both' && <span className="text-xs text-slate-500">必須</span>}
+              </Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="300"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="text-2xl font-semibold text-center py-4 rounded-xl border border-slate-200 focus:border-blue-400"
+                  placeholder="0.0"
+                  style={{color: '#4682B4'}}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">kg</span>
+              </div>
+              
+              {/* クイック調整ボタン */}
+              <div className="flex justify-center space-x-2">
+                {quickWeightAdjustments.map((adjustment) => (
+                  <Button
+                    key={adjustment}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => adjustWeight(adjustment)}
+                    className="px-3 py-1 text-xs rounded-lg border-slate-200 hover:bg-slate-50"
+                  >
+                    {adjustment > 0 ? '+' : ''}{adjustment}
+                  </Button>
+                ))}
+              </div>
             </div>
-            
-            {/* クイック調整ボタン */}
-            <div className="flex justify-center space-x-2">
-              {quickWeightAdjustments.map((adjustment) => (
-                <Button
-                  key={adjustment}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => adjustWeight(adjustment)}
-                  className="px-3 py-1 text-xs rounded-lg border-slate-200 hover:bg-slate-50"
-                >
-                  {adjustment > 0 ? '+' : ''}{adjustment}
-                </Button>
-              ))}
-            </div>
-          </div>
+          )}
 
-          {/* 体脂肪率入力（オプション） */}
-          <div className="space-y-3">
-            <Label className="text-slate-700">
-              体脂肪率 (%) <span className="text-xs text-slate-500">任意</span>
-            </Label>
-            <div className="relative">
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                max="50"
-                value={bodyFat}
-                onChange={(e) => setBodyFat(e.target.value)}
-                className="text-center py-3 rounded-xl border border-slate-200 focus:border-amber-400"
-                placeholder="15.0"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">%</span>
+          {/* 体脂肪率入力 */}
+          {(recordType === 'bodyFat' || recordType === 'both') && (
+            <div className="space-y-3">
+              <Label className="text-slate-700">
+                体脂肪率 (%) {recordType === 'both' ? <span className="text-xs text-slate-500">任意</span> : <span className="text-xs text-slate-500">必須</span>}
+              </Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="50"
+                  value={bodyFat}
+                  onChange={(e) => setBodyFat(e.target.value)}
+                  className="text-2xl font-semibold text-center py-4 rounded-xl border border-slate-200 focus:border-amber-400"
+                  placeholder="15.0"
+                  style={{color: '#F59E0B'}}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">%</span>
+              </div>
             </div>
-          </div>
+          )}
 
 
           {/* 送信ボタン */}

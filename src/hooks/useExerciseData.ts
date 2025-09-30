@@ -57,8 +57,44 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     
     const currentData = getCurrentDateData();
     updateDateData({
-      exerciseData: [...currentData.exerciseData, newExercise]
+      exerciseData: [...(currentData.exerciseData || []), newExercise]
     });
+  };
+
+  // 簡単な運動記録を追加する関数（新しいモーダル用）
+  const handleAddSimpleExercise = (data: any) => {
+    // 新しい形式のデータを処理
+    if (data.name && data.type) {
+      const newExercise: Omit<Exercise, 'id' | 'time'> = {
+        name: data.name,
+        type: data.type,
+        duration: data.duration,
+        calories: data.calories,
+        sets: data.sets,
+        distance: data.distance,
+        notes: data.note
+      };
+      handleAddExercise(newExercise);
+      return;
+    }
+
+    // 古い形式のデータ（後方互換性のため）
+    const exerciseTypeMap: Record<string, Exercise['type']> = {
+      'ウォーキング': 'cardio',
+      'ランニング': 'cardio',
+      '筋トレ': 'strength',
+      'その他': 'cardio'
+    };
+
+    const newExercise: Omit<Exercise, 'id' | 'time'> = {
+      name: data.type,
+      type: exerciseTypeMap[data.type] || 'cardio',
+      duration: data.duration,
+      calories: data.calories,
+      notes: data.note
+    };
+
+    handleAddExercise(newExercise);
   };
 
   // 運動記録を削除する関数
@@ -126,6 +162,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     
     // アクション
     handleAddExercise,
+    handleAddSimpleExercise,
     handleDeleteExercise,
     handleUpdateExercise,
     handleAddPlan,

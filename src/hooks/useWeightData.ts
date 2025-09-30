@@ -37,9 +37,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   
   // 実データ取得用のstate
   const [realWeightData, setRealWeightData] = useState<Array<{date: string; weight: number; bodyFat?: number}>>([]);
+  const [isClient, setIsClient] = useState(false);
   
-  // Firestoreから体重データを取得
+  // クライアントサイドでのマウントを確認
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Firestoreから体重データを取得（定期的に更新）
+  useEffect(() => {
+    if (!isClient) return;
+    
     const fetchWeightData = async () => {
       const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
       
@@ -55,7 +63,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     };
 
     fetchWeightData();
-  }, [selectedDate, liffUser?.userId]);
+    
+    // 10秒ごとにデータを再取得（LINEからの記録を反映するため）
+    const interval = setInterval(fetchWeightData, 10000);
+    
+    return () => clearInterval(interval);
+  }, [selectedDate, liffUser?.userId, isClient]);
   
   // 体重設定をlocalStorageで永続化
   const weightSettingsStorage = useLocalStorage<WeightSettings>('healthApp_weightSettings', {
@@ -94,9 +107,37 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
   // 特定の日付の体重データを取得
   const getWeightDataForDate = (date: Date): WeightData => {
-    const dateKey = getDateKey(date);
+    // クライアントサイドでない場合はデフォルト値を返す
+    if (!isClient) {
+      return {
+        current: 0,
+        previous: 0,
+        target: 68.0
+      };
+    }
     
-    // まずrealWeightDataから当日のデータを確認
+    const dateKey = getDateKey(date);
+    const today = getDateKey(new Date());
+    
+    // 今日のデータの場合は、realWeightDataを優先的に確認
+    if (dateKey === today) {
+      const realDataForToday = realWeightData.find(item => item.date === dateKey);
+      
+      if (realDataForToday) {
+        // 前日のデータを取得
+        const previousDate = new Date(date);
+        previousDate.setDate(previousDate.getDate() - 1);
+        const previousWeight = getPreviousWeight(previousDate);
+        
+        return {
+          current: realDataForToday.weight,
+          previous: previousWeight,
+          target: weightSettingsStorage.value.targetWeight || 68.0
+        };
+      }
+    }
+    
+    // その他の日付はrealWeightDataから確認
     const realDataForDate = realWeightData.find(item => item.date === dateKey);
     
     if (realDataForDate) {
@@ -111,7 +152,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: realDataForDate.weight,
         previous: previousWeight,
-        target: weightSettingsStorage.value.targetWeight
+        target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
     
@@ -130,15 +171,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: latestEntry.weight,
         previous: previousWeight,
-        target: weightSettingsStorage.value.targetWeight
+        target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
     
-    // デフォルトデータを返す
+    // デフォルトデータを返す（目標体重が設定されていない場合のデフォルト値も追加）
     return {
       current: 0,
       previous: 0,
-      target: weightSettingsStorage.value.targetWeight
+      target: weightSettingsStorage.value.targetWeight || 68.0
     };
   };
 
@@ -182,12 +223,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   };
 
   // 体重記録を追加
-  const handleAddWeightEntry = async (data: { weight: number; bodyFat?: number; note?: string; photo?: string }) => {
+  const handleAddWeightEntry = async (data: { weight?: number; bodyFat?: number; note?: string; photo?: string }) => {
     const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
     const dateStr = getDateKey(selectedDate);
     
     try {
-      // APIに送信
+      // APIに送信（体重と体脂肪のどちらかまたは両方）
       const response = await fetch('/api/weight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -201,14 +242,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       });
 
       if (!response.ok) {
-        throw new Error('体重記録の保存に失敗しました');
+        throw new Error('記録の保存に失敗しました');
       }
 
       // ローカルデータも更新
       const newEntry: WeightEntry = {
         id: generateId(),
         date: dateStr,
-        weight: data.weight,
+        weight: data.weight || 0, // 体重が未入力の場合は0
         bodyFat: data.bodyFat,
         note: data.note,
         photo: data.photo,
@@ -219,34 +260,39 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const currentData = getCurrentDateData();
       const existingEntries = currentData.weightEntries || [];
       
+      // 体重データの更新（体重が記録された場合のみ更新）
+      const weightDataUpdate = data.weight ? {
+        current: data.weight,
+        previous: getPreviousWeight(selectedDate),
+        target: weightSettingsStorage.value.targetWeight
+      } : getCurrentDateData().weightData;
+
       updateDateData({
         weightEntries: [...existingEntries, newEntry],
-        weightData: {
-          current: data.weight,
-          previous: getPreviousWeight(selectedDate),
-          target: weightSettingsStorage.value.targetWeight
-        }
+        weightData: weightDataUpdate
       });
 
-      // realWeightDataも即座に更新
-      const newRealWeightEntry = {
-        date: dateStr,
-        weight: data.weight,
-        bodyFat: data.bodyFat
-      };
-      
-      setRealWeightData(prevData => {
-        // 既存の同じ日付のデータを削除して新しいデータを追加
-        const filteredData = prevData.filter(item => item.date !== dateStr);
-        return [...filteredData, newRealWeightEntry].sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-      });
+      // realWeightDataも即座に更新（体重または体脂肪が記録された場合）
+      if (data.weight || data.bodyFat) {
+        const newRealWeightEntry = {
+          date: dateStr,
+          weight: data.weight || 0,
+          bodyFat: data.bodyFat
+        };
+        
+        setRealWeightData(prevData => {
+          // 既存の同じ日付のデータを削除して新しいデータを追加
+          const filteredData = prevData.filter(item => item.date !== dateStr);
+          return [...filteredData, newRealWeightEntry].sort((a, b) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+        });
+      }
 
-      console.log('体重記録が正常に保存されました');
+      console.log('記録が正常に保存されました');
     } catch (error) {
-      console.error('体重記録保存エラー:', error);
-      alert('体重記録の保存に失敗しました。もう一度お試しください。');
+      console.error('記録保存エラー:', error);
+      alert('記録の保存に失敗しました。もう一度お試しください。');
     }
   };
 

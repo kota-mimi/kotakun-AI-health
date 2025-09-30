@@ -31,6 +31,8 @@ import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { WeightSettingsModal } from '@/components/WeightSettingsModal';
 import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightChart } from '@/components/WeightChart';
+import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
+import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 
 export default function DashboardPage() {
   const navigation = useNavigationState();
@@ -38,6 +40,9 @@ export default function DashboardPage() {
   
   const [isDataManagementModalOpen, setIsDataManagementModalOpen] = React.useState(false);
   const [isMealMenuOpen, setIsMealMenuOpen] = React.useState(false);
+  const [isExerciseEntryModalOpen, setIsExerciseEntryModalOpen] = React.useState(false);
+  const [isExerciseEditModalOpen, setIsExerciseEditModalOpen] = React.useState(false);
+  const [selectedExerciseForEdit, setSelectedExerciseForEdit] = React.useState(null);
   
   const currentDateData = dateBasedDataManager.getCurrentDateData(navigation.selectedDate);
   
@@ -158,6 +163,7 @@ export default function DashboardPage() {
                 period="month"
                 height={175}
                 targetWeight={weightManager.weightSettings.targetWeight}
+                currentWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 0}
               />
             </div>
 
@@ -177,6 +183,7 @@ export default function DashboardPage() {
                 targetCalories={mealManager.calorieData.targetCalories}
                 pfc={mealManager.calorieData.pfc}
                 counselingResult={counselingResult}
+                exerciseData={exerciseManager.exerciseData}
               />
             </div>
 
@@ -200,6 +207,15 @@ export default function DashboardPage() {
               <WorkoutSummaryCard 
                 exerciseData={exerciseManager.exerciseData}
                 onNavigateToWorkout={() => {}} // 削除：専用ページなし
+                onAddExercise={() => setIsExerciseEntryModalOpen(true)}
+                onEditExercise={(exerciseId) => {
+                  const exercise = exerciseManager.exerciseData.find(ex => ex.id === exerciseId);
+                  if (exercise) {
+                    setSelectedExerciseForEdit(exercise);
+                    setIsExerciseEditModalOpen(true);
+                  }
+                }}
+                onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise(exerciseId)}
               />
             </div>
           </div>
@@ -284,6 +300,30 @@ export default function DashboardPage() {
         allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 
+      {/* 運動記録モーダル */}
+      <ExerciseEntryModal
+        isOpen={isExerciseEntryModalOpen}
+        onClose={() => setIsExerciseEntryModalOpen(false)}
+        onSubmit={exerciseManager.handleAddSimpleExercise}
+        userWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 70}
+      />
+
+      {/* 運動編集モーダル */}
+      <ExerciseEditModal
+        isOpen={isExerciseEditModalOpen}
+        onClose={() => {
+          setIsExerciseEditModalOpen(false);
+          setSelectedExerciseForEdit(null);
+        }}
+        onUpdate={(exerciseId, updates) => {
+          exerciseManager.handleUpdateExercise(exerciseId, updates);
+        }}
+        onDelete={(exerciseId) => {
+          exerciseManager.handleDeleteExercise(exerciseId);
+        }}
+        exercise={selectedExerciseForEdit}
+        userWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 70}
+      />
 
     </div>
   );

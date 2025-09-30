@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface WeightChartProps {
   data: Array<{
@@ -14,25 +16,31 @@ interface WeightChartProps {
   period: 'week' | 'month' | '6months' | 'year';
   height: number;
   targetWeight?: number;
+  currentWeight?: number;
 }
 
 type DataType = 'weight' | 'bodyFat' | 'waist';
 
-export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: WeightChartProps) {
+export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0 }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // クライアントサイドでのみ実行されることを保証
   useEffect(() => {
     setIsClient(true);
+    setMounted(true);
   }, []);
 
-  // データの検証とデフォルト値
+  // データの検証とデフォルト値 - 体重または体脂肪のいずれかがあれば有効とする
   const validData = Array.isArray(data) ? data.filter(item => 
-    item && typeof item.weight === 'number' && !isNaN(item.weight) && item.date
+    item && item.date && (
+      (typeof item.weight === 'number' && !isNaN(item.weight) && item.weight > 0) ||
+      (typeof item.bodyFat === 'number' && !isNaN(item.bodyFat) && item.bodyFat > 0)
+    )
   ) : [];
   
   // 実際のデータがある場合はそれを使用、ない場合はダミーデータ
@@ -101,9 +109,10 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
   const getRealChartData = () => {
     if (!hasRealData) return getAllChartData();
     
+    
     // クライアントサイドでのみ日付フィルタリングを実行（hydration issues を避けるため）
     if (!isClient) {
-      return validData.map(item => {
+      const processedData = validData.map(item => {
         const itemDate = new Date(item.date);
         const formatDate = () => {
           const year = itemDate.getFullYear().toString().slice(-2);
@@ -114,11 +123,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
         
         return {
           date: formatDate(),
-          weight: item.weight,
+          weight: item.weight || 0,
           bodyFat: item.bodyFat || 0,
           waist: 80 // 仮の値（実際のデータにwaistがないため）
         };
       });
+      return processedData;
     }
     
     // 実際のデータを期間でフィルタリング
@@ -147,7 +157,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
     }
 
     // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
-    return filteredData.map(item => {
+    const processedData = filteredData.map(item => {
       const itemDate = new Date(item.date);
       const formatDate = () => {
         const year = itemDate.getFullYear().toString().slice(-2);
@@ -158,23 +168,26 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
       
       return {
         date: formatDate(),
-        weight: item.weight,
+        weight: item.weight || 0,
         bodyFat: item.bodyFat || 0,
         waist: 80 // 仮の値（実際のデータにwaistがないため）
       };
     });
+    
+    return processedData;
   };
 
   const chartData = getRealChartData();
 
   // データから動的に範囲を計算
   const calculateDataRange = (dataType: DataType) => {
-    const values = chartData.map(item => item[dataType]).filter(val => val > 0);
+    const values = chartData.map(item => item[dataType]).filter(val => val != null && val > 0);
+    
     if (values.length === 0) {
       // デフォルト値
       switch (dataType) {
         case 'weight': return { min: 70, max: 77 };
-        case 'bodyFat': return { min: 16, max: 20 };
+        case 'bodyFat': return { min: 10, max: 25 };
         case 'waist': return { min: 77, max: 87 };
       }
     }
@@ -198,7 +211,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
   const currentData = chartData.map(item => ({
     date: item.date,
     value: item[selectedDataType]
-  }));
+  })).filter(item => item.value != null && item.value > 0);
+  
 
   const chartRange = currentConfig.max - currentConfig.min;
 
@@ -290,25 +304,33 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
     // グラフエリア内かチェック
     if (relativeX < 5 || relativeX > svgWidth - 5) return;
     
-    // 最も近いデータポイントを見つける
-    let closestPoint = pathPoints[0];
-    let minDistance = Math.abs(pathPoints[0].x - relativeX);
+    // 線上での補間ポイントを計算
+    if (pathPoints.length < 2) return;
     
-    pathPoints.forEach(point => {
-      const distance = Math.abs(point.x - relativeX);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestPoint = point;
+    // マウス位置に基づいてセグメントを見つける
+    let segmentIndex = 0;
+    for (let i = 0; i < pathPoints.length - 1; i++) {
+      if (relativeX >= pathPoints[i].x && relativeX <= pathPoints[i + 1].x) {
+        segmentIndex = i;
+        break;
       }
+    }
+    
+    const startPoint = pathPoints[segmentIndex];
+    const endPoint = pathPoints[Math.min(segmentIndex + 1, pathPoints.length - 1)];
+    
+    // 線形補間でY座標を計算
+    const t = startPoint.x === endPoint.x ? 0 : (relativeX - startPoint.x) / (endPoint.x - startPoint.x);
+    const interpolatedY = startPoint.y + (endPoint.y - startPoint.y) * t;
+    const interpolatedValue = startPoint.value + (endPoint.value - startPoint.value) * t;
+    
+    // 補間された点を設定
+    setSelectedPoint({
+      x: relativeX,
+      y: interpolatedY,
+      value: interpolatedValue,
+      date: t < 0.5 ? startPoint.date : endPoint.date
     });
-    
-    // スムーズな補間のためにマウス位置を記録
-    const smoothPoint = {
-      ...closestPoint,
-      x: relativeX // マウス位置のX座標を使用
-    };
-    
-    setSelectedPoint(smoothPoint);
   };
 
   const handleTouchMove = (event: React.TouchEvent<SVGElement>) => {
@@ -321,116 +343,189 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
     // グラフエリア内かチェック
     if (relativeX < 5 || relativeX > svgWidth - 5) return;
     
-    // 最も近いデータポイントを見つける
-    let closestPoint = pathPoints[0];
-    let minDistance = Math.abs(pathPoints[0].x - relativeX);
+    // 線上での補間ポイントを計算
+    if (pathPoints.length < 2) return;
     
-    pathPoints.forEach(point => {
-      const distance = Math.abs(point.x - relativeX);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestPoint = point;
+    // マウス位置に基づいてセグメントを見つける
+    let segmentIndex = 0;
+    for (let i = 0; i < pathPoints.length - 1; i++) {
+      if (relativeX >= pathPoints[i].x && relativeX <= pathPoints[i + 1].x) {
+        segmentIndex = i;
+        break;
       }
+    }
+    
+    const startPoint = pathPoints[segmentIndex];
+    const endPoint = pathPoints[Math.min(segmentIndex + 1, pathPoints.length - 1)];
+    
+    // 線形補間でY座標を計算
+    const t = startPoint.x === endPoint.x ? 0 : (relativeX - startPoint.x) / (endPoint.x - startPoint.x);
+    const interpolatedY = startPoint.y + (endPoint.y - startPoint.y) * t;
+    const interpolatedValue = startPoint.value + (endPoint.value - startPoint.value) * t;
+    
+    // 補間された点を設定
+    setSelectedPoint({
+      x: relativeX,
+      y: interpolatedY,
+      value: interpolatedValue,
+      date: t < 0.5 ? startPoint.date : endPoint.date
     });
-    
-    // スムーズな補間のためにタッチ位置を記録
-    const smoothPoint = {
-      ...closestPoint,
-      x: relativeX // タッチ位置のX座標を使用
-    };
-    
-    setSelectedPoint(smoothPoint);
   };
 
   const handleMouseLeave = () => {
     setSelectedPoint(null);
   };
 
-  // データが何もない場合の表示
-  if (currentData.length === 0 || pathPoints.length === 0) {
+  // サーバーサイドレンダリング時の表示
+  if (!mounted) {
     return (
       <Card className="backdrop-blur-xl bg-white/90 shadow-lg border border-white/30 rounded-xl p-4">
-        <div className="text-center py-8">
-          <p className="text-slate-500">体重データがありません</p>
-          <p className="text-xs text-slate-400 mt-1">体重を記録すると、グラフが表示されます</p>
+        <div className="animate-pulse">
+          <div className="h-4 bg-slate-200 rounded mb-4"></div>
+          <div className="h-40 bg-slate-200 rounded"></div>
         </div>
       </Card>
     );
   }
 
-  return (
-    <Card className="backdrop-blur-xl bg-white/90 shadow-lg border border-white/30 rounded-xl p-4">
-      {/* ヘッダー部分 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <select 
-            value={selectedDataType}
-            onChange={(e) => {
-              setSelectedDataType(e.target.value as DataType);
-              setSelectedPoint(null);
-            }}
-            className="appearance-none bg-transparent text-lg font-semibold text-slate-800 border-none outline-none cursor-pointer"
-            style={{
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              appearance: 'none',
-              backgroundImage: 'none'
-            }}
-          >
-            <option value="weight">体重</option>
-            <option value="bodyFat">体脂肪</option>
-          </select>
-          <svg className="w-4 h-4 text-slate-600 pointer-events-none flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-        </div>
-
-        {/* 開閉ボタン */}
-        <button
+  // データが何もない場合の表示
+  if (currentData.length === 0 || pathPoints.length === 0) {
+    const dataTypeText = selectedDataType === 'weight' ? '体重' : '体脂肪';
+    return (
+      <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <Button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          variant="ghost"
+          className="w-full justify-start p-0 h-auto hover:bg-transparent"
         >
-          <svg 
-            className={`w-5 h-5 text-slate-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-      </div>
+          <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
+            <div className="flex items-center space-x-2">
+              <select 
+                value={selectedDataType}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setSelectedDataType(e.target.value as DataType);
+                  setSelectedPoint(null);
+                }}
+                className="font-semibold text-slate-900 bg-transparent border-none outline-none cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <option value="weight">体重グラフ</option>
+                <option value="bodyFat">体脂肪グラフ</option>
+              </select>
+              {currentWeight > 0 && (
+                <span className="text-sm text-slate-500">({currentWeight}kg)</span>
+              )}
+            </div>
+            {isExpanded ? (
+              <ChevronUp size={16} className="text-slate-500" />
+            ) : (
+              <ChevronDown size={16} className="text-slate-500" />
+            )}
+          </div>
+        </Button>
+        
+        {/* グラフ内容 - 開閉可能 */}
+        {isExpanded && (
+          <div className="p-4">
+            <div className="text-center py-12">
+              <div className="mb-4">
+                <div className="w-16 h-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                  {selectedDataType === 'weight' ? (
+                    <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                    </svg>
+                  ) : (
+                    <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <p className="text-slate-600 text-base font-medium mb-2">{dataTypeText}データがまだありません</p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {selectedDataType === 'weight' 
+                  ? '体重を記録すると、推移がグラフで表示されます' 
+                  : '体脂肪を記録すると、推移がグラフで表示されます'
+                }
+              </p>
+              <div className="mt-4">
+                <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
+                  {dataTypeText}を記録する
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
+    );
+  }
 
-      {/* 期間選択ボタン */}
-      {isExpanded && (
-        <div className="flex bg-slate-100 rounded-lg p-1 mb-4">
-          {[
-            { key: 'week', label: '1週間' },
-            { key: 'month', label: '1ヶ月' },
-            { key: '6months', label: '半年' },
-            { key: 'year', label: '1年' },
-            { key: 'all', label: '全期間' }
-          ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => {
-                setSelectedPeriod(key as any);
+  return (
+    <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Button
+        onClick={() => setIsExpanded(!isExpanded)}
+        variant="ghost"
+        className="w-full justify-start p-0 h-auto hover:bg-transparent"
+      >
+        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
+          <div className="flex items-center space-x-2">
+            <select 
+              value={selectedDataType}
+              onChange={(e) => {
+                e.stopPropagation();
+                setSelectedDataType(e.target.value as DataType);
                 setSelectedPoint(null);
               }}
-              className={`flex-1 px-1 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
-                selectedPeriod === key
-                  ? 'bg-white text-slate-800 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
+              className="font-semibold text-slate-900 bg-transparent border-none outline-none cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
             >
-              {label}
-            </button>
-          ))}
+              <option value="weight">体重グラフ</option>
+              <option value="bodyFat">体脂肪グラフ</option>
+            </select>
+            {currentWeight > 0 && (
+              <span className="text-sm text-slate-500">({currentWeight}kg)</span>
+            )}
+          </div>
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-slate-500" />
+          ) : (
+            <ChevronDown size={16} className="text-slate-500" />
+          )}
         </div>
-      )}
+      </Button>
 
-      {/* グラフエリア */}
+      {/* グラフ内容 - 開閉可能 */}
       {isExpanded && (
+        <div className="p-4 space-y-4">
+          {/* 期間選択ボタン */}
+          <div className="flex bg-slate-100 rounded-lg p-1">
+            {[
+              { key: 'week', label: '1週間' },
+              { key: 'month', label: '1ヶ月' },
+              { key: '6months', label: '半年' },
+              { key: 'year', label: '1年' },
+              { key: 'all', label: '全期間' }
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setSelectedPeriod(key as any);
+                  setSelectedPoint(null);
+                }}
+                className={`flex-1 px-1 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
+                  selectedPeriod === key
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* グラフエリア */}
+          <div className="relative">
         <div className="relative">
         <svg 
           width="100%" 
@@ -535,15 +630,27 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
 
           {/* 選択されたポイントのみ表示 */}
           {selectedPoint && (
-            <circle
-              cx={selectedPoint.x}
-              cy={selectedPoint.y}
-              r="6"
-              fill={currentConfig.color}
-              stroke="white"
-              strokeWidth="3"
-              filter="url(#dropshadow)"
-            />
+            <>
+              <circle
+                cx={selectedPoint.x}
+                cy={selectedPoint.y}
+                r="6"
+                fill={currentConfig.color}
+                stroke="white"
+                strokeWidth="3"
+                filter="url(#dropshadow)"
+              />
+              <circle
+                cx={selectedPoint.x}
+                cy={selectedPoint.y}
+                r="10"
+                fill={currentConfig.color}
+                fillOpacity="0.2"
+                stroke={currentConfig.color}
+                strokeWidth="1"
+                className="animate-pulse"
+              />
+            </>
           )}
 
           {/* 右側Y軸の数値 */}
@@ -601,39 +708,41 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0 }: 
             />
           </div>
         )}
+          </div>
+        </div>
+
+        {/* CSSアニメーション */}
+        <style jsx>{`
+          @keyframes drawLine {
+            to {
+              stroke-dashoffset: 0;
+            }
+          }
+          
+          @keyframes fadeInPoint {
+            from {
+              opacity: 0;
+              transform: scale(0);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          
+          @keyframes fadeInScale {
+            from {
+              opacity: 0;
+              transform: translateX(-50%) scale(0.8);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(-50%) scale(1);
+            }
+          }
+        `}</style>
         </div>
       )}
-
-      {/* CSSアニメーション */}
-      <style jsx>{`
-        @keyframes drawLine {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-        
-        @keyframes fadeInPoint {
-          from {
-            opacity: 0;
-            transform: scale(0);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: translateX(-50%) scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-          }
-        }
-      `}</style>
     </Card>
   );
 }

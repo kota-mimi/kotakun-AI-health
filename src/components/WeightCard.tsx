@@ -22,14 +22,20 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ data, onNavigateToWeight, counselingResult }: WeightCardProps) {
-  // カウンセリング結果があれば現在体重も優先
-  const currentWeight = counselingResult?.answers?.weight || data.current;
+  // デバッグ用ログ
+  console.log('WeightCard - data:', data);
+  console.log('WeightCard - counselingResult:', counselingResult);
+  
+  // 実際の記録データを優先、カウンセリング結果はフォールバックとして使用
+  const currentWeight = data.current > 0 ? data.current : (counselingResult?.answers?.weight || 0);
   const difference = currentWeight - data.previous;
   // カウンセリング結果の目標体重があれば優先、なければデータの目標体重を使用
   const targetWeight = counselingResult?.answers?.targetWeight || data.target;
   const remaining = Math.abs(currentWeight - targetWeight);
   const isDecrease = difference < 0;
   const isTargetReached = Math.abs(difference) < 0.1;
+  
+  console.log('WeightCard - currentWeight:', currentWeight, 'previous:', data.previous, 'target:', targetWeight);
 
   return (
     <Button

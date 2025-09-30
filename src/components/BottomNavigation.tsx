@@ -16,7 +16,7 @@ const tabs = [
   },
   {
     id: 'profile' as const,
-    label: '設定',
+    label: 'マイページ',
     icon: User,
     description: 'プロフィール・設定'
   }
