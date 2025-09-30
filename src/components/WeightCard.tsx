@@ -42,35 +42,39 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
         <ChevronRight size={16} className="absolute top-3 right-3 text-slate-400" />
         
         {/* メインデータ */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {/* 現在の体重 */}
-          <div className="text-center p-2 bg-slate-50/80 rounded-xl border border-slate-100">
+          <div className="text-center p-3 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50">
             <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">現在</div>
-            <div className="text-base font-bold text-slate-900">{currentWeight}<span className="text-sm font-medium text-slate-600 ml-1">kg</span></div>
+            <div className="text-lg font-bold text-slate-900">
+              {currentWeight}
+              <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+            </div>
           </div>
           
           {/* 前日比 */}
-          <div className="text-center p-2 bg-slate-50/80 rounded-xl border border-slate-100">
-            <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">前日比</div>
-            <div className="flex items-center justify-center space-x-1">
-              {isDecrease ? (
-                <TrendingDown size={12} className="text-success" />
-              ) : (
-                <TrendingUp size={12} className="text-warning" />
-              )}
-              <span className={`text-sm font-bold ${
-                isDecrease ? 'text-success' : 'text-warning'
-              }`}>
-                {isDecrease ? '' : '+'}{difference.toFixed(1)}kg
-              </span>
+          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50">
+            <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">前日比</div>
+            <div className={`text-lg font-bold ${
+              isDecrease ? 'text-green-600' : 'text-orange-600'
+            }`}>
+              {isDecrease ? '' : '+'}{difference.toFixed(1)}
+              <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
             </div>
           </div>
           
           {/* 目標まで */}
-          <div className="text-center p-2 bg-slate-50/80 rounded-xl border border-slate-100">
-            <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">目標まで</div>
-            <div className="text-sm font-bold text-[rgba(244,0,0,1)]">
-              {remaining.toFixed(1)}<span className="text-xs font-medium text-slate-600 ml-1">kg</span>
+          <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl border border-purple-200/50">
+            <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
+            <div className="text-lg font-bold">
+              {currentWeight <= targetWeight ? (
+                <span className="text-green-600">🎉 達成</span>
+              ) : (
+                <span className="text-purple-600">
+                  -{remaining.toFixed(1)}
+                  <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+                </span>
+              )}
             </div>
           </div>
         </div>

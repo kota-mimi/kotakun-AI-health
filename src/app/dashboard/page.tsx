@@ -30,6 +30,7 @@ import { ContactPage } from '@/components/ContactPage';
 import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { WeightSettingsModal } from '@/components/WeightSettingsModal';
 import { DataManagementModal } from '@/components/DataManagementModal';
+import { WeightChart } from '@/components/WeightChart';
 
 export default function DashboardPage() {
   const navigation = useNavigationState();
@@ -147,6 +148,16 @@ export default function DashboardPage() {
                 data={weightManager.weightData} 
                 onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
                 counselingResult={counselingResult}
+              />
+            </div>
+
+            {/* 体重グラフ */}
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <WeightChart 
+                data={weightManager.realWeightData}
+                period="month"
+                height={175}
+                targetWeight={weightManager.weightSettings.targetWeight}
               />
             </div>
 

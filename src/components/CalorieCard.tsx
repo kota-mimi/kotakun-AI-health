@@ -73,12 +73,12 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const activityProgress = (totalActivityCalories / burnedCalories) * 100;
 
   const colors = {
-    primary: '#4682B4',
-    protein: '#EF4444',
-    fat: '#F59E0B', 
-    carbs: '#10B981',
-    basal: '#10B981',    // 緑色 - 基礎代謝
-    activity: '#F59E0B'  // オレンジ色 - 活動による消費
+    primary: '#3B82F6',  // 体重グラフと同じブルー
+    protein: '#EF4444',  // 赤色（タンパク質）
+    fat: '#F97316',     // 体重グラフと同じオレンジ（脂質）
+    carbs: '#22C55E',   // 体重グラフと同じグリーン（炭水化物）
+    basal: '#22C55E',   // 緑色 - 基礎代謝
+    activity: '#F97316' // オレンジ色 - 活動による消費
   };
 
   return (

@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   title: "LINE健康管理",
   description: "AIを活用した個人向け健康管理サービス",
   keywords: ["健康管理", "LINE", "AI", "食事記録", "運動記録", "ヘルスケア"],
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
   openGraph: {
     title: "LINE健康管理",
     description: "AIを活用した個人向け健康管理サービス",

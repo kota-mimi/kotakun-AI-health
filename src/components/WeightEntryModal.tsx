@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { X, Scale, Droplets, StickyNote, Camera } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface WeightEntryModalProps {
   isOpen: boolean;
@@ -75,10 +74,10 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-t-2xl w-full max-w-sm mx-auto p-6 space-y-6 shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 space-y-6 shadow-2xl">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div>
@@ -98,9 +97,8 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 体重入力 */}
           <div className="space-y-3">
-            <Label className="flex items-center space-x-2 text-slate-700">
-              <Scale size={16} style={{color: '#4682B4'}} />
-              <span>体重 (kg)</span>
+            <Label className="text-slate-700">
+              体重 (kg)
             </Label>
             <div className="relative">
               <Input
@@ -136,9 +134,8 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
 
           {/* 体脂肪率入力（オプション） */}
           <div className="space-y-3">
-            <Label className="flex items-center space-x-2 text-slate-700">
-              <Droplets size={16} style={{color: '#F59E0B'}} />
-              <span>体脂肪率 (%) <span className="text-xs text-slate-500">任意</span></span>
+            <Label className="text-slate-700">
+              体脂肪率 (%) <span className="text-xs text-slate-500">任意</span>
             </Label>
             <div className="relative">
               <Input
@@ -155,43 +152,6 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
             </div>
           </div>
 
-          {/* メモ（オプション） */}
-          <div className="space-y-3">
-            <Label className="flex items-center space-x-2 text-slate-700">
-              <StickyNote size={16} style={{color: '#10B981'}} />
-              <span>メモ <span className="text-xs text-slate-500">任意</span></span>
-            </Label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="運動後、朝食前、など..."
-              className="resize-none h-20 rounded-xl border border-slate-200 focus:border-green-400"
-              maxLength={100}
-            />
-            <div className="text-right">
-              <span className="text-xs text-slate-500">{note.length}/100</span>
-            </div>
-          </div>
-
-          {/* 写真追加（プレースホルダー） */}
-          <div className="space-y-3">
-            <Label className="flex items-center space-x-2 text-slate-700">
-              <Camera size={16} style={{color: '#6B7280'}} />
-              <span>写真 <span className="text-xs text-slate-500">任意</span></span>
-            </Label>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full py-8 border-2 border-dashed border-slate-200 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all"
-              onClick={() => console.log('写真選択')}
-            >
-              <div className="text-center">
-                <Camera size={24} className="mx-auto mb-2 text-slate-400" />
-                <p className="text-sm text-slate-600">写真を追加</p>
-                <p className="text-xs text-slate-500">進捗の記録に</p>
-              </div>
-            </Button>
-          </div>
 
           {/* 送信ボタン */}
           <div className="flex space-x-3 pt-4">
