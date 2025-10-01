@@ -33,6 +33,11 @@ export async function GET(request: NextRequest) {
       
       console.log('運動API: 特定日付のデータ', { date, exercises });
       
+      // 各exerciseのtimestampをログ出力
+      exercises.forEach((exercise, index) => {
+        console.log(`🏃 Exercise ${index}: ${exercise.name}, timestamp: ${exercise.timestamp}, time: ${exercise.time}`);
+      });
+      
       return NextResponse.json({
         success: true,
         data: exercises

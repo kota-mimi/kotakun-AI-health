@@ -95,15 +95,37 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
     const getTimestamp = (exercise: Exercise) => {
       if (exercise.timestamp) {
-        return exercise.timestamp instanceof Date ? exercise.timestamp.getTime() : new Date(exercise.timestamp).getTime();
+        let timestamp: number;
+        
+        // FirestoreのTimestampオブジェクトかチェック
+        if (exercise.timestamp && typeof exercise.timestamp === 'object' && 'toDate' in exercise.timestamp) {
+          timestamp = (exercise.timestamp as any).toDate().getTime();
+          console.log(`🕒 ${exercise.name} - Firestore timestamp: ${exercise.timestamp} -> ${timestamp}`);
+        } 
+        // 通常のDateオブジェクト
+        else if (exercise.timestamp instanceof Date) {
+          timestamp = exercise.timestamp.getTime();
+          console.log(`🕒 ${exercise.name} - Date timestamp: ${exercise.timestamp} -> ${timestamp}`);
+        }
+        // 文字列の場合
+        else {
+          timestamp = new Date(exercise.timestamp).getTime();
+          console.log(`🕒 ${exercise.name} - String timestamp: ${exercise.timestamp} -> ${timestamp}`);
+        }
+        
+        return timestamp;
       }
       // timeから今日の日付でDateオブジェクトを作成
       const today = selectedDate.toISOString().split('T')[0];
-      return new Date(`${today} ${exercise.time}`).getTime();
+      const fallbackTime = new Date(`${today} ${exercise.time}`).getTime();
+      console.log(`🕒 ${exercise.name} - time fallback: ${today} ${exercise.time} -> ${fallbackTime}`);
+      return fallbackTime;
     };
     
     const timeA = getTimestamp(a);
     const timeB = getTimestamp(b);
+    
+    console.log(`🔄 SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeB - timeA}`);
     
     // 新しい順（降順）でソート
     return timeB - timeA;
