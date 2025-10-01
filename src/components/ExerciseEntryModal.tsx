@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { NumberPickerModal } from './NumberPickerModal';
 
 interface ExerciseEntryModalProps {
@@ -58,6 +58,48 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   const [customOtherExercises, setCustomOtherExercises] = useState<ExerciseType[]>([]);
   const [customOtherExerciseName, setCustomOtherExerciseName] = useState('');
   
+  // localStorageから保存されたカスタム種目を読み込み
+  useEffect(() => {
+    const savedStrengthExercises = localStorage.getItem('customStrengthExercises');
+    const savedOtherExercises = localStorage.getItem('customOtherExercises');
+    
+    if (savedStrengthExercises) {
+      try {
+        setCustomStrengthExercises(JSON.parse(savedStrengthExercises));
+      } catch (error) {
+        console.error('筋トレ種目の読み込みエラー:', error);
+      }
+    }
+    
+    if (savedOtherExercises) {
+      try {
+        setCustomOtherExercises(JSON.parse(savedOtherExercises));
+      } catch (error) {
+        console.error('その他運動の読み込みエラー:', error);
+      }
+    }
+  }, []);
+  
+  // カスタム筋トレ種目をlocalStorageに保存
+  const saveCustomStrengthExercises = (exercises: StrengthExercise[]) => {
+    try {
+      localStorage.setItem('customStrengthExercises', JSON.stringify(exercises));
+      setCustomStrengthExercises(exercises);
+    } catch (error) {
+      console.error('筋トレ種目の保存エラー:', error);
+    }
+  };
+  
+  // カスタムその他運動をlocalStorageに保存
+  const saveCustomOtherExercises = (exercises: ExerciseType[]) => {
+    try {
+      localStorage.setItem('customOtherExercises', JSON.stringify(exercises));
+      setCustomOtherExercises(exercises);
+    } catch (error) {
+      console.error('その他運動の保存エラー:', error);
+    }
+  };
+  
   // ピッカーモーダル状態
   const [pickerState, setPickerState] = useState<{
     isOpen: boolean;
@@ -91,10 +133,22 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       category: category,
       mets: 5.0
     };
-    setCustomStrengthExercises(prev => [...prev, newExercise]);
+    const updatedExercises = [...customStrengthExercises, newExercise];
+    saveCustomStrengthExercises(updatedExercises);
     setSelectedStrengthExercise(newExercise);
     setCustomExerciseName('');
     setIsStrengthDropdownOpen(false);
+  };
+  
+  // 筋トレ種目を削除する処理
+  const handleDeleteStrengthExercise = (exerciseId: string) => {
+    const updatedExercises = customStrengthExercises.filter(ex => ex.id !== exerciseId);
+    saveCustomStrengthExercises(updatedExercises);
+    
+    // 削除した種目が選択されていた場合はリセット
+    if (selectedStrengthExercise?.id === exerciseId) {
+      setSelectedStrengthExercise(null);
+    }
   };
 
   // 新しいその他運動を追加する処理
@@ -105,9 +159,21 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       icon: '',
       mets: mets
     };
-    setCustomOtherExercises(prev => [...prev, newExercise]);
+    const updatedExercises = [...customOtherExercises, newExercise];
+    saveCustomOtherExercises(updatedExercises);
     setSelectedExercise(newExercise);
     setCustomOtherExerciseName('');
+  };
+  
+  // その他運動を削除する処理
+  const handleDeleteOtherExercise = (exerciseId: string) => {
+    const updatedExercises = customOtherExercises.filter(ex => ex.id !== exerciseId);
+    saveCustomOtherExercises(updatedExercises);
+    
+    // 削除した運動が選択されていた場合はリセット
+    if (selectedExercise?.id === exerciseId) {
+      setSelectedExercise(null);
+    }
   };
 
   if (!isOpen) return null;
@@ -383,18 +449,38 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
             <Label className="text-slate-700 text-sm">運動の種類</Label>
             <div className="grid grid-cols-2 gap-2">
               {[...exerciseTypes, ...customOtherExercises].map((exercise) => (
-                <button
+                <div
                   key={exercise.id}
-                  type="button"
-                  onClick={() => setSelectedExercise(exercise)}
-                  className={`p-3 rounded-lg border transition-all duration-200 ${
+                  className={`relative p-3 rounded-lg border transition-all duration-200 ${
                     selectedExercise?.id === exercise.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  <div className="text-sm font-medium text-slate-800">{exercise.name}</div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedExercise(exercise)}
+                    className="w-full text-left"
+                  >
+                    <div className="text-sm font-medium text-slate-800">{exercise.name}</div>
+                  </button>
+                  
+                  {/* カスタム運動の削除ボタン */}
+                  {exercise.id.startsWith('custom_other_') && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`「${exercise.name}」を削除しますか？`)) {
+                          handleDeleteOtherExercise(exercise.id);
+                        }
+                      }}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -467,28 +553,29 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
                 {isStrengthDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-lg z-10 max-h-48 overflow-y-auto">
                     {allStrengthExercises.map((exercise) => (
-                      <button
+                      <div
                         key={exercise.id}
-                        type="button"
-                        onClick={() => {
-                          if (exercise.id === 'add_new') {
-                            // 新しい種目追加の場合は何もしない（カスタム種目名入力を表示）
-                            setSelectedStrengthExercise(exercise);
-                            setIsStrengthDropdownOpen(false);
-                          } else {
-                            setSelectedStrengthExercise(exercise);
-                            setIsStrengthDropdownOpen(false);
-                          }
-                        }}
-                        className={`w-full p-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-b-0 ${
+                        className={`relative flex items-center justify-between border-b border-slate-100 last:border-b-0 ${
                           selectedStrengthExercise?.id === exercise.id
                             ? 'bg-blue-50 text-blue-700'
                             : exercise.id === 'add_new'
                             ? 'text-green-700 hover:bg-green-50'
-                            : 'text-slate-700'
+                            : 'text-slate-700 hover:bg-slate-50'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (exercise.id === 'add_new') {
+                              setSelectedStrengthExercise(exercise);
+                              setIsStrengthDropdownOpen(false);
+                            } else {
+                              setSelectedStrengthExercise(exercise);
+                              setIsStrengthDropdownOpen(false);
+                            }
+                          }}
+                          className="flex-1 p-3 text-left transition-colors flex items-center justify-between"
+                        >
                           <div className="flex items-center space-x-3">
                             <span className="font-medium">{exercise.name}</span>
                             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
@@ -506,8 +593,24 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
                               </svg>
                             )}
                           </div>
-                        </div>
-                      </button>
+                        </button>
+                        
+                        {/* カスタム筋トレ種目の削除ボタン */}
+                        {exercise.id.startsWith('custom_') && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(`「${exercise.name}」を削除しますか？`)) {
+                                handleDeleteStrengthExercise(exercise.id);
+                              }
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
