@@ -97,7 +97,7 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
   // プロップスが空の場合は緊急データを使用し、時系列順にソート
   let actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   
-  // 時系列順（新しい順）にソート
+  // 時系列順（古い順）にソート
   actualExerciseData = [...actualExerciseData].sort((a, b) => {
     const getTimestamp = (exercise: Exercise) => {
       if (exercise.timestamp) {
@@ -131,10 +131,10 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
     const timeA = getTimestamp(a);
     const timeB = getTimestamp(b);
     
-    console.log(`💪 WSC SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeB - timeA}`);
+    console.log(`💪 WSC SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeA - timeB}`);
     
-    // 新しい順（降順）でソート
-    return timeB - timeA;
+    // 古い順（昇順）でソート
+    return timeA - timeB;
   });
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
   const totalDuration = actualExerciseData.reduce((sum, ex) => sum + ex.duration, 0);

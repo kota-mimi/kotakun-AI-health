@@ -91,7 +91,12 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
       }
     });
     
-    return expandedMeals;
+    // 時間順（古い順）でソート
+    return expandedMeals.sort((a, b) => {
+      const timeA = a.time.padStart(5, '0'); // "9:30" -> "09:30"
+      const timeB = b.time.padStart(5, '0');
+      return timeA.localeCompare(timeB);
+    });
   };
 
   // 食事タイプごとに展開した食事データを作成 - ハイドレーションエラー回避
