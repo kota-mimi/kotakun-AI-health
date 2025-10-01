@@ -13,6 +13,7 @@ interface Exercise {
   distance?: number;
   time: string;
   notes?: string;
+  timestamp?: Date | string;
 }
 
 interface WorkoutPlan {
@@ -89,8 +90,24 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const currentDateData = getCurrentDateData();
   const localExerciseData = currentDateData.exerciseData || [];
 
-  // ローカルストレージとFirestoreのデータを統合
-  const exerciseData = [...localExerciseData, ...firestoreExerciseData];
+  // ローカルストレージとFirestoreのデータを統合し、時系列順（新しい順）にソート
+  const exerciseData = [...localExerciseData, ...firestoreExerciseData].sort((a, b) => {
+    // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
+    const getTimestamp = (exercise: Exercise) => {
+      if (exercise.timestamp) {
+        return exercise.timestamp instanceof Date ? exercise.timestamp.getTime() : new Date(exercise.timestamp).getTime();
+      }
+      // timeから今日の日付でDateオブジェクトを作成
+      const today = selectedDate.toISOString().split('T')[0];
+      return new Date(`${today} ${exercise.time}`).getTime();
+    };
+    
+    const timeA = getTimestamp(a);
+    const timeB = getTimestamp(b);
+    
+    // 新しい順（降順）でソート
+    return timeB - timeA;
+  });
   
   console.log('🏋️ EXERCISE DATA INTEGRATION:', {
     localCount: localExerciseData.length,
@@ -107,6 +124,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       id: generateId(),
       time: new Date().toTimeString().slice(0, 5),
       calories: exercise.calories || 0,
+      timestamp: new Date(), // timestampを追加
       ...exercise
     };
     

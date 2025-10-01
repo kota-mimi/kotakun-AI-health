@@ -18,6 +18,7 @@ interface Exercise {
   distance?: number;
   sets?: ExerciseSet[];
   calories?: number;
+  timestamp?: Date | string;
 }
 
 interface WorkoutSummaryCardProps {
@@ -93,8 +94,26 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
     }
   }, [exerciseData]);
   
-  // プロップスが空の場合は緊急データを使用
-  const actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
+  // プロップスが空の場合は緊急データを使用し、時系列順にソート
+  let actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
+  
+  // 時系列順（新しい順）にソート
+  actualExerciseData = [...actualExerciseData].sort((a, b) => {
+    const getTimestamp = (exercise: Exercise) => {
+      if (exercise.timestamp) {
+        return exercise.timestamp instanceof Date ? exercise.timestamp.getTime() : new Date(exercise.timestamp).getTime();
+      }
+      // timeから今日の日付でDateオブジェクトを作成
+      const today = new Date().toISOString().split('T')[0];
+      return new Date(`${today} ${exercise.time}`).getTime();
+    };
+    
+    const timeA = getTimestamp(a);
+    const timeB = getTimestamp(b);
+    
+    // 新しい順（降順）でソート
+    return timeB - timeA;
+  });
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
   const totalDuration = actualExerciseData.reduce((sum, ex) => sum + ex.duration, 0);
   const hasWorkout = actualExerciseData.length > 0;
