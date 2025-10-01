@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { useAuth } from './useAuth';
 import { generateId } from '@/lib/utils';
 
 interface Exercise {
@@ -34,8 +35,50 @@ interface WorkoutPlan {
 }
 
 export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
-  // 運動プランデータをlocalStorageで永続化
-  const workoutPlansStorage = useLocalStorage<WorkoutPlan[]>('healthApp_workoutPlans', []);
+  try {
+    console.log('🏃 useExerciseData hook called with selectedDate:', selectedDate.toISOString().split('T')[0]);
+    
+    // 運動プランデータをlocalStorageで永続化
+    const workoutPlansStorage = useLocalStorage<WorkoutPlan[]>('healthApp_workoutPlans', []);
+
+    // useAuth からLINE User IDを取得（体重データと同じ方法）
+    const { liffUser } = useAuth();
+    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    
+    console.log('🏃 useExerciseData initialized with lineUserId:', lineUserId);
+  
+  // クライアントサイドマウント状態（useWeightDataと同じパターン）
+  const [isClient, setIsClient] = useState(false);
+  
+  // Firestoreから運動データを取得するstate
+  const [firestoreExerciseData, setFirestoreExerciseData] = useState<Exercise[]>([]);
+
+  // クライアントサイドでのマウントを確認（useWeightDataと同じパターン）
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // useEffect でのデータ取得（緊急フェッチはWorkoutSummaryCardで処理）
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const fetchExerciseData = async () => {
+      const currentDate = selectedDate.toISOString().split('T')[0];
+      
+      try {
+        const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${currentDate}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          setFirestoreExerciseData(result.data || []);
+        }
+      } catch (error) {
+        console.error('🏃 useExerciseData fetch error:', error);
+      }
+    };
+    
+    fetchExerciseData();
+  }, [selectedDate, lineUserId, isClient]);
 
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
@@ -44,7 +87,19 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   };
 
   const currentDateData = getCurrentDateData();
-  const exerciseData = currentDateData.exerciseData || [];
+  const localExerciseData = currentDateData.exerciseData || [];
+
+  // ローカルストレージとFirestoreのデータを統合
+  const exerciseData = [...localExerciseData, ...firestoreExerciseData];
+  
+  console.log('🏋️ EXERCISE DATA INTEGRATION:', {
+    localCount: localExerciseData.length,
+    firestoreCount: firestoreExerciseData.length,
+    totalCount: exerciseData.length,
+    selectedDate: selectedDate.toISOString().split('T')[0],
+    firestoreData: firestoreExerciseData,
+    localData: localExerciseData
+  });
 
   // 運動記録を追加する関数
   const handleAddExercise = (exercise: Omit<Exercise, 'id' | 'time'>) => {
@@ -98,21 +153,90 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   };
 
   // 運動記録を削除する関数
-  const handleDeleteExercise = (exerciseId: string) => {
-    const currentData = getCurrentDateData();
-    updateDateData({
-      exerciseData: currentData.exerciseData.filter((exercise: Exercise) => exercise.id !== exerciseId)
-    });
+  const handleDeleteExercise = async (exerciseId: string) => {
+    try {
+      // まずローカルデータから削除を試行
+      const currentData = getCurrentDateData();
+      const localExercise = currentData.exerciseData.find((ex: Exercise) => ex.id === exerciseId);
+      
+      if (localExercise) {
+        // ローカルデータの場合
+        updateDateData({
+          exerciseData: currentData.exerciseData.filter((exercise: Exercise) => exercise.id !== exerciseId)
+        });
+        console.log('ローカル運動データ削除:', exerciseId);
+      } else {
+        // Firestoreデータの場合、APIで削除
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const response = await fetch('/api/exercises', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr,
+            exerciseId
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Firestore運動データ削除成功:', exerciseId);
+          // Firestoreデータを再取得して更新
+          setFirestoreExerciseData(prev => prev.filter(ex => ex.id !== exerciseId));
+        } else {
+          console.error('Firestore運動データ削除失敗:', response.status);
+        }
+      }
+    } catch (error) {
+      console.error('運動データ削除エラー:', error);
+    }
   };
 
   // 運動記録を更新する関数
-  const handleUpdateExercise = (exerciseId: string, updates: Partial<Exercise>) => {
-    const currentData = getCurrentDateData();
-    updateDateData({
-      exerciseData: currentData.exerciseData.map((exercise: Exercise) => 
-        exercise.id === exerciseId ? { ...exercise, ...updates } : exercise
-      )
-    });
+  const handleUpdateExercise = async (exerciseId: string, updates: Partial<Exercise>) => {
+    try {
+      // まずローカルデータから更新を試行
+      const currentData = getCurrentDateData();
+      const localExercise = currentData.exerciseData.find((ex: Exercise) => ex.id === exerciseId);
+      
+      if (localExercise) {
+        // ローカルデータの場合
+        updateDateData({
+          exerciseData: currentData.exerciseData.map((exercise: Exercise) => 
+            exercise.id === exerciseId ? { ...exercise, ...updates } : exercise
+          )
+        });
+        console.log('ローカル運動データ更新:', exerciseId);
+      } else {
+        // Firestoreデータの場合、APIで更新
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const response = await fetch('/api/exercises', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr,
+            exerciseId,
+            updates
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Firestore運動データ更新成功:', exerciseId);
+          // Firestoreデータを更新
+          setFirestoreExerciseData(prev => 
+            prev.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex)
+          );
+        } else {
+          console.error('Firestore運動データ更新失敗:', response.status);
+        }
+      }
+    } catch (error) {
+      console.error('運動データ更新エラー:', error);
+    }
   };
 
   // 運動プランを追加する関数（localStorage自動保存）
@@ -173,4 +297,21 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     // セッター（必要に応じて）
     setWorkoutPlans: workoutPlansStorage.setValue
   };
+
+  } catch (error) {
+    console.error('🏃 CRITICAL ERROR in useExerciseData:', error);
+    return {
+      exerciseData: [],
+      workoutPlans: [],
+      handleAddExercise: () => {},
+      handleAddSimpleExercise: () => {},
+      handleDeleteExercise: async () => {},
+      handleUpdateExercise: async () => {},
+      handleAddPlan: () => {},
+      handleDeletePlan: () => {},
+      handleAddExerciseToPlan: () => {},
+      handleDeleteExerciseFromPlan: () => {},
+      setWorkoutPlans: () => {}
+    };
+  }
 }

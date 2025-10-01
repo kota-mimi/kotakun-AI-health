@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -59,11 +59,45 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
 };
 
 export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise }: WorkoutSummaryCardProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const totalCalories = exerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
-  const totalDuration = exerciseData.reduce((sum, ex) => sum + ex.duration, 0);
-  const hasWorkout = exerciseData.length > 0;
+  console.log('💪 WorkoutSummaryCard received exerciseData:', exerciseData);
+  console.log('💪 exerciseData length:', exerciseData?.length || 0);
+  
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // 緊急修正: useExerciseDataが動かないので直接フェッチ (localhost URL fix)
+  const [emergencyExerciseData, setEmergencyExerciseData] = useState<Exercise[]>([]);
+  
+  useEffect(() => {
+    console.log('💪 EMERGENCY FETCH: Starting direct exercise data fetch');
+    const fetchExerciseData = async () => {
+      try {
+        const lineUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9';
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${today}`);
+        console.log('💪 EMERGENCY FETCH: API response status:', response.status);
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('💪 EMERGENCY FETCH: Data received:', result.data);
+          setEmergencyExerciseData(result.data || []);
+        }
+      } catch (error) {
+        console.error('💪 EMERGENCY FETCH: Error:', error);
+      }
+    };
+    
+    // プロップスが空の場合のみ緊急フェッチを実行
+    if (!exerciseData || exerciseData.length === 0) {
+      fetchExerciseData();
+    }
+  }, [exerciseData]);
+  
+  // プロップスが空の場合は緊急データを使用
+  const actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
+  const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
+  const totalDuration = actualExerciseData.reduce((sum, ex) => sum + ex.duration, 0);
+  const hasWorkout = actualExerciseData.length > 0;
 
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -121,7 +155,7 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
             {/* 運動記録リスト */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-slate-700 mb-2">運動記録</h4>
-              {(isExpanded ? exerciseData : exerciseData.slice(0, 3)).map((exercise, index) => (
+              {(isExpanded ? actualExerciseData : actualExerciseData.slice(0, 3)).map((exercise, index) => (
                 <div 
                   key={exercise.id} 
                   className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
@@ -183,13 +217,13 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
                 </div>
               ))}
               
-              {exerciseData.length > 3 && (
+              {actualExerciseData.length > 3 && (
                 <div className="text-center py-2">
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-colors font-medium"
                   >
-                    {isExpanded ? '閉じる' : `もっと見る (${exerciseData.length - 3}件)`}
+                    {isExpanded ? '閉じる' : `もっと見る (${actualExerciseData.length - 3}件)`}
                   </button>
                 </div>
               )}

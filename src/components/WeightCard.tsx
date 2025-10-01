@@ -1,6 +1,7 @@
+import React, { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Scale, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react';
+import { Scale, ChevronRight, ChevronDown, ChevronUp, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface WeightData {
   current: number;
@@ -22,6 +23,8 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ data, onNavigateToWeight, counselingResult }: WeightCardProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
   // デバッグ用ログ
   console.log('WeightCard - data:', data);
   console.log('WeightCard - counselingResult:', counselingResult);
@@ -38,17 +41,24 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
   console.log('WeightCard - currentWeight:', currentWeight, 'previous:', data.previous, 'target:', targetWeight);
 
   return (
-    <Button
-      variant="ghost" 
-      onClick={onNavigateToWeight}
-      className="w-full p-0 h-auto hover:bg-transparent"
-    >
-      <Card className="w-full backdrop-blur-xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 p-3 relative">
-        {/* 右上の矢印 */}
-        <ChevronRight size={16} className="absolute top-3 right-3 text-slate-400" />
-        
-        {/* メインデータ */}
-        <div className="grid grid-cols-3 gap-3">
+    <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <Button onClick={() => setIsCollapsed(!isCollapsed)} variant="ghost" className="w-full justify-start p-0 h-auto hover:bg-transparent">
+        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
+          <div className="flex items-center space-x-2">
+            <h3 className="font-semibold text-slate-900">体重</h3>
+            <span className="text-sm text-slate-500">({currentWeight}kg)</span>
+          </div>
+          {isCollapsed ? (
+            <ChevronDown size={16} className="text-slate-500" />
+          ) : (
+            <ChevronUp size={16} className="text-slate-500" />
+          )}
+        </div>
+      </Button>
+      
+      {!isCollapsed && (
+        <div className="p-4">
+          <div className="grid grid-cols-3 gap-3">
           {/* 現在の体重 */}
           <div className="text-center p-3 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50">
             <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">現在</div>
@@ -83,8 +93,20 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
               )}
             </div>
           </div>
+          </div>
         </div>
-      </Card>
-    </Button>
+      )}
+      
+      {/* Weight input click area when expanded */}
+      {!isCollapsed && (
+        <Button
+          variant="ghost"
+          onClick={onNavigateToWeight}
+          className="w-full p-2 h-auto hover:bg-slate-50 text-xs text-slate-500"
+        >
+          タップして記録
+        </Button>
+      )}
+    </Card>
   );
 }

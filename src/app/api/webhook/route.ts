@@ -10,14 +10,19 @@ import { generateId } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔥 LINE Webhook呼び出し開始');
     const body = await request.text();
     const signature = request.headers.get('x-line-signature') || '';
     
+    console.log('🔥 受信データ:', body.substring(0, 200));
+    
     // LINE署名を検証
     if (!verifySignature(body, signature)) {
+      console.log('🔥 署名検証失敗');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
+    console.log('🔥 署名検証成功');
     const events = JSON.parse(body).events;
 
     // 各イベントを処理
@@ -99,6 +104,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       await replyMessage(replyToken, [responseMessage]);
       return;
     }
+  }
+
+  // 運動記録の判定（パターンマッチング + AI フォールバック）
+  const exerciseResult = await handleExerciseMessage(replyToken, userId, text);
+  if (exerciseResult) {
+    return; // 運動記録として処理済み
   }
 
   // 「記録」ボタンの応答
@@ -195,12 +206,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         ]
       }
     };
-  } else {
-    // その他のメッセージには反応しない
-    return NextResponse.json({ status: 'ignored' });
+    await replyMessage(replyToken, [responseMessage]);
+    return;
   }
 
-  await replyMessage(replyToken, [responseMessage]);
+  // その他のメッセージには反応しない（運動記録、食事記録、記録ボタン以外）
+  return NextResponse.json({ status: 'ignored' });
 }
 
 async function handleImageMessage(replyToken: string, userId: string, messageId: string) {
@@ -392,7 +403,15 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'record_exercise':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '運動記録機能は準備中です！\nもうしばらくお待ちください 🏃‍♂️'
+        text: '運動内容を教えてください！\n\n例：\n・ランニング30分\n・ベンチプレス45分\n・筋トレ1時間\n・ヨガ20分',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'text', label: 'ランニング30分' } },
+            { type: 'action', action: { type: 'text', label: '筋トレ45分' } },
+            { type: 'action', action: { type: 'text', label: 'ウォーキング20分' } },
+            { type: 'action', action: { type: 'text', label: 'ヨガ30分' } }
+          ]
+        }
       }]);
       break;
 
@@ -721,4 +740,702 @@ async function getImageContent(messageId: string): Promise<Buffer | null> {
     console.error('画像取得エラー:', error);
     return null;
   }
+}
+
+// 運動記録機能
+// 基本運動パターン（固定）
+const BASIC_EXERCISE_PATTERNS = [
+  // 詳細筋トレパターン（重量×回数×セット）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腹筋|背筋|肩トレ)\s*(\d+(?:\.\d+)?)kg\s*(\d+)回\s*(\d+)セット$/i, 
+    type: 'strength_detailed',
+    captureGroups: ['exercise', 'weight', 'reps', 'sets']
+  },
+  
+  // 距離+時間パターン
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング)\s*(\d+(?:\.\d+)?)km\s*(\d+)分$/i, 
+    type: 'cardio_distance',
+    captureGroups: ['exercise', 'distance', 'duration']
+  },
+  
+  // 重量×回数パターン（セット数なし）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腹筋|背筋|肩トレ)\s*(\d+(?:\.\d+)?)kg\s*(\d+)回$/i, 
+    type: 'strength_weight_reps',
+    captureGroups: ['exercise', 'weight', 'reps']
+  },
+  
+  // 距離のみパターン
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング)\s*(\d+(?:\.\d+)?)km$/i, 
+    type: 'cardio_distance_only',
+    captureGroups: ['exercise', 'distance']
+  },
+  
+  // 有酸素運動（時間のみ）
+  { pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング|水泳|エアロビクス)\s*(\d+)\s*(分|時間)$/i, type: 'cardio' },
+  
+  // 筋力トレーニング（時間・回数・セット）
+  { pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腹筋|背筋|肩トレ)\s*(\d+)\s*(分|回|セット)$/i, type: 'strength' },
+  
+  // スポーツ
+  { pattern: /^(テニス|バドミントン|卓球|バスケ|サッカー|野球|ゴルフ)\s*(\d+)\s*(分|時間)$/i, type: 'sports' },
+  
+  // その他
+  { pattern: /^(ヨガ|ピラティス|ストレッチ|ダンス|筋トレ|ジム)\s*(\d+)\s*(分|時間)$/i, type: 'flexibility' }
+];
+
+// METs値マップ（カロリー計算用）
+const EXERCISE_METS = {
+  'ランニング': 8.0,
+  'ウォーキング': 3.5,
+  'ジョギング': 6.0,
+  'サイクリング': 6.8,
+  '水泳': 6.0,
+  'エアロビクス': 7.3,
+  'ベンチプレス': 6.0,
+  'スクワット': 5.0,
+  'デッドリフト': 6.0,
+  '懸垂': 8.0,
+  '腕立て伏せ': 4.0,
+  '腹筋': 4.0,
+  '背筋': 4.0,
+  '肩トレ': 5.0,
+  'テニス': 7.3,
+  'バドミントン': 5.5,
+  '卓球': 4.0,
+  'バスケ': 6.5,
+  'サッカー': 7.0,
+  '野球': 5.0,
+  'ゴルフ': 4.8,
+  'ヨガ': 2.5,
+  'ピラティス': 3.0,
+  'ストレッチ': 2.3,
+  'ダンス': 4.8,
+  '筋トレ': 6.0,
+  'ジム': 5.5
+};
+
+// 動的パターンキャッシュ（ユーザー別）
+const userExercisePatterns = new Map();
+
+// ユーザーセッション管理（最後の運動を30分間記憶）
+const userSessions = new Map();
+
+// 継続セット記録のパターンチェック
+function checkContinuationPattern(userId: string, text: string) {
+  // ユーザーセッションを確認
+  const session = userSessions.get(userId);
+  if (!session) return null;
+  
+  // セッションが30分以内かチェック
+  const now = Date.now();
+  if (now - session.timestamp > 30 * 60 * 1000) {
+    userSessions.delete(userId);
+    return null;
+  }
+  
+  // 継続パターン（重さ + 回数のみ）
+  const patterns = [
+    /^(\d+(?:\.\d+)?)kg?\s*(\d+)回?$/i,
+    /^(\d+(?:\.\d+)?)\s*kg?\s*(\d+)\s*rep?s?$/i,
+    /^(\d+(?:\.\d+)?)\s*(\d+)$/,  // "65 8" のような省略形
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return {
+        weight: parseFloat(match[1]),
+        reps: parseInt(match[2]),
+        exerciseName: session.exerciseName,
+        type: session.type,
+        userId: userId,
+        sessionId: session.sessionId
+      };
+    }
+  }
+  
+  return null;
+}
+
+// 継続セット記録処理
+async function recordContinuationSet(userId: string, match: any, replyToken: string) {
+  try {
+    const firestoreService = new FirestoreService();
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    // 既存の運動記録を取得
+    const dailyRecord = await firestoreService.getDailyRecord(userId, dateStr);
+    
+    if (!dailyRecord || !dailyRecord.exercises) {
+      throw new Error('既存の運動記録が見つかりません');
+    }
+    
+    // 同じセッションIDの運動を探す
+    const session = userSessions.get(userId);
+    let targetExercise = null;
+    
+    console.log('🔍 継続セット記録 - セッション情報:', session);
+    console.log('🔍 継続セット記録 - 利用可能な運動一覧:', dailyRecord.exercises.map(ex => ({ name: ex.name, id: ex.id })));
+    
+    for (let i = dailyRecord.exercises.length - 1; i >= 0; i--) {
+      const exercise = dailyRecord.exercises[i];
+      console.log(`🔍 検索中: ${exercise.name} === ${match.exerciseName} && ${exercise.id} === ${session.sessionId}`);
+      if (exercise.name === match.exerciseName && exercise.id === session.sessionId) {
+        targetExercise = exercise;
+        console.log('✅ 対象運動発見:', targetExercise);
+        break;
+      }
+    }
+    
+    if (!targetExercise) {
+      throw new Error('対象の運動記録が見つかりません');
+    }
+    
+    // 新しいセットを追加
+    const newSet = {
+      weight: match.weight,
+      reps: match.reps
+    };
+    
+    if (!targetExercise.sets) {
+      targetExercise.sets = [];
+    }
+    targetExercise.sets.push(newSet);
+    
+    // セット数に応じてカロリーと時間を更新
+    const setCount = targetExercise.sets.length;
+    targetExercise.duration = setCount * 3; // 1セットあたり3分と仮定
+    targetExercise.calories = Math.round(setCount * 25 * (match.weight / 60)); // 重量に応じてカロリー調整
+    
+    // Firestoreを更新
+    await firestoreService.saveDailyRecord(userId, dateStr, dailyRecord);
+    
+    // 返信メッセージ
+    const setNumber = targetExercise.sets.length;
+    const message = `${match.exerciseName} ${setNumber}セット目を記録しました！\n${match.weight}kg × ${match.reps}回\n\n続けて重さと回数を送信すると${setNumber + 1}セット目として記録されます。`;
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: message
+    }]);
+    
+    console.log('継続セット記録完了:', { exerciseName: match.exerciseName, setNumber, weight: match.weight, reps: match.reps });
+    
+  } catch (error) {
+    console.error('継続セット記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '継続セットの記録でエラーが発生しました。最初から運動名と一緒に記録してください。'
+    }]);
+  }
+}
+
+// 運動記録のメイン処理
+async function handleExerciseMessage(replyToken: string, userId: string, text: string): Promise<boolean> {
+  try {
+    console.log('=== 運動記録処理開始 ===');
+    console.log('入力テキスト:', text);
+    
+    // 継続セット記録機能は無効化
+    // const continuationMatch = checkContinuationPattern(userId, text);
+    // if (continuationMatch) {
+    //   console.log('継続セット記録:', continuationMatch);
+    //   await recordContinuationSet(userId, continuationMatch, replyToken);
+    //   return true;
+    // }
+    
+    // Step 1: 基本パターンマッチング
+    let match = checkBasicExercisePatterns(text);
+    console.log('基本パターンマッチ結果:', match);
+    
+    if (!match) {
+      // Step 2: ユーザー固有の動的パターンチェック
+      await updateUserExercisePatterns(userId);
+      match = checkUserExercisePatterns(userId, text);
+      console.log('ユーザーパターンマッチ結果:', match);
+    }
+    
+    if (match) {
+      // パターンマッチング成功 - 即座に記録
+      console.log('パターンマッチ成功、記録開始');
+      await recordExerciseFromMatch(userId, match, replyToken);
+      return true;
+    }
+    
+    // Step 3: 運動キーワード検出
+    const hasKeywords = containsExerciseKeywords(text);
+    console.log('運動キーワード検出:', hasKeywords);
+    
+    if (hasKeywords) {
+      // Step 4: AI解析フォールバック
+      const aiResult = await analyzeExerciseWithAI(userId, text);
+      if (aiResult) {
+        await handleAIExerciseResult(userId, aiResult, replyToken);
+        return true;
+      }
+      
+      // AI解析でも不明な場合は確認
+      console.log('AI解析失敗、確認メッセージ送信');
+      await askForExerciseDetails(replyToken, text);
+      return true;
+    }
+    
+    console.log('運動関連ではないと判定');
+    return false; // 運動関連ではない
+    
+  } catch (error) {
+    console.error('運動記録処理エラー:', error);
+    return false;
+  }
+}
+
+// 基本パターンマッチング
+function checkBasicExercisePatterns(text: string) {
+  for (const patternObj of BASIC_EXERCISE_PATTERNS) {
+    const { pattern, type, captureGroups } = patternObj;
+    const match = text.match(pattern);
+    if (match) {
+      // 詳細パターンの処理
+      if (type === 'strength_detailed') {
+        return {
+          exerciseName: match[1],
+          weight: parseFloat(match[2]),
+          reps: parseInt(match[3]),
+          sets: parseInt(match[4]),
+          type: 'strength',
+          source: 'detailed_pattern',
+          detailType: 'weight_reps_sets'
+        };
+      }
+      
+      if (type === 'cardio_distance') {
+        return {
+          exerciseName: match[1],
+          distance: parseFloat(match[2]),
+          duration: parseInt(match[3]),
+          type: 'cardio',
+          source: 'detailed_pattern',
+          detailType: 'distance_duration'
+        };
+      }
+      
+      if (type === 'strength_weight_reps') {
+        return {
+          exerciseName: match[1],
+          weight: parseFloat(match[2]),
+          reps: parseInt(match[3]),
+          sets: 1, // デフォルト1セット
+          type: 'strength',
+          source: 'detailed_pattern',
+          detailType: 'weight_reps'
+        };
+      }
+      
+      if (type === 'cardio_distance_only') {
+        return {
+          exerciseName: match[1],
+          distance: parseFloat(match[2]),
+          duration: null, // 時間なし
+          type: 'cardio',
+          source: 'detailed_pattern',
+          detailType: 'distance_only'
+        };
+      }
+      
+      // 従来の基本パターン
+      return {
+        exerciseName: match[1],
+        value: parseInt(match[2]),
+        unit: match[3],
+        type: type,
+        source: 'basic_pattern'
+      };
+    }
+  }
+  return null;
+}
+
+// ユーザー固有パターンの動的生成・更新
+async function updateUserExercisePatterns(userId: string) {
+  try {
+    const firestoreService = new FirestoreService();
+    
+    // ユーザーの過去の運動記録を取得（最近30日分）
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    const userExercises = await getUserExerciseHistory(userId, startDate, endDate);
+    
+    if (userExercises.length > 0) {
+      const uniqueExercises = [...new Set(userExercises.map(ex => ex.name))];
+      const patterns = generateUserExercisePatterns(uniqueExercises);
+      userExercisePatterns.set(userId, patterns);
+      console.log(`ユーザー ${userId} の動的パターン更新: ${uniqueExercises.join(', ')}`);
+    }
+  } catch (error) {
+    console.error('ユーザーパターン更新エラー:', error);
+  }
+}
+
+// ユーザーの運動履歴を取得
+async function getUserExerciseHistory(userId: string, startDate: Date, endDate: Date) {
+  try {
+    const firestoreService = new FirestoreService();
+    const exercises = [];
+    
+    // 期間内の各日をチェック
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      try {
+        const dailyData = await firestoreService.getDailyRecord(userId, dateStr);
+        if (dailyData && dailyData.exercises) {
+          exercises.push(...dailyData.exercises);
+        }
+      } catch (error) {
+        // 日付データがない場合は無視
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return exercises;
+  } catch (error) {
+    console.error('運動履歴取得エラー:', error);
+    return [];
+  }
+}
+
+// ユーザー固有パターンの生成
+function generateUserExercisePatterns(exerciseNames: string[]) {
+  const escapedNames = exerciseNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const namePattern = `(${escapedNames.join('|')})`;
+  
+  return [
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)\\s*(分|時間)$`, 'i'), type: 'user_exercise' },
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)\\s*(回|セット)$`, 'i'), type: 'user_exercise' },
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)$`, 'i'), type: 'user_exercise' } // 単位なし
+  ];
+}
+
+// ユーザーパターンチェック
+function checkUserExercisePatterns(userId: string, text: string) {
+  const patterns = userExercisePatterns.get(userId);
+  if (!patterns) return null;
+  
+  for (const { pattern, type } of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return {
+        exerciseName: match[1],
+        value: parseInt(match[2]),
+        unit: match[3] || '分', // デフォルト単位
+        type: type,
+        source: 'user_pattern'
+      };
+    }
+  }
+  return null;
+}
+
+// 運動キーワード検出
+function containsExerciseKeywords(text: string): boolean {
+  const exerciseKeywords = [
+    '運動', '筋トレ', 'トレーニング', 'ワークアウト', 'ジム', 'フィットネス',
+    'ランニング', 'ウォーキング', 'ジョギング', 'マラソン',
+    'ベンチプレス', 'スクワット', 'デッドリフト', '懸垂', '腕立て', '腹筋',
+    'ヨガ', 'ピラティス', 'ストレッチ', 'ダンス',
+    'テニス', 'バドミントン', '卓球', 'バスケ', 'サッカー', '野球', 'ゴルフ',
+    '水泳', 'サイクリング', 'エアロビクス'
+  ];
+  
+  return exerciseKeywords.some(keyword => text.includes(keyword));
+}
+
+// パターンマッチ結果から運動記録
+async function recordExerciseFromMatch(userId: string, match: any, replyToken: string) {
+  try {
+    const { exerciseName, type, source, detailType } = match;
+    
+    // 詳細パターンの処理
+    if (source === 'detailed_pattern') {
+      return await recordDetailedExercise(userId, match, replyToken);
+    }
+    
+    // 従来の基本パターンの処理
+    const { value, unit } = match;
+    
+    // 時間を分に統一
+    let durationInMinutes = value;
+    if (unit === '時間') {
+      durationInMinutes = value * 60;
+    } else if (unit === '回' || unit === 'セット') {
+      // 回数・セット数の場合は推定時間を計算（1回=0.5分、1セット=5分）
+      durationInMinutes = unit === '回' ? Math.max(value * 0.5, 5) : value * 5;
+    }
+    
+    // カロリー計算
+    const userWeight = await getUserWeight(userId);
+    const mets = EXERCISE_METS[exerciseName] || 5.0; // デフォルトMETs値
+    const calories = Math.round(mets * userWeight * (durationInMinutes / 60) * 1.05);
+    
+    // 運動データ作成
+    const exerciseData = {
+      id: generateId(),
+      name: exerciseName,
+      type: getExerciseType(exerciseName, type),
+      duration: durationInMinutes,
+      calories: calories,
+      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date()
+    };
+    
+    // 回数・セット情報がある場合は追加
+    if (unit === '回') {
+      exerciseData.sets = [{ weight: 0, reps: value }];
+    } else if (unit === 'セット') {
+      exerciseData.sets = Array(value).fill({ weight: 0, reps: 10 }); // デフォルト10回/セット
+    }
+    
+    // Firestoreに保存
+    const firestoreService = new FirestoreService();
+    const today = new Date().toISOString().split('T')[0];
+    await firestoreService.addExercise(userId, today, exerciseData);
+    
+    // 応答メッセージ
+    let unitText = '';
+    if (unit === '回') unitText = `${value}回`;
+    else if (unit === 'セット') unitText = `${value}セット`;
+    else unitText = `${durationInMinutes}分`;
+    
+    const responseMessage = {
+      type: 'text',
+      text: `${exerciseName} ${unitText} を記録しました！\n\n⚡ 消費カロリー: 約${calories}kcal\n💪 今日も頑張りましたね！`
+    };
+    
+    await replyMessage(replyToken, [responseMessage]);
+    
+  } catch (error) {
+    console.error('運動記録保存エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '運動記録の保存でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// 詳細運動記録の処理
+async function recordDetailedExercise(userId: string, match: any, replyToken: string) {
+  try {
+    const { exerciseName, type, detailType } = match;
+    
+    // ユーザーの体重取得
+    const userWeight = await getUserWeight(userId);
+    const mets = EXERCISE_METS[exerciseName] || 5.0;
+    
+    let exerciseData = {
+      id: generateId(),
+      name: exerciseName,
+      type: getExerciseType(exerciseName, type),
+      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date()
+    };
+    
+    let responseText = '';
+    
+    // 詳細タイプ別の処理
+    switch (detailType) {
+      case 'weight_reps_sets':
+        const { weight, reps, sets } = match;
+        const totalReps = reps * sets;
+        const estimatedDuration = Math.max(sets * 3, 10); // 1セット3分、最低10分
+        
+        exerciseData.duration = estimatedDuration;
+        exerciseData.calories = Math.round(mets * userWeight * (estimatedDuration / 60) * 1.05);
+        exerciseData.sets = Array(sets).fill({ weight: weight, reps: reps });
+        
+        responseText = `${exerciseName} ${weight}kg×${reps}回×${sets}セット を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n💪 総レップ数: ${totalReps}回`;
+        break;
+        
+      case 'distance_duration':
+        const { distance, duration } = match;
+        exerciseData.duration = duration;
+        exerciseData.distance = distance;
+        exerciseData.calories = Math.round(mets * userWeight * (duration / 60) * 1.05);
+        
+        const pace = (duration / distance).toFixed(1); // 分/km
+        responseText = `${exerciseName} ${distance}km（${duration}分）を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n🏃 ペース: ${pace}分/km`;
+        break;
+        
+      case 'weight_reps':
+        const { weight: w, reps: r } = match;
+        const estDuration = Math.max(r * 0.5, 5); // 1回0.5分、最低5分
+        
+        exerciseData.duration = estDuration;
+        exerciseData.calories = Math.round(mets * userWeight * (estDuration / 60) * 1.05);
+        exerciseData.sets = [{ weight: w, reps: r }];
+        
+        responseText = `${exerciseName} ${w}kg×${r}回 を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n💪 1セット完了`;
+        break;
+        
+      case 'distance_only':
+        const { distance: d } = match;
+        const estimatedTime = Math.round(d * 6); // 1km=6分と仮定
+        
+        exerciseData.duration = estimatedTime;
+        exerciseData.distance = d;
+        exerciseData.calories = Math.round(mets * userWeight * (estimatedTime / 60) * 1.05);
+        
+        responseText = `${exerciseName} ${d}km を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n🏃 推定時間: ${estimatedTime}分`;
+        break;
+    }
+    
+    // Firestoreに保存
+    const firestoreService = new FirestoreService();
+    const today = new Date().toISOString().split('T')[0];
+    await firestoreService.addExercise(userId, today, exerciseData);
+    
+    // 継続セッション保存機能は無効化
+    // if (detailType === 'weight_reps_sets' || detailType === 'weight_reps') {
+    //   console.log('🔄 セッション保存:', {
+    //     userId,
+    //     exerciseName,
+    //     sessionId: exerciseData.id,
+    //     detailType
+    //   });
+    //   
+    //   userSessions.set(userId, {
+    //     exerciseName,
+    //     type: exerciseData.type,
+    //     sessionId: exerciseData.id,
+    //     timestamp: Date.now()
+    //   });
+    //   
+    //   // 継続セット可能なことを伝える
+    //   responseText += '\n\n📝 続けて重さと回数を送信すると追加セットとして記録されます！\n（例：「65kg 8回」「70 10」）';
+    // }
+    
+    // 応答メッセージ
+    const responseMessage = {
+      type: 'text',
+      text: responseText
+    };
+    
+    await replyMessage(replyToken, [responseMessage]);
+    
+  } catch (error) {
+    console.error('詳細運動記録保存エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '運動記録の保存でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// 運動タイプの判定
+function getExerciseType(exerciseName: string, patternType: string): string {
+  const cardioExercises = ['ランニング', 'ウォーキング', 'ジョギング', 'サイクリング', '水泳', 'エアロビクス'];
+  const strengthExercises = ['ベンチプレス', 'スクワット', 'デッドリフト', '懸垂', '腕立て伏せ', '腹筋', '背筋', '肩トレ', '筋トレ'];
+  const sportsExercises = ['テニス', 'バドミントン', '卓球', 'バスケ', 'サッカー', '野球', 'ゴルフ'];
+  const flexibilityExercises = ['ヨガ', 'ピラティス', 'ストレッチ'];
+  
+  if (cardioExercises.includes(exerciseName)) return 'cardio';
+  if (strengthExercises.includes(exerciseName)) return 'strength';
+  if (sportsExercises.includes(exerciseName)) return 'sports';
+  if (flexibilityExercises.includes(exerciseName)) return 'flexibility';
+  
+  // パターンタイプからフォールバック
+  if (patternType === 'cardio') return 'cardio';
+  if (patternType === 'strength') return 'strength';
+  if (patternType === 'sports') return 'sports';
+  if (patternType === 'flexibility') return 'flexibility';
+  
+  return 'cardio'; // デフォルト
+}
+
+// ユーザーの体重を取得
+async function getUserWeight(userId: string): Promise<number> {
+  try {
+    const firestoreService = new FirestoreService();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 最近7日間の体重データを探す
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      try {
+        const dailyData = await firestoreService.getDailyRecord(userId, dateStr);
+        if (dailyData && dailyData.weight) {
+          return dailyData.weight;
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+    
+    return 70; // デフォルト体重
+  } catch (error) {
+    console.error('体重取得エラー:', error);
+    return 70;
+  }
+}
+
+// AI解析フォールバック（簡易版）
+async function analyzeExerciseWithAI(userId: string, text: string) {
+  try {
+    // AI解析は一旦スキップして、シンプルなキーワードマッチングで対応
+    console.log('運動AI解析スキップ:', text);
+    return null;
+  } catch (error) {
+    console.error('AI運動解析エラー:', error);
+    return null;
+  }
+}
+
+// AI結果の処理
+async function handleAIExerciseResult(userId: string, aiResult: any, replyToken: string) {
+  if (aiResult.confidence > 0.8) {
+    // 確信度が高い場合は自動記録
+    const match = {
+      exerciseName: aiResult.exercise,
+      value: aiResult.duration || 30,
+      unit: '分',
+      type: aiResult.type || 'cardio',
+      source: 'ai_analysis'
+    };
+    await recordExerciseFromMatch(userId, match, replyToken);
+  } else {
+    // 確信度が低い場合は確認
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: `「${aiResult.exercise}」の運動を記録しますか？\n時間を教えてください（例：30分）`,
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'text', label: '15分' } },
+          { type: 'action', action: { type: 'text', label: '30分' } },
+          { type: 'action', action: { type: 'text', label: '60分' } }
+        ]
+      }
+    }]);
+  }
+}
+
+// 運動詳細の確認
+async function askForExerciseDetails(replyToken: string, originalText: string) {
+  await replyMessage(replyToken, [{
+    type: 'text',
+    text: `運動を記録しますか？\n具体的な運動名と時間を教えてください。\n\n例：「ランニング30分」「ベンチプレス45分」`,
+    quickReply: {
+      items: [
+        { type: 'action', action: { type: 'text', label: 'ランニング30分' } },
+        { type: 'action', action: { type: 'text', label: '筋トレ45分' } },
+        { type: 'action', action: { type: 'text', label: 'ウォーキング20分' } }
+      ]
+    }
+  }]);
 }

@@ -142,11 +142,49 @@ export class FirestoreService {
   // 日次記録の取得
   async getDailyRecord(lineUserId: string, date: string): Promise<DailyRecord | null> {
     try {
+      console.log('🔍 FirestoreService getDailyRecord 開始:', { lineUserId, date });
       const recordRef = doc(db, 'users', lineUserId, 'dailyRecords', date);
       const recordSnap = await getDoc(recordRef);
       
+      console.log('🔍 FirestoreService recordSnap.exists():', recordSnap.exists());
+      
       if (recordSnap.exists()) {
         const data = recordSnap.data();
+        console.log('🔍 FirestoreService getDailyRecord summary:', { 
+          lineUserId, 
+          date, 
+          hasExercises: !!data.exercises,
+          hasExercise: !!data.exercise,
+          exercisesLength: data.exercises?.length || 0,
+          exerciseLength: data.exercise?.length || 0,
+          allKeys: Object.keys(data)
+        });
+        
+        // Migration: Handle both old 'exercise' and new 'exercises' field names
+        let exercises = data.exercises;
+        if (!exercises && data.exercise) {
+          console.log('🔄 FirestoreService migrating from exercise to exercises field');
+          exercises = data.exercise;
+          // Update the data to use the new field name
+          data.exercises = exercises;
+          delete data.exercise;
+          
+          // Save the migrated data to Firestore to make it permanent
+          try {
+            await setDoc(recordRef, {
+              ...data,
+              updatedAt: serverTimestamp()
+            });
+            console.log('🔄 FirestoreService migration saved to database');
+          } catch (migrationError) {
+            console.error('🔄 FirestoreService migration save error:', migrationError);
+          }
+        }
+        
+        if (exercises && exercises.length > 0) {
+          console.log('🔍 FirestoreService exercises found:', exercises.length, 'exercises');
+        }
+        
         return {
           ...data,
           createdAt: data.createdAt?.toDate() || new Date(),
@@ -154,6 +192,7 @@ export class FirestoreService {
         } as DailyRecord;
       }
       
+      console.log('🔍 FirestoreService getDailyRecord: No document found for', { lineUserId, date });
       return null;
     } catch (error) {
       console.error('日次記録取得エラー:', error);
@@ -217,20 +256,32 @@ export class FirestoreService {
   // 運動記録の追加
   async addExercise(lineUserId: string, date: string, exerciseData: any) {
     try {
-      const existingRecord = await this.getDailyRecord(lineUserId, date);
-      const exercises = existingRecord?.exercise || [];
+      console.log('🔥 FirestoreService addExercise called:', { lineUserId, date, exerciseData });
       
-      exercises.push({
+      const existingRecord = await this.getDailyRecord(lineUserId, date);
+      console.log('🔥 FirestoreService existing record found:', !!existingRecord);
+      console.log('🔥 FirestoreService existing record data keys:', existingRecord ? Object.keys(existingRecord) : 'null');
+      
+      const exercises = existingRecord?.exercises || [];
+      console.log('🔥 FirestoreService current exercises length:', exercises.length);
+      
+      const newExercise = {
         ...exerciseData,
         id: `exercise_${generateId()}`,
         timestamp: new Date(),
-      });
+      };
+      
+      exercises.push(newExercise);
+      console.log('🔥 FirestoreService exercises after push:', exercises);
 
-      await this.saveDailyRecord(lineUserId, date, {
-        exercise: exercises,
-      });
+      const saveData = {
+        exercises: exercises,
+      };
+      console.log('🔥 FirestoreService saving data:', saveData);
+      
+      await this.saveDailyRecord(lineUserId, date, saveData);
 
-      console.log('運動記録追加完了:', { lineUserId, date });
+      console.log('🔥 FirestoreService 運動記録追加完了:', { lineUserId, date, exerciseCount: exercises.length });
       return true;
     } catch (error) {
       console.error('運動記録追加エラー:', error);
