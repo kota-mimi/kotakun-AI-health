@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Scale, ChevronRight, ChevronDown, ChevronUp, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface WeightData {
   current: number;
@@ -23,18 +21,19 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ data, onNavigateToWeight, counselingResult }: WeightCardProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  
   // デバッグ用ログ
   console.log('WeightCard - data:', data);
   console.log('WeightCard - counselingResult:', counselingResult);
   
+  // データが記録されているかチェック
+  const hasData = data.current > 0;
+  
   // 実際の記録データを優先、カウンセリング結果はフォールバックとして使用
-  const currentWeight = data.current > 0 ? data.current : (counselingResult?.answers?.weight || 0);
-  const difference = currentWeight - data.previous;
+  const currentWeight = hasData ? data.current : (counselingResult?.answers?.weight || 0);
+  const difference = hasData ? (currentWeight - data.previous) : 0;
   // カウンセリング結果の目標体重があれば優先、なければデータの目標体重を使用
   const targetWeight = counselingResult?.answers?.targetWeight || data.target;
-  const remaining = Math.abs(currentWeight - targetWeight);
+  const remaining = hasData ? Math.abs(currentWeight - targetWeight) : 0;
   const isDecrease = difference < 0;
   const isTargetReached = Math.abs(difference) < 0.1;
   
@@ -42,71 +41,63 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
 
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      <Button onClick={() => setIsCollapsed(!isCollapsed)} variant="ghost" className="w-full justify-start p-0 h-auto hover:bg-transparent">
-        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
-          <div className="flex items-center space-x-2">
-            <h3 className="font-semibold text-slate-900">体重</h3>
-            <span className="text-sm text-slate-500">({currentWeight}kg)</span>
-          </div>
-          {isCollapsed ? (
-            <ChevronDown size={16} className="text-slate-500" />
-          ) : (
-            <ChevronUp size={16} className="text-slate-500" />
-          )}
-        </div>
-      </Button>
-      
-      {!isCollapsed && (
-        <div className="p-4">
-          <div className="grid grid-cols-3 gap-3">
+      <div className="p-3">
+        <div className="grid grid-cols-3 gap-2">
           {/* 現在の体重 */}
-          <div className="text-center p-3 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50">
+          <div 
+            className="text-center p-3 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+            onClick={onNavigateToWeight}
+          >
             <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">現在</div>
             <div className="text-lg font-bold text-slate-900">
-              {currentWeight}
-              <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+              {hasData ? currentWeight : '--'}
+              {hasData && <span className="text-sm font-medium text-slate-600 ml-1">kg</span>}
             </div>
           </div>
           
           {/* 前日比 */}
-          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50">
+          <div 
+            className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+            onClick={onNavigateToWeight}
+          >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">前日比</div>
             <div className={`text-lg font-bold ${
-              isDecrease ? 'text-green-600' : 'text-orange-600'
+              hasData && isDecrease ? 'text-green-600' : hasData ? 'text-orange-600' : 'text-slate-900'
             }`}>
-              {isDecrease ? '' : '+'}{difference.toFixed(1)}
-              <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+              {hasData ? (
+                <>
+                  {isDecrease ? '' : '+'}{difference.toFixed(1)}
+                  <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+                </>
+              ) : (
+                '--'
+              )}
             </div>
           </div>
           
           {/* 目標まで */}
-          <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl border border-purple-200/50">
+          <div 
+            className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl border border-purple-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+            onClick={onNavigateToWeight}
+          >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
             <div className="text-lg font-bold">
-              {currentWeight <= targetWeight ? (
-                <span className="text-green-600">🎉 達成</span>
+              {hasData ? (
+                currentWeight <= targetWeight ? (
+                  <span className="text-green-600">🎉 達成</span>
+                ) : (
+                  <span className="text-purple-600">
+                    -{remaining.toFixed(1)}
+                    <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+                  </span>
+                )
               ) : (
-                <span className="text-purple-600">
-                  -{remaining.toFixed(1)}
-                  <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
-                </span>
+                <span className="text-slate-900">--</span>
               )}
             </div>
           </div>
-          </div>
         </div>
-      )}
-      
-      {/* Weight input click area when expanded */}
-      {!isCollapsed && (
-        <Button
-          variant="ghost"
-          onClick={onNavigateToWeight}
-          className="w-full p-2 h-auto hover:bg-slate-50 text-xs text-slate-500"
-        >
-          タップして記録
-        </Button>
-      )}
+      </div>
     </Card>
   );
 }

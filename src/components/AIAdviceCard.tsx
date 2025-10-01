@@ -51,7 +51,6 @@ export function AIAdviceCard({ onNavigateToProfile, onViewAllAdvices, counseling
         <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
             <h3 className="font-semibold text-slate-900">AIアドバイス</h3>
-            <span className="text-sm text-slate-500">({todayAdvice.category})</span>
           </div>
           {isCollapsed ? (
             <ChevronDown size={16} className="text-slate-500" />

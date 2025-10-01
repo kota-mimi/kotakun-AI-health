@@ -114,21 +114,12 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
           <div className="flex space-x-2">
             <Button
               type="button"
-              variant={recordType === 'both' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setRecordType('both')}
-              className="flex-1 py-2 rounded-xl"
-            >
-              両方
-            </Button>
-            <Button
-              type="button"
               variant={recordType === 'weight' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setRecordType('weight')}
               className="flex-1 py-2 rounded-xl"
             >
-              体重のみ
+              体重
             </Button>
             <Button
               type="button"
@@ -137,7 +128,16 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
               onClick={() => setRecordType('bodyFat')}
               className="flex-1 py-2 rounded-xl"
             >
-              体脂肪のみ
+              体脂肪
+            </Button>
+            <Button
+              type="button"
+              variant={recordType === 'both' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setRecordType('both')}
+              className="flex-1 py-2 rounded-xl"
+            >
+              両方
             </Button>
           </div>
         </div>

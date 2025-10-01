@@ -566,7 +566,6 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
             {isAnalyzing && (
               <Card className="p-4">
                 <div className="text-center" style={{color: '#4682B4'}}>
-                  <Sparkles className="w-6 h-6 mx-auto mb-2 animate-pulse" />
                   <p className="text-sm">解析中...</p>
                 </div>
               </Card>
@@ -660,10 +659,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                 style={{backgroundColor: '#4682B4'}}
               >
                 {isTextAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    解析中...
-                  </>
+                  "解析中..."
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />

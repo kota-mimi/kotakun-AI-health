@@ -85,7 +85,8 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
     fat: '#F97316',     // 体重グラフと同じオレンジ（脂質）
     carbs: '#22C55E',   // 体重グラフと同じグリーン（炭水化物）
     basal: '#22C55E',   // 緑色 - 基礎代謝
-    activity: '#F97316' // オレンジ色 - 活動による消費
+    activity: '#F97316', // オレンジ色 - 活動による消費
+    burn: '#EA580C'     // 運動記録と同じオレンジ色 - 消費カロリー
   };
 
   return (
@@ -98,9 +99,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
         <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
             <h3 className="font-semibold text-slate-900">カロリー</h3>
-            <span className="text-sm text-slate-500">
-              ({currentView === 'intake' ? `${displayTotalCalories}/${finalTargetCalories}kcal` : `${burnedCalories}kcal消費`})
-            </span>
           </div>
           {isCollapsed ? (
             <ChevronDown size={16} className="text-slate-500" />
@@ -233,15 +231,15 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-slate-900">消費カロリー</span>
                     <div className="text-right">
-                      <span className="font-bold text-health-primary">{burnedCalories}</span>
+                      <span className="font-bold" style={{color: colors.burn}}>{burnedCalories}</span>
                       <span className="text-slate-500"> kcal</span>
                     </div>
                   </div>
                   <Progress 
                     value={Math.min(burnProgress, 100)} 
                     className="h-2.5" 
-                    color={colors.primary}
-                    backgroundColor="rgba(70, 130, 180, 0.1)"
+                    color={colors.burn}
+                    backgroundColor="rgba(234, 88, 12, 0.1)"
                   />
                 </div>
 
@@ -292,25 +290,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                       </div>
                     )}
 
-                    {/* 日常活動による消費 */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: colors.activity}}></div>
-                          <span className="text-sm text-slate-700">日常活動</span>
-                        </div>
-                        <span className="text-sm">
-                          <span className="font-bold" style={{color: colors.activity}}>{dailyActivityCalories}</span>
-                          <span className="text-slate-500"> kcal</span>
-                        </span>
-                      </div>
-                      <Progress 
-                        value={(dailyActivityCalories / burnedCalories) * 100} 
-                        className="h-2" 
-                        color={colors.activity}
-                        backgroundColor="rgba(245, 158, 11, 0.1)"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>

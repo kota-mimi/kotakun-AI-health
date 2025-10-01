@@ -2,420 +2,470 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { generateId } from '@/lib/utils';
-import type { CounselingAnswer, UserProfile } from '@/types';
+import { ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-const questions = [
-  {
-    id: 'basic_info',
-    title: '基本情報',
-    fields: [
-      { id: 'name', label: 'お名前', type: 'text', required: true },
-      { id: 'age', label: '年齢', type: 'number', required: true },
-      { 
-        id: 'gender', 
-        label: '性別', 
-        type: 'select', 
-        options: [
-          { value: 'male', label: '男性' },
-          { value: 'female', label: '女性' },
-          { value: 'other', label: 'その他' }
-        ], 
-        required: true 
-      },
-      { id: 'height', label: '身長 (cm)', type: 'number', required: true },
-      { id: 'weight', label: '体重 (kg)', type: 'number', required: true },
-    ]
-  },
-  {
-    id: 'goals',
-    title: '目標設定',
-    fields: [
-      { id: 'targetWeight', label: '目標体重 (kg)', type: 'number', required: false },
-      { id: 'targetDate', label: 'いつまでに達成したいですか？', type: 'date', required: false },
-      {
-        id: 'primaryGoal',
-        label: '目標タイプ',
-        type: 'select',
-        options: [
-          { value: 'weight_loss', label: '体重を落としたい' },
-          { value: 'healthy_beauty', label: '健康的にキレイになりたい' },
-          { value: 'weight_gain', label: '体重を増やしたい' },
-          { value: 'muscle_gain', label: '筋肉をつけたい' },
-          { value: 'lean_muscle', label: '筋肉をつけながら痩せたい' },
-          { value: 'fitness_improve', label: '運動不足解消・体力を助けたい' },
-          { value: 'other', label: 'その他' }
-        ],
-        required: true
-      },
-      { id: 'targetAreas', label: '気になる、改善、強化したい部位', type: 'textarea', required: false },
-    ]
-  },
-  {
-    id: 'sleep',
-    title: '睡眠について',
-    fields: [
-      {
-        id: 'sleepDuration',
-        label: '睡眠時間',
-        type: 'select',
-        options: [
-          { value: 'under_3h', label: '3時間未満' },
-          { value: '4_5h', label: '4~5時間' },
-          { value: '6_7h', label: '6~7時間' },
-          { value: '8h_plus', label: '8時間以上' }
-        ],
-        required: true
-      },
-      {
-        id: 'sleepQuality',
-        label: '睡眠の質',
-        type: 'select',
-        options: [
-          { value: 'good', label: '良い' },
-          { value: 'normal', label: '普通' },
-          { value: 'bad', label: '悪い' }
-        ],
-        required: true
-      }
-    ]
-  },
-  {
-    id: 'activity',
-    title: '活動レベル',
-    fields: [
-      {
-        id: 'activityLevel',
-        label: '活動レベル',
-        type: 'select',
-        options: [
-          { value: 'low', label: '低い（座っていることが多く、一日の運動は通勤通学買い物など）' },
-          { value: 'slightly_low', label: 'やや低い（上記の人＋週に1.2回の適度な軽い運動する）' },
-          { value: 'normal', label: '普通（外回りや肉体労働で働いている又は週に2.3回の強度な運動する）' },
-          { value: 'high', label: '高い（上記の普通の人＋週に3〜5強度な運動をする）' },
-          { value: 'very_high', label: 'かなり高い（アスリート、毎日強度な運動をする人）' }
-        ],
-        required: true
-      }
-    ]
-  },
-  {
-    id: 'exercise',
-    title: '運動習慣',
-    fields: [
-      {
-        id: 'exerciseHabit',
-        label: '運動習慣',
-        type: 'select',
-        options: [
-          { value: 'yes', label: 'ある' },
-          { value: 'no', label: 'ない' }
-        ],
-        required: true
-      },
-      {
-        id: 'exerciseFrequency',
-        label: '運動頻度',
-        type: 'select',
-        options: [
-          { value: 'none', label: 'しない' },
-          { value: 'weekly_1_2', label: '週1~2回' },
-          { value: 'weekly_3_4', label: '週3~4回' },
-          { value: 'weekly_5_6', label: '週5~6回' },
-          { value: 'daily', label: '毎日' }
-        ],
-        required: true
-      },
-      {
-        id: 'exerciseEnvironment',
-        label: '運動環境',
-        type: 'select',
-        options: [
-          { value: 'gym', label: 'ジム' },
-          { value: 'home', label: '自宅（散歩、ランニング）' },
-          { value: 'both', label: '両方' }
-        ],
-        required: false
-      }
-    ]
-  },
-  {
-    id: 'diet',
-    title: '食事習慣',
-    fields: [
-      {
-        id: 'mealFrequency',
-        label: '食事回数',
-        type: 'select',
-        options: [
-          { value: '1', label: '1回' },
-          { value: '2', label: '2回' },
-          { value: '3', label: '3回' },
-          { value: '4_plus', label: '4回以上' }
-        ],
-        required: true
-      },
-      {
-        id: 'snackFrequency',
-        label: '間食頻度',
-        type: 'select',
-        options: [
-          { value: 'none', label: 'しない' },
-          { value: 'sometimes', label: '時々食べる' },
-          { value: 'almost_daily', label: 'ほぼ毎日食べる' },
-          { value: 'daily', label: '毎日食べる' }
-        ],
-        required: true
-      },
-      {
-        id: 'alcoholFrequency',
-        label: '飲酒頻度',
-        type: 'select',
-        options: [
-          { value: 'none', label: '飲まない' },
-          { value: 'sometimes', label: '時々飲む' },
-          { value: 'almost_daily', label: 'ほぼ毎日飲む' },
-          { value: 'daily', label: '毎日飲む' }
-        ],
-        required: true
-      },
-      { id: 'dietaryRestrictions', label: '食事制限・希望', type: 'textarea', required: false }
-    ]
-  },
-  {
-    id: 'health_condition',
-    title: '健康状態',
-    fields: [
-      { id: 'medicalConditions', label: '持病や既往歴があれば教えてください', type: 'textarea', required: false },
-      { id: 'allergies', label: 'アレルギーがあれば教えてください', type: 'textarea', required: false },
-    ]
+interface BasicInfo {
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  height: number;
+  weight: number;
+}
+
+interface Goal {
+  type: 'weight_loss' | 'muscle_gain' | 'maintenance';
+  targetWeight?: number;
+  targetDate?: string; // 目標達成日 (YYYY-MM-DD)
+}
+
+interface ActivityLevel {
+  level: 'sedentary' | 'light' | 'moderate';
+}
+
+const calculateBMR = (basicInfo: BasicInfo) => {
+  const { age, gender, height, weight } = basicInfo;
+  
+  if (gender === 'male') {
+    return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+  } else if (gender === 'female') {
+    return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+  } else {
+    // その他の場合は平均値を使用
+    const maleValue = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    const femaleValue = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    return (maleValue + femaleValue) / 2;
   }
-];
+};
 
-export default function CounselingPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const calculateTDEE = (bmr: number, activityLevel: ActivityLevel['level']) => {
+  const multipliers = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55
+  };
+  
+  return bmr * multipliers[activityLevel];
+};
 
-  const progress = ((currentStep + 1) / questions.length) * 100;
+const calculateTargetCalories = (tdee: number, goal: Goal['type']) => {
+  switch (goal) {
+    case 'weight_loss':
+      return tdee - 400;
+    case 'muscle_gain':
+      return tdee + 300;
+    case 'maintenance':
+    default:
+      return tdee;
+  }
+};
 
-  const handleInputChange = (fieldId: string, value: any) => {
-    setAnswers(prev => ({
-      ...prev,
-      [fieldId]: value
-    }));
+const calculatePFC = (targetCalories: number, weight: number, goal: Goal['type']) => {
+  let proteinMultiplier = 1.6;
+  if (goal === 'muscle_gain') proteinMultiplier = 2.0;
+  if (goal === 'weight_loss') proteinMultiplier = 1.8;
+  
+  const protein = Math.round(weight * proteinMultiplier);
+  const proteinCalories = protein * 4;
+  
+  const fatCalories = targetCalories * 0.25;
+  const fat = Math.round(fatCalories / 9);
+  
+  const carbCalories = targetCalories - proteinCalories - fatCalories;
+  const carbs = Math.round(carbCalories / 4);
+  
+  return { protein, fat, carbs };
+};
+
+export default function SimpleCounselingPage() {
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [basicInfo, setBasicInfo] = useState<BasicInfo>({
+    age: 25,
+    gender: 'male',
+    height: 170,
+    weight: 70
+  });
+  const [goal, setGoal] = useState<Goal>({ 
+    type: 'weight_loss',
+    targetWeight: 65,
+    targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 3ヶ月後
+  });
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>({ level: 'light' });
+
+  const totalSteps = 3;
+
+  const handleComplete = () => {
+    const bmr = calculateBMR(basicInfo);
+    const tdee = calculateTDEE(bmr, activityLevel.level);
+    const targetCalories = calculateTargetCalories(tdee, goal.type);
+    const pfc = calculatePFC(targetCalories, basicInfo.weight, goal.type);
+
+    // 目標期間を計算（目標日付から）
+    const targetPeriod = goal.targetDate ? 
+      Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
+      : null;
+
+    const counselingResult = {
+      id: `counseling_${Date.now()}`,
+      answers: {
+        ...basicInfo,
+        goal: goal.type,
+        targetWeight: goal.targetWeight,
+        targetDate: goal.targetDate,
+        activityLevel: activityLevel.level
+      },
+      results: {
+        bmr: Math.round(bmr),
+        tdee: Math.round(tdee),
+        targetCalories: Math.round(targetCalories),
+        targetWeight: goal.targetWeight,
+        targetDate: goal.targetDate,
+        pfc
+      },
+      advice: generateAdvice(goal.type, basicInfo),
+      createdAt: new Date().toISOString()
+    };
+
+    localStorage.setItem('counselingResult', JSON.stringify(counselingResult));
+    localStorage.setItem('hasCompletedCounseling', 'true');
+
+    router.push('/dashboard');
   };
 
-  const handleNext = () => {
-    if (currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+  const generateAdvice = (goalType: Goal['type'], basicInfo: BasicInfo) => {
+    const adviceMap = {
+      weight_loss: [
+        '無理な食事制限は避け、バランスの良い食事を心がけましょう',
+        '有酸素運動と筋力トレーニングを組み合わせると効果的です',
+        '1週間で0.5-1kgのペースで減量するのが理想的です'
+      ],
+      muscle_gain: [
+        'タンパク質をしっかり摂取し、筋力トレーニングを継続しましょう',
+        '休養も筋肉成長には重要です。十分な睡眠を取りましょう',
+        '段階的に負荷を上げながらトレーニングを行いましょう'
+      ],
+      maintenance: [
+        '現在の良い状態を維持するため、規則的な運動習慣を続けましょう',
+        'バランスの良い食事で栄養バランスを保ちましょう',
+        '定期的な体重・体調チェックで健康状態を把握しましょう'
+      ]
+    };
+
+    return adviceMap[goalType];
   };
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      // ローカルストレージにカウンセリング回答を保存
-      localStorage.setItem('counselingAnswers', JSON.stringify(answers));
-      
-      // LIFF経由でLINE User IDを取得
-      let lineUserId = null;
-      try {
-        const liff = (await import('@line/liff')).default;
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          lineUserId = profile.userId;
-        }
-      } catch (liffError) {
-        console.log('LIFF User ID取得エラー:', liffError);
-      }
-
-      // AI分析APIを呼び出し
-      // LIFF User IDがない場合はモックIDを使用
-      const userId = lineUserId || `mock_user_${generateId()}`;
-      
-      try {
-        const response = await fetch('/api/counseling/analyze', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            answers,
-            lineUserId: userId,
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          // AI分析結果をローカルストレージに保存
-          localStorage.setItem('aiAnalysis', JSON.stringify(result.analysis));
-          console.log('AI分析完了:', result.analysis);
-        } else {
-          console.error('AI分析APIエラー:', await response.text());
-        }
-      } catch (apiError) {
-        console.error('AI分析API呼び出しエラー:', apiError);
-      }
-      
-      // ダッシュボードへリダイレクト
-      window.location.href = '/dashboard';
-    } catch (error) {
-      console.error('送信エラー:', error);
-      // エラーが発生してもダッシュボードには進める
-      window.location.href = '/dashboard';
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const currentQuestion = questions[currentStep];
-  const isLastStep = currentStep === questions.length - 1;
-
-  const renderField = (field: any) => {
-    const value = answers[field.id] || '';
-
-    switch (field.type) {
-      case 'text':
-        return (
-          <Input
-            id={field.id}
-            value={value}
-            onChange={(e) => handleInputChange(field.id, e.target.value)}
-            required={field.required}
-          />
-        );
-      
-      case 'number':
-        return (
-          <Input
-            id={field.id}
+  const renderStep1 = () => (
+    <div className="flex-1 px-6">
+      <div className="space-y-8">
+        {/* 年齢 */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-slate-700 block">年齢</label>
+          <input
             type="number"
-            value={value}
-            onChange={(e) => handleInputChange(field.id, parseFloat(e.target.value) || '')}
-            required={field.required}
+            min="18"
+            max="80"
+            value={basicInfo.age}
+            onChange={(e) => setBasicInfo(prev => ({ ...prev, age: parseInt(e.target.value) || 25 }))}
+            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+            placeholder="25"
           />
-        );
-      
-      case 'date':
-        return (
-          <Input
-            id={field.id}
-            type="date"
-            value={value}
-            onChange={(e) => handleInputChange(field.id, e.target.value)}
-            required={field.required}
-          />
-        );
-      
-      case 'select':
-        return (
-          <select
-            id={field.id}
-            value={value}
-            onChange={(e) => handleInputChange(field.id, e.target.value)}
-            required={field.required}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="">選択してください</option>
-            {field.options.map((option: any) => (
-              <option 
-                key={typeof option === 'string' ? option : option.value} 
-                value={typeof option === 'string' ? option : option.value}
-              >
-                {typeof option === 'string' ? option : option.label}
-              </option>
-            ))}
-          </select>
-        );
-      
-      case 'textarea':
-        return (
-          <Textarea
-            id={field.id}
-            value={value}
-            onChange={(e) => handleInputChange(field.id, e.target.value)}
-            required={field.required}
-            rows={3}
-          />
-        );
-      
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            健康カウンセリング
-          </h1>
-          <Progress value={progress} className="w-full h-2" />
-          <p className="text-center text-sm text-gray-600 mt-2">
-            {currentStep + 1} / {questions.length}
-          </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl text-center">
-              {currentQuestion.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {currentQuestion.fields.map((field) => (
-              <div key={field.id} className="space-y-2">
-                <Label htmlFor={field.id} className="font-medium">
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </Label>
-                {renderField(field)}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-between mt-8">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            disabled={currentStep === 0}
-            className="flex items-center gap-2"
+        {/* 性別 */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-slate-700 block">性別</label>
+          <select
+            value={basicInfo.gender}
+            onChange={(e) => setBasicInfo(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }))}
+            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white appearance-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 1rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <ChevronLeft className="h-4 w-4" />
-            前へ
-          </Button>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
 
-          {isLastStep ? (
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700 text-white px-8"
+        {/* 身長・体重 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700 block">身長</label>
+            <div className="relative">
+              <input
+                type="number"
+                min="140"
+                max="200"
+                value={basicInfo.height}
+                onChange={(e) => setBasicInfo(prev => ({ ...prev, height: parseInt(e.target.value) || 170 }))}
+                className="w-full h-14 px-4 pr-10 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+                placeholder="170"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">cm</span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700 block">体重</label>
+            <div className="relative">
+              <input
+                type="number"
+                min="30"
+                max="150"
+                value={basicInfo.weight}
+                onChange={(e) => setBasicInfo(prev => ({ ...prev, weight: parseInt(e.target.value) || 70 }))}
+                className="w-full h-14 px-4 pr-10 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+                placeholder="70"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="flex-1 px-6">
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <button
+            type="button"
+            onClick={() => setGoal(prev => ({ 
+              ...prev, 
+              type: 'weight_loss',
+              targetWeight: Math.max(30, basicInfo.weight - 5),
+              targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            }))}
+            className={`w-full p-6 rounded-2xl text-left transition-all ${
+              goal.type === 'weight_loss'
+                ? 'bg-blue-500 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+            }`}
+          >
+            <div className="font-medium text-lg mb-2">ダイエット</div>
+            <div className="text-sm opacity-80">体重を減らして理想の体型を目指す</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setGoal({ type: 'muscle_gain' })}
+            className={`w-full p-6 rounded-2xl text-left transition-all ${
+              goal.type === 'muscle_gain'
+                ? 'bg-blue-500 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+            }`}
+          >
+            <div className="font-medium text-lg mb-2">筋肉量アップ</div>
+            <div className="text-sm opacity-80">筋力トレーニングで体を大きくする</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setGoal({ type: 'maintenance' })}
+            className={`w-full p-6 rounded-2xl text-left transition-all ${
+              goal.type === 'maintenance'
+                ? 'bg-blue-500 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+            }`}
+          >
+            <div className="font-medium text-lg mb-2">健康維持</div>
+            <div className="text-sm opacity-80">現在の状態をキープして健康的に過ごす</div>
+          </button>
+        </div>
+
+        {/* 詳細設定 */}
+        <div className="bg-slate-50 rounded-2xl p-6 space-y-6">
+          <h3 className="font-medium text-slate-900 text-lg">詳細設定</h3>
+          
+          {/* 目標体重 */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700 block">目標体重</label>
+            <div className="relative">
+              <input
+                type="number"
+                min="30"
+                max="150"
+                value={goal.targetWeight}
+                onChange={(e) => setGoal(prev => ({ ...prev, targetWeight: parseInt(e.target.value) || basicInfo.weight }))}
+                className="w-full h-12 px-4 pr-10 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                placeholder={basicInfo.weight.toString()}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">kg</span>
+            </div>
+            <div className="text-xs text-center text-slate-500">
+              {goal.targetWeight > basicInfo.weight ? (
+                <span>+{goal.targetWeight - basicInfo.weight}kg増量</span>
+              ) : goal.targetWeight < basicInfo.weight ? (
+                <span>-{basicInfo.weight - goal.targetWeight}kg減量</span>
+              ) : (
+                <span>現在の体重を維持</span>
+              )}
+            </div>
+          </div>
+
+          {/* 目標達成日 */}
+          {(goal.type === 'weight_loss' || goal.type === 'muscle_gain') && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-slate-700 block">目標達成日</label>
+              <input
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                max={new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                value={goal.targetDate || ''}
+                onChange={(e) => setGoal(prev => ({ ...prev, targetDate: e.target.value }))}
+                className="w-full h-12 px-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+              />
+              {goal.targetDate && goal.targetWeight && goal.targetWeight !== basicInfo.weight && (() => {
+                const daysUntilTarget = Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+                const monthsUntilTarget = daysUntilTarget / 30;
+                const monthlyPace = Math.abs((goal.targetWeight - basicInfo.weight) / monthsUntilTarget);
+                
+                return (
+                  <div className="text-xs text-center text-slate-500 space-y-1">
+                    <div>残り{daysUntilTarget}日（約{monthsUntilTarget.toFixed(1)}ヶ月）</div>
+                    <div className={`${monthlyPace > 2 ? 'text-red-500' : 'text-slate-500'}`}>
+                      月{monthlyPace.toFixed(1)}kgペース
+                      {monthlyPace > 2 && ' ⚠️ 急激すぎる可能性があります'}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep3 = () => (
+    <div className="flex-1 px-6">
+      <div className="space-y-4">
+        <button
+          type="button"
+          onClick={() => setActivityLevel({ level: 'sedentary' })}
+          className={`w-full p-6 rounded-2xl text-left transition-all ${
+            activityLevel.level === 'sedentary'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+          }`}
+        >
+          <div className="font-medium text-lg mb-2">ほとんど運動しない</div>
+          <div className="text-sm opacity-80">デスクワーク中心で、ほぼ座って過ごす</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActivityLevel({ level: 'light' })}
+          className={`w-full p-6 rounded-2xl text-left transition-all ${
+            activityLevel.level === 'light'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+          }`}
+        >
+          <div className="font-medium text-lg mb-2">軽い運動をする</div>
+          <div className="text-sm opacity-80">週1〜2回程度の軽い運動や散歩</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActivityLevel({ level: 'moderate' })}
+          className={`w-full p-6 rounded-2xl text-left transition-all ${
+            activityLevel.level === 'moderate'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+          }`}
+        >
+          <div className="font-medium text-lg mb-2">定期的に運動する</div>
+          <div className="text-sm opacity-80">週3〜5回程度の運動やスポーツ</div>
+        </button>
+      </div>
+    </div>
+  );
+
+  const stepTitles = [
+    '基本情報',
+    '目標設定', 
+    '運動習慣'
+  ];
+
+  const stepDescriptions = [
+    'あなたの基本的な情報を教えてください',
+    'どのような目標を達成したいですか？',
+    '普段の運動レベルを教えてください'
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto">
+      {/* ヘッダー */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
+          <button 
+            onClick={() => step > 1 ? setStep(step - 1) : router.back()}
+            className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:bg-slate-200 transition-colors"
+          >
+            <ChevronLeft size={20} className="text-slate-600" />
+          </button>
+          
+          <div className="text-center flex-1 mx-4">
+            <h1 className="text-lg font-semibold text-slate-900">{stepTitles[step - 1]}</h1>
+            <div className="flex justify-center mt-2">
+              {[1, 2, 3].map((stepNum) => (
+                <div 
+                  key={stepNum}
+                  className={`w-2 h-2 rounded-full mx-1 transition-colors ${
+                    stepNum <= step ? 'bg-blue-500' : 'bg-slate-200'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          
+          <div className="w-10" />
+        </div>
+      </div>
+
+      {/* サブタイトル */}
+      <div className="bg-white px-4 py-4 border-b border-slate-100">
+        <p className="text-sm text-slate-600 text-center leading-relaxed">{stepDescriptions[step - 1]}</p>
+      </div>
+
+      {/* メインコンテンツ */}
+      <div className="flex-1 flex flex-col py-8">
+        {step === 1 && renderStep1()}
+        {step === 2 && renderStep2()}
+        {step === 3 && renderStep3()}
+      </div>
+
+      {/* ボトムボタン */}
+      <div className="bg-white border-t border-slate-200 p-6 safe-area-bottom">
+        <div className="flex gap-3">
+          {step > 1 && (
+            <Button 
+              onClick={() => setStep(step - 1)} 
+              variant="outline"
+              className="flex-1 h-14 border-2 border-slate-200 text-slate-600 hover:bg-slate-50 rounded-2xl font-medium text-base"
             >
-              {isSubmitting ? '送信中...' : '完了'}
+              戻る
             </Button>
-          ) : (
-            <Button
-              onClick={handleNext}
-              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+          )}
+          {step < 3 ? (
+            <Button 
+              onClick={() => setStep(step + 1)} 
+              className="flex-1 h-14 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-2xl text-base shadow-md"
             >
               次へ
-              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleComplete} 
+              className="flex-1 h-14 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-2xl text-base shadow-md"
+            >
+              完了
             </Button>
           )}
         </div>

@@ -12,7 +12,6 @@ import { useCounselingData } from '@/hooks/useCounselingData';
 import { CompactHeader } from '@/components/CompactHeader';
 import { WeightCard } from '@/components/WeightCard';
 import { CalorieCard } from '@/components/CalorieCard';
-import { AIAdviceCard } from '@/components/AIAdviceCard';
 import { MealSummaryCard } from '@/components/MealSummaryCard';
 import { WorkoutSummaryCard } from '@/components/WorkoutSummaryCard';
 import { BottomNavigation } from '@/components/BottomNavigation';
@@ -97,7 +96,6 @@ export default function DashboardPage() {
                 onNavigateToPaymentSettings={navigation.handleNavigateToPaymentSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
-                onNavigateToDataManagement={() => setIsDataManagementModalOpen(true)}
               />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
@@ -167,14 +165,6 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* AIアドバイスカード */}
-            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              <AIAdviceCard 
-                onNavigateToProfile={() => navigation.setActiveTab('profile')}
-                onViewAllAdvices={() => navigation.setActiveTab('profile')}
-                counselingResult={counselingResult}
-              />
-            </div>
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>

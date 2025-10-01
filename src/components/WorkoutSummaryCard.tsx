@@ -150,9 +150,6 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
         <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
             <h3 className="font-semibold text-slate-900">今日の運動</h3>
-            {totalCalories > 0 && (
-              <span className="text-sm text-slate-500">({totalCalories}kcal)</span>
-            )}
           </div>
           {isCollapsed ? (
             <ChevronDown size={16} className="text-slate-500" />
@@ -164,7 +161,7 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
 
       {/* コンテンツ */}
       {!isCollapsed && (
-        <div className="p-4 space-y-4">
+        <div className="px-4 -mt-4 pb-4">
           {/* 記録ボタン */}
           <Button
             size="sm"

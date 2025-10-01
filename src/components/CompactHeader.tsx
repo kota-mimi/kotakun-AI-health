@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { ChevronLeft, ChevronRight, Calendar, Menu, User, BarChart3, Settings } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 interface CompactHeaderProps {
   currentDate: Date;
@@ -57,36 +49,6 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     <div className="backdrop-blur-xl bg-white/95 border-b border-slate-200/50 shadow-sm">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
-        {/* ハンバーガーメニュー */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-9 h-9 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl"
-            >
-              <Menu size={20} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 backdrop-blur-xl bg-white/95 border border-slate-200/50 shadow-lg rounded-2xl" align="start">
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={onNavigateToProfile} className="cursor-pointer rounded-xl mx-1 my-1">
-                <User className="mr-3 h-4 w-4 text-health-primary" />
-                <span>マイページ</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onNavigateToData} className="cursor-pointer rounded-xl mx-1 my-1">
-                <BarChart3 className="mr-3 h-4 w-4 text-health-primary" />
-                <span>データ分析</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator className="mx-2" />
-            <DropdownMenuItem onClick={onNavigateToProfile} className="cursor-pointer rounded-xl mx-1 my-1">
-              <Settings className="mr-3 h-4 w-4 text-slate-500" />
-              <span>設定</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* 月表示（中央） */}
         <div className="flex-1 text-center">
           {customContent || <h1 className="text-lg font-semibold text-slate-900">{currentMonth}</h1>}
@@ -97,7 +59,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           variant="ghost"
           size="sm"
           onClick={onCalendar}
-          className="w-9 h-9 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl"
+          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl"
         >
           <Calendar size={20} />
         </Button>

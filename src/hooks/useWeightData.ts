@@ -119,6 +119,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
     
+    // 未来の日付の場合は空のデータを返す
+    if (dateKey > today) {
+      return {
+        current: 0,
+        previous: 0,
+        target: weightSettingsStorage.value.targetWeight || 68.0
+      };
+    }
+    
     // 今日のデータの場合は、realWeightDataを優先的に確認
     if (dateKey === today) {
       const realDataForToday = realWeightData.find(item => item.date === dateKey);

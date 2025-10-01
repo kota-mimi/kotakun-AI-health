@@ -133,7 +133,6 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
         <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
             <h3 className="font-semibold text-slate-900">今日の食事記録</h3>
-            <span className="text-sm text-slate-500">({totalCalories}kcal)</span>
           </div>
           {isExpanded ? (
             <ChevronUp size={16} className="text-slate-500" />
@@ -164,16 +163,6 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                 <div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
                   <div className="flex items-center justify-between w-full">
                     <h4 className="text-base font-semibold text-slate-800">{mealTimeLabels[mealType]}</h4>
-                    {totalCaloriesForType > 0 && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <span className="font-medium text-slate-700">{totalCaloriesForType}kcal</span>
-                        <div className="flex items-center space-x-1.5 text-xs text-slate-500">
-                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">P{totalProtein}g</span>
-                          <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">F{totalFat}g</span>
-                          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-md font-medium min-w-[45px] text-center">C{totalCarbs}g</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </Button>

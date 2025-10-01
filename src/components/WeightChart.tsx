@@ -29,12 +29,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // クライアントサイドでのみ実行されることを保証
-  useEffect(() => {
-    setIsClient(true);
-    setMounted(true);
-  }, []);
-
   // データの検証とデフォルト値 - 体重または体脂肪のいずれかがあれば有効とする
   const validData = Array.isArray(data) ? data.filter(item => 
     item && item.date && (
@@ -42,6 +36,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       (typeof item.bodyFat === 'number' && !isNaN(item.bodyFat) && item.bodyFat > 0)
     )
   ) : [];
+
+  // クライアントサイドでのみ実行されることを保証
+  useEffect(() => {
+    setIsClient(true);
+    setMounted(true);
+  }, []);
   
   // 実際のデータがある場合はそれを使用、ない場合はダミーデータ
   const hasRealData = validData.length > 0;
@@ -413,9 +413,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 <option value="weight">体重グラフ</option>
                 <option value="bodyFat">体脂肪グラフ</option>
               </select>
-              {currentWeight > 0 && (
-                <span className="text-sm text-slate-500">({currentWeight}kg)</span>
-              )}
             </div>
             {isExpanded ? (
               <ChevronUp size={16} className="text-slate-500" />
@@ -483,9 +480,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
               <option value="weight">体重グラフ</option>
               <option value="bodyFat">体脂肪グラフ</option>
             </select>
-            {currentWeight > 0 && (
-              <span className="text-sm text-slate-500">({currentWeight}kg)</span>
-            )}
           </div>
           {isExpanded ? (
             <ChevronUp size={16} className="text-slate-500" />

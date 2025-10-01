@@ -30,7 +30,6 @@ interface MyProfilePageProps {
   onNavigateToPaymentSettings?: () => void;
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
-  onNavigateToDataManagement?: () => void;
 }
 
 export function MyProfilePage({ 
@@ -39,8 +38,7 @@ export function MyProfilePage({
   onNavigateToPlanSettings,
   onNavigateToPaymentSettings,
   onNavigateToUserGuide,
-  onNavigateToContact,
-  onNavigateToDataManagement
+  onNavigateToContact
 }: MyProfilePageProps) {
   // 実際のユーザーデータを取得
   const { liffUser } = useAuth();
@@ -99,20 +97,7 @@ export function MyProfilePage({
     // データページは削除されたので、健康情報は全てホーム画面で完結
   ];
 
-  const analysisMenuItems = [
-    {
-      icon: MessageCircle,
-      label: 'カウンセリング結果',
-      color: '#8B5CF6',
-      action: () => console.log('カウンセリング結果')
-    },
-    {
-      icon: Brain,
-      label: 'AIアドバイス履歴',
-      color: '#06B6D4',
-      action: () => console.log('AIアドバイス履歴')
-    }
-  ];
+  const analysisMenuItems = [];
 
   const accountMenuItems = [
     {
@@ -144,14 +129,7 @@ export function MyProfilePage({
     }
   ];
 
-  const dataMenuItems = [
-    {
-      icon: BarChart3,
-      label: 'データ管理・バックアップ',
-      color: '#4682B4',
-      action: onNavigateToDataManagement
-    }
-  ];
+  const dataMenuItems = [];
 
   // iOS風のセクションレンダラー
   const renderSection = (title: string, items: any[]) => (
@@ -267,11 +245,21 @@ export function MyProfilePage({
               </div>
             </div>
           )}
+          
+          {/* カウンセリングやり直しボタン */}
+          <div className="mt-4 pt-3 border-t border-slate-200">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/counseling'}
+              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
+            >
+              カウンセリングをやり直す
+            </Button>
+          </div>
         </Card>
       </div>
 
-      {/* 分析・レポート */}
-      {renderSection('分析・レポート', analysisMenuItems)}
 
       {/* アカウント・プラン */}
       {renderSection('アカウント・プラン', accountMenuItems)}
@@ -279,8 +267,6 @@ export function MyProfilePage({
       {/* サポート */}
       {renderSection('サポート', supportMenuItems)}
 
-      {/* データ管理 */}
-      {renderSection('データ管理', dataMenuItems)}
 
     </div>
   );

@@ -27,40 +27,10 @@ export default function Home() {
     window.location.href = '/dashboard';
   };
 
-  // ログイン済みでカウンセリング完了の場合はダッシュボードへ
+  // ログイン済みでカウンセリング完了の場合はダッシュボードへ直接リダイレクト
   if (isLiffReady && isLoggedIn && hasCompletedCounseling) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Heart className="h-8 w-8 text-green-600" />
-              <h1 className="text-3xl font-bold text-gray-800">LINE健康管理</h1>
-            </div>
-            <p className="text-gray-600 text-lg">
-              おかえりなさい、{liffUser?.displayName || 'ゲスト'}さん
-            </p>
-          </div>
-
-          <div className="text-center">
-            <Card className="inline-block">
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                  今日の健康管理を続けましょう
-                </h2>
-                <Button 
-                  onClick={handleOpenDashboard}
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
-                >
-                  ダッシュボードを開く
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
+    window.location.href = '/dashboard';
+    return null;
   }
 
   return (
