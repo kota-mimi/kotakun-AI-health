@@ -48,7 +48,28 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       // ブラウザ環境チェック
       if (typeof window !== 'undefined') {
         // localStorageに保存
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        try {
+          const serializedData = JSON.stringify(valueToStore);
+          
+          // データサイズをチェック（5MB制限）
+          if (serializedData.length > 5 * 1024 * 1024) {
+            console.warn(`Data too large for localStorage (${(serializedData.length / 1024 / 1024).toFixed(2)}MB). Skipping save for key "${key}"`);
+            return;
+          }
+          
+          window.localStorage.setItem(key, serializedData);
+        } catch (storageError: any) {
+          if (storageError.name === 'QuotaExceededError' || storageError.code === 22) {
+            console.warn(`localStorage quota exceeded for key "${key}". Skipping save.`);
+            // 画像データの場合はlocalStorageに保存しない
+            if (key.includes('image') || key.includes('photo') || (typeof valueToStore === 'object' && valueToStore && 'image' in valueToStore)) {
+              console.info('Image data detected, skipping localStorage save to prevent quota issues');
+              return;
+            }
+          } else {
+            throw storageError;
+          }
+        }
       }
     } catch (error) {
       console.error(`Error saving to localStorage for key "${key}":`, error);

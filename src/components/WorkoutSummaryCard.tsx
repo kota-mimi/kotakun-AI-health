@@ -23,6 +23,7 @@ interface Exercise {
 
 interface WorkoutSummaryCardProps {
   exerciseData: Exercise[];
+  selectedDate: Date;
   onNavigateToWorkout: () => void;
   onAddExercise?: () => void;
   onEditExercise?: (exerciseId: string) => void;
@@ -59,7 +60,7 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
   return icons[type];
 };
 
-export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise }: WorkoutSummaryCardProps) {
+export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise }: WorkoutSummaryCardProps) {
   console.log('💪 WorkoutSummaryCard received exerciseData:', exerciseData);
   console.log('💪 exerciseData length:', exerciseData?.length || 0);
   
@@ -74,8 +75,8 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
     const fetchExerciseData = async () => {
       try {
         const lineUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9';
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${today}`);
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         console.log('💪 EMERGENCY FETCH: API response status:', response.status);
         
         if (response.ok) {
@@ -92,7 +93,7 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
     if (!exerciseData || exerciseData.length === 0) {
       fetchExerciseData();
     }
-  }, [exerciseData]);
+  }, [exerciseData, selectedDate]);
   
   // プロップスが空の場合は緊急データを使用し、時系列順にソート
   let actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
@@ -162,15 +163,6 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
       {/* コンテンツ */}
       {!isCollapsed && (
         <div className="px-4 -mt-4 pb-4">
-          {/* 記録ボタン */}
-          <Button
-            size="sm"
-            onClick={onAddExercise || onNavigateToWorkout}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg text-sm"
-          >
-            記録
-          </Button>
-          
           {hasWorkout ? (
             <div className="space-y-4">
             {/* 統計サマリー */}
@@ -272,7 +264,8 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
               <Button
                 variant="outline"
                 onClick={onAddExercise}
-                className="w-full py-3 border-2 border-dashed border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 rounded-xl"
+                className="w-full py-3 border-2 border-dashed rounded-xl"
+                style={{borderColor: 'rgba(70, 130, 180, 0.3)', color: '#4682B4'}}
               >
                 運動を追加
               </Button>
@@ -284,7 +277,8 @@ export function WorkoutSummaryCard({ exerciseData, onNavigateToWorkout, onAddExe
             <p className="text-sm text-slate-500 mb-4">今日の運動を記録して<br />健康管理を始めましょう</p>
             <Button
               onClick={onAddExercise || onNavigateToWorkout}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl"
+              className="text-white px-6 py-3 rounded-xl"
+              style={{backgroundColor: '#4682B4'}}
             >
               運動を記録する
             </Button>

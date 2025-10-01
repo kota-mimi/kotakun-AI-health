@@ -9,6 +9,7 @@ import { Badge } from './ui/badge';
 import { Camera, Upload, Plus, X, Loader2, Sparkles, Trash2, Clock, Edit2, Search } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { generateId } from '@/lib/utils';
+import { compressImage } from '@/lib/imageUtils';
 
 interface FoodItem {
   id: string;
@@ -131,10 +132,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
 
       for (let i = 0; i < Math.min(files.length, 5 - uploadedImages.length); i++) {
         const file = files[i];
-        const promise = new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
+        const promise = compressImage(file, {
+          maxWidth: 800,
+          maxHeight: 800,
+          quality: 0.8,
+          maxSizeKB: 1000
         });
         fileReaders.push(promise);
       }
@@ -658,14 +660,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                 className="w-full"
                 style={{backgroundColor: '#4682B4'}}
               >
-                {isTextAnalyzing ? (
-                  "解析中..."
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    解析する
-                  </>
-                )}
+                {isTextAnalyzing ? "解析中..." : "解析する"}
               </Button>
             </div>
           )}
@@ -678,13 +673,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               
               {/* 検索バー */}
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <Input
                   type="text"
                   placeholder="食事名で検索..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
                 />
               </div>
 
@@ -717,11 +710,6 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                             <h5 className="font-semibold text-base text-slate-800 break-words leading-tight mb-1.5">
                               {meal.name}
                             </h5>
-                            
-                            {/* 日付と時刻 */}
-                            <div className="text-xs text-slate-500 mb-1.5">
-                              {meal.date} {meal.time}
-                            </div>
                             
                             {/* PFC・カロリー */}
                             <div className="flex items-center justify-between">

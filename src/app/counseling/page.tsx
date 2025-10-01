@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface BasicInfo {
-  age: number;
+  age: number | '';
   gender: 'male' | 'female' | 'other';
-  height: number;
-  weight: number;
+  height: number | '';
+  weight: number | '';
 }
 
 interface Goal {
@@ -79,11 +79,18 @@ const calculatePFC = (targetCalories: number, weight: number, goal: Goal['type']
 export default function SimpleCounselingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  
+  // 開始時に古いカウンセリングキャッシュをクリア
+  React.useEffect(() => {
+    console.log('🧹 カウンセリングキャッシュをクリアしています...');
+    localStorage.removeItem('counselingResult');
+    localStorage.removeItem('hasCompletedCounseling');
+  }, []);
   const [basicInfo, setBasicInfo] = useState<BasicInfo>({
-    age: 25,
+    age: '',
     gender: 'male',
-    height: 170,
-    weight: 70
+    height: '',
+    weight: ''
   });
   const [goal, setGoal] = useState<Goal>({ 
     type: 'weight_loss',
@@ -94,26 +101,44 @@ export default function SimpleCounselingPage() {
 
   const totalSteps = 3;
 
-  const handleComplete = () => {
-    const bmr = calculateBMR(basicInfo);
+  const handleComplete = async () => {
+    console.log('🔥 カウンセリング完了ボタンが押されました');
+    
+    // 空の値をデフォルト値で置き換え
+    const cleanBasicInfo = {
+      age: (typeof basicInfo.age === 'number' && basicInfo.age > 0) ? basicInfo.age : 
+            (typeof basicInfo.age === 'string' && basicInfo.age !== '') ? parseInt(basicInfo.age) : 25,
+      gender: basicInfo.gender,
+      height: (typeof basicInfo.height === 'number' && basicInfo.height > 0) ? basicInfo.height : 
+              (typeof basicInfo.height === 'string' && basicInfo.height !== '') ? parseFloat(basicInfo.height) : 170,
+      weight: (typeof basicInfo.weight === 'number' && basicInfo.weight > 0) ? basicInfo.weight : 
+              (typeof basicInfo.weight === 'string' && basicInfo.weight !== '') ? parseFloat(basicInfo.weight) : 70
+    };
+    
+    console.log('📊 basicInfo original:', basicInfo);
+    console.log('📊 cleanBasicInfo:', cleanBasicInfo);
+    
+    const bmr = calculateBMR(cleanBasicInfo);
     const tdee = calculateTDEE(bmr, activityLevel.level);
     const targetCalories = calculateTargetCalories(tdee, goal.type);
-    const pfc = calculatePFC(targetCalories, basicInfo.weight, goal.type);
+    const pfc = calculatePFC(targetCalories, cleanBasicInfo.weight, goal.type);
 
     // 目標期間を計算（目標日付から）
     const targetPeriod = goal.targetDate ? 
       Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
       : null;
 
+    const counselingAnswers = {
+      ...cleanBasicInfo,
+      goal: goal.type,
+      targetWeight: goal.targetWeight,
+      targetDate: goal.targetDate,
+      activityLevel: activityLevel.level
+    };
+
     const counselingResult = {
       id: `counseling_${Date.now()}`,
-      answers: {
-        ...basicInfo,
-        goal: goal.type,
-        targetWeight: goal.targetWeight,
-        targetDate: goal.targetDate,
-        activityLevel: activityLevel.level
-      },
+      answers: counselingAnswers,
       results: {
         bmr: Math.round(bmr),
         tdee: Math.round(tdee),
@@ -122,14 +147,59 @@ export default function SimpleCounselingPage() {
         targetDate: goal.targetDate,
         pfc
       },
-      advice: generateAdvice(goal.type, basicInfo),
+      advice: generateAdvice(goal.type, cleanBasicInfo),
       createdAt: new Date().toISOString()
     };
 
+    // ローカルストレージに保存
     localStorage.setItem('counselingResult', JSON.stringify(counselingResult));
     localStorage.setItem('hasCompletedCounseling', 'true');
 
-    router.push('/dashboard');
+    // Firestore保存とLINE通知を実行（AI分析なし）
+    try {
+      // LINE User IDを取得（テスト用に固定値も使用）
+      let lineUserId = localStorage.getItem('lineUserId');
+      
+      // テスト用：LINE User IDがない場合はダミーIDを使用
+      if (!lineUserId) {
+        lineUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用固定ID
+        console.log('🧪 テスト用LINE User IDを使用:', lineUserId);
+      } else {
+        console.log('👤 LINE User ID:', lineUserId);
+      }
+      
+      if (lineUserId) {
+        console.log('🚀 APIリクエスト送信開始...');
+        const response = await fetch('/api/counseling/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            answers: counselingAnswers,
+            results: counselingResult.results,
+            lineUserId: lineUserId
+          }),
+        });
+
+        if (response.ok) {
+          console.log('カウンセリング結果保存・LINE通知送信完了');
+        } else {
+          console.error('カウンセリング保存エラー:', response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error('カウンセリング保存API呼び出しエラー:', error);
+    }
+
+    // LINEに戻る
+    if (typeof window !== 'undefined' && window.liff) {
+      console.log('📱 LINEアプリに戻ります');
+      window.liff.closeWindow();
+    } else {
+      // フォールバック：ダッシュボードに移動
+      router.push('/dashboard');
+    }
   };
 
   const generateAdvice = (goalType: Goal['type'], basicInfo: BasicInfo) => {
@@ -162,11 +232,13 @@ export default function SimpleCounselingPage() {
           <label className="text-sm font-medium text-slate-700 block">年齢</label>
           <input
             type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
             min="18"
             max="80"
             value={basicInfo.age}
-            onChange={(e) => setBasicInfo(prev => ({ ...prev, age: parseInt(e.target.value) || 25 }))}
-            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+            onChange={(e) => setBasicInfo(prev => ({ ...prev, age: e.target.value === '' ? '' : parseInt(e.target.value) || '' }))}
+            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white text-center"
             placeholder="25"
           />
         </div>
@@ -174,21 +246,27 @@ export default function SimpleCounselingPage() {
         {/* 性別 */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-slate-700 block">性別</label>
-          <select
-            value={basicInfo.gender}
-            onChange={(e) => setBasicInfo(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }))}
-            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white appearance-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
-              backgroundPosition: 'right 1rem center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1.5em 1.5em'
-            }}
-          >
-            <option value="male">男性</option>
-            <option value="female">女性</option>
-            <option value="other">その他</option>
-          </select>
+          <div className="relative">
+            <select
+              value={basicInfo.gender}
+              onChange={(e) => setBasicInfo(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }))}
+              className="w-full h-14 px-4 pr-12 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+              style={{ 
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none'
+              }}
+            >
+              <option value="male">男性</option>
+              <option value="female">女性</option>
+              <option value="other">その他</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6L8 10L12 6" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
         </div>
 
         {/* 身長・体重 */}
@@ -198,11 +276,13 @@ export default function SimpleCounselingPage() {
             <div className="relative">
               <input
                 type="number"
+                inputMode="decimal"
+                step="0.1"
                 min="140"
                 max="200"
                 value={basicInfo.height}
-                onChange={(e) => setBasicInfo(prev => ({ ...prev, height: parseInt(e.target.value) || 170 }))}
-                className="w-full h-14 px-4 pr-10 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+                onChange={(e) => setBasicInfo(prev => ({ ...prev, height: e.target.value === '' ? '' : parseFloat(e.target.value) || '' }))}
+                className="w-full h-14 px-4 pr-12 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white text-center"
                 placeholder="170"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">cm</span>
@@ -214,11 +294,13 @@ export default function SimpleCounselingPage() {
             <div className="relative">
               <input
                 type="number"
+                inputMode="decimal"
+                step="0.1"
                 min="30"
                 max="150"
                 value={basicInfo.weight}
-                onChange={(e) => setBasicInfo(prev => ({ ...prev, weight: parseInt(e.target.value) || 70 }))}
-                className="w-full h-14 px-4 pr-10 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+                onChange={(e) => setBasicInfo(prev => ({ ...prev, weight: e.target.value === '' ? '' : parseFloat(e.target.value) || '' }))}
+                className="w-full h-14 px-4 pr-12 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white text-center"
                 placeholder="70"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">kg</span>
@@ -288,23 +370,27 @@ export default function SimpleCounselingPage() {
             <div className="relative">
               <input
                 type="number"
+                inputMode="decimal"
+                step="0.1"
                 min="30"
                 max="150"
-                value={goal.targetWeight}
-                onChange={(e) => setGoal(prev => ({ ...prev, targetWeight: parseInt(e.target.value) || basicInfo.weight }))}
-                className="w-full h-12 px-4 pr-10 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
-                placeholder={basicInfo.weight.toString()}
+                value={goal.targetWeight || ''}
+                onChange={(e) => setGoal(prev => ({ ...prev, targetWeight: e.target.value === '' ? undefined : parseFloat(e.target.value) || undefined }))}
+                className="w-full h-12 px-4 pr-12 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-center"
+                placeholder="目標体重"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">kg</span>
             </div>
             <div className="text-xs text-center text-slate-500">
-              {goal.targetWeight > basicInfo.weight ? (
-                <span>+{goal.targetWeight - basicInfo.weight}kg増量</span>
-              ) : goal.targetWeight < basicInfo.weight ? (
-                <span>-{basicInfo.weight - goal.targetWeight}kg減量</span>
-              ) : (
-                <span>現在の体重を維持</span>
-              )}
+              {goal.targetWeight && typeof basicInfo.weight === 'number' ? (
+                goal.targetWeight > basicInfo.weight ? (
+                  <span>+{goal.targetWeight - basicInfo.weight}kg増量</span>
+                ) : goal.targetWeight < basicInfo.weight ? (
+                  <span>-{basicInfo.weight - goal.targetWeight}kg減量</span>
+                ) : (
+                  <span>現在の体重を維持</span>
+                )
+              ) : null}
             </div>
           </div>
 
@@ -318,9 +404,9 @@ export default function SimpleCounselingPage() {
                 max={new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 value={goal.targetDate || ''}
                 onChange={(e) => setGoal(prev => ({ ...prev, targetDate: e.target.value }))}
-                className="w-full h-12 px-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                className="w-full h-12 px-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-center"
               />
-              {goal.targetDate && goal.targetWeight && goal.targetWeight !== basicInfo.weight && (() => {
+              {goal.targetDate && goal.targetWeight && typeof basicInfo.weight === 'number' && goal.targetWeight !== basicInfo.weight && (() => {
                 const daysUntilTarget = Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
                 const monthsUntilTarget = daysUntilTarget / 30;
                 const monthlyPace = Math.abs((goal.targetWeight - basicInfo.weight) / monthsUntilTarget);
@@ -400,7 +486,7 @@ export default function SimpleCounselingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto">
+    <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto relative">
       {/* ヘッダー */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">

@@ -32,6 +32,7 @@ import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightChart } from '@/components/WeightChart';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
+import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 
 export default function DashboardPage() {
   const navigation = useNavigationState();
@@ -97,6 +98,24 @@ export default function DashboardPage() {
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
               />
+              
+              {/* プロフィールページ用ショートカットバー */}
+              <FloatingShortcutBar
+                onTextRecord={() => {
+                  navigation.setActiveTab('home');
+                  mealManager.setCurrentMealType(getCurrentMealType());
+                  mealManager.handleTextRecord();
+                }}
+                onCameraRecord={() => {
+                  navigation.setActiveTab('home');
+                  mealManager.setCurrentMealType(getCurrentMealType());
+                  mealManager.handleCameraRecord();
+                }}
+                onAddExercise={() => {
+                  navigation.setActiveTab('home');
+                  setIsExerciseEntryModalOpen(true);
+                }}
+              />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
             <div className="relative px-4 py-4 pb-20 space-y-4">
@@ -160,8 +179,9 @@ export default function DashboardPage() {
                 data={weightManager.realWeightData}
                 period="month"
                 height={175}
-                targetWeight={weightManager.weightSettings.targetWeight}
+                targetWeight={counselingResult?.answers?.targetWeight || weightManager.weightSettings.targetWeight}
                 currentWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 0}
+                counselingResult={counselingResult}
               />
             </div>
 
@@ -196,6 +216,7 @@ export default function DashboardPage() {
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
               <WorkoutSummaryCard 
                 exerciseData={exerciseManager.exerciseData}
+                selectedDate={navigation.selectedDate}
                 onNavigateToWorkout={() => {}} // 削除：専用ページなし
                 onAddExercise={() => setIsExerciseEntryModalOpen(true)}
                 onEditExercise={(exerciseId) => {
@@ -210,8 +231,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
+
         </>
       )}
+
 
       {/* ボトムナビゲーション */}
       <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
@@ -227,6 +250,7 @@ export default function DashboardPage() {
         onClose={() => navigation.setIsCalendarModalOpen(false)}
         selectedDate={navigation.selectedDate}
         onDateSelect={navigation.handleDateSelect}
+        counselingResult={counselingResult}
       />
 
       <WeightEntryModal

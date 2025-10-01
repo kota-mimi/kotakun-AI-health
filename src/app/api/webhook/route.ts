@@ -112,29 +112,28 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     return; // 運動記録として処理済み
   }
 
-  // 「記録」ボタンの応答
+  // 「記録」ボタンの応答 - シンプル化
   if (text === '記録' || text.includes('記録')) {
     responseMessage = {
-      type: 'template',
-      altText: '何を記録しますか？',
-      template: {
-        type: 'buttons',
-        text: '何を記録しますか？',
-        actions: [
+      type: 'text',
+      text: '何を記録しますか？\n下のボタンから選択してください！',
+      quickReply: {
+        items: [
           {
-            type: 'postback',
-            label: '📊 体重',
-            data: 'action=record_weight'
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '📝 テキストで記録',
+              data: 'action=text_record'
+            }
           },
           {
-            type: 'postback',
-            label: '🍽️ 食事',
-            data: 'action=record_meal'
-          },
-          {
-            type: 'postback',
-            label: '🏃‍♂️ 運動',
-            data: 'action=record_exercise'
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '📷 写真で記録',
+              data: 'action=photo_record'
+            }
           }
         ]
       }
@@ -287,6 +286,7 @@ async function handleFollow(replyToken: string, source: any) {
   await replyMessage(replyToken, [welcomeMessage]);
 }
 
+
 async function replyMessage(replyToken: string, messages: any[]) {
   const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   
@@ -294,6 +294,7 @@ async function replyMessage(replyToken: string, messages: any[]) {
     console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
     return;
   }
+
 
   try {
     const response = await fetch('https://api.line.me/v2/bot/message/reply', {
@@ -357,63 +358,21 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   const action = params.get('action');
 
   switch (action) {
-    case 'start_record':
-      // 記録ボタンと同じ処理
+
+    case 'text_record':
       await replyMessage(replyToken, [{
-        type: 'template',
-        altText: '何を記録しますか？',
-        template: {
-          type: 'buttons',
-          text: '何を記録しますか？',
-          actions: [
-            {
-              type: 'postback',
-              label: '📊 体重',
-              data: 'action=record_weight'
-            },
-            {
-              type: 'postback',
-              label: '🍽️ 食事',
-              data: 'action=record_meal'
-            },
-            {
-              type: 'postback',
-              label: '🏃‍♂️ 運動',
-              data: 'action=record_exercise'
-            }
-          ]
-        }
+        type: 'text',
+        text: '📝 テキストで記録してください！\n\n食事内容を文字で入力してください。\n例：「朝食：パンとコーヒー」\n例：「昼食：サラダとパスタ」'
       }]);
       break;
 
-    case 'record_weight':
+    case 'photo_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '体重を数字で教えてください（例：65.5 または 65.5kg）'
+        text: '📷 写真で記録してください！\n\n食事の写真を撮って送ってください。\nAIが自動で食事内容を分析します。'
       }]);
       break;
 
-    case 'record_meal':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '食事内容を教えてください。\nテキストまたは写真で送ってください！\n\n例：「朝食：パンとコーヒー」'
-      }]);
-      break;
-
-    case 'record_exercise':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '運動内容を教えてください！\n\n例：\n・ランニング30分\n・ベンチプレス45分\n・筋トレ1時間\n・ヨガ20分',
-        quickReply: {
-          items: [
-            { type: 'action', action: { type: 'text', label: 'ランニング30分' } },
-            { type: 'action', action: { type: 'text', label: '筋トレ45分' } },
-            { type: 'action', action: { type: 'text', label: 'ウォーキング20分' } },
-            { type: 'action', action: { type: 'text', label: 'ヨガ30分' } }
-          ]
-        }
-      }]);
-      break;
 
     case 'save_meal':
     case 'save_meal_image':

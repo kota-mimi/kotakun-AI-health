@@ -8,13 +8,14 @@ interface CalendarModalProps {
   onClose: () => void;
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
+  counselingResult?: any;
 }
 
-export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect }: CalendarModalProps) {
+export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, counselingResult }: CalendarModalProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate);
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
+    if (date && !isBeforeCounselingDate(date)) {
       onDateSelect(date);
       onClose();
     }
@@ -51,6 +52,22 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect }: C
 
   const isSelectedDate = (date: Date) => {
     return date.toDateString() === selectedDate.toDateString();
+  };
+
+  // カウンセリング日以前かチェック（カウンセリング日以前は無効）
+  const isBeforeCounselingDate = (date: Date) => {
+    if (!counselingResult) return false;
+    
+    const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
+    if (!counselingDateRaw) return false;
+    
+    const counselingDate = new Date(counselingDateRaw);
+    
+    // 日付のみで比較（時間は無視）
+    const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const counselingDateOnly = new Date(counselingDate.getFullYear(), counselingDate.getMonth(), counselingDate.getDate());
+    
+    return checkDate < counselingDateOnly;
   };
 
   const getDaysInMonth = () => {
@@ -140,6 +157,7 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect }: C
               const isToday = day.toDateString() === new Date().toDateString();
               const isSelected = day.toDateString() === selectedDate.toDateString();
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+              const isDisabled = isBeforeCounselingDate(day);
               
               // 当月の日付のみ表示
               if (!isCurrentMonth) {
@@ -150,8 +168,11 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect }: C
                 <button
                   key={index}
                   onClick={() => handleDateSelect(day)}
+                  disabled={isDisabled}
                   className={`h-10 rounded-lg font-medium transition-colors flex items-center justify-center text-sm ${
-                    isSelected
+                    isDisabled
+                      ? 'text-slate-300 cursor-not-allowed bg-slate-50'
+                      : isSelected
                       ? 'border-2 border-blue-500 text-blue-600 bg-blue-50'
                       : isToday
                       ? 'border-2 border-blue-400 text-blue-600 bg-blue-50'

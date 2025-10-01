@@ -17,11 +17,12 @@ interface WeightChartProps {
   height: number;
   targetWeight?: number;
   currentWeight?: number;
+  counselingResult?: any;
 }
 
 type DataType = 'weight' | 'bodyFat' | 'waist';
 
-export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0 }: WeightChartProps) {
+export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
@@ -43,8 +44,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     setMounted(true);
   }, []);
   
-  // 実際のデータがある場合はそれを使用、ない場合はダミーデータ
+  // 実際のデータがある場合はそれを使用、ない場合でもカウンセリング結果があれば初期データを作成
   const hasRealData = validData.length > 0;
+  const hasCounselingData = counselingResult?.answers?.weight && counselingResult.answers.weight > 0;
   
   // 期間別のダミーデータ
   const getAllChartData = () => {
@@ -105,9 +107,26 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }
   };
 
-  // 実際のデータを使用するか、ダミーデータを使用するかを決定
+  // カウンセリング結果から初期データポイントを作成
+  const createCounselingInitialData = () => {
+    if (!hasCounselingData) return [];
+    
+    // カウンセリング完了日を使用（フォールバック：作成日、最後のフォールバック：今日）
+    const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
+    const counselingDate = counselingDateRaw ? new Date(counselingDateRaw) : new Date();
+    const dateStr = `${counselingDate.getFullYear().toString().slice(-2)}/${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
+    
+    return [{
+      date: dateStr,
+      weight: counselingResult.answers.weight,
+      bodyFat: 0 // カウンセリングでは体脂肪は取得しないのでデフォルト値
+    }];
+  };
+
+  // 実際のデータを使用するか、カウンセリングデータまたはダミーデータを使用するかを決定
   const getRealChartData = () => {
-    if (!hasRealData) return getAllChartData();
+    if (!hasRealData && !hasCounselingData) return getAllChartData();
+    if (!hasRealData && hasCounselingData) return createCounselingInitialData();
     
     
     // クライアントサイドでのみ日付フィルタリングを実行（hydration issues を避けるため）
@@ -194,6 +213,17 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     const min = Math.min(...values);
     const max = Math.max(...values);
+    
+    // 1つのデータポイントしかない場合（カウンセリング結果のみ）の範囲設定
+    if (min === max || Math.abs(max - min) < 0.1) {
+      const baseValue = min;
+      const range = Math.max(5, baseValue * 0.1); // 最低5kgまたは体重の10%の範囲
+      return {
+        min: Math.max(0, baseValue - range),
+        max: baseValue + range
+      };
+    }
+    
     const padding = (max - min) * 0.1; // 10%のパディング
     
     return {
@@ -620,6 +650,36 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
               strokeDasharray="2 2"
               opacity="0.6"
             />
+          )}
+
+          {/* 記録開始ポイント（最初のポイント）を常に表示 */}
+          {pathPoints.length > 0 && (
+            <>
+              <circle
+                cx={pathPoints[0].x}
+                cy={pathPoints[0].y}
+                r="5"
+                fill="white"
+                stroke={currentConfig.color}
+                strokeWidth="3"
+                filter="url(#dropshadow)"
+              />
+              <circle
+                cx={pathPoints[0].x}
+                cy={pathPoints[0].y}
+                r="2"
+                fill={currentConfig.color}
+              />
+              {/* スタートラベル */}
+              <text
+                x={pathPoints[0].x}
+                y={pathPoints[0].y - 15}
+                textAnchor="middle"
+                className="text-xs font-bold fill-blue-600"
+              >
+                記録開始
+              </text>
+            </>
           )}
 
           {/* 選択されたポイントのみ表示 */}
