@@ -738,12 +738,13 @@ class AIHealthService {
 回答スタイル:
 - フレンドリーで親しみやすい口調（関西弁は使わない）
 - 科学的根拠に基づいた正確な情報
+- できるだけ簡潔に、最大100文字以内で回答
 - 質問の深さに応じて回答の長さを調整:
-  * 簡単な挨拶や短い質問 → 50文字程度の短い返答
-  * 「教えて」「どうしたらいい？」「詳しく」等の相談 → 200-300文字の詳しいアドバイス
-  * 具体的な悩みや症状の相談 → しっかりとした説明とアドバイス
-- 実践的で具体的なアドバイスを含める
-- 健康に関係ない質問でも、可能なら健康の視点から軽く触れる
+  * 簡単な挨拶や短い質問 → 30文字程度の短い返答
+  * カロリーや栄養の質問 → 50-80文字程度の簡潔な答え
+  * 「教えて」「どうしたらいい？」等の相談 → 80-100文字程度
+- 要点を1-2個に絞って回答
+- 長い説明ではなく、シンプルで分かりやすい答え
 
 ユーザーのメッセージ: "${userMessage}"
 
@@ -752,7 +753,19 @@ class AIHealthService {
       const result = await model.generateContent(prompt);
       const response = await result.response;
       
-      return response.text();
+      // マークダウン記号を除去してプレーンテキストに変換
+      let cleanText = response.text();
+      cleanText = cleanText.replace(/\*\*/g, ''); // **太字**を除去
+      cleanText = cleanText.replace(/\*/g, ''); // *斜体*を除去
+      cleanText = cleanText.replace(/#{1,6}\s*/g, ''); // # ヘッダーを除去
+      cleanText = cleanText.replace(/`{1,3}/g, ''); // ```コード```を除去
+      cleanText = cleanText.replace(/^\s*[-\*\+]\s*/gm, ''); // - リストマーカーを除去
+      cleanText = cleanText.replace(/^\s*\d+\.\s*/gm, ''); // 1. 番号リストを除去
+      cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [リンクテキスト](URL)をテキストのみに
+      cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 空行を単一改行に
+      cleanText = cleanText.trim();
+      
+      return cleanText;
     } catch (error) {
       console.error('一般会話AI エラー:', error);
       return 'お話ありがとうございます！何か健康管理でお手伝いできることがあれば、お気軽にお声がけください！';

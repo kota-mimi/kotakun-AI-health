@@ -231,7 +231,133 @@ function findFoodMatch(text: string) {
   return null;
 }
 
-// 複数食事の解析
+// 学習した食事をパターンマッチングに追加
+async function addToFoodDatabase(userId: string, mealName: string, nutritionData: any) {
+  try {
+    const db = admin.firestore();
+    const userFoodRef = db.collection('learned_foods').doc(userId);
+    
+    // ユーザー固有の学習済み食事を保存
+    await userFoodRef.set({
+      [mealName]: {
+        calories: nutritionData.calories || 0,
+        protein: nutritionData.protein || 0,
+        fat: nutritionData.fat || 0,
+        carbs: nutritionData.carbs || 0,
+        learnedAt: admin.firestore.FieldValue.serverTimestamp(),
+        usageCount: 1
+      }
+    }, { merge: true });
+    
+    console.log(`学習済み食事に追加: ${mealName} (ユーザー: ${userId})`);
+  } catch (error) {
+    console.error('学習済み食事の保存エラー:', error);
+  }
+}
+
+// ユーザーの学習済み食事も含めて検索
+async function findFoodMatchWithLearning(userId: string, text: string) {
+  // まず基本データベースから検索
+  let match = findFoodMatch(text);
+  if (match) {
+    return match;
+  }
+  
+  // 学習済みデータベースから検索
+  try {
+    const db = admin.firestore();
+    const userFoodRef = db.collection('learned_foods').doc(userId);
+    const userFoodDoc = await userFoodRef.get();
+    
+    if (userFoodDoc.exists) {
+      const learnedFoods = userFoodDoc.data();
+      
+      // 完全一致をチェック
+      if (learnedFoods && learnedFoods[text]) {
+        // 使用回数をインクリメント
+        await userFoodRef.update({
+          [`${text}.usageCount`]: admin.firestore.FieldValue.increment(1),
+          [`${text}.lastUsed`]: admin.firestore.FieldValue.serverTimestamp()
+        });
+        
+        return { 
+          food: text, 
+          data: learnedFoods[text], 
+          confidence: 'high',
+          isLearned: true 
+        };
+      }
+      
+      // 部分一致をチェック
+      for (const [foodName, foodData] of Object.entries(learnedFoods)) {
+        if (text.includes(foodName) || foodName.includes(text)) {
+          // 使用回数をインクリメント
+          await userFoodRef.update({
+            [`${foodName}.usageCount`]: admin.firestore.FieldValue.increment(1),
+            [`${foodName}.lastUsed`]: admin.firestore.FieldValue.serverTimestamp()
+          });
+          
+          return { 
+            food: foodName, 
+            data: foodData, 
+            confidence: 'medium',
+            isLearned: true 
+          };
+        }
+      }
+    }
+  } catch (error) {
+    console.error('学習済み食事の検索エラー:', error);
+  }
+  
+  return null;
+}
+
+// 複数食事の解析（学習機能付き）
+async function analyzeMultipleFoodsWithLearning(userId: string, text: string) {
+  const foundFoods = [];
+  const words = text.split(/[、。・\s]+/);
+  
+  for (const word of words) {
+    if (word.length >= 2) {
+      const match = await findFoodMatchWithLearning(userId, word);
+      if (match) {
+        foundFoods.push({
+          name: match.food,
+          ...match.data,
+          isLearned: match.isLearned || false
+        });
+      }
+    }
+  }
+  
+  if (foundFoods.length === 0) {
+    return null;
+  }
+  
+  // 複数食事の合計計算
+  const totalCalories = foundFoods.reduce((sum, food) => sum + food.calories, 0);
+  const totalProtein = foundFoods.reduce((sum, food) => sum + food.protein, 0);
+  const totalFat = foundFoods.reduce((sum, food) => sum + food.fat, 0);
+  const totalCarbs = foundFoods.reduce((sum, food) => sum + food.carbs, 0);
+  
+  return {
+    isMultipleMeals: foundFoods.length > 1,
+    meals: foundFoods,
+    totalCalories: Math.round(totalCalories),
+    totalProtein: Math.round(totalProtein * 10) / 10,
+    totalFat: Math.round(totalFat * 10) / 10,
+    totalCarbs: Math.round(totalCarbs * 10) / 10,
+    calories: foundFoods.length === 1 ? foundFoods[0].calories : Math.round(totalCalories),
+    protein: foundFoods.length === 1 ? foundFoods[0].protein : Math.round(totalProtein * 10) / 10,
+    fat: foundFoods.length === 1 ? foundFoods[0].fat : Math.round(totalFat * 10) / 10,
+    carbs: foundFoods.length === 1 ? foundFoods[0].carbs : Math.round(totalCarbs * 10) / 10,
+    foodItems: foundFoods.map(f => f.name),
+    hasLearned: foundFoods.some(f => f.isLearned)
+  };
+}
+
+// 後方互換性のための関数（学習機能なし）
 function analyzeMultipleFoods(text: string) {
   const foundFoods = [];
   const words = text.split(/[、。・\s]+/);
@@ -465,41 +591,70 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     return;
   }
 
-  // 食事内容の判定を強化（より多くの食事を認識）
-  const isFoodMessage = (
-    // 基本的な食事キーワード
-    text.includes('食事') || text.includes('料理') || text.includes('ごはん') || 
-    text.includes('食べた') || text.includes('食べる') ||
-    
-    // 食材・主食
-    text.includes('パン') || text.includes('米') || text.includes('ご飯') ||
-    text.includes('麺') || text.includes('うどん') || text.includes('そば') ||
-    text.includes('ラーメン') || text.includes('そうめん') || text.includes('パスタ') ||
-    
-    // 主菜
-    text.includes('肉') || text.includes('魚') || text.includes('鶏') || text.includes('豚') ||
-    text.includes('牛') || text.includes('卵') || text.includes('豆腐') ||
-    
-    // 野菜・副菜
-    text.includes('野菜') || text.includes('サラダ') || text.includes('スープ') ||
-    
-    // 具体的な料理名（ひらがな・カタカナ）
-    /おにぎり|おむすび|弁当|丼|カレー|シチュー|ハンバーグ|コロッケ|唐揚げ|から揚げ|焼き魚|刺身|寿司|天ぷら|フライ|煮物|炒め物|味噌汁|お味噌汁/.test(text) ||
-    
-    // カタカナ料理名（2文字以上）
-    /[ア-ン]{2,}/.test(text) ||
-    
-    // 食事時間
-    /朝食|昼食|夕食|夜食|間食|おやつ|朝ごはん|昼ごはん|夜ごはん|晩ごはん/.test(text) ||
-    
-    // 短い食べ物名（ひらがな2-4文字）
-    /^[あ-ん]{2,4}$/.test(text) ||
-    
-    // 「○○を食べた」「○○食べました」パターン
-    /を食べ|食べまし|いただき/.test(text)
+  // 質問文の判定（カロリーや栄養について聞いている）
+  const isQuestionMessage = (
+    text.includes('？') || text.includes('?') ||
+    text.includes('って何') || text.includes('ってなに') ||
+    text.includes('どのくらい') || text.includes('どれくらい') ||
+    text.includes('教えて') || text.includes('知りたい') ||
+    text.includes('カロリー') || text.includes('栄養') ||
+    text.includes('太る') || text.includes('痩せる') ||
+    text.includes('健康') || text.includes('ダイエット') ||
+    /どう|何|なに|いくつ|いくら|なんで|なぜ|いつ|どこ|誰|どっち|どれ/.test(text) ||
+    /かな|だっけ|よね|でしょ|ですか|でしょうか/.test(text) ||
+    text.includes('気になる') || text.includes('心配') || text.includes('大丈夫') ||
+    text.includes('どちらが') || text.includes('どの方が')
   );
 
-  if (isFoodMessage) {
+  // 質問の場合は直接AI回答
+  if (isQuestionMessage) {
+    try {
+      const aiService = new AIHealthService();
+      const aiResponse = await aiService.generateGeneralResponse(text);
+      
+      responseMessage = {
+        type: 'text',
+        text: aiResponse || 'ちょっと分からないけど、健康のことならなんでも聞いて！'
+      };
+      
+      await replyMessage(replyToken, [responseMessage]);
+      return;
+    } catch (error) {
+      console.error('質問AI回答エラー:', error);
+      responseMessage = {
+        type: 'text',
+        text: 'ちょっと分からないけど、健康のことならなんでも聞いて！'
+      };
+      await replyMessage(replyToken, [responseMessage]);
+      return;
+    }
+  }
+
+  // 食事記録の判定（記録する意図が明確な場合のみ）
+  const isFoodRecordMessage = (
+    // 明確な記録意図のパターン
+    /を食べた|食べました|いただきました|摂取|記録/.test(text) ||
+    
+    // 複数食事（「と」で繋がれている）
+    (text.includes('と') && /[ぁ-んァ-ン一-龯]+と[ぁ-んァ-ン一-龯]+/.test(text)) ||
+    
+    // 単体の食事名のみ（質問要素がない場合）
+    (
+      // 具体的な料理名
+      (/おにぎり|おむすび|弁当|丼|カレー|シチュー|ハンバーグ|コロッケ|唐揚げ|から揚げ|焼き魚|刺身|寿司|天ぷら|フライ|煮物|炒め物|味噌汁|お味噌汁|ラーメン|うどん|そば|パスタ|チャーハン|オムライス/.test(text) ||
+       
+       // 基本食材（単体で使われる場合）
+       /^(パン|ご飯|白米|玄米|サラダ|スープ|卵|チーズ|ヨーグルト)$/.test(text) ||
+       
+       // ひらがな2-4文字の食べ物（単体）
+       /^[あ-ん]{2,4}$/.test(text)) &&
+      
+      // 質問要素がない
+      !(/？|\?|って|どう|何|なに|カロリー|栄養|太る|痩せる|健康|ダイエット|教えて|知りたい/.test(text))
+    )
+  );
+
+  if (isFoodRecordMessage) {
     
     // 食事内容を一時保存（postbackで使用）
     await storeTempMealData(userId, text);
@@ -901,14 +1056,28 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
       const aiService = new AIHealthService();
       analysis = await aiService.analyzeMealFromImage(tempData.image);
     } else {
-      // テキストの場合はパターンマッチング優先
-      analysis = analyzeMultipleFoods(tempData.text || '');
+      // テキストの場合は学習機能付きパターンマッチング優先
+      analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
       
       if (!analysis) {
         // パターンマッチングで見つからない場合のみAI分析
         console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
         const aiService = new AIHealthService();
         analysis = await aiService.analyzeMealFromText(tempData.text || '');
+        
+        // AI分析結果を学習データベースに追加
+        if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
+          for (const foodItem of analysis.foodItems) {
+            if (foodItem && typeof foodItem === 'string') {
+              await addToFoodDatabase(userId, foodItem, {
+                calories: analysis.calories / analysis.foodItems.length,
+                protein: analysis.protein / analysis.foodItems.length,
+                fat: analysis.fat / analysis.foodItems.length,
+                carbs: analysis.carbs / analysis.foodItems.length
+              });
+            }
+          }
+        }
       } else {
         console.log('パターンマッチング成功:', analysis);
       }
@@ -951,14 +1120,28 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         const aiService = new AIHealthService();
         analysis = await aiService.analyzeMealFromImage(tempData.image);
       } else {
-        // テキストの場合はパターンマッチング優先
-        analysis = analyzeMultipleFoods(tempData.text || '');
+        // テキストの場合は学習機能付きパターンマッチング優先
+        analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
         
         if (!analysis) {
           // パターンマッチングで見つからない場合のみAI分析
           console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
           const aiService = new AIHealthService();
           analysis = await aiService.analyzeMealFromText(tempData.text || '');
+          
+          // AI分析結果を学習データベースに追加
+          if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
+            for (const foodItem of analysis.foodItems) {
+              if (foodItem && typeof foodItem === 'string') {
+                await addToFoodDatabase(userId, foodItem, {
+                  calories: analysis.calories / analysis.foodItems.length,
+                  protein: analysis.protein / analysis.foodItems.length,
+                  fat: analysis.fat / analysis.foodItems.length,
+                  carbs: analysis.carbs / analysis.foodItems.length
+                });
+              }
+            }
+          }
         } else {
           console.log('パターンマッチング成功:', analysis);
         }
