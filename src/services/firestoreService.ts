@@ -64,11 +64,20 @@ export class FirestoreService {
   async saveCounselingResult(lineUserId: string, answers: Record<string, any>, aiAnalysis: any) {
     try {
       const counselingRef = doc(db, 'users', lineUserId, 'counseling', 'result');
+      
+      // 既存のカウンセリング結果を確認
+      const existingDoc = await getDoc(counselingRef);
+      const existingData = existingDoc.exists() ? existingDoc.data() : null;
+      
+      // firstCompletedAtを設定（初回のみ）
+      const firstCompletedAt = existingData?.firstCompletedAt || serverTimestamp();
+      
       await setDoc(counselingRef, {
         answers,
         aiAnalysis,
         completedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
+        createdAt: existingData?.createdAt || serverTimestamp(),
+        firstCompletedAt, // 最初のカウンセリング完了日を保持
       });
 
       // ユーザープロファイルも更新（undefined値の処理）

@@ -63,6 +63,37 @@ export function useCounselingData() {
       console.log('🔥 Making API call with lineUserId:', lineUserId);
       
       try {
+        // まずローカルストレージから最新のデータを確認
+        const localAnswers = localStorage.getItem('counselingAnswers');
+        const localAnalysis = localStorage.getItem('aiAnalysis');
+        
+        if (localAnswers) {
+          console.log('🔥 Found local counseling data, using it');
+          const answers = JSON.parse(localAnswers);
+          const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+          
+          // analysisにuserProfileがない場合はanswersから作成
+          if (analysis && !analysis.userProfile) {
+            analysis.userProfile = {
+              name: answers.name,
+              age: answers.age,
+              gender: answers.gender,
+              height: answers.height,
+              weight: answers.weight,
+              targetWeight: answers.targetWeight
+            };
+          }
+          
+          setCounselingResult({
+            answers,
+            aiAnalysis: analysis,
+            userProfile: answers // answersをuserProfileとしても使用
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // ローカルストレージにない場合はAPIから取得
         const response = await fetch('/api/counseling/status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -104,6 +135,37 @@ export function useCounselingData() {
       if (lineUserId) {
         setIsLoading(true);
         try {
+          // まずローカルストレージから最新のデータを確認
+          const localAnswers = localStorage.getItem('counselingAnswers');
+          const localAnalysis = localStorage.getItem('aiAnalysis');
+          
+          if (localAnswers) {
+            console.log('🔥 Refetch: Found local counseling data, using it');
+            const answers = JSON.parse(localAnswers);
+            const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+            
+            // analysisにuserProfileがない場合はanswersから作成
+            if (analysis && !analysis.userProfile) {
+              analysis.userProfile = {
+                name: answers.name,
+                age: answers.age,
+                gender: answers.gender,
+                height: answers.height,
+                weight: answers.weight,
+                targetWeight: answers.targetWeight
+              };
+            }
+            
+            setCounselingResult({
+              answers,
+              aiAnalysis: analysis,
+              userProfile: answers // answersをuserProfileとしても使用
+            });
+            setIsLoading(false);
+            return;
+          }
+
+          // ローカルストレージにない場合はAPIから取得
           const response = await fetch('/api/counseling/status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

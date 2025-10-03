@@ -72,6 +72,7 @@ export default function DashboardPage() {
   );
 
   // 現在の時間に基づいて適切な食事タイプを判定
+
   const getCurrentMealType = () => {
     const now = new Date();
     const hour = now.getHours();
@@ -97,24 +98,6 @@ export default function DashboardPage() {
                 onNavigateToPaymentSettings={navigation.handleNavigateToPaymentSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
-              />
-              
-              {/* プロフィールページ用ショートカットバー */}
-              <FloatingShortcutBar
-                onTextRecord={() => {
-                  navigation.setActiveTab('home');
-                  mealManager.setCurrentMealType(getCurrentMealType());
-                  mealManager.handleTextRecord();
-                }}
-                onCameraRecord={() => {
-                  navigation.setActiveTab('home');
-                  mealManager.setCurrentMealType(getCurrentMealType());
-                  mealManager.handleCameraRecord();
-                }}
-                onAddExercise={() => {
-                  navigation.setActiveTab('home');
-                  setIsExerciseEntryModalOpen(true);
-                }}
               />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
@@ -150,6 +133,7 @@ export default function DashboardPage() {
         </>
       )}
 
+
       {/* ホームタブ */}
       {navigation.activeTab === 'home' && (
         <>
@@ -160,10 +144,11 @@ export default function DashboardPage() {
               onCalendar={navigation.handleCalendar}
               onNavigateToProfile={() => navigation.setActiveTab('profile')}
               onNavigateToData={() => {}} // 削除：データページなし
+              counselingResult={counselingResult}
             />
           </div>
 
-          <div className="relative px-4 py-4 pb-20 space-y-4">
+          <div className="relative px-4 py-4 pb-24 space-y-4">
             {/* 体重カード - クリックで体重入力モーダル */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
               <WeightCard 

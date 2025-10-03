@@ -716,6 +716,48 @@ class AIHealthService {
       throw new Error('食事画像の分析に失敗しました');
     }
   }
+
+  // 一般会話機能
+  async generateGeneralResponse(userMessage: string): Promise<string> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+あなたは健康管理の専門知識を持つアシスタント「kotakun」です。
+ユーザーからの質問や雑談に、親しみやすく答えてください。
+
+専門知識領域:
+- 栄養学: PFCバランス、ビタミン・ミネラル、食品の栄養価
+- 運動生理学: 筋トレ、有酸素運動、ストレッチ、消費カロリー計算
+- 生活習慣: 睡眠の質向上、ストレス管理、メンタルヘルス
+- 体重管理: ダイエット方法、基礎代謝、BMI計算
+- 病気予防: 生活習慣病、免疫力向上、健康診断の読み方
+- 食材知識: 旬の食材、調理法による栄養の変化
+- 水分補給: 適切な水分摂取量、電解質バランス
+
+回答スタイル:
+- フレンドリーで親しみやすい口調（関西弁は使わない）
+- 科学的根拠に基づいた正確な情報
+- 質問の深さに応じて回答の長さを調整:
+  * 簡単な挨拶や短い質問 → 50文字程度の短い返答
+  * 「教えて」「どうしたらいい？」「詳しく」等の相談 → 200-300文字の詳しいアドバイス
+  * 具体的な悩みや症状の相談 → しっかりとした説明とアドバイス
+- 実践的で具体的なアドバイスを含める
+- 健康に関係ない質問でも、可能なら健康の視点から軽く触れる
+
+ユーザーのメッセージ: "${userMessage}"
+
+返答:`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      
+      return response.text();
+    } catch (error) {
+      console.error('一般会話AI エラー:', error);
+      return 'お話ありがとうございます！何か健康管理でお手伝いできることがあれば、お気軽にお声がけください！';
+    }
+  }
 }
 
 export default AIHealthService;

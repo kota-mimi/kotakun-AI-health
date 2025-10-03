@@ -114,7 +114,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     // カウンセリング完了日を使用（フォールバック：作成日、最後のフォールバック：今日）
     const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
     const counselingDate = counselingDateRaw ? new Date(counselingDateRaw) : new Date();
-    const dateStr = `${counselingDate.getFullYear().toString().slice(-2)}/${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
+    const dateStr = `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
     
     return [{
       date: dateStr,
@@ -179,10 +179,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     const processedData = filteredData.map(item => {
       const itemDate = new Date(item.date);
       const formatDate = () => {
-        const year = itemDate.getFullYear().toString().slice(-2);
         const month = itemDate.getMonth() + 1;
         const day = itemDate.getDate();
-        return `${year}/${month}/${day}`;
+        return `${month}/${day}`;
       };
       
       return {
@@ -198,7 +197,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
   const chartData = getRealChartData();
 
-  // データから動的に範囲を計算
+  // データから適切な範囲を計算（動的スケーリング対応）
   const calculateDataRange = (dataType: DataType) => {
     const values = chartData.map(item => item[dataType]).filter(val => val != null && val > 0);
     
@@ -213,22 +212,51 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     const min = Math.min(...values);
     const max = Math.max(...values);
+    const center = (min + max) / 2;
+    const actualRange = max - min;
     
-    // 1つのデータポイントしかない場合（カウンセリング結果のみ）の範囲設定
-    if (min === max || Math.abs(max - min) < 0.1) {
-      const baseValue = min;
-      const range = Math.max(5, baseValue * 0.1); // 最低5kgまたは体重の10%の範囲
+    // 体重の場合は動的スケーリング
+    if (dataType === 'weight') {
+      // 実際のデータの範囲に応じて適切な表示範囲を決定
+      let displayRange;
+      
+      if (actualRange <= 1) {
+        // 1kg以下の変化なら2kg幅で表示（細かい変化を見やすく）
+        displayRange = 2;
+      } else if (actualRange <= 2) {
+        // 2kg以下の変化なら3kg幅で表示
+        displayRange = 3;
+      } else if (actualRange <= 5) {
+        // 5kg以下の変化なら従来の5kg幅
+        displayRange = 5;
+      } else if (actualRange <= 10) {
+        // 10kg以下の変化なら8kg幅（少し余裕を持たせる）
+        displayRange = Math.max(8, actualRange * 1.3);
+      } else {
+        // 大きな変化の場合は実際の範囲の1.3倍を表示（上下に余裕を持たせる）
+        displayRange = actualRange * 1.3;
+      }
+      
       return {
-        min: Math.max(0, baseValue - range),
-        max: baseValue + range
+        min: center - displayRange / 2,
+        max: center + displayRange / 2
       };
     }
     
-    const padding = (max - min) * 0.1; // 10%のパディング
+    // 体脂肪の場合
+    if (dataType === 'bodyFat') {
+      const fixedRange = 8; // 8%幅
+      return {
+        min: Math.max(0, center - fixedRange / 2),
+        max: center + fixedRange / 2
+      };
+    }
     
+    // その他（waist等）
+    const fixedRange = 10;
     return {
-      min: Math.max(0, min - padding),
-      max: max + padding
+      min: Math.max(0, center - fixedRange / 2),
+      max: center + fixedRange / 2
     };
   };
 
@@ -249,8 +277,32 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   // SVGパスを生成
   const svgWidth = 320;
   const svgHeight = 180;
+  
+  // データ数に応じて適切な間隔を計算
+  const calculateXPositions = () => {
+    if (currentData.length === 0) return [];
+    if (currentData.length === 1) return [svgWidth / 2];
+    
+    // 1日あたりの固定幅を設定（40px程度）
+    const dayWidth = 40;
+    const totalDataWidth = (currentData.length - 1) * dayWidth;
+    
+    // グラフエリアの最大幅（マージンを考慮）
+    const maxGraphWidth = svgWidth - 10;
+    
+    // データが少ない場合は固定幅、多い場合は圧縮
+    const actualWidth = Math.min(totalDataWidth, maxGraphWidth);
+    const startX = 5 + (maxGraphWidth - actualWidth) / 2; // 中央揃え
+    
+    return currentData.map((_, index) => {
+      if (currentData.length === 1) return svgWidth / 2;
+      return startX + (index / (currentData.length - 1)) * actualWidth;
+    });
+  };
+  
+  const xPositions = calculateXPositions();
   const pathPoints = currentData.length > 0 ? currentData.map((point, index) => {
-    const x = currentData.length === 1 ? svgWidth / 2 : 5 + (index / (currentData.length - 1)) * (svgWidth - 10);
+    const x = xPositions[index];
     const y = 10 + (svgHeight - 25) - ((point.value - currentConfig.min) / chartRange) * (svgHeight - 25);
     
     // NaN値をチェック
@@ -317,14 +369,43 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     ? 10 + (svgHeight - 25) - ((targetValue - currentConfig.min) / chartRange) * (svgHeight - 25)
     : null;
 
-  // Y軸の目盛りを生成
-  const yAxisTicks = [];
-  const tickCount = 5;
-  for (let i = 0; i <= tickCount; i++) {
-    const value = currentConfig.min + (currentConfig.max - currentConfig.min) * (i / tickCount);
-    const y = 10 + (svgHeight - 25) - (i / tickCount) * (svgHeight - 25);
-    yAxisTicks.push({ value, y });
-  }
+  // Y軸の目盛りを生成（動的範囲対応）
+  const generateYAxisTicks = () => {
+    const range = currentConfig.max - currentConfig.min;
+    
+    // 適切な間隔を決定（より細かく調整）
+    let tickInterval;
+    if (range <= 1.5) {
+      tickInterval = 0.2; // 1.5kg以下なら0.2kg刻み（より細かく）
+    } else if (range <= 2.5) {
+      tickInterval = 0.5; // 2.5kg以下なら0.5kg刻み
+    } else if (range <= 5) {
+      tickInterval = 1; // 5kg以下なら1kg刻み
+    } else if (range <= 10) {
+      tickInterval = 2; // 10kg以下なら2kg刻み
+    } else if (range <= 20) {
+      tickInterval = 5; // 20kg以下なら5kg刻み
+    } else {
+      tickInterval = 10; // それ以上なら10kg刻み（大きな変化に対応）
+    }
+    
+    // 開始値を間隔に合わせて調整
+    const startValue = Math.floor(currentConfig.min / tickInterval) * tickInterval;
+    const endValue = Math.ceil(currentConfig.max / tickInterval) * tickInterval;
+    
+    const ticks = [];
+    for (let value = startValue; value <= endValue; value += tickInterval) {
+      if (value >= currentConfig.min && value <= currentConfig.max) {
+        const normalizedY = (value - currentConfig.min) / (currentConfig.max - currentConfig.min);
+        const y = 10 + (svgHeight - 25) - normalizedY * (svgHeight - 25);
+        ticks.push({ value, y });
+      }
+    }
+    
+    return ticks;
+  };
+
+  const yAxisTicks = generateYAxisTicks();
 
   const handleMouseMove = (event: React.MouseEvent<SVGElement>) => {
     const svgRect = event.currentTarget.getBoundingClientRect();
@@ -716,7 +797,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
               textAnchor="end"
               className="text-xs fill-slate-600"
             >
-              {tick.value.toFixed(1)}
+              {tick.value % 1 === 0 ? tick.value.toFixed(0) : tick.value.toFixed(1)}
             </text>
           ))}
           

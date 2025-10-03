@@ -8,6 +8,307 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
+// 食事データベース
+const FOOD_DATABASE = {
+  // 主食類
+  'ご飯': { calories: 356, protein: 6.1, fat: 0.9, carbs: 77.6 },
+  '白米': { calories: 356, protein: 6.1, fat: 0.9, carbs: 77.6 },
+  '玄米': { calories: 350, protein: 6.8, fat: 2.7, carbs: 71.8 },
+  'パン': { calories: 264, protein: 9.3, fat: 4.4, carbs: 46.7 },
+  '食パン': { calories: 264, protein: 9.3, fat: 4.4, carbs: 46.7 },
+  'うどん': { calories: 270, protein: 6.8, fat: 1.0, carbs: 55.6 },
+  'そば': { calories: 296, protein: 12.0, fat: 1.9, carbs: 57.0 },
+  'そうめん': { calories: 356, protein: 9.5, fat: 1.1, carbs: 72.7 },
+  'パスタ': { calories: 378, protein: 13.0, fat: 2.9, carbs: 72.2 },
+  'ラーメン': { calories: 436, protein: 15.4, fat: 7.8, carbs: 69.7 },
+  'おにぎり': { calories: 179, protein: 2.7, fat: 0.3, carbs: 39.4 },
+  
+  // 肉類
+  '鶏肉': { calories: 200, protein: 16.2, fat: 14.0, carbs: 0.0 },
+  '鶏胸肉': { calories: 108, protein: 22.3, fat: 1.5, carbs: 0.0 },
+  '鶏もも肉': { calories: 200, protein: 16.2, fat: 14.0, carbs: 0.0 },
+  '豚肉': { calories: 263, protein: 17.1, fat: 21.2, carbs: 0.2 },
+  '牛肉': { calories: 259, protein: 17.1, fat: 20.7, carbs: 0.3 },
+  'ハンバーグ': { calories: 223, protein: 13.3, fat: 15.8, carbs: 7.5 },
+  '唐揚げ': { calories: 290, protein: 16.6, fat: 21.1, carbs: 6.9 },
+  'から揚げ': { calories: 290, protein: 16.6, fat: 21.1, carbs: 6.9 },
+  '焼き鳥': { calories: 199, protein: 18.1, fat: 12.2, carbs: 0.1 },
+  'とんかつ': { calories: 344, protein: 22.3, fat: 23.4, carbs: 10.8 },
+  '生姜焼き': { calories: 330, protein: 17.0, fat: 26.1, carbs: 3.9 },
+  
+  // 魚類
+  '鮭': { calories: 133, protein: 22.3, fat: 4.1, carbs: 0.1 },
+  'さば': { calories: 202, protein: 20.7, fat: 12.1, carbs: 0.3 },
+  'まぐろ': { calories: 125, protein: 26.4, fat: 1.4, carbs: 0.1 },
+  '刺身': { calories: 125, protein: 26.4, fat: 1.4, carbs: 0.1 },
+  '焼き魚': { calories: 133, protein: 22.3, fat: 4.1, carbs: 0.1 },
+  '煮魚': { calories: 108, protein: 22.3, fat: 1.5, carbs: 2.0 },
+  
+  // 卵・乳製品
+  '卵': { calories: 151, protein: 12.3, fat: 10.3, carbs: 0.3 },
+  'ゆで卵': { calories: 151, protein: 12.3, fat: 10.3, carbs: 0.3 },
+  '目玉焼き': { calories: 182, protein: 12.8, fat: 13.4, carbs: 0.5 },
+  'チーズ': { calories: 339, protein: 25.7, fat: 26.0, carbs: 1.3 },
+  'ヨーグルト': { calories: 62, protein: 3.6, fat: 3.0, carbs: 4.9 },
+  
+  // 野菜・サラダ
+  'サラダ': { calories: 21, protein: 1.0, fat: 0.1, carbs: 3.6 },
+  'キャベツ': { calories: 23, protein: 1.3, fat: 0.2, carbs: 5.2 },
+  'レタス': { calories: 12, protein: 0.6, fat: 0.1, carbs: 2.8 },
+  'トマト': { calories: 19, protein: 0.7, fat: 0.1, carbs: 4.7 },
+  'きゅうり': { calories: 14, protein: 1.0, fat: 0.1, carbs: 3.0 },
+  'にんじん': { calories: 39, protein: 0.8, fat: 0.2, carbs: 9.3 },
+  'ブロッコリー': { calories: 33, protein: 4.3, fat: 0.5, carbs: 5.2 },
+  
+  // 定食・丼物
+  '牛丼': { calories: 656, protein: 19.9, fat: 21.8, carbs: 93.9 },
+  '親子丼': { calories: 731, protein: 23.8, fat: 21.0, carbs: 104.9 },
+  'カツ丼': { calories: 893, protein: 29.4, fat: 28.1, carbs: 130.4 },
+  '天丼': { calories: 804, protein: 20.7, fat: 22.9, carbs: 123.8 },
+  '海鮮丼': { calories: 543, protein: 24.8, fat: 4.2, carbs: 96.3 },
+  'チャーハン': { calories: 708, protein: 15.8, fat: 20.3, carbs: 111.9 },
+  'オムライス': { calories: 670, protein: 13.8, fat: 22.4, carbs: 100.2 },
+  
+  // カレー・シチュー
+  'カレー': { calories: 859, protein: 16.7, fat: 24.5, carbs: 140.1 },
+  'ビーフカレー': { calories: 859, protein: 16.7, fat: 24.5, carbs: 140.1 },
+  'チキンカレー': { calories: 545, protein: 19.5, fat: 14.1, carbs: 79.8 },
+  'カレーライス': { calories: 859, protein: 16.7, fat: 24.5, carbs: 140.1 },
+  'シチュー': { calories: 218, protein: 6.6, fat: 11.5, carbs: 21.0 },
+  'ハヤシライス': { calories: 713, protein: 14.4, fat: 18.7, carbs: 118.5 },
+  
+  // 麺類
+  'ざるそば': { calories: 296, protein: 12.0, fat: 1.9, carbs: 57.0 },
+  'かけうどん': { calories: 270, protein: 6.8, fat: 1.0, carbs: 55.6 },
+  'きつねうどん': { calories: 386, protein: 12.6, fat: 4.1, carbs: 75.7 },
+  'カルボナーラ': { calories: 779, protein: 21.8, fat: 44.9, carbs: 67.8 },
+  'ナポリタン': { calories: 571, protein: 16.4, fat: 16.2, carbs: 83.7 },
+  'ペペロンチーノ': { calories: 507, protein: 13.0, fat: 19.7, carbs: 66.9 },
+  '焼きそば': { calories: 593, protein: 13.2, fat: 25.9, carbs: 77.5 },
+  
+  // 揚げ物
+  '天ぷら': { calories: 174, protein: 7.3, fat: 10.5, carbs: 11.2 },
+  'エビフライ': { calories: 210, protein: 12.5, fat: 11.2, carbs: 14.2 },
+  'コロッケ': { calories: 164, protein: 3.8, fat: 9.8, carbs: 15.8 },
+  'メンチカツ': { calories: 273, protein: 10.4, fat: 19.8, carbs: 12.8 },
+  'チキンカツ': { calories: 344, protein: 22.3, fat: 23.4, carbs: 10.8 },
+  
+  // スープ・汁物
+  '味噌汁': { calories: 34, protein: 2.2, fat: 1.2, carbs: 3.8 },
+  'お味噌汁': { calories: 34, protein: 2.2, fat: 1.2, carbs: 3.8 },
+  'すまし汁': { calories: 8, protein: 1.4, fat: 0.0, carbs: 0.8 },
+  'わかめスープ': { calories: 11, protein: 0.7, fat: 0.1, carbs: 2.0 },
+  'コンソメスープ': { calories: 37, protein: 1.4, fat: 1.2, carbs: 5.1 },
+  
+  // 洋食
+  'ハンバーガー': { calories: 524, protein: 19.5, fat: 26.8, carbs: 51.6 },
+  'チーズバーガー': { calories: 598, protein: 25.4, fat: 33.1, carbs: 52.8 },
+  'ピザ': { calories: 268, protein: 10.1, fat: 11.5, carbs: 31.4 },
+  'サンドイッチ': { calories: 177, protein: 7.4, fat: 6.7, carbs: 22.3 },
+  'オムレツ': { calories: 182, protein: 12.8, fat: 13.4, carbs: 0.5 },
+  'ステーキ': { calories: 259, protein: 17.1, fat: 20.7, carbs: 0.3 },
+  
+  // 中華
+  '餃子': { calories: 46, protein: 2.2, fat: 2.4, carbs: 4.4 },
+  'ギョーザ': { calories: 46, protein: 2.2, fat: 2.4, carbs: 4.4 },
+  '麻婆豆腐': { calories: 195, protein: 14.6, fat: 12.3, carbs: 6.8 },
+  '青椒肉絲': { calories: 228, protein: 14.9, fat: 15.4, carbs: 8.3 },
+  '酢豚': { calories: 274, protein: 11.8, fat: 16.8, carbs: 20.3 },
+  'エビチリ': { calories: 210, protein: 12.5, fat: 11.2, carbs: 14.2 },
+  '春巻き': { calories: 124, protein: 4.6, fat: 6.2, carbs: 12.8 },
+  
+  // 和食
+  '肉じゃが': { calories: 176, protein: 9.8, fat: 6.8, carbs: 19.2 },
+  '筑前煮': { calories: 96, protein: 6.8, fat: 3.2, carbs: 10.4 },
+  'きんぴらごぼう': { calories: 94, protein: 2.1, fat: 3.8, carbs: 13.6 },
+  '煮物': { calories: 96, protein: 6.8, fat: 3.2, carbs: 10.4 },
+  'ひじきの煮物': { calories: 84, protein: 3.2, fat: 2.8, carbs: 12.4 },
+  '冷奴': { calories: 56, protein: 4.9, fat: 3.0, carbs: 1.6 },
+  'おでん': { calories: 13, protein: 1.1, fat: 0.1, carbs: 2.5 },
+  
+  // デザート・間食
+  'アイス': { calories: 180, protein: 3.2, fat: 8.0, carbs: 23.2 },
+  'アイスクリーム': { calories: 180, protein: 3.2, fat: 8.0, carbs: 23.2 },
+  'ケーキ': { calories: 308, protein: 4.9, fat: 20.6, carbs: 26.1 },
+  'クッキー': { calories: 432, protein: 6.9, fat: 17.2, carbs: 62.6 },
+  'チョコレート': { calories: 558, protein: 7.3, fat: 34.1, carbs: 51.9 },
+  'バナナ': { calories: 86, protein: 1.1, fat: 0.2, carbs: 22.5 },
+  'りんご': { calories: 54, protein: 0.2, fat: 0.1, carbs: 14.6 },
+  'みかん': { calories: 45, protein: 0.7, fat: 0.1, carbs: 11.0 },
+  'ポテトチップス': { calories: 554, protein: 4.7, fat: 35.2, carbs: 54.7 },
+  'ポップコーン': { calories: 484, protein: 10.2, fat: 22.8, carbs: 57.8 },
+  'せんべい': { calories: 373, protein: 8.1, fat: 2.5, carbs: 83.1 },
+  'おかき': { calories: 381, protein: 7.2, fat: 3.1, carbs: 82.8 },
+  'グミ': { calories: 341, protein: 6.9, fat: 0.1, carbs: 83.6 },
+  'キャンディ': { calories: 390, protein: 0.0, fat: 0.2, carbs: 97.5 },
+  'マシュマロ': { calories: 326, protein: 4.5, fat: 0.2, carbs: 79.3 },
+  'ドーナツ': { calories: 375, protein: 6.1, fat: 20.5, carbs: 42.2 },
+  
+  // 果物追加
+  'いちご': { calories: 34, protein: 0.9, fat: 0.1, carbs: 8.5 },
+  'ぶどう': { calories: 59, protein: 0.4, fat: 0.2, carbs: 15.2 },
+  'もも': { calories: 40, protein: 0.6, fat: 0.1, carbs: 10.2 },
+  'パイナップル': { calories: 51, protein: 0.6, fat: 0.1, carbs: 13.4 },
+  'メロン': { calories: 42, protein: 1.0, fat: 0.1, carbs: 10.3 },
+  'スイカ': { calories: 37, protein: 0.6, fat: 0.1, carbs: 9.5 },
+  'キウイ': { calories: 53, protein: 1.0, fat: 0.1, carbs: 13.5 },
+  'オレンジ': { calories: 39, protein: 0.9, fat: 0.1, carbs: 10.4 },
+  'レモン': { calories: 54, protein: 0.9, fat: 0.7, carbs: 8.6 },
+  
+  // 飲み物
+  'コーヒー': { calories: 4, protein: 0.2, fat: 0.0, carbs: 0.7 },
+  'お茶': { calories: 0, protein: 0.0, fat: 0.0, carbs: 0.1 },
+  '緑茶': { calories: 0, protein: 0.0, fat: 0.0, carbs: 0.1 },
+  '紅茶': { calories: 1, protein: 0.1, fat: 0.0, carbs: 0.3 },
+  'ウーロン茶': { calories: 0, protein: 0.0, fat: 0.0, carbs: 0.1 },
+  'コーラ': { calories: 46, protein: 0.0, fat: 0.0, carbs: 11.4 },
+  'ジュース': { calories: 41, protein: 0.2, fat: 0.1, carbs: 10.2 },
+  'オレンジジュース': { calories: 41, protein: 0.2, fat: 0.1, carbs: 10.2 },
+  'りんごジュース': { calories: 44, protein: 0.1, fat: 0.1, carbs: 11.8 },
+  'ビール': { calories: 40, protein: 0.3, fat: 0.0, carbs: 3.1 },
+  '牛乳': { calories: 67, protein: 3.3, fat: 3.8, carbs: 4.8 },
+  '豆乳': { calories: 46, protein: 3.6, fat: 2.0, carbs: 2.9 },
+  
+  // パン類追加
+  'クロワッサン': { calories: 448, protein: 7.9, fat: 26.8, carbs: 43.9 },
+  'メロンパン': { calories: 350, protein: 6.8, fat: 13.1, carbs: 52.2 },
+  'カレーパン': { calories: 321, protein: 8.1, fat: 15.2, carbs: 37.8 },
+  'あんぱん': { calories: 266, protein: 7.4, fat: 4.2, carbs: 50.8 },
+  'クリームパン': { calories: 306, protein: 7.8, fat: 10.5, carbs: 46.2 },
+  'ベーグル': { calories: 211, protein: 9.0, fat: 1.7, carbs: 40.9 },
+  'フランスパン': { calories: 279, protein: 9.4, fat: 1.3, carbs: 57.5 },
+  
+  // ファストフード
+  'フライドポテト': { calories: 237, protein: 3.0, fat: 11.3, carbs: 31.2 },
+  'ポテトフライ': { calories: 237, protein: 3.0, fat: 11.3, carbs: 31.2 },
+  'チキンナゲット': { calories: 245, protein: 15.5, fat: 15.7, carbs: 9.9 },
+  'フィッシュバーガー': { calories: 341, protein: 15.0, fat: 17.7, carbs: 32.0 },
+  'ホットドッグ': { calories: 290, protein: 10.4, fat: 18.0, carbs: 24.0 },
+  'タコス': { calories: 226, protein: 9.4, fat: 10.8, carbs: 25.7 },
+  
+  // ご飯もの追加
+  'チキンライス': { calories: 708, protein: 15.8, fat: 20.3, carbs: 111.9 },
+  '鮭おにぎり': { calories: 179, protein: 6.0, fat: 2.0, carbs: 35.0 },
+  'ツナおにぎり': { calories: 185, protein: 7.2, fat: 3.8, carbs: 32.1 },
+  '梅おにぎり': { calories: 171, protein: 2.8, fat: 0.4, carbs: 38.7 },
+  '赤飯': { calories: 189, protein: 3.9, fat: 1.3, carbs: 40.7 },
+  'ちらし寿司': { calories: 231, protein: 9.6, fat: 2.4, carbs: 42.8 },
+  '手巻き寿司': { calories: 143, protein: 6.2, fat: 0.5, carbs: 27.4 },
+  
+  // その他の料理
+  'お好み焼き': { calories: 545, protein: 17.0, fat: 30.8, carbs: 50.1 },
+  'たこ焼き': { calories: 417, protein: 12.3, fat: 20.5, carbs: 46.8 },
+  '焼きうどん': { calories: 594, protein: 13.0, fat: 26.1, carbs: 77.8 },
+  'おかゆ': { calories: 71, protein: 1.2, fat: 0.2, carbs: 15.6 },
+  '茶碗蒸し': { calories: 79, protein: 6.4, fat: 4.1, carbs: 4.2 },
+  'だし巻き卵': { calories: 128, protein: 8.8, fat: 8.8, carbs: 2.6 },
+  'かぼちゃの煮物': { calories: 93, protein: 1.9, fat: 0.3, carbs: 20.6 }
+};
+
+// 食事パターンマッチング関数
+function findFoodMatch(text: string) {
+  // 完全一致をチェック
+  if (FOOD_DATABASE[text]) {
+    return { food: text, data: FOOD_DATABASE[text], confidence: 'high' };
+  }
+  
+  // 部分一致をチェック
+  for (const [foodName, foodData] of Object.entries(FOOD_DATABASE)) {
+    if (text.includes(foodName) || foodName.includes(text)) {
+      return { food: foodName, data: foodData, confidence: 'medium' };
+    }
+  }
+  
+  // より柔軟なマッチング（ひらがな・カタカナ変換なども考慮）
+  const normalizedText = text.toLowerCase().replace(/\s/g, '');
+  for (const [foodName, foodData] of Object.entries(FOOD_DATABASE)) {
+    const normalizedFood = foodName.toLowerCase().replace(/\s/g, '');
+    if (normalizedText.includes(normalizedFood) || normalizedFood.includes(normalizedText)) {
+      return { food: foodName, data: foodData, confidence: 'low' };
+    }
+  }
+  
+  return null;
+}
+
+// 複数食事の解析
+function analyzeMultipleFoods(text: string) {
+  const foundFoods = [];
+  const words = text.split(/[、。・\s]+/);
+  
+  for (const word of words) {
+    if (word.length >= 2) {
+      const match = findFoodMatch(word);
+      if (match) {
+        foundFoods.push({
+          name: match.food,
+          ...match.data
+        });
+      }
+    }
+  }
+  
+  if (foundFoods.length === 0) {
+    return null;
+  }
+  
+  // 複数食事の合計計算
+  const totalCalories = foundFoods.reduce((sum, food) => sum + food.calories, 0);
+  const totalProtein = foundFoods.reduce((sum, food) => sum + food.protein, 0);
+  const totalFat = foundFoods.reduce((sum, food) => sum + food.fat, 0);
+  const totalCarbs = foundFoods.reduce((sum, food) => sum + food.carbs, 0);
+  
+  return {
+    isMultipleMeals: foundFoods.length > 1,
+    meals: foundFoods,
+    totalCalories: Math.round(totalCalories),
+    totalProtein: Math.round(totalProtein * 10) / 10,
+    totalFat: Math.round(totalFat * 10) / 10,
+    totalCarbs: Math.round(totalCarbs * 10) / 10,
+    calories: foundFoods.length === 1 ? foundFoods[0].calories : Math.round(totalCalories),
+    protein: foundFoods.length === 1 ? foundFoods[0].protein : Math.round(totalProtein * 10) / 10,
+    fat: foundFoods.length === 1 ? foundFoods[0].fat : Math.round(totalFat * 10) / 10,
+    carbs: foundFoods.length === 1 ? foundFoods[0].carbs : Math.round(totalCarbs * 10) / 10,
+    foodItems: foundFoods.map(f => f.name)
+  };
+}
+
+// リッチメニューの設定
+const RICH_MENU_CONFIG = {
+  size: {
+    width: 2500,
+    height: 843
+  },
+  selected: false,
+  name: "食事記録メニュー",
+  chatBarText: "メニュー",
+  areas: [
+    {
+      bounds: {
+        x: 0,
+        y: 0,
+        width: 1250,
+        height: 843
+      },
+      action: {
+        type: "message",
+        text: "食事を記録したいです"
+      }
+    },
+    {
+      bounds: {
+        x: 1250,
+        y: 0,
+        width: 1250,
+        height: 843
+      },
+      action: {
+        type: "camera"
+      }
+    }
+  ]
+};
+
 export async function POST(request: NextRequest) {
   try {
     console.log('🔥 LINE Webhook呼び出し開始');
@@ -91,15 +392,37 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 async function handleTextMessage(replyToken: string, userId: string, text: string) {
   let responseMessage;
 
-  // 体重記録の判定（数字のみまたは数字+kg）
-  const weightMatch = text.match(/^(\d{1,3}(?:\.\d+)?)\s*(?:kg)?$/);
+  // クイックリプライボタンからの「食事を記録したいです」への応答
+  if (text === '食事を記録したいです') {
+    responseMessage = {
+      type: 'text',
+      text: '何食べた？教えて！\n例：「ラーメン」「鶏の唐揚げと白米」'
+    };
+    await replyMessage(replyToken, [responseMessage]);
+    return;
+  }
+
+  // 体重記録の判定（様々なパターンに対応）
+  const weightPatterns = [
+    /^(\d{1,3}(?:\.\d+)?)\s*(?:kg|キロ|キログラム)?$/,  // 数字のみ、kg、キロ、キログラム
+    /^体重\s*(\d{1,3}(?:\.\d+)?)\s*(?:kg|キロ|キログラム)?$/,  // 体重 + 数字
+    /^今日の体重\s*(\d{1,3}(?:\.\d+)?)\s*(?:kg|キロ|キログラム)?$/,  // 今日の体重 + 数字
+    /^現在の体重\s*(\d{1,3}(?:\.\d+)?)\s*(?:kg|キロ|キログラム)?$/   // 現在の体重 + 数字
+  ];
+  
+  let weightMatch = null;
+  for (const pattern of weightPatterns) {
+    weightMatch = text.match(pattern);
+    if (weightMatch) break;
+  }
+  
   if (weightMatch) {
     const weight = parseFloat(weightMatch[1]);
     if (weight >= 20 && weight <= 300) { // 妥当な体重範囲
       await recordWeight(userId, weight);
       responseMessage = {
         type: 'text',
-        text: `体重 ${weight}kg を記録しました！\n\n継続的な記録で健康管理を頑張りましょう 💪`
+        text: `体重 ${weight}kg 記録したよ！`
       };
       await replyMessage(replyToken, [responseMessage]);
       return;
@@ -116,7 +439,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   if (text === '記録' || text.includes('記録')) {
     responseMessage = {
       type: 'text',
-      text: '何を記録しますか？\n下のボタンから選択してください！',
+      text: '何記録する？\n下から選んでね！',
       quickReply: {
         items: [
           {
@@ -183,7 +506,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     responseMessage = {
       type: 'text',
-      text: `「${text.length > 20 ? text.substring(0, 20) + '...' : text}」\n\nどうしますか？`,
+      text: `「${text.length > 20 ? text.substring(0, 20) + '...' : text}」だね！\n\nどうする？`,
       quickReply: {
         items: [
           {
@@ -209,8 +532,25 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     return;
   }
 
-  // その他のメッセージには反応しない（運動記録、食事記録、記録ボタン以外）
-  return NextResponse.json({ status: 'ignored' });
+  // その他のメッセージには一般会話AIで応答
+  try {
+    const aiService = new AIHealthService();
+    const aiResponse = await aiService.generateGeneralResponse(text);
+    
+    responseMessage = {
+      type: 'text',
+      text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
+    };
+    
+    await replyMessage(replyToken, [responseMessage]);
+  } catch (error) {
+    console.error('一般会話AI エラー:', error);
+    responseMessage = {
+      type: 'text',
+      text: 'お話ありがとうございます！健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
+    };
+    await replyMessage(replyToken, [responseMessage]);
+  }
 }
 
 async function handleImageMessage(replyToken: string, userId: string, messageId: string) {
@@ -220,7 +560,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     if (!imageContent) {
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '画像の取得に失敗しました。もう一度お試しください。'
+        text: '画像がうまく受け取れなかった！もう一度送ってみて？'
       }]);
       return;
     }
@@ -230,7 +570,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
 
     const responseMessage = {
       type: 'text',
-      text: '食事写真を受け取りました！\nAIで分析しますか？',
+      text: '美味しそうな写真だね！\nAIで分析する？',
       quickReply: {
         items: [
           {
@@ -258,7 +598,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     console.error('画像処理エラー:', error);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '画像の処理中にエラーが発生しました。もう一度お試しください。'
+      text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？'
     }]);
   }
 }
@@ -266,13 +606,19 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
 async function handleFollow(replyToken: string, source: any) {
   const { userId } = source;
   
+  // リッチメニューを作成してユーザーに設定
+  const richMenuId = await createRichMenu();
+  if (richMenuId) {
+    await setRichMenuForUser(userId, richMenuId);
+  }
+  
   // 新規ユーザーの場合、カウンセリングへ誘導
   const welcomeMessage = {
     type: 'template',
     altText: 'LINE健康管理へようこそ！',
     template: {
       type: 'buttons',
-      text: 'LINE健康管理へようこそ！\n\nあなた専用の健康プランを作成しませんか？',
+      text: 'LINE健康管理へようこそ！\n\nあなた専用の健康プランを作成しませんか？\n\n下のメニューから食事記録もできます！',
       actions: [
         {
           type: 'uri',
@@ -295,7 +641,6 @@ async function replyMessage(replyToken: string, messages: any[]) {
     return;
   }
 
-
   try {
     const response = await fetch('https://api.line.me/v2/bot/message/reply', {
       method: 'POST',
@@ -315,6 +660,69 @@ async function replyMessage(replyToken: string, messages: any[]) {
     }
   } catch (error) {
     console.error('Error replying message:', error);
+  }
+}
+
+// リッチメニューを作成する関数
+async function createRichMenu() {
+  const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  
+  if (!accessToken) {
+    console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
+    return;
+  }
+
+  try {
+    // リッチメニューを作成
+    const response = await fetch('https://api.line.me/v2/bot/richmenu', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(RICH_MENU_CONFIG),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Failed to create rich menu:', error);
+      return null;
+    }
+
+    const result = await response.json();
+    console.log('Rich menu created:', result.richMenuId);
+    return result.richMenuId;
+  } catch (error) {
+    console.error('Error creating rich menu:', error);
+    return null;
+  }
+}
+
+// ユーザーにリッチメニューを設定する関数
+async function setRichMenuForUser(userId: string, richMenuId: string) {
+  const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  
+  if (!accessToken) {
+    console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://api.line.me/v2/bot/user/${userId}/richmenu/${richMenuId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Failed to set rich menu for user:', error);
+    } else {
+      console.log('Rich menu set for user:', userId);
+    }
+  } catch (error) {
+    console.error('Error setting rich menu for user:', error);
   }
 }
 
@@ -485,18 +893,27 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
       return;
     }
 
-    const aiService = new AIHealthService();
     let analysis;
+    const originalMealName = tempData.text || '食事';
 
     if (tempData.image) {
-      // 画像分析
+      // 画像の場合はAI分析必須
+      const aiService = new AIHealthService();
       analysis = await aiService.analyzeMealFromImage(tempData.image);
     } else {
-      // テキスト分析
-      analysis = await aiService.analyzeMealFromText(tempData.text || '');
+      // テキストの場合はパターンマッチング優先
+      analysis = analyzeMultipleFoods(tempData.text || '');
+      
+      if (!analysis) {
+        // パターンマッチングで見つからない場合のみAI分析
+        console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+        const aiService = new AIHealthService();
+        analysis = await aiService.analyzeMealFromText(tempData.text || '');
+      } else {
+        console.log('パターンマッチング成功:', analysis);
+      }
     }
 
-    const originalMealName = tempData.text || analysis.foodItems?.[0] || '食事';
     const { createCalorieAnalysisFlexMessage } = await import('./new_flex_message');
     const flexMessage = createCalorieAnalysisFlexMessage(analysis, originalMealName);
 
@@ -526,14 +943,25 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       return;
     }
 
-    const aiService = new AIHealthService();
     let analysis;
 
     try {
       if (tempData.image) {
+        // 画像の場合はAI分析必須
+        const aiService = new AIHealthService();
         analysis = await aiService.analyzeMealFromImage(tempData.image);
       } else {
-        analysis = await aiService.analyzeMealFromText(tempData.text || '');
+        // テキストの場合はパターンマッチング優先
+        analysis = analyzeMultipleFoods(tempData.text || '');
+        
+        if (!analysis) {
+          // パターンマッチングで見つからない場合のみAI分析
+          console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+          const aiService = new AIHealthService();
+          analysis = await aiService.analyzeMealFromText(tempData.text || '');
+        } else {
+          console.log('パターンマッチング成功:', analysis);
+        }
       }
     } catch (aiError) {
       console.error('AI分析エラー、フォールバック値を使用:', aiError);
@@ -988,7 +1416,7 @@ async function recordContinuationSet(userId: string, match: any, replyToken: str
     
     // 返信メッセージ
     const setNumber = targetExercise.sets.length;
-    const message = `${match.exerciseName} ${setNumber}セット目を記録しました！\n${match.weight}kg × ${match.reps}回\n\n続けて重さと回数を送信すると${setNumber + 1}セット目として記録されます。`;
+    const message = `${match.exerciseName} ${setNumber}セット目を記録したよ！\n${match.weight}kg × ${match.reps}回\n\n続けて重さと回数を送信すると${setNumber + 1}セット目として記録されます。`;
     
     await replyMessage(replyToken, [{
       type: 'text',
@@ -1386,12 +1814,12 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     // デフォルト時間が使用された場合のメッセージ
     let defaultTimeMessage = '';
     if (match.isDefaultDuration) {
-      defaultTimeMessage = `\n\n📝 ${durationInMinutes}分で記録しました（時間を指定したい場合は「${exerciseName}○分」と送信してください）`;
+      defaultTimeMessage = `\n\n${durationInMinutes}分で記録したよ（時間を指定したい場合は「${exerciseName}○分」と送信してください）`;
     }
     
     const responseMessage = {
       type: 'text',
-      text: `${exerciseName} ${unitText} を記録しました！\n\n⚡ 消費カロリー: 約${calories}kcal\n💪 今日も頑張りましたね！${defaultTimeMessage}`
+      text: `${exerciseName} ${unitText} を記録したよ！\n\n消費カロリー: 約${calories}kcal${defaultTimeMessage}`
     };
     
     await replyMessage(replyToken, [responseMessage]);
@@ -1435,7 +1863,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         exerciseData.calories = Math.round(mets * userWeight * (estimatedDuration / 60) * 1.05);
         exerciseData.sets = Array(sets).fill({ weight: weight, reps: reps });
         
-        responseText = `${exerciseName} ${weight}kg×${reps}回×${sets}セット を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n💪 総レップ数: ${totalReps}回`;
+        responseText = `${exerciseName} ${weight}kg×${reps}回×${sets}セット を記録したよ！\n\n消費カロリー: 約${exerciseData.calories}kcal\n総レップ数: ${totalReps}回`;
         break;
         
       case 'distance_duration':
@@ -1445,7 +1873,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         exerciseData.calories = Math.round(mets * userWeight * (duration / 60) * 1.05);
         
         const pace = (duration / distance).toFixed(1); // 分/km
-        responseText = `${exerciseName} ${distance}km（${duration}分）を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n🏃 ペース: ${pace}分/km`;
+        responseText = `${exerciseName} ${distance}km（${duration}分）を記録したよ！\n\n消費カロリー: 約${exerciseData.calories}kcal\nペース: ${pace}分/km`;
         break;
         
       case 'weight_reps':
@@ -1456,7 +1884,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         exerciseData.calories = Math.round(mets * userWeight * (estDuration / 60) * 1.05);
         exerciseData.sets = [{ weight: w, reps: r }];
         
-        responseText = `${exerciseName} ${w}kg×${r}回 を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n💪 1セット完了`;
+        responseText = `${exerciseName} ${w}kg×${r}回 を記録したよ！\n\n消費カロリー: 約${exerciseData.calories}kcal\n1セット完了`;
         break;
         
       case 'distance_only':
@@ -1467,7 +1895,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         exerciseData.distance = d;
         exerciseData.calories = Math.round(mets * userWeight * (estimatedTime / 60) * 1.05);
         
-        responseText = `${exerciseName} ${d}km を記録しました！\n\n⚡ 消費カロリー: 約${exerciseData.calories}kcal\n🏃 推定時間: ${estimatedTime}分`;
+        responseText = `${exerciseName} ${d}km を記録したよ！\n\n消費カロリー: 約${exerciseData.calories}kcal\n推定時間: ${estimatedTime}分`;
         break;
     }
     

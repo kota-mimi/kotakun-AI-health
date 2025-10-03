@@ -3,6 +3,9 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { 
@@ -40,9 +43,17 @@ export function MyProfilePage({
   onNavigateToUserGuide,
   onNavigateToContact
 }: MyProfilePageProps) {
+  // 編集モーダルの状態
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // 強制リフレッシュ用のキー
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   // 実際のユーザーデータを取得
   const { liffUser } = useAuth();
-  const { counselingResult } = useCounselingData();
+  const { counselingResult, refetch } = useCounselingData();
+  
+  // デバッグ: counselingResultの内容を確認
+  console.log('🔍 MyProfilePage counselingResult:', counselingResult);
   
   // カウンセリング結果またはユーザープロフィールからデータを取得
   const userName = liffUser?.displayName || counselingResult?.answers?.name || counselingResult?.userProfile?.name || "ユーザー";
@@ -76,6 +87,111 @@ export function MyProfilePage({
     targetDate: counselingResult?.answers?.targetDate || "未設定",
     bmi: bmi,
     joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
+  };
+
+  // 編集フォームの状態（モーダル開いた時に最新値を反映）
+  const [editForm, setEditForm] = useState({
+    name: userName,
+    age: age,
+    gender: counselingResult?.answers?.gender || 'male',
+    height: height,
+    currentWeight: currentWeight,
+    targetWeight: targetWeight
+  });
+
+  // モーダルが開かれた時に最新の値で更新
+  const handleOpenEditModal = () => {
+    setEditForm({
+      name: userName,
+      age: age,
+      gender: counselingResult?.answers?.gender || 'male',
+      height: height,
+      currentWeight: currentWeight,
+      targetWeight: targetWeight
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // 編集フォームの更新
+  const handleEditFormChange = (field: string, value: any) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // プロフィール保存
+  const handleSaveProfile = () => {
+    try {
+      console.log('🔥 プロフィール保存開始:', editForm);
+      
+      // ローカルストレージのカウンセリング結果を更新
+      if (typeof window !== 'undefined') {
+        const existingAnswers = localStorage.getItem('counselingAnswers');
+        const existingAnalysis = localStorage.getItem('aiAnalysis');
+        
+        console.log('🔥 既存のローカルストレージ:');
+        console.log('  - counselingAnswers:', existingAnswers);
+        console.log('  - aiAnalysis:', existingAnalysis ? 'exists' : 'null');
+        
+        if (existingAnswers) {
+          const answers = JSON.parse(existingAnswers);
+          console.log('🔥 既存のanswers:', answers);
+          
+          const updatedAnswers = {
+            ...answers,
+            name: editForm.name,
+            age: editForm.age,
+            gender: editForm.gender,
+            height: editForm.height,
+            weight: editForm.currentWeight,
+            targetWeight: editForm.targetWeight
+          };
+          
+          console.log('🔥 更新後のanswers:', updatedAnswers);
+          localStorage.setItem('counselingAnswers', JSON.stringify(updatedAnswers));
+          
+          // aiAnalysisも更新してuserProfileを含める
+          if (existingAnalysis) {
+            const analysis = JSON.parse(existingAnalysis);
+            const updatedAnalysis = {
+              ...analysis,
+              userProfile: {
+                name: editForm.name,
+                age: editForm.age,
+                gender: editForm.gender,
+                height: editForm.height,
+                weight: editForm.currentWeight,
+                targetWeight: editForm.targetWeight
+              }
+            };
+            console.log('🔥 更新後のanalysis:', updatedAnalysis);
+            localStorage.setItem('aiAnalysis', JSON.stringify(updatedAnalysis));
+          }
+        }
+      }
+
+      // モーダルを閉じる
+      setIsEditModalOpen(false);
+      
+      console.log('🔥 強制リフレッシュ実行');
+      // 開発環境用：refreshKeyを変更してコンポーネントを強制再レンダリング
+      setRefreshKey(prev => prev + 1);
+      
+      // 念のためrefetchも実行
+      setTimeout(async () => {
+        await refetch();
+        // 最後の手段：ページリロード
+        setTimeout(() => {
+          console.log('🔥 ページリロード実行');
+          window.location.reload();
+        }, 100);
+      }, 100);
+      
+    } catch (error) {
+      console.error('プロフィール保存エラー:', error);
+      alert('プロフィールの保存に失敗しました。再度お試しください。');
+    }
   };
 
 
@@ -175,15 +291,15 @@ export function MyProfilePage({
 
 
   return (
-    <div className="space-y-8 pb-4">
+    <div key={refreshKey} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
         <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/90 border border-white/60 rounded-2xl shadow-lg p-4">
           <div className="flex items-center justify-between mb-3">
             {/* ユーザー情報 */}
             <div className="flex-1">
-              <h2 className="font-semibold text-slate-900 mb-0.5">{userProfile.name}</h2>
-              <div className="flex items-center space-x-1.5 text-xs text-slate-600">
+              <h2 className="text-xl font-bold text-slate-900 mb-1">{userProfile.name}</h2>
+              <div className="flex items-center space-x-2 text-sm text-slate-600">
                 <span>{userProfile.age}歳</span>
                 <span>•</span>
                 <span>{userProfile.gender}</span>
@@ -246,16 +362,26 @@ export function MyProfilePage({
             </div>
           )}
           
-          {/* カウンセリングやり直しボタン */}
+          {/* アクションボタン */}
           <div className="mt-4 pt-3 border-t border-slate-200">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.href = '/counseling'}
-              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
-            >
-              カウンセリングをやり直す
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/counseling'}
+                className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                カウンセリング再実施
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenEditModal}
+                className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
+              >
+                プロフィール編集
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
@@ -267,6 +393,116 @@ export function MyProfilePage({
       {/* サポート */}
       {renderSection('サポート', supportMenuItems)}
 
+      {/* プロフィール編集モーダル */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">プロフィール編集</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-2">
+            {/* 名前 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">名前</label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => handleEditFormChange('name', e.target.value)}
+                onFocus={(e) => e.target.select()}
+                placeholder="名前を入力"
+              />
+            </div>
+
+            {/* 年齢 */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">年齢</label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={editForm.age || ''}
+                onChange={(e) => handleEditFormChange('age', parseInt(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                placeholder="年齢を入力"
+                className="text-center"
+              />
+            </div>
+
+            {/* 性別 */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">性別</label>
+              <Select value={editForm.gender} onValueChange={(value) => handleEditFormChange('gender', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">男性</SelectItem>
+                  <SelectItem value="female">女性</SelectItem>
+                  <SelectItem value="other">その他</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 身長 */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">身長 (cm)</label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={editForm.height || ''}
+                onChange={(e) => handleEditFormChange('height', parseInt(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                placeholder="身長を入力"
+                className="text-center"
+              />
+            </div>
+
+            {/* 現在の体重 */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">現在の体重 (kg)</label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                step="0.1"
+                value={editForm.currentWeight || ''}
+                onChange={(e) => handleEditFormChange('currentWeight', parseFloat(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                placeholder="体重を入力"
+                className="text-center"
+              />
+            </div>
+
+            {/* 目標体重 */}
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">目標体重 (kg)</label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                step="0.1"
+                value={editForm.targetWeight || ''}
+                onChange={(e) => handleEditFormChange('targetWeight', parseFloat(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
+                placeholder="目標体重を入力"
+                className="text-center"
+              />
+            </div>
+          </div>
+
+          {/* ボタン */}
+          <div className="flex space-x-2 pt-2">
+            <DialogClose asChild>
+              <Button variant="outline" className="flex-1" size="sm">
+                キャンセル
+              </Button>
+            </DialogClose>
+            <Button onClick={handleSaveProfile} className="flex-1 bg-green-600 hover:bg-green-700" size="sm">
+              保存
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

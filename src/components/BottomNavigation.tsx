@@ -1,12 +1,12 @@
 import { Button } from './ui/button';
-import { Home, Utensils, Scale, Dumbbell, User } from 'lucide-react';
+import { Home, User } from 'lucide-react';
 
 interface BottomNavigationProps {
   activeTab: 'home' | 'profile';
   onTabChange: (tab: 'home' | 'profile') => void;
 }
 
-// タブ定義：ホームと設定の2タブ構成
+// タブ定義：ホーム、設定の2タブ構成
 const tabs = [
   {
     id: 'home' as const,
@@ -24,7 +24,7 @@ const tabs = [
 
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (
-    <div className="fixed bottom-0 left-0 w-full">
+    <div className="fixed bottom-0 left-0 w-full" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="backdrop-blur-xl bg-white/95 border-t border-slate-200/50 shadow-lg">
         {/* セーフエリア対応のパディング */}
         <div className="px-0 pt-2 pb-6">

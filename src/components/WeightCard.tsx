@@ -12,6 +12,9 @@ interface CounselingResult {
     weight: number;
     targetWeight: number;
   };
+  firstCompletedAt?: any;
+  completedAt?: any;
+  createdAt?: any;
 }
 
 interface WeightCardProps {
@@ -28,6 +31,23 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
   // データが記録されているかチェック
   const hasData = data.current > 0;
   
+  // アプリ開始日を取得
+  const getAppStartDate = () => {
+    if (!counselingResult) return null;
+    const counselingDateRaw = counselingResult.firstCompletedAt || 
+                             counselingResult.createdAt || 
+                             counselingResult.completedAt;
+    return counselingDateRaw ? new Date(counselingDateRaw) : null;
+  };
+  
+  // 今日がアプリ開始日かチェック
+  const isAppStartDay = () => {
+    const appStartDate = getAppStartDate();
+    if (!appStartDate) return false;
+    const today = new Date();
+    return today.toDateString() === appStartDate.toDateString();
+  };
+  
   // 実際の記録データを優先、カウンセリング結果はフォールバックとして使用
   const currentWeight = hasData ? data.current : (counselingResult?.answers?.weight || 0);
   const difference = hasData ? (currentWeight - data.previous) : 0;
@@ -38,10 +58,9 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
   // カウンセリング結果がある場合は表示を有効にする
   const shouldShowWeight = hasData || (counselingResult?.answers?.weight && counselingResult.answers.weight > 0);
   
-  // カウンセリング結果のみで前日データがない場合を判定
-  const isInitialRecord = !hasData && shouldShowWeight;
+  // 前日比を表示するかチェック（アプリ開始日や未記録日は「--」）
+  const shouldShowDifference = hasData && data.previous > 0 && !isAppStartDay();
   const isDecrease = difference < 0;
-  const isTargetReached = Math.abs(difference) < 0.1;
   
   console.log('WeightCard - currentWeight:', currentWeight, 'previous:', data.previous, 'target:', targetWeight);
 
@@ -67,14 +86,12 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
             onClick={onNavigateToWeight}
           >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
-              {isInitialRecord ? 'ステータス' : '前日比'}
+              前日比
             </div>
             <div className={`text-lg font-bold ${
-              isInitialRecord ? 'text-blue-600' : hasData && isDecrease ? 'text-green-600' : hasData ? 'text-orange-600' : 'text-slate-900'
+              shouldShowDifference && isDecrease ? 'text-green-600' : shouldShowDifference ? 'text-orange-600' : 'text-slate-900'
             }`}>
-              {isInitialRecord ? (
-                <span className="text-sm font-medium">記録開始</span>
-              ) : hasData ? (
+              {shouldShowDifference ? (
                 <>
                   {isDecrease ? '' : '+'}{difference.toFixed(1)}
                   <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
@@ -87,7 +104,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
           
           {/* 目標まで */}
           <div 
-            className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl border border-purple-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+            className="text-center p-3 bg-green-50 rounded-xl border border-green-200 cursor-pointer hover:shadow-sm transition-shadow"
             onClick={onNavigateToWeight}
           >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
@@ -96,7 +113,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
                 currentWeight <= targetWeight ? (
                   <span className="text-green-600">🎉 達成</span>
                 ) : (
-                  <span className="text-purple-600">
+                  <span className="text-green-600">
                     -{remaining.toFixed(1)}
                     <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
                   </span>

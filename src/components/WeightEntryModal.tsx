@@ -16,7 +16,7 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
   const [bodyFat, setBodyFat] = useState('');
   const [note, setNote] = useState('');
   const [photo, setPhoto] = useState('');
-  const [recordType, setRecordType] = useState<'both' | 'weight' | 'bodyFat'>('both');
+  const [recordType, setRecordType] = useState<'both' | 'weight' | 'bodyFat'>('weight');
 
   if (!isOpen) return null;
 
@@ -59,7 +59,7 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
     setBodyFat('');
     setNote('');
     setPhoto('');
-    setRecordType('both');
+    setRecordType('weight');
     onClose();
   };
 
@@ -152,6 +152,8 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
               <div className="relative">
                 <Input
                   type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
                   step="0.1"
                   min="0"
                   max="300"
@@ -191,6 +193,8 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
               <div className="relative">
                 <Input
                   type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
                   step="0.1"
                   min="0"
                   max="50"

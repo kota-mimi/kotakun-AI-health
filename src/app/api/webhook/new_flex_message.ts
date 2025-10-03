@@ -20,7 +20,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
           {
             type: 'text',
             text: mealTypeJa,
-            size: 'xl',
+            size: 'md',
             weight: 'bold',
             color: '#333333',
             margin: 'none'
@@ -50,7 +50,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               {
                 type: 'text',
                 text: originalMealName || analysis.foodItems?.[0] || '食事',
-                size: 'lg',
+                size: 'xl',
                 weight: 'bold',
                 color: '#333333',
                 flex: 1,
@@ -180,24 +180,29 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
       contents: [
         {
           type: 'text',
+          text: ' ',
+          flex: 1
+        },
+        {
+          type: 'text',
           text: `P: ${meal.protein}g`,
           size: 'xs',
           color: '#cc0000',
-          flex: 1
+          flex: 0
         },
         {
           type: 'text',
           text: `F: ${meal.fat}g`,
           size: 'xs',
           color: '#ff8800',
-          flex: 1
+          flex: 0
         },
         {
           type: 'text',
           text: `C: ${meal.carbs}g`,
           size: 'xs',
           color: '#00aa00',
-          flex: 1
+          flex: 0
         }
       ]
     }
@@ -218,7 +223,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
           {
             type: 'text',
             text: mealTypeJa,
-            size: 'xl',
+            size: 'md',
             weight: 'bold',
             color: '#333333',
             margin: 'none'
@@ -368,11 +373,11 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
         paddingAll: '16px',
         spacing: 'md',
         contents: [
-          // 「カロリー分析」ヘッダー
+          // 「カロリー」ヘッダー
           {
             type: 'text',
-            text: 'カロリー分析',
-            size: 'xl',
+            text: 'カロリー',
+            size: 'md',
             weight: 'bold',
             color: '#333333',
             margin: 'none'
@@ -387,7 +392,7 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
           {
             type: 'text',
             text: originalMealName,
-            size: 'lg',
+            size: 'xl',
             weight: 'bold',
             color: '#333333',
             margin: 'md'
@@ -505,24 +510,29 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
       contents: [
         {
           type: 'text',
+          text: ' ',
+          flex: 1
+        },
+        {
+          type: 'text',
           text: `P: ${meal.protein}g`,
           size: 'xs',
           color: '#cc0000',
-          flex: 1
+          flex: 0
         },
         {
           type: 'text',
           text: `F: ${meal.fat}g`,
           size: 'xs',
           color: '#ff8800',
-          flex: 1
+          flex: 0
         },
         {
           type: 'text',
           text: `C: ${meal.carbs}g`,
           size: 'xs',
           color: '#00aa00',
-          flex: 1
+          flex: 0
         }
       ]
     }
@@ -539,11 +549,11 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
         paddingAll: '16px',
         spacing: 'md',
         contents: [
-          // 「カロリー分析」ヘッダー
+          // 「カロリー」ヘッダー
           {
             type: 'text',
-            text: 'カロリー分析',
-            size: 'xl',
+            text: 'カロリー',
+            size: 'md',
             weight: 'bold',
             color: '#333333',
             margin: 'none'
