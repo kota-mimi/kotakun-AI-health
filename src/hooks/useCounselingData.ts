@@ -101,6 +101,25 @@ export function useCounselingData() {
         }
       } catch (error) {
         console.error('🔥 API fetch error:', error);
+        console.error('🔥 Error details:', error.message);
+        console.error('🔥 Error stack:', error.stack);
+        
+        // APIエラー時はローカルストレージフォールバック
+        console.log('🔥 API failed, using localStorage fallback');
+        const localAnswers = localStorage.getItem('counselingAnswers');
+        const localAnalysis = localStorage.getItem('aiAnalysis');
+        
+        if (localAnswers) {
+          console.log('🔥 Found local counseling data as error fallback');
+          const answers = JSON.parse(localAnswers);
+          const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+          
+          setCounselingResult({
+            answers,
+            aiAnalysis: analysis,
+            userProfile: answers
+          });
+        }
       } finally {
         setIsLoading(false);
       }
