@@ -174,17 +174,10 @@ export function useCounselingData() {
             });
             
             if (data.counselingResult) {
-              console.log('🔥 [PRODUCTION] Updating with Firestore counseling result');
-              console.log('🔥 [PRODUCTION] Firestore data details:', {
-                answers: data.counselingResult.answers,
-                nutritionPlan: data.counselingResult.aiAnalysis?.nutritionPlan,
-                userProfile: data.counselingResult.userProfile
-              });
-              
+              console.log('✅ カウンセリング結果をFirestoreから設定:', data.counselingResult);
               setCounselingResult(data.counselingResult);
-              console.log('🔥 [PRODUCTION] State updated with Firestore data');
             } else {
-              console.log('🔥 [PRODUCTION] No counselingResult in API response - using localStorage only');
+              console.log('⚠️ FirestoreレスポンスにcounselingResultがない');
             }
           } else {
             const errorText = await response.text();

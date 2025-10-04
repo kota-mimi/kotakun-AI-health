@@ -123,15 +123,13 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     const fatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 60;
     const carbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 250;
 
-    // デバッグログ追加
-    console.log('🍎 useMealData calculateDailyNutrition:', {
-      counselingResult: !!counselingResult,
-      targetCalories,
-      proteinTarget,
-      fatTarget,
-      carbsTarget,
-      aiAnalysis: counselingResult?.aiAnalysis,
-      nutritionPlan: counselingResult?.aiAnalysis?.nutritionPlan
+    // カロリー計算ログ
+    console.log('🍎 栄養目標値:', {
+      カウンセリング結果: !!counselingResult,
+      目標カロリー: targetCalories,
+      タンパク質: proteinTarget,
+      脂質: fatTarget,
+      炭水化物: carbsTarget
     });
 
     return {
