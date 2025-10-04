@@ -23,18 +23,14 @@ export function useLineUserId() {
             console.log('useLineUserId: LIFFでログインしていない');
           }
         } else {
-          // LIFF環境でない場合（開発用）
-          // ローカルストレージまたはテスト用IDを使用
-          const testUserId = localStorage.getItem('testLineUserId') || 'test-user-001';
-          console.log('useLineUserId: LIFF環境でない場合、テスト用ID使用', testUserId);
-          setLineUserId(testUserId);
+          // 本番環境：LIFF環境でない場合はnullのまま
+          console.warn('LIFF環境ではありません。LINEアプリから開いてください。');
+          setLineUserId(null);
         }
       } catch (error) {
         console.error('LINE User ID 取得エラー:', error);
-        // フォールバック: テスト用ID
-        const testUserId = localStorage.getItem('testLineUserId') || 'test-user-001';
-        console.log('useLineUserId: エラー発生、テスト用ID使用', testUserId);
-        setLineUserId(testUserId);
+        // 本番環境：エラー時もnullのまま
+        setLineUserId(null);
       } finally {
         setIsLoading(false);
         console.log('useLineUserId: 完了');
