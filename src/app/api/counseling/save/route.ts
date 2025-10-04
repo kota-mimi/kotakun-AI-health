@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       const profileData = {
         lineUserId,
         profile: {
-          name: answers.name || '名前未設定',
+          name: answers.name,
           age: Number(answers.age) || 25,
           gender: answers.gender || 'other',
           height: Number(answers.height) || 170,
@@ -108,7 +108,7 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     console.log('🔍 userProfile.name:', userProfile.name);
     console.log('🔍 userProfile keys:', Object.keys(userProfile));
     // userProfileから名前を取得（userProfileはanswersオブジェクト）
-    const userName = userProfile.name || '名前未設定';
+    const userName = userProfile.name;
     console.log('🔍 取得したユーザー名:', userName);
 
     // Flexメッセージでカウンセリング結果を送信（AI分析データなし）

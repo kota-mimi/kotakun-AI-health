@@ -139,13 +139,12 @@ export default function SimpleCounselingPage() {
       Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
       : null;
 
-    // 名前：フォーム入力のみ使用（LIFF自動取得は無効）
-    let userName = cleanBasicInfo.name; // フォールバック無し
-    console.log('🔍 使用する名前:', userName);
+    // 名前：cleanBasicInfoからそのまま使用
+    console.log('🔍 cleanBasicInfo.name:', cleanBasicInfo.name);
 
     const counselingAnswers = {
       ...cleanBasicInfo,
-      name: userName, // フォーム入力の名前
+      name: cleanBasicInfo.name, // cleanBasicInfoから直接取得
       goal: goal.type,
       targetWeight: goal.targetWeight,
       targetDate: goal.targetDate,
