@@ -55,8 +55,8 @@ export function MyProfilePage({
   // デバッグ: counselingResultの内容を確認
   console.log('🔍 MyProfilePage counselingResult:', counselingResult);
   
-  // カウンセリング結果またはユーザープロフィールからデータを取得
-  const userName = liffUser?.displayName || counselingResult?.answers?.name || counselingResult?.userProfile?.name || "ユーザー";
+  // カウンセリング結果の名前を優先、LIFFは最後のフォールバック
+  const userName = counselingResult?.answers?.name || counselingResult?.userProfile?.name || liffUser?.displayName || "ユーザー";
   const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || 0;
   const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
                  counselingResult?.answers?.gender === 'female' ? '女性' : 
