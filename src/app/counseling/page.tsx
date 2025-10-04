@@ -105,15 +105,18 @@ export default function SimpleCounselingPage() {
 
   const handleComplete = async () => {
     // 名前が入力されているかチェック
+    console.log('🔍 basicInfo.name:', basicInfo.name);
+    console.log('🔍 basicInfo:', basicInfo);
     if (!basicInfo.name || !basicInfo.name.trim()) {
       alert('お名前を入力してください');
       setStep(1); // Step1に戻る
       return;
     }
-    console.log('🔥 カウンセリング完了ボタンが押されました');
+    console.log('🔥 カウンセリング完了ボタンが押されました - 名前チェックOK');
     
     // 空の値をデフォルト値で置き換え
     const cleanBasicInfo = {
+      name: basicInfo.name,
       age: (typeof basicInfo.age === 'number' && basicInfo.age > 0) ? basicInfo.age : 
             (typeof basicInfo.age === 'string' && basicInfo.age !== '') ? parseInt(basicInfo.age) : 25,
       gender: basicInfo.gender,
