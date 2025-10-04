@@ -60,6 +60,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      console.warn('⚠️ Invalid selectedDate in useMealData:', selectedDate);
+      return { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
+    }
     const dateKey = selectedDate.toISOString().split('T')[0];
     return dateBasedData[dateKey] || { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
   };
@@ -71,6 +75,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     const fetchMealData = async () => {
       const lineUserId = liffUser?.userId;
       if (!lineUserId) return;
+      if (!selectedDate || isNaN(selectedDate.getTime())) {
+        console.warn('⚠️ Invalid selectedDate in fetchMealData:', selectedDate);
+        return;
+      }
       const dateStr = selectedDate.toISOString().split('T')[0];
       
       try {
@@ -165,6 +173,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       // Firestoreに保存
       const lineUserId = liffUser?.userId;
       if (!lineUserId) return;
+      if (!selectedDate || isNaN(selectedDate.getTime())) {
+        console.warn('⚠️ Invalid selectedDate in addMeal:', selectedDate);
+        return;
+      }
       const dateStr = selectedDate.toISOString().split('T')[0];
       
       const response = await fetch('/api/meals', {
@@ -235,6 +247,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   const handleUpdateMeal = async (updatedMeal: Meal) => {
     const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      console.warn('⚠️ Invalid selectedDate in updateMeal:', selectedDate);
+      return;
+    }
     const dateStr = selectedDate.toISOString().split('T')[0];
     
     // Firestoreデータに該当する食事があるかチェック
@@ -297,6 +313,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   const handleDeleteMeal = async (mealId: string) => {
     const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      console.warn('⚠️ Invalid selectedDate in deleteMeal:', selectedDate);
+      return;
+    }
     const dateStr = selectedDate.toISOString().split('T')[0];
     
     // 複数食事の個別削除かチェック（仮想IDの場合）

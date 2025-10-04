@@ -37,7 +37,7 @@ interface WorkoutPlan {
 
 export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
   try {
-    console.log('🏃 useExerciseData hook called with selectedDate:', selectedDate.toISOString().split('T')[0]);
+    console.log('🏃 useExerciseData hook called with selectedDate:', selectedDate ? (isNaN(selectedDate.getTime()) ? 'Invalid Date' : selectedDate.toISOString().split('T')[0]) : 'undefined');
     
     // 運動プランデータをlocalStorageで永続化
     const workoutPlansStorage = useLocalStorage<WorkoutPlan[]>('healthApp_workoutPlans', []);
@@ -64,6 +64,10 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     if (!isClient) return;
     
     const fetchExerciseData = async () => {
+      if (!selectedDate || isNaN(selectedDate.getTime())) {
+        console.warn('⚠️ Invalid selectedDate in fetchExerciseData:', selectedDate);
+        return;
+      }
       const currentDate = selectedDate.toISOString().split('T')[0];
       
       try {
@@ -83,6 +87,10 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
 
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      console.warn('⚠️ Invalid selectedDate in useExerciseData getCurrentDateData:', selectedDate);
+      return { exerciseData: [] };
+    }
     const dateKey = selectedDate.toISOString().split('T')[0];
     return dateBasedData[dateKey] || { exerciseData: [] };
   };
