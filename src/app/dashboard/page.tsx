@@ -233,11 +233,11 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {mealManager?.calorieData && (
+              {mealManager && (
                 <CalorieCard 
-                  totalCalories={mealManager.calorieData.totalCalories || 0}
-                  targetCalories={mealManager.calorieData.targetCalories || 2000}
-                  pfc={mealManager.calorieData.pfc || { protein: 0, fat: 0, carbs: 0, proteinTarget: 120, fatTarget: 60, carbsTarget: 250 }}
+                  totalCalories={mealManager.calorieData?.totalCalories || 0}
+                  targetCalories={mealManager.calorieData?.targetCalories || 2000}
+                  pfc={mealManager.calorieData?.pfc || { protein: 0, fat: 0, carbs: 0, proteinTarget: 120, fatTarget: 60, carbsTarget: 250 }}
                   counselingResult={counselingResult}
                   exerciseData={exerciseManager?.exerciseData || []}
                 />

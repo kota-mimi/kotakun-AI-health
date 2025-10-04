@@ -54,12 +54,22 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const finalCarbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || displayPfc.carbsTarget;
   
   // 本番環境ログ
-  console.log('🥗 CalorieCard:', {
+  console.log('🥗 CalorieCard DETAILED:', {
     カウンセリング結果: !!counselingResult,
-    目標カロリー: finalTargetCalories,
-    タンパク質: finalProteinTarget,
-    脂質: finalFatTarget,
-    炭水化物: finalCarbsTarget
+    counselingResultStructure: counselingResult ? {
+      hasAiAnalysis: !!counselingResult.aiAnalysis,
+      hasNutritionPlan: !!counselingResult.aiAnalysis?.nutritionPlan,
+      dailyCalories: counselingResult.aiAnalysis?.nutritionPlan?.dailyCalories,
+      macros: counselingResult.aiAnalysis?.nutritionPlan?.macros
+    } : null,
+    receivedTargetCalories: targetCalories,
+    receivedPfc: pfc,
+    finalValues: {
+      目標カロリー: finalTargetCalories,
+      タンパク質: finalProteinTarget,
+      脂質: finalFatTarget,
+      炭水化物: finalCarbsTarget
+    }
   });
   
   const intakeProgress = (displayTotalCalories / finalTargetCalories) * 100;
