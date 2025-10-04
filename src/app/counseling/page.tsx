@@ -167,9 +167,15 @@ export default function SimpleCounselingPage() {
           console.log('👤 LIFF LINE User ID:', lineUserId);
         } catch (error) {
           console.error('LIFF Profile取得エラー:', error);
+          // エラー時も一時的にダミーIDを使用
+          lineUserId = 'temp-user-' + Date.now();
+          console.log('🧪 一時的なダミーID使用:', lineUserId);
         }
       } else {
-        console.error('LIFF環境ではありません。LINEアプリから開いてください。');
+        console.error('LIFF環境ではありません。一時的にダミーIDを使用します。');
+        // LIFF環境でない場合も一時的にダミーIDを使用
+        lineUserId = 'temp-user-' + Date.now();
+        console.log('🧪 一時的なダミーID使用:', lineUserId);
       }
       
       if (lineUserId) {
