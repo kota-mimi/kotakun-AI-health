@@ -39,7 +39,7 @@ export interface HealthGoal {
 export interface CounselingResult {
   id: string;
   userId: string;
-  answers: Record<string, any>;
+  answers: Record<string, string | number | boolean>;
   aiAdvice: string;
   categories: HealthCategory[];
   priority: 'high' | 'medium' | 'low';
@@ -137,7 +137,7 @@ export interface CustomReminder {
 }
 
 // API関連の型
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

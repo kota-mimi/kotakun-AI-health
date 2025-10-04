@@ -16,8 +16,8 @@ declare global {
         external?: boolean;
       }) => void;
       closeWindow: () => void;
-      sendMessages: (messages: any[]) => Promise<void>;
-      shareTargetPicker: (messages: any[]) => Promise<void>;
+      sendMessages: (messages: unknown[]) => Promise<void>;
+      shareTargetPicker: (messages: unknown[]) => Promise<void>;
     };
   }
 }

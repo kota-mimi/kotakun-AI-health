@@ -149,7 +149,7 @@ export class LineBotService {
 
   // 健康アドバイスメッセージの送信
   async sendHealthAdvice(userId: string, adviceType: 'nutrition' | 'exercise' | 'sleep' | 'general', customMessage?: string) {
-    const templates = this.createHealthTemplates();
+    // const templates = this.createHealthTemplates();
     
     const adviceMessages: Record<string, LineMessage> = {
       nutrition: {

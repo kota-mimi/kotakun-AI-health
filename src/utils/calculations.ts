@@ -67,7 +67,7 @@ export function calculateMacroTargets(calorieTarget: number) {
   };
 }
 
-export function calculateIdealWeight(height: number, gender: 'male' | 'female' | 'other'): number {
+export function calculateIdealWeight(height: number, _gender: 'male' | 'female' | 'other'): number {
   const heightM = height / 100;
   const idealBMI = 22; // WHO推奨の理想BMI
   return idealBMI * (heightM * heightM);
