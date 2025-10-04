@@ -116,6 +116,14 @@ export function LiffProvider({ children }: LiffProviderProps) {
       } catch (error: any) {
         console.error('❌ LIFF初期化エラー:', error);
         
+        // LIFFエラーフラグを設定
+        try {
+          sessionStorage.setItem('liff_error', 'true');
+          sessionStorage.setItem('liff_error_message', error.message || 'Unknown LIFF error');
+        } catch (e) {
+          console.error('SessionStorage write error:', e);
+        }
+        
         // 本番環境では最低限の機能で続行
         if (process.env.NODE_ENV === 'production') {
           console.log('🔧 本番環境：LIFF初期化エラーを回復、基本機能で続行');

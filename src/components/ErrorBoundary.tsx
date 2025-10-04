@@ -30,6 +30,14 @@ export class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack
     });
 
+    // エラーフラグをセッションストレージに保存
+    try {
+      sessionStorage.setItem('app_error', 'true');
+      sessionStorage.setItem('last_error', error.message);
+    } catch (e) {
+      console.error('SessionStorage write error:', e);
+    }
+
     // 本番環境でのエラー報告（将来的に実装）
     if (process.env.NODE_ENV === 'production') {
       // エラー報告サービスにエラーを送信
