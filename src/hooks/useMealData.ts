@@ -69,7 +69,8 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   // Firestoreからデータを取得
   useEffect(() => {
     const fetchMealData = async () => {
-      const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+      const lineUserId = liffUser?.userId;
+      if (!lineUserId) return;
       const dateStr = selectedDate.toISOString().split('T')[0];
       
       try {
@@ -162,7 +163,8 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
     try {
       // Firestoreに保存
-      const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+      const lineUserId = liffUser?.userId;
+      if (!lineUserId) return;
       const dateStr = selectedDate.toISOString().split('T')[0];
       
       const response = await fetch('/api/meals', {

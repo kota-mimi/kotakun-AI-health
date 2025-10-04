@@ -44,7 +44,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
 
     // useAuth からLINE User IDを取得（体重データと同じ方法）
     const { liffUser } = useAuth();
-    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const lineUserId = liffUser?.userId;
     
     console.log('🏃 useExerciseData initialized with lineUserId:', lineUserId);
   

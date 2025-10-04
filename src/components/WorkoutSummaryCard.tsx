@@ -74,7 +74,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     console.log('💪 EMERGENCY FETCH: Starting direct exercise data fetch');
     const fetchExerciseData = async () => {
       try {
-        const lineUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9';
+        const lineUserId = null; // 本番環境では適切な認証を使用
         const dateStr = selectedDate.toISOString().split('T')[0];
         const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         console.log('💪 EMERGENCY FETCH: API response status:', response.status);

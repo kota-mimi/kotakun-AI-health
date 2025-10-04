@@ -49,7 +49,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     if (!isClient) return;
     
     const fetchWeightData = async () => {
-      const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+      const lineUserId = liffUser?.userId;
+      if (!lineUserId) return;
       
       try {
         const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
