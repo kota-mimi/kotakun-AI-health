@@ -35,6 +35,56 @@ import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 
 export default function DashboardPage() {
+  const [hasError, setHasError] = React.useState(false);
+  const [isClient, setIsClient] = React.useState(false);
+  
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // サーバーサイドでは何も表示しない
+  if (!isClient) {
+    return <div className="min-h-screen bg-gray-50" />;
+  }
+
+  // エラーハンドリング
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold mb-4">ホームページでエラーが発生しました</h1>
+          <button 
+            onClick={() => setHasError(false)} 
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            再試行
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  try {
+    return <DashboardContent onError={() => setHasError(true)} />;
+  } catch (error) {
+    console.error('Dashboard render error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold mb-4">ホームページの読み込みに失敗しました</h1>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            ページを再読み込み
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
+function DashboardContent({ onError }: { onError: () => void }) {
   const navigation = useNavigationState();
   const dateBasedDataManager = useDateBasedData();
   
@@ -44,30 +94,35 @@ export default function DashboardPage() {
   const [isExerciseEditModalOpen, setIsExerciseEditModalOpen] = React.useState(false);
   const [selectedExerciseForEdit, setSelectedExerciseForEdit] = React.useState(null);
   
-  const currentDateData = dateBasedDataManager.getCurrentDateData(navigation.selectedDate);
+  const currentDateData = dateBasedDataManager?.getCurrentDateData?.(navigation?.selectedDate) || { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
   
   const updateDateData = (updates: any) => {
-    dateBasedDataManager.updateDateData(navigation.selectedDate, updates);
+    try {
+      dateBasedDataManager?.updateDateData?.(navigation?.selectedDate, updates);
+    } catch (error) {
+      console.error('updateDateData error:', error);
+      onError();
+    }
   };
 
   const { counselingResult } = useCounselingData(); // 本番環境対応・エラー耐性強化版
 
   const mealManager = useMealData(
-    navigation.selectedDate, 
-    dateBasedDataManager.dateBasedData, 
+    navigation?.selectedDate || new Date(), 
+    dateBasedDataManager?.dateBasedData || {}, 
     updateDateData,
     counselingResult
   );
 
   const exerciseManager = useExerciseData(
-    navigation.selectedDate, 
-    dateBasedDataManager.dateBasedData, 
+    navigation?.selectedDate || new Date(), 
+    dateBasedDataManager?.dateBasedData || {}, 
     updateDateData
   );
 
   const weightManager = useWeightData(
-    navigation.selectedDate,
-    dateBasedDataManager.dateBasedData,
+    navigation?.selectedDate || new Date(),
+    dateBasedDataManager?.dateBasedData || {},
     updateDateData
   );
 
@@ -135,84 +190,95 @@ export default function DashboardPage() {
 
 
       {/* ホームタブ */}
-      {navigation.activeTab === 'home' && (
+      {navigation?.activeTab === 'home' && (
         <>
           <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-            <CompactHeader
-              currentDate={navigation.selectedDate}
-              onDateSelect={navigation.handleDateSelect}
-              onCalendar={navigation.handleCalendar}
-              onNavigateToProfile={() => navigation.setActiveTab('profile')}
-              onNavigateToData={() => {}} // 削除：データページなし
-              counselingResult={counselingResult}
-            />
+            {navigation?.selectedDate && (
+              <CompactHeader
+                currentDate={navigation.selectedDate}
+                onDateSelect={navigation.handleDateSelect}
+                onCalendar={navigation.handleCalendar}
+                onNavigateToProfile={() => navigation.setActiveTab('profile')}
+                onNavigateToData={() => {}} // 削除：データページなし
+                counselingResult={counselingResult}
+              />
+            )}
           </div>
 
           <div className="relative px-4 py-4 pb-24 space-y-4">
             {/* 体重カード - クリックで体重入力モーダル */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              <WeightCard 
-                data={weightManager.weightData} 
-                onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
-                counselingResult={counselingResult}
-              />
+              {weightManager?.weightData && (
+                <WeightCard 
+                  data={weightManager.weightData} 
+                  onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen?.(true)}
+                  counselingResult={counselingResult}
+                />
+              )}
             </div>
 
             {/* 体重グラフ */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              <WeightChart 
-                data={weightManager.realWeightData}
-                period="month"
-                height={175}
-                targetWeight={counselingResult?.answers?.targetWeight || weightManager.weightSettings.targetWeight}
-                currentWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 0}
-                counselingResult={counselingResult}
-              />
+              {weightManager?.realWeightData && (
+                <WeightChart 
+                  data={weightManager.realWeightData}
+                  period="month"
+                  height={175}
+                  targetWeight={counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
+                  currentWeight={weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
+                  counselingResult={counselingResult}
+                />
+              )}
             </div>
-
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              <CalorieCard 
-                totalCalories={mealManager.calorieData.totalCalories}
-                targetCalories={mealManager.calorieData.targetCalories}
-                pfc={mealManager.calorieData.pfc}
-                counselingResult={counselingResult}
-                exerciseData={exerciseManager.exerciseData}
-              />
+              {mealManager?.calorieData && (
+                <CalorieCard 
+                  totalCalories={mealManager.calorieData.totalCalories || 0}
+                  targetCalories={mealManager.calorieData.targetCalories || 2000}
+                  pfc={mealManager.calorieData.pfc || { protein: 0, fat: 0, carbs: 0, proteinTarget: 120, fatTarget: 60, carbsTarget: 250 }}
+                  counselingResult={counselingResult}
+                  exerciseData={exerciseManager?.exerciseData || []}
+                />
+              )}
             </div>
 
             {/* 食事カード */}
-            <MealSummaryCard
-              meals={mealManager.mealData}
-              onAddMeal={mealManager.handleAddMeal}
-              onCameraRecord={mealManager.handleCameraRecord}
-              onTextRecord={mealManager.handleTextRecord}
-              onPastRecord={mealManager.handlePastRecord}
-              onManualRecord={mealManager.handleManualRecord}
-              onViewMealDetail={mealManager.handleViewMealDetail}
-              onEditMeal={mealManager.handleEditMeal}
-              onEditIndividualMeal={mealManager.handleEditFromDetail}
-              onNavigateToMeal={() => {}} // 削除：専用ページなし
-              onMenuOpenChange={setIsMealMenuOpen}
-            />
+            {mealManager?.mealData && (
+              <MealSummaryCard
+                meals={mealManager.mealData}
+                onAddMeal={mealManager.handleAddMeal || (() => {})}
+                onCameraRecord={mealManager.handleCameraRecord || (() => {})}
+                onTextRecord={mealManager.handleTextRecord || (() => {})}
+                onPastRecord={mealManager.handlePastRecord || (() => {})}
+                onManualRecord={mealManager.handleManualRecord || (() => {})}
+                onViewMealDetail={mealManager.handleViewMealDetail || (() => {})}
+                onEditMeal={mealManager.handleEditMeal || (() => {})}
+                onEditIndividualMeal={mealManager.handleEditFromDetail || (() => {})}
+                onNavigateToMeal={() => {}} // 削除：専用ページなし
+                onMenuOpenChange={setIsMealMenuOpen}
+              />
+            )}
 
             {/* 運動カード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              <WorkoutSummaryCard 
-                exerciseData={exerciseManager.exerciseData}
-                selectedDate={navigation.selectedDate}
-                onNavigateToWorkout={() => {}} // 削除：専用ページなし
-                onAddExercise={() => setIsExerciseEntryModalOpen(true)}
-                onEditExercise={(exerciseId) => {
-                  const exercise = exerciseManager.exerciseData.find(ex => ex.id === exerciseId);
-                  if (exercise) {
-                    setSelectedExerciseForEdit(exercise);
-                    setIsExerciseEditModalOpen(true);
-                  }
-                }}
-                onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise(exerciseId)}
-              />
+              {exerciseManager?.exerciseData && navigation?.selectedDate && (
+                <WorkoutSummaryCard 
+                  exerciseData={exerciseManager.exerciseData}
+                  selectedDate={navigation.selectedDate}
+                  onNavigateToWorkout={() => {}} // 削除：専用ページなし
+                  onAddExercise={() => setIsExerciseEntryModalOpen(true)}
+                  onEditExercise={(exerciseId) => {
+                    const exercise = exerciseManager.exerciseData?.find?.(ex => ex.id === exerciseId);
+                    if (exercise) {
+                      setSelectedExerciseForEdit(exercise);
+                      setIsExerciseEditModalOpen(true);
+                    }
+                  }}
+                  onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise?.(exerciseId)}
+                />
+              )}
             </div>
           </div>
 
@@ -223,20 +289,24 @@ export default function DashboardPage() {
 
       {/* ボトムナビゲーション */}
       <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-        <BottomNavigation
-          activeTab={navigation.activeTab}
-          onTabChange={navigation.setActiveTab}
-        />
+        {navigation?.activeTab && navigation?.setActiveTab && (
+          <BottomNavigation
+            activeTab={navigation.activeTab}
+            onTabChange={navigation.setActiveTab}
+          />
+        )}
       </div>
 
       {/* 共通モーダル群 */}
-      <CalendarModal
-        isOpen={navigation.isCalendarModalOpen}
-        onClose={() => navigation.setIsCalendarModalOpen(false)}
-        selectedDate={navigation.selectedDate}
-        onDateSelect={navigation.handleDateSelect}
-        counselingResult={counselingResult}
-      />
+      {navigation?.isCalendarModalOpen !== undefined && navigation?.selectedDate && (
+        <CalendarModal
+          isOpen={navigation.isCalendarModalOpen}
+          onClose={() => navigation.setIsCalendarModalOpen?.(false)}
+          selectedDate={navigation.selectedDate}
+          onDateSelect={navigation.handleDateSelect}
+          counselingResult={counselingResult}
+        />
+      )}
 
       <WeightEntryModal
         isOpen={weightManager.isWeightEntryModalOpen}
