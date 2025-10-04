@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LiffProvider } from "@/contexts/LiffContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { FallbackMode } from "@/components/FallbackMode";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -44,11 +43,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
-          <FallbackMode>
-            <LiffProvider>
-              {children}
-            </LiffProvider>
-          </FallbackMode>
+          <LiffProvider>
+            {children}
+          </LiffProvider>
         </ErrorBoundary>
       </body>
     </html>
