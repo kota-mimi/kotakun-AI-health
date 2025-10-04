@@ -72,10 +72,10 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
     }
   });
   
-  const intakeProgress = (displayTotalCalories / finalTargetCalories) * 100;
-  const proteinProgress = (displayPfc.protein / finalProteinTarget) * 100;
-  const fatProgress = (displayPfc.fat / finalFatTarget) * 100;
-  const carbsProgress = (displayPfc.carbs / finalCarbsTarget) * 100;
+  const intakeProgress = finalTargetCalories > 0 ? (displayTotalCalories / finalTargetCalories) * 100 : 0;
+  const proteinProgress = finalProteinTarget > 0 ? (displayPfc.protein / finalProteinTarget) * 100 : 0;
+  const fatProgress = finalFatTarget > 0 ? (displayPfc.fat / finalFatTarget) * 100 : 0;
+  const carbsProgress = finalCarbsTarget > 0 ? (displayPfc.carbs / finalCarbsTarget) * 100 : 0;
 
   // 消費カロリーデータ（カウンセリング結果に基づく動的計算）
   const basalMetabolismBase = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
@@ -94,9 +94,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const basalMetabolism = basalMetabolismBase;
   
   // 消費カロリーの進捗計算
-  const burnProgress = (burnedCalories / targetBurnedCalories) * 100;
-  const basalProgress = (basalMetabolism / burnedCalories) * 100;
-  const activityProgress = (totalActivityCalories / burnedCalories) * 100;
+  const burnProgress = targetBurnedCalories > 0 ? (burnedCalories / targetBurnedCalories) * 100 : 0;
+  const basalProgress = burnedCalories > 0 ? (basalMetabolism / burnedCalories) * 100 : 0;
+  const activityProgress = burnedCalories > 0 ? (totalActivityCalories / burnedCalories) * 100 : 0;
 
   const colors = {
     primary: '#3B82F6',  // 体重グラフと同じブルー
