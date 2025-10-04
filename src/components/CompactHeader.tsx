@@ -24,7 +24,17 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     const counselingDateRaw = counselingResult.firstCompletedAt || 
                              counselingResult.createdAt || 
                              counselingResult.completedAt;
-    return counselingDateRaw ? new Date(counselingDateRaw) : new Date();
+    
+    if (counselingDateRaw) {
+      const date = new Date(counselingDateRaw);
+      // 日付が無効な場合は現在の日付を返す
+      if (isNaN(date.getTime())) {
+        console.warn('⚠️ Invalid counseling date in CompactHeader:', counselingDateRaw);
+        return new Date();
+      }
+      return date;
+    }
+    return new Date();
   };
 
   const getWeekDates = (weekOffset: number = 0) => {
@@ -121,9 +131,12 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               const appStartDate = getAppStartDate();
               const isBeforeAppStart = date < appStartDate;
               
+              // 日付が無効な場合のフォールバック
+              const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
+              
               return (
                 <Button
-                  key={date.toISOString()}
+                  key={dateKey}
                   variant="ghost"
                   onClick={() => !isBeforeAppStart && onDateSelect(date)}
                   disabled={isBeforeAppStart}
