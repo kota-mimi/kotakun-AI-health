@@ -2,7 +2,7 @@
 
 export function createCounselingResultFlexMessage(analysis: any, userProfile: any) {
   const nutritionPlan = analysis.nutritionPlan || {};
-  const userName = userProfile.name || 'ユーザー';
+  const userName = userProfile.name;
   const age = userProfile.age || 0;
   const gender = userProfile.gender === 'male' ? '男性' : userProfile.gender === 'female' ? '女性' : 'その他';
   const height = parseFloat(userProfile.height) || 0;

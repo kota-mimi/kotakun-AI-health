@@ -131,7 +131,7 @@ export default function SimpleCounselingPage() {
       : null;
 
     // 名前：フォーム入力のみ使用（LIFF自動取得は無効）
-    let userName = cleanBasicInfo.name || 'ユーザー';
+    let userName = cleanBasicInfo.name; // フォールバック無し
     console.log('🔍 使用する名前:', userName);
 
     const counselingAnswers = {
