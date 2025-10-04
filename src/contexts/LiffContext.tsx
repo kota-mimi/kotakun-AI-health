@@ -39,30 +39,47 @@ export function LiffProvider({ children }: LiffProviderProps) {
   useEffect(() => {
     const initializeLiff = async () => {
       try {
+        console.log('🔧 LIFF初期化開始...');
+        
+        // ブラウザ環境チェック
+        if (typeof window === 'undefined') {
+          console.log('🔧 サーバーサイドレンダリング中、LIFF初期化をスキップ');
+          return;
+        }
+        
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+        console.log('🔧 LIFF ID確認:', liffId ? '設定済み' : '未設定');
         
         if (!liffId) {
+          console.log('🔧 LIFF IDが未設定、ローカル開発モードで続行');
           setState(prev => ({
             ...prev,
-            error: 'LIFF IDが設定されていません',
+            error: null, // エラーではなく警告として扱う
             isReady: true,
+            isLoggedIn: false, // ログイン状態はfalse
           }));
           return;
         }
 
         // Dynamic import to avoid SSR issues
+        console.log('🔧 LIFF SDKをインポート中...');
         const liff = (await import('@line/liff')).default;
         
+        console.log('🔧 LIFF初期化実行中...', { liffId });
         await liff.init({ liffId });
+        console.log('🔧 LIFF初期化成功');
         
         const isLoggedIn = liff.isLoggedIn();
         const isInClient = liff.isInClient();
+        
+        console.log('🔧 LIFF状態確認:', { isLoggedIn, isInClient });
         
         let user: LIFFUser | null = null;
         let context: LIFFContextType | null = null;
 
         if (isLoggedIn) {
           try {
+            console.log('🔧 ユーザープロフィール取得中...');
             const profile = await liff.getProfile();
             user = {
               userId: profile.userId,
@@ -70,14 +87,18 @@ export function LiffProvider({ children }: LiffProviderProps) {
               pictureUrl: profile.pictureUrl,
               statusMessage: profile.statusMessage,
             };
+            console.log('🔧 プロフィール取得成功:', { userId: user.userId, displayName: user.displayName });
           } catch (profileError) {
-            console.error('プロフィール取得エラー:', profileError);
+            console.error('⚠️ プロフィール取得エラー:', profileError);
+            // プロフィール取得エラーは致命的でない
           }
 
           try {
             context = liff.getContext();
+            console.log('🔧 コンテキスト取得成功');
           } catch (contextError) {
-            console.error('コンテキスト取得エラー:', contextError);
+            console.error('⚠️ コンテキスト取得エラー:', contextError);
+            // コンテキスト取得エラーは致命的でない
           }
         }
 
@@ -90,13 +111,29 @@ export function LiffProvider({ children }: LiffProviderProps) {
           isInClient,
         });
 
+        console.log('✅ LIFF初期化完了');
+
       } catch (error: any) {
-        console.error('LIFF初期化エラー:', error);
-        setState(prev => ({
-          ...prev,
-          error: error.message || 'LIFF初期化に失敗しました',
-          isReady: true,
-        }));
+        console.error('❌ LIFF初期化エラー:', error);
+        
+        // 本番環境では最低限の機能で続行
+        if (process.env.NODE_ENV === 'production') {
+          console.log('🔧 本番環境：LIFF初期化エラーを回復、基本機能で続行');
+          setState({
+            isReady: true,
+            isLoggedIn: false,
+            user: null,
+            context: null,
+            error: null, // エラーを隠して続行
+            isInClient: false,
+          });
+        } else {
+          setState(prev => ({
+            ...prev,
+            error: error.message || 'LIFF初期化に失敗しました',
+            isReady: true,
+          }));
+        }
       }
     };
 
