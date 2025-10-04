@@ -130,26 +130,13 @@ export default function SimpleCounselingPage() {
       Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
       : null;
 
-    // 名前：フォーム入力を優先、未入力の場合はLIFFから取得
-    let userName = cleanBasicInfo.name;
-    if (!userName) {
-      try {
-        if (typeof window !== 'undefined' && window.liff && await window.liff.isLoggedIn()) {
-          const profile = await window.liff.getProfile();
-          userName = profile.displayName || 'ユーザー';
-          console.log('🔍 LIFF名前取得:', userName);
-        } else {
-          userName = 'ユーザー';
-        }
-      } catch (error) {
-        console.log('🔍 LIFF名前取得失敗, デフォルト使用:', error);
-        userName = 'ユーザー';
-      }
-    }
+    // 名前：フォーム入力のみ使用（LIFF自動取得は無効）
+    let userName = cleanBasicInfo.name || 'ユーザー';
+    console.log('🔍 使用する名前:', userName);
 
     const counselingAnswers = {
       ...cleanBasicInfo,
-      name: userName, // フォーム入力またはLIFFから取得した名前
+      name: userName, // フォーム入力の名前
       goal: goal.type,
       targetWeight: goal.targetWeight,
       targetDate: goal.targetDate,
@@ -609,7 +596,13 @@ export default function SimpleCounselingPage() {
           )}
           {step < 3 ? (
             <Button 
-              onClick={() => setStep(step + 1)} 
+              onClick={() => {
+                if (step === 1 && !basicInfo.name.trim()) {
+                  alert('お名前を入力してください');
+                  return;
+                }
+                setStep(step + 1);
+              }}
               className="flex-1 h-14 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-2xl text-base shadow-md"
             >
               次へ
