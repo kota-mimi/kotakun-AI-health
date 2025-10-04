@@ -160,6 +160,12 @@ export default function SimpleCounselingPage() {
       // LINE User IDをLIFFから取得
       let lineUserId: string | null = null;
       
+      console.log('🔍 LIFF環境チェック:', {
+        hasWindow: typeof window !== 'undefined',
+        hasLiff: typeof window !== 'undefined' && !!window.liff,
+        isLoggedIn: typeof window !== 'undefined' && window.liff && window.liff.isLoggedIn()
+      });
+      
       if (typeof window !== 'undefined' && window.liff && window.liff.isLoggedIn()) {
         try {
           const profile = await window.liff.getProfile();
@@ -177,6 +183,8 @@ export default function SimpleCounselingPage() {
         lineUserId = 'temp-user-' + Date.now();
         console.log('🧪 一時的なダミーID使用:', lineUserId);
       }
+      
+      console.log('🔍 最終的なlineUserId:', lineUserId);
       
       if (lineUserId) {
         const requestData = {
