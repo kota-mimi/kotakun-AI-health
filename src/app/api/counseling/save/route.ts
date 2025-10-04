@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
             macros: results.pfc
           }
         },
-        completedAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdAt: existingData?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
-        firstCompletedAt: existingData?.firstCompletedAt || admin.firestore.FieldValue.serverTimestamp(),
+        completedAt: admin.FieldValue.serverTimestamp(),
+        createdAt: existingData?.createdAt || admin.FieldValue.serverTimestamp(),
+        firstCompletedAt: existingData?.firstCompletedAt || admin.FieldValue.serverTimestamp(),
       });
 
       // ユーザープロファイルも更新
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           medicalConditions: answers.medicalConditions ? [answers.medicalConditions] : [],
           allergies: answers.allergies ? [answers.allergies] : [],
         },
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.FieldValue.serverTimestamp(),
       }, { merge: true });
       
       console.log('✅ Firestore保存成功（Admin SDK）:', lineUserId);
