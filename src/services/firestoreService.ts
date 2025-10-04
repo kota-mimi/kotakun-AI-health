@@ -13,7 +13,8 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { admin } from '@/lib/firebase-admin';
+// Firebase Admin SDK はサーバーサイドでのみ使用
+// import { admin } from '@/lib/firebase-admin';
 import { generateId } from '@/lib/utils';
 import type { User, UserProfile, CounselingAnswer, DailyRecord } from '@/types';
 
@@ -61,24 +62,23 @@ export class FirestoreService {
     }
   }
 
-  // カウンセリング結果の保存（Admin SDK使用）
+  // カウンセリング結果の保存
   async saveCounselingResult(lineUserId: string, answers: Record<string, any>, aiAnalysis: any) {
     try {
-      const adminDb = admin.firestore();
-      const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+      const counselingRef = doc(db, 'users', lineUserId, 'counseling', 'result');
       
       // 既存のカウンセリング結果を確認
-      const existingDoc = await counselingRef.get();
-      const existingData = existingDoc.exists ? existingDoc.data() : null;
+      const existingDoc = await getDoc(counselingRef);
+      const existingData = existingDoc.exists() ? existingDoc.data() : null;
       
       // firstCompletedAtを設定（初回のみ）
-      const firstCompletedAt = existingData?.firstCompletedAt || adminDb.FieldValue.serverTimestamp();
+      const firstCompletedAt = existingData?.firstCompletedAt || serverTimestamp();
       
-      await counselingRef.set({
+      await setDoc(counselingRef, {
         answers,
         aiAnalysis,
-        completedAt: adminDb.FieldValue.serverTimestamp(),
-        createdAt: existingData?.createdAt || adminDb.FieldValue.serverTimestamp(),
+        completedAt: serverTimestamp(),
+        createdAt: existingData?.createdAt || serverTimestamp(),
         firstCompletedAt, // 最初のカウンセリング完了日を保持
       });
 
@@ -98,32 +98,12 @@ export class FirestoreService {
         allergies: answers.allergies ? [answers.allergies] : [],
       };
 
-      await this.saveUserWithAdmin(lineUserId, { profile });
+      await this.saveUser(lineUserId, { profile });
       
       console.log('カウンセリング結果保存完了:', lineUserId);
       return true;
     } catch (error) {
       console.error('カウンセリング結果保存エラー:', error);
-      throw error;
-    }
-  }
-
-  // ユーザー情報の保存（Admin SDK使用）
-  async saveUserWithAdmin(lineUserId: string, userData: Partial<User>) {
-    try {
-      const adminDb = admin.firestore();
-      const userRef = adminDb.collection('users').doc(lineUserId);
-      await userRef.set({
-        ...userData,
-        lineUserId,
-        updatedAt: adminDb.FieldValue.serverTimestamp(),
-        createdAt: userData.createdAt || adminDb.FieldValue.serverTimestamp(),
-      }, { merge: true });
-      
-      console.log('ユーザー情報保存完了（Admin SDK）:', lineUserId);
-      return true;
-    } catch (error) {
-      console.error('ユーザー情報保存エラー（Admin SDK）:', error);
       throw error;
     }
   }
