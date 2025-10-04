@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirestoreService } from '@/services/firestoreService';
+import { admin } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
     // 記録データを準備
     const recordData: any = {};
@@ -36,25 +36,32 @@ export async function POST(request: NextRequest) {
 
     const targetDate = date || new Date().toISOString().split('T')[0];
 
-    // 体重が記録されている場合はupdateWeightを使用
+    // Admin SDK で直接保存
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
+    
+    // 既存データを取得
+    const existingDoc = await recordRef.get();
+    const existingData = existingDoc.exists ? existingDoc.data() : {};
+    
+    // データをマージして保存
+    const mergedData = { 
+      ...existingData, 
+      ...recordData,
+      date: targetDate,
+      lineUserId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: existingData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+    };
+    
+    await recordRef.set(mergedData, { merge: true });
+
+    // ユーザープロファイルの体重も更新
     if (recordData.weight) {
-      await firestoreService.updateWeight(lineUserId, targetDate, recordData.weight);
-    }
-
-    // 体脂肪やその他のデータがある場合は追加で保存
-    if (recordData.bodyFat || recordData.note) {
-      // 既存のその日のデータを取得
-      let existingData = {};
-      try {
-        existingData = await firestoreService.getDailyRecord(lineUserId, targetDate) || {};
-      } catch (error) {
-        // エラーの場合は空データから開始
-        existingData = {};
-      }
-
-      // データをマージして保存
-      const mergedData = { ...existingData, ...recordData };
-      await firestoreService.saveDailyRecord(lineUserId, targetDate, mergedData);
+      const userRef = adminDb.collection('users').doc(lineUserId);
+      await userRef.update({
+        'profile.weight': recordData.weight,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
     }
 
     return NextResponse.json({ 
@@ -84,7 +91,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
     // 期間に応じてデータを取得
     const now = new Date();
@@ -105,15 +112,20 @@ export async function GET(request: NextRequest) {
       const dateStr = date.toISOString().split('T')[0];
       
       try {
-        const dailyRecord = await firestoreService.getDailyRecord(lineUserId, dateStr);
-        // 体重または体脂肪のデータがあれば含める
-        if (dailyRecord && (dailyRecord.weight || dailyRecord.bodyFat)) {
-          weightData.push({
-            date: dateStr,
-            weight: dailyRecord.weight || 0, // 体重がない場合は0
-            bodyFat: dailyRecord.bodyFat,
-            note: dailyRecord.note
-          });
+        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+        const recordDoc = await recordRef.get();
+        
+        if (recordDoc.exists) {
+          const dailyRecord = recordDoc.data();
+          // 体重または体脂肪のデータがあれば含める
+          if (dailyRecord && (dailyRecord.weight || dailyRecord.bodyFat)) {
+            weightData.push({
+              date: dateStr,
+              weight: dailyRecord.weight || 0, // 体重がない場合は0
+              bodyFat: dailyRecord.bodyFat,
+              note: dailyRecord.note
+            });
+          }
         }
       } catch (error) {
         // エラーは無視して続行

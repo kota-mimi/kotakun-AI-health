@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirestoreService } from '@/services/firestoreService';
+import { admin } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,11 +12,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     const targetDate = date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-    // 指定日の食事データを取得
-    const dailyRecord = await firestoreService.getDailyRecord(lineUserId, targetDate);
+    // 指定日の食事データを取得（Admin SDK使用）
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
+    const recordDoc = await recordRef.get();
+    const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
     
     // Firestoreデータを変換してInstagramLikeFeed形式に合わせる
     const convertFirestoreMealToDisplay = (meal: any) => ({
