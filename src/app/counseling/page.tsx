@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface BasicInfo {
+  name: string;
   age: number | '';
   gender: 'male' | 'female' | 'other';
   height: number | '';
@@ -87,6 +88,7 @@ export default function SimpleCounselingPage() {
     localStorage.removeItem('hasCompletedCounseling');
   }, []);
   const [basicInfo, setBasicInfo] = useState<BasicInfo>({
+    name: '',
     age: '',
     gender: 'male',
     height: '',
@@ -128,21 +130,26 @@ export default function SimpleCounselingPage() {
       Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
       : null;
 
-    // LIFFユーザー情報から名前を取得
-    let userName = 'ユーザー';
-    try {
-      if (typeof window !== 'undefined' && window.liff && await window.liff.isLoggedIn()) {
-        const profile = await window.liff.getProfile();
-        userName = profile.displayName || 'ユーザー';
-        console.log('🔍 LIFF名前取得:', userName);
+    // 名前：フォーム入力を優先、未入力の場合はLIFFから取得
+    let userName = cleanBasicInfo.name;
+    if (!userName) {
+      try {
+        if (typeof window !== 'undefined' && window.liff && await window.liff.isLoggedIn()) {
+          const profile = await window.liff.getProfile();
+          userName = profile.displayName || 'ユーザー';
+          console.log('🔍 LIFF名前取得:', userName);
+        } else {
+          userName = 'ユーザー';
+        }
+      } catch (error) {
+        console.log('🔍 LIFF名前取得失敗, デフォルト使用:', error);
+        userName = 'ユーザー';
       }
-    } catch (error) {
-      console.log('🔍 LIFF名前取得失敗, デフォルト使用:', error);
     }
 
     const counselingAnswers = {
       ...cleanBasicInfo,
-      name: userName, // 名前を追加
+      name: userName, // フォーム入力またはLIFFから取得した名前
       goal: goal.type,
       targetWeight: goal.targetWeight,
       targetDate: goal.targetDate,
@@ -276,6 +283,18 @@ export default function SimpleCounselingPage() {
   const renderStep1 = () => (
     <div className="flex-1 px-6">
       <div className="space-y-8">
+        {/* 名前 */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-slate-700 block">お名前</label>
+          <input
+            type="text"
+            value={basicInfo.name}
+            onChange={(e) => setBasicInfo(prev => ({ ...prev, name: e.target.value }))}
+            className="w-full h-14 px-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white text-center"
+            placeholder="お名前を入力"
+          />
+        </div>
+
         {/* 年齢 */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-slate-700 block">年齢</label>
