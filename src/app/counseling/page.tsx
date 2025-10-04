@@ -179,23 +179,34 @@ export default function SimpleCounselingPage() {
       }
       
       if (lineUserId) {
+        const requestData = {
+          answers: counselingAnswers,
+          results: counselingResult.results,
+          lineUserId: lineUserId
+        };
+        
         console.log('🚀 APIリクエスト送信開始...');
+        console.log('📤 送信データ:', requestData);
+        
         const response = await fetch('/api/counseling/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            answers: counselingAnswers,
-            results: counselingResult.results,
-            lineUserId: lineUserId
-          }),
+          body: JSON.stringify(requestData),
         });
 
+        console.log('🔍 API Response Status:', response.status);
         if (response.ok) {
-          console.log('カウンセリング結果保存・LINE通知送信完了');
+          const result = await response.json();
+          console.log('✅ カウンセリング結果保存・LINE通知送信完了:', result);
         } else {
-          console.error('カウンセリング保存エラー:', response.statusText);
+          const errorText = await response.text();
+          console.error('❌ カウンセリング保存エラー:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
         }
       }
     } catch (error) {

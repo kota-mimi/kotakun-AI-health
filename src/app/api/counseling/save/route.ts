@@ -57,7 +57,9 @@ export async function POST(request: NextRequest) {
 // LINEでカウンセリング結果を送信
 async function sendCounselingResultToLine(lineUserId: string, userProfile: any, results: any) {
   try {
-    const userName = userProfile.name || 'ユーザー';
+    console.log('🔍 ユーザープロファイル確認:', userProfile);
+    const userName = userProfile.name || userProfile.answers?.name || 'ユーザー';
+    console.log('🔍 取得したユーザー名:', userName);
 
     // Flexメッセージでカウンセリング結果を送信（AI分析データなし）
     const mockAnalysis = {
