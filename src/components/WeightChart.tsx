@@ -156,6 +156,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       if (selectedPeriod === 'all') return true;
       
       const itemDate = new Date(item.date);
+      // 日付が無効な場合はスキップ
+      if (isNaN(itemDate.getTime())) {
+        console.warn('⚠️ Invalid date in WeightChart:', item.date);
+        return false;
+      }
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0); // 時間をリセットして日付のみで比較
       
@@ -178,6 +184,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
     const processedData = filteredData.map(item => {
       const itemDate = new Date(item.date);
+      // 日付が無効な場合はスキップ（フィルタで除外されているはずだが念のため）
+      if (isNaN(itemDate.getTime())) {
+        console.warn('⚠️ Invalid date in WeightChart processedData:', item.date);
+        return null;
+      }
+      
       const formatDate = () => {
         const month = itemDate.getMonth() + 1;
         const day = itemDate.getDate();
@@ -190,7 +202,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
         bodyFat: item.bodyFat || 0,
         waist: 80 // 仮の値（実際のデータにwaistがないため）
       };
-    });
+    }).filter(item => item !== null); // null値を除外
     
     return processedData;
   };
