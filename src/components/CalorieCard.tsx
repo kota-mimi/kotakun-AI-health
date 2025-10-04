@@ -53,6 +53,19 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const finalFatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || displayPfc.fatTarget;
   const finalCarbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || displayPfc.carbsTarget;
   
+  // デバッグログ追加
+  console.log('🥗 CalorieCard render:', {
+    counselingResult: !!counselingResult,
+    targetCalories,
+    finalTargetCalories,
+    finalProteinTarget,
+    finalFatTarget,
+    finalCarbsTarget,
+    aiAnalysis: counselingResult?.aiAnalysis,
+    nutritionPlan: counselingResult?.aiAnalysis?.nutritionPlan,
+    macros: counselingResult?.aiAnalysis?.nutritionPlan?.macros
+  });
+  
   const intakeProgress = (displayTotalCalories / finalTargetCalories) * 100;
   const proteinProgress = (displayPfc.protein / finalProteinTarget) * 100;
   const fatProgress = (displayPfc.fat / finalFatTarget) * 100;

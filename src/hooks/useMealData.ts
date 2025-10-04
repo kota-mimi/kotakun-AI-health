@@ -123,6 +123,17 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     const fatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 60;
     const carbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 250;
 
+    // デバッグログ追加
+    console.log('🍎 useMealData calculateDailyNutrition:', {
+      counselingResult: !!counselingResult,
+      targetCalories,
+      proteinTarget,
+      fatTarget,
+      carbsTarget,
+      aiAnalysis: counselingResult?.aiAnalysis,
+      nutritionPlan: counselingResult?.aiAnalysis?.nutritionPlan
+    });
+
     return {
       totalCalories,
       targetCalories,
