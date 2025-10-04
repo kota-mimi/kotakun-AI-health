@@ -104,6 +104,12 @@ export default function SimpleCounselingPage() {
   const totalSteps = 3;
 
   const handleComplete = async () => {
+    // 名前が入力されているかチェック
+    if (!basicInfo.name || !basicInfo.name.trim()) {
+      alert('お名前を入力してください');
+      setStep(1); // Step1に戻る
+      return;
+    }
     console.log('🔥 カウンセリング完了ボタンが押されました');
     
     // 空の値をデフォルト値で置き換え
