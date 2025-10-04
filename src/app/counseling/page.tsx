@@ -157,15 +157,19 @@ export default function SimpleCounselingPage() {
 
     // Firestore保存とLINE通知を実行（AI分析なし）
     try {
-      // LINE User IDを取得（テスト用に固定値も使用）
-      let lineUserId = localStorage.getItem('lineUserId');
+      // LINE User IDをLIFFから取得
+      let lineUserId: string | null = null;
       
-      // テスト用：LINE User IDがない場合はダミーIDを使用
-      if (!lineUserId) {
-        lineUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用固定ID
-        console.log('🧪 テスト用LINE User IDを使用:', lineUserId);
+      if (typeof window !== 'undefined' && window.liff && window.liff.isLoggedIn()) {
+        try {
+          const profile = await window.liff.getProfile();
+          lineUserId = profile.userId;
+          console.log('👤 LIFF LINE User ID:', lineUserId);
+        } catch (error) {
+          console.error('LIFF Profile取得エラー:', error);
+        }
       } else {
-        console.log('👤 LINE User ID:', lineUserId);
+        console.error('LIFF環境ではありません。LINEアプリから開いてください。');
       }
       
       if (lineUserId) {

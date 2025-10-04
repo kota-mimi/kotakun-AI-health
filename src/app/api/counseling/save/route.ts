@@ -14,27 +14,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Firestoreに結果を保存（テスト環境では無効化）
-    const isTestMode = process.env.NODE_ENV === 'development' && answers.name?.includes('テスト');
-    if (!isTestMode) {
-      try {
-        const firestoreService = new FirestoreService();
-        // AI分析なしでシンプルな保存
-        await firestoreService.saveCounselingResult(lineUserId, answers, { 
-          nutritionPlan: {
-            dailyCalories: results.targetCalories,
-            macros: results.pfc
-          }
-        });
-      } catch (error) {
-        console.error('Firestore保存エラー:', error);
-        // Firestoreエラーは無視してAPIは成功として続行
-      }
+    // Firestoreに結果を保存
+    try {
+      const firestoreService = new FirestoreService();
+      await firestoreService.saveCounselingResult(lineUserId, answers, { 
+        nutritionPlan: {
+          dailyCalories: results.targetCalories,
+          macros: results.pfc
+        }
+      });
+      console.log('✅ Firestore保存成功:', lineUserId);
+    } catch (error) {
+      console.error('❌ Firestore保存エラー:', error);
+      // Firestoreエラーは無視してAPIは成功として続行
     }
 
-    // LINEでカウンセリング結果を送信（テストモードまたは無効なuserIdではスキップ）
+    // LINEでカウンセリング結果を送信
     const isValidLineUserId = lineUserId && lineUserId.startsWith('U') && lineUserId.length > 10;
-    if (isValidLineUserId && !isTestMode) {
+    if (isValidLineUserId) {
       try {
         await sendCounselingResultToLine(lineUserId, answers, results);
       } catch (error) {
