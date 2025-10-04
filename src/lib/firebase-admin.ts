@@ -10,8 +10,13 @@ if (!getApps().length) {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
     
+    console.log('🔍 環境変数確認:');
+    console.log('  - projectId:', projectId);
+    console.log('  - clientEmail:', clientEmail ? '設定済み' : '未設定');
+    console.log('  - privateKey:', privateKey ? `設定済み (${privateKey.length}文字)` : '未設定');
+    
     if (!clientEmail || !privateKey) {
-      throw new Error('Firebase Admin SDK認証情報が不足しています');
+      throw new Error(`Firebase Admin SDK認証情報が不足しています - clientEmail: ${!!clientEmail}, privateKey: ${!!privateKey}`);
     }
     
     // 正式な認証情報で初期化
