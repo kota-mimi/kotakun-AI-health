@@ -185,13 +185,20 @@ export default function SimpleCounselingPage() {
       }
       
       console.log('🔍 最終的なlineUserId:', lineUserId);
+      console.log('🔍 lineUserId type:', typeof lineUserId);
+      console.log('🔍 lineUserId boolean:', !!lineUserId);
       
-      if (lineUserId) {
-        const requestData = {
-          answers: counselingAnswers,
-          results: counselingResult.results,
-          lineUserId: lineUserId
-        };
+      // 強制的にダミーIDを設定（デバッグ用）
+      if (!lineUserId) {
+        lineUserId = 'debug-user-' + Date.now();
+        console.log('🔧 強制ダミーID設定:', lineUserId);
+      }
+      
+      const requestData = {
+        answers: counselingAnswers,
+        results: counselingResult.results,
+        lineUserId: lineUserId
+      };
         
         console.log('🚀 APIリクエスト送信開始...');
         console.log('📤 送信データ:', requestData);
