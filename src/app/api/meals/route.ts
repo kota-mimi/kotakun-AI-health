@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
     // 食事データをFirestore形式に変換
     const firestoreMealData = {
@@ -89,11 +89,26 @@ export async function PUT(request: NextRequest) {
       images: mealData.images || [],
       image: mealData.images?.[0] || mealData.image,
       foodItems: mealData.foodItems || [],
-      timestamp: new Date(),
-      createdAt: mealData.createdAt || new Date()
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: mealData.createdAt || admin.firestore.FieldValue.serverTimestamp()
     };
 
-    await firestoreService.addMeal(lineUserId, date, firestoreMealData);
+    // Admin SDKで食事データを追加
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingMeals = existingData.meals || [];
+    
+    // 新しい食事を追加
+    const updatedMeals = [...existingMeals, firestoreMealData];
+    
+    await recordRef.set({
+      ...existingData,
+      meals: updatedMeals,
+      date,
+      lineUserId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
     return NextResponse.json({ success: true });
 
@@ -119,10 +134,20 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
-    // 既存の日次記録を取得
-    const existingRecord = await firestoreService.getDailyRecord(lineUserId, date);
+    // 既存の日次記録を取得（Admin SDK）
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    const recordDoc = await recordRef.get();
+    
+    if (!recordDoc.exists) {
+      return NextResponse.json(
+        { error: '食事記録が見つかりません' },
+        { status: 404 }
+      );
+    }
+
+    const existingRecord = recordDoc.data();
     if (!existingRecord || !existingRecord.meals) {
       return NextResponse.json(
         { error: '食事記録が見つかりません' },
@@ -143,8 +168,8 @@ export async function PATCH(request: NextRequest) {
       images: mealData.images || [],
       image: mealData.images?.[0] || mealData.image,
       foodItems: mealData.foodItems || [],
-      timestamp: new Date(),
-      updatedAt: new Date()
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
 
     // 既存の食事リストを更新
@@ -152,9 +177,10 @@ export async function PATCH(request: NextRequest) {
       meal.id === mealData.id ? updatedMealData : meal
     );
 
-    // 日次記録を更新
-    await firestoreService.saveDailyRecord(lineUserId, date, {
+    // 日次記録を更新（Admin SDK）
+    await recordRef.update({
       meals: updatedMeals,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     console.log('🔧 PATCH SUCCESS!');
@@ -182,7 +208,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
     // 複数食事の個別削除かチェック（仮想IDの場合）
     if (mealId.includes('_') && individualMealIndex !== undefined) {
@@ -190,8 +216,18 @@ export async function DELETE(request: NextRequest) {
       const originalMealId = mealId.split('_').slice(0, -1).join('_');
       console.log('🚨 Individual meal deletion:', { originalMealId, individualMealIndex });
       
-      // 既存の日次記録を取得
-      const existingRecord = await firestoreService.getDailyRecord(lineUserId, date);
+      // 既存の日次記録を取得（Admin SDK）
+      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      const recordDoc = await recordRef.get();
+      
+      if (!recordDoc.exists) {
+        return NextResponse.json(
+          { error: '食事記録が見つかりません' },
+          { status: 404 }
+        );
+      }
+      
+      const existingRecord = recordDoc.data();
       if (!existingRecord || !existingRecord.meals) {
         return NextResponse.json(
           { error: '食事記録が見つかりません' },
@@ -222,7 +258,10 @@ export async function DELETE(request: NextRequest) {
       if (updatedIndividualMeals.length === 0) {
         // 全て削除された場合は食事全体を削除
         const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== originalMealId);
-        await firestoreService.saveDailyRecord(lineUserId, date, { meals: updatedMeals });
+        await recordRef.update({ 
+          meals: updatedMeals,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
       } else {
         // 一部削除の場合は更新
         const updatedMeal = {
@@ -238,11 +277,26 @@ export async function DELETE(request: NextRequest) {
         const updatedMeals = existingRecord.meals.map((meal: any) => 
           meal.id === originalMealId ? updatedMeal : meal
         );
-        await firestoreService.saveDailyRecord(lineUserId, date, { meals: updatedMeals });
+        await recordRef.update({ 
+          meals: updatedMeals,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
       }
     } else {
-      // 通常の削除
-      await firestoreService.deleteMeal(lineUserId, date, mealType, mealId);
+      // 通常の削除（Admin SDK）
+      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      const recordDoc = await recordRef.get();
+      
+      if (recordDoc.exists) {
+        const existingRecord = recordDoc.data();
+        if (existingRecord && existingRecord.meals) {
+          const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== mealId);
+          await recordRef.update({ 
+            meals: updatedMeals,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      }
     }
 
     console.log('🚨 DELETE SUCCESS!');

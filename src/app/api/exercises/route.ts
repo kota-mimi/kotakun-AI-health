@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirestoreService } from '@/services/firestoreService';
-import admin from 'firebase-admin';
+import { admin } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +13,15 @@ export async function GET(request: NextRequest) {
 
     console.log('運動API: データ取得開始', { lineUserId, date });
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
     if (date) {
-      // 特定の日付のデータを取得
+      // 特定の日付のデータを取得（Admin SDK）
       console.log('🔍 API: getDailyRecord呼び出し前:', { lineUserId, date });
-      const dailyRecord = await firestoreService.getDailyRecord(lineUserId, date);
+      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      const recordDoc = await recordRef.get();
+      const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
+      
       console.log('🔍 API: getDailyRecord結果:', { 
         hasRecord: !!dailyRecord, 
         hasExercises: !!dailyRecord?.exercises,
@@ -43,23 +45,26 @@ export async function GET(request: NextRequest) {
         data: exercises
       });
     } else {
-      // 最近30日分のデータを取得
-      const endDate = new Date().toISOString().split('T')[0];
-      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const records = await firestoreService.getDailyRecordsRange(lineUserId, startDate, endDate);
+      // 最近30日分のデータを取得（Admin SDK）
       const allExercises: any[] = [];
       
-      records.forEach((record: any) => {
-        if (record.exercises && record.exercises.length > 0) {
-          record.exercises.forEach((exercise: any) => {
-            allExercises.push({
-              ...exercise,
-              date: record.date
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+        const recordDoc = await recordRef.get();
+        
+        if (recordDoc.exists) {
+          const record = recordDoc.data();
+          if (record && record.exercises && record.exercises.length > 0) {
+            record.exercises.forEach((exercise: any) => {
+              allExercises.push({
+                ...exercise,
+                date: record.date || date
+              });
             });
-          });
+          }
         }
-      });
+      }
       
       console.log('運動API: 30日分のデータ', { allExercises: allExercises.length });
       
@@ -92,10 +97,13 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
-    // 日次記録を取得
-    const dailyRecord = await firestoreService.getDailyRecord(lineUserId, date);
+    // 日次記録を取得（Admin SDK）
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    const recordDoc = await recordRef.get();
+    const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
+    
     console.log('🔍 PUT dailyRecord:', dailyRecord);
     console.log('🔍 PUT dailyRecord.exercises:', dailyRecord?.exercises);
     
@@ -109,10 +117,10 @@ export async function PUT(request: NextRequest) {
       exercise.id === exerciseId ? { ...exercise, ...updates } : exercise
     );
 
-    // Firestoreに保存
-    await firestoreService.saveDailyRecord(lineUserId, date, {
-      ...dailyRecord,
-      exercises: updatedExercises
+    // Firestoreに保存（Admin SDK）
+    await recordRef.update({
+      exercises: updatedExercises,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     console.log('✅ 運動データ更新完了:', exerciseId);
@@ -146,10 +154,13 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    const adminDb = admin.firestore();
     
-    // 日次記録を取得
-    const dailyRecord = await firestoreService.getDailyRecord(lineUserId, date);
+    // 日次記録を取得（Admin SDK）
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    const recordDoc = await recordRef.get();
+    const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
+    
     console.log('🔍 DELETE dailyRecord:', dailyRecord);
     console.log('🔍 DELETE dailyRecord.exercises:', dailyRecord?.exercises);
     
@@ -163,10 +174,10 @@ export async function DELETE(request: NextRequest) {
       exercise.id !== exerciseId
     );
 
-    // Firestoreに保存
-    await firestoreService.saveDailyRecord(lineUserId, date, {
-      ...dailyRecord,
-      exercises: filteredExercises
+    // Firestoreに保存（Admin SDK）
+    await recordRef.update({
+      exercises: filteredExercises,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     console.log('✅ 運動データ削除完了:', exerciseId);
