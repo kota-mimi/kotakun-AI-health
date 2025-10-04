@@ -17,50 +17,25 @@ export function useAuth() {
 
       try {
         if (liff.isLoggedIn && liff.user) {
-          const firestoreService = new FirestoreService();
+          // 本番環境対応：Firestoreアクセスを削除、基本ユーザー情報のみ設定
+          const basicUser: User = {
+            userId: `firebase_${liff.user.userId}`,
+            lineUserId: liff.user.userId,
+            profile: {
+              name: liff.user.displayName || 'ユーザー',
+              age: 30,
+              gender: 'other',
+              height: 170,
+              weight: 70,
+              activityLevel: 'moderate',
+              goals: [],
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
           
-          // Firestoreからユーザーデータを取得
-          const firestoreUser = await firestoreService.getUser(liff.user.userId);
-          
-          if (firestoreUser) {
-            // Firestoreからデータが見つかった場合
-            setUser(firestoreUser);
-            setProfile(firestoreUser.profile);
-          } else {
-            // Firestoreにデータがない場合、ローカルストレージから移行を試行
-            const migrationSuccess = await firestoreService.migrateFromLocalStorage(liff.user.userId);
-            
-            if (migrationSuccess) {
-              // 移行成功後、再度Firestoreからデータを取得
-              const migratedUser = await firestoreService.getUser(liff.user.userId);
-              if (migratedUser) {
-                setUser(migratedUser);
-                setProfile(migratedUser.profile);
-              }
-            } else {
-              // 移行もできない場合、基本的なユーザーデータを作成
-              const basicUser: User = {
-                userId: `firebase_${liff.user.userId}`,
-                lineUserId: liff.user.userId,
-                profile: {
-                  name: liff.user.displayName || 'ユーザー',
-                  age: 30,
-                  gender: 'other',
-                  height: 170,
-                  weight: 70,
-                  activityLevel: 'moderate',
-                  goals: [],
-                },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              };
-              
-              // 基本ユーザーデータをFirestoreに保存
-              await firestoreService.saveUser(liff.user.userId, basicUser);
-              setUser(basicUser);
-              setProfile(basicUser.profile);
-            }
-          }
+          setUser(basicUser);
+          setProfile(basicUser.profile);
         }
       } catch (error) {
         console.error('ユーザーデータ読み込みエラー:', error);
@@ -75,12 +50,7 @@ export function useAuth() {
   const updateProfile = async (newProfile: UserProfile) => {
     setProfile(newProfile);
     
-    if (user && liff.user) {
-      const firestoreService = new FirestoreService();
-      
-      // Firestoreにプロフィールを保存
-      await firestoreService.saveUser(liff.user.userId, { profile: newProfile });
-      
+    if (user) {
       const updatedUser = {
         ...user,
         profile: newProfile,
@@ -99,7 +69,11 @@ export function useAuth() {
   };
 
   const hasCompletedCounseling = () => {
-    return !!profile;
+    // ローカルストレージで簡易チェック（本番環境対応）
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('counselingAnswers') || !!localStorage.getItem('hasCompletedCounseling');
+    }
+    return false;
   };
 
   const requireAuth = () => {
