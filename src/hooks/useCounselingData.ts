@@ -112,10 +112,19 @@ export function useCounselingData() {
           if (response.ok) {
             const data = await response.json();
             console.log('🔥 Firestore API SUCCESS! Data received:', data);
+            console.log('🔥 counselingResult exists:', !!data.counselingResult);
+            console.log('🔥 counselingResult details:', data.counselingResult);
             
             if (data.counselingResult) {
-              console.log('🔥 Updating with Firestore counseling result:', data.counselingResult);
+              console.log('🔥 Updating with Firestore counseling result');
+              console.log('🔥 Has answers:', !!data.counselingResult.answers);
+              console.log('🔥 Has aiAnalysis:', !!data.counselingResult.aiAnalysis);
+              console.log('🔥 answers details:', data.counselingResult.answers);
+              console.log('🔥 aiAnalysis details:', data.counselingResult.aiAnalysis);
+              
               setCounselingResult(data.counselingResult);
+            } else {
+              console.log('🔥 No counselingResult in API response');
             }
           } else {
             console.log('🔥 API error:', response.status, response.statusText);

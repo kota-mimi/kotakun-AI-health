@@ -29,8 +29,13 @@ export async function POST(request: NextRequest) {
     console.log('🔍 取得結果:', { 
       hasCounseling: !!counselingResult, 
       hasUser: !!user,
-      hasProfile: !!user?.profile 
+      hasProfile: !!user?.profile,
+      counselingData: counselingResult ? Object.keys(counselingResult) : null,
+      userData: user ? Object.keys(user) : null
     });
+    
+    console.log('🔍 カウンセリング詳細データ:', counselingResult);
+    console.log('🔍 ユーザー詳細データ:', user);
 
     return NextResponse.json({
       hasCompletedCounseling: !!counselingResult,
