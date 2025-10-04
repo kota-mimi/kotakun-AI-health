@@ -16,30 +16,38 @@ export async function POST(request: NextRequest) {
 
     // Firestoreに結果を保存（Admin SDK使用）
     try {
+      console.log('🔍 カウンセリング保存開始:', { lineUserId, hasAnswers: !!answers, hasResults: !!results });
+      
       const adminDb = admin.firestore();
-      const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+      console.log('🔍 Admin DB取得完了');
       
-      // 既存のカウンセリング結果を確認
-      const existingDoc = await counselingRef.get();
-      const existingData = existingDoc.exists ? existingDoc.data() : null;
-      
-      // カウンセリング結果を保存
-      await counselingRef.set({
-        answers,
+      // シンプルなデータ構造で保存
+      const saveData = {
+        answers: answers,
+        results: results,
         aiAnalysis: {
           nutritionPlan: {
             dailyCalories: results.targetCalories,
             macros: results.pfc
           }
         },
-        completedAt: admin.FieldValue.serverTimestamp(),
-        createdAt: existingData?.createdAt || admin.FieldValue.serverTimestamp(),
-        firstCompletedAt: existingData?.firstCompletedAt || admin.FieldValue.serverTimestamp(),
-      });
+        completedAt: new Date(),
+        createdAt: new Date(),
+        lineUserId: lineUserId,
+        timestamp: Date.now()
+      };
+      
+      console.log('🔍 保存データ準備完了:', Object.keys(saveData));
+      
+      const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+      console.log('🔍 参照取得完了');
+      
+      await counselingRef.set(saveData);
+      console.log('✅ カウンセリング結果保存完了');
 
-      // ユーザープロファイルも更新
+      // ユーザープロファイルも保存
       const userRef = adminDb.collection('users').doc(lineUserId);
-      await userRef.set({
+      const profileData = {
         lineUserId,
         profile: {
           name: answers.name || 'ユーザー',
@@ -55,13 +63,17 @@ export async function POST(request: NextRequest) {
           medicalConditions: answers.medicalConditions ? [answers.medicalConditions] : [],
           allergies: answers.allergies ? [answers.allergies] : [],
         },
-        updatedAt: admin.FieldValue.serverTimestamp(),
-      }, { merge: true });
+        updatedAt: new Date(),
+      };
       
-      console.log('✅ Firestore保存成功（Admin SDK）:', lineUserId);
+      await userRef.set(profileData, { merge: true });
+      console.log('✅ ユーザープロファイル保存完了');
+      
     } catch (error) {
       console.error('❌ Firestore保存エラー:', error);
-      // Firestoreエラーは無視してAPIは成功として続行
+      console.error('❌ エラー詳細:', error.message);
+      console.error('❌ エラースタック:', error.stack);
+      // エラーでもAPIは成功として返す
     }
 
     // LINEでカウンセリング結果を送信
