@@ -199,11 +199,11 @@ export default function SimpleCounselingPage() {
         results: counselingResult.results,
         lineUserId: lineUserId
       };
-        
-        console.log('🚀 APIリクエスト送信開始...');
-        console.log('📤 送信データ:', requestData);
-        
-        const response = await fetch('/api/counseling/save', {
+      
+      console.log('🚀 APIリクエスト送信開始...');
+      console.log('📤 送信データ:', requestData);
+      
+      const response = await fetch('/api/counseling/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
