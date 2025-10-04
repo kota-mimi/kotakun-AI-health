@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirestoreService } from '@/services/firestoreService';
+import { admin } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,11 +12,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const firestoreService = new FirestoreService();
+    console.log('🔍 カウンセリング状態確認開始:', { lineUserId });
+    
+    const adminDb = admin.firestore();
     
     // カウンセリング結果を取得
-    const counselingResult = await firestoreService.getCounselingResult(lineUserId);
-    const user = await firestoreService.getUser(lineUserId);
+    const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+    const counselingDoc = await counselingRef.get();
+    const counselingResult = counselingDoc.exists ? counselingDoc.data() : null;
+    
+    // ユーザー情報を取得
+    const userRef = adminDb.collection('users').doc(lineUserId);
+    const userDoc = await userRef.get();
+    const user = userDoc.exists ? userDoc.data() : null;
+    
+    console.log('🔍 取得結果:', { 
+      hasCounseling: !!counselingResult, 
+      hasUser: !!user,
+      hasProfile: !!user?.profile 
+    });
 
     return NextResponse.json({
       hasCompletedCounseling: !!counselingResult,

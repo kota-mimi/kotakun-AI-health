@@ -105,7 +105,10 @@ export async function POST(request: NextRequest) {
 async function sendCounselingResultToLine(lineUserId: string, userProfile: any, results: any) {
   try {
     console.log('🔍 ユーザープロファイル確認:', userProfile);
-    const userName = userProfile.name || userProfile.answers?.name || 'ユーザー';
+    console.log('🔍 userProfile.name:', userProfile.name);
+    console.log('🔍 userProfile keys:', Object.keys(userProfile));
+    // userProfileから名前を取得（userProfileはanswersオブジェクト）
+    const userName = userProfile.name || 'ユーザー';
     console.log('🔍 取得したユーザー名:', userName);
 
     // Flexメッセージでカウンセリング結果を送信（AI分析データなし）

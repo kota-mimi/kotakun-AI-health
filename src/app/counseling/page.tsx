@@ -128,8 +128,21 @@ export default function SimpleCounselingPage() {
       Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (30 * 24 * 60 * 60 * 1000))
       : null;
 
+    // LIFFユーザー情報から名前を取得
+    let userName = 'ユーザー';
+    try {
+      if (typeof window !== 'undefined' && window.liff && await window.liff.isLoggedIn()) {
+        const profile = await window.liff.getProfile();
+        userName = profile.displayName || 'ユーザー';
+        console.log('🔍 LIFF名前取得:', userName);
+      }
+    } catch (error) {
+      console.log('🔍 LIFF名前取得失敗, デフォルト使用:', error);
+    }
+
     const counselingAnswers = {
       ...cleanBasicInfo,
+      name: userName, // 名前を追加
       goal: goal.type,
       targetWeight: goal.targetWeight,
       targetDate: goal.targetDate,
@@ -152,6 +165,7 @@ export default function SimpleCounselingPage() {
     };
 
     // ローカルストレージに保存
+    localStorage.setItem('counselingAnswers', JSON.stringify(counselingAnswers));
     localStorage.setItem('counselingResult', JSON.stringify(counselingResult));
     localStorage.setItem('hasCompletedCounseling', 'true');
 
