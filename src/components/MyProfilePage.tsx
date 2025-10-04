@@ -52,8 +52,16 @@ export function MyProfilePage({
   const { liffUser } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
-  // デバッグ: counselingResultの内容を確認
-  console.log('🔍 MyProfilePage counselingResult:', counselingResult);
+  // 本番環境用詳細デバッグ: counselingResultの内容を確認
+  console.log('🔍 [MYPAGE-PROD] MyProfilePage counselingResult:', counselingResult);
+  console.log('🔍 [MYPAGE-PROD] CounselingResult structure:', {
+    hasCounselingResult: !!counselingResult,
+    hasAnswers: !!(counselingResult?.answers),
+    hasAiAnalysis: !!(counselingResult?.aiAnalysis),
+    hasNutritionPlan: !!(counselingResult?.aiAnalysis?.nutritionPlan),
+    nutritionPlanDetails: counselingResult?.aiAnalysis?.nutritionPlan,
+    answersDetails: counselingResult?.answers
+  });
   
   // カウンセリング結果の名前を優先、LIFFは最後のフォールバック
   const userName = counselingResult?.answers?.name || counselingResult?.userProfile?.name || liffUser?.displayName || "ユーザー";
@@ -72,6 +80,17 @@ export function MyProfilePage({
   const protein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || 0;
   const carbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 0;
   const fat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 0;
+  
+  // 栄養データの詳細ログ
+  console.log('🔍 [MYPAGE-PROD] Nutrition data extracted:', {
+    dailyCalories,
+    protein,
+    carbs,
+    fat,
+    willShowNutritionSection: dailyCalories > 0,
+    nutritionPlanPath: counselingResult?.aiAnalysis?.nutritionPlan,
+    macrosPath: counselingResult?.aiAnalysis?.nutritionPlan?.macros
+  });
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;

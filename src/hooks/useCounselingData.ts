@@ -40,98 +40,167 @@ interface CounselingResult {
 }
 
 export function useCounselingData() {
-  console.log('🔥 useCounselingData hook - LIVE API VERSION FOR PRODUCTION');
+  console.log('🔥 useCounselingData hook - PRODUCTION VERSION WITH ENHANCED DEBUGGING');
   const { liffUser } = useAuth();
   
   const lineUserId = liffUser?.userId;
-  console.log('🔥 lineUserId:', lineUserId);
+  console.log('🔥 [PRODUCTION] lineUserId:', lineUserId);
+  console.log('🔥 [PRODUCTION] liffUser object:', liffUser);
+  console.log('🔥 [PRODUCTION] Environment:', typeof window !== 'undefined' ? 'browser' : 'server');
   
   const [counselingResult, setCounselingResult] = useState<CounselingResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // useEffectを使用して、完全に安全にデータを取得
   React.useEffect(() => {
-    console.log('🔥 useEffect triggered');
+    console.log('🔥 [PRODUCTION] useEffect triggered - starting data fetch');
+    console.log('🔥 [PRODUCTION] Current state:', { lineUserId, isLoading });
     
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log('🔥 [PRODUCTION] Setting loading to true');
         
         if (!lineUserId) {
-          console.log('🔥 No lineUserId, using localStorage only');
+          console.log('🔥 [PRODUCTION] No lineUserId detected, falling back to localStorage');
           // lineUserIdがない場合はローカルストレージのみ
           if (typeof window !== 'undefined') {
             const localAnswers = localStorage.getItem('counselingAnswers');
             const localAnalysis = localStorage.getItem('aiAnalysis');
             
+            console.log('🔥 [PRODUCTION] LocalStorage check:', {
+              hasAnswers: !!localAnswers,
+              hasAnalysis: !!localAnalysis,
+              answersLength: localAnswers?.length || 0,
+              analysisLength: localAnalysis?.length || 0
+            });
+            
             if (localAnswers) {
-              console.log('🔥 Found local counseling data (no lineUserId)');
+              console.log('🔥 [PRODUCTION] Found local counseling data (no lineUserId)');
               const answers = JSON.parse(localAnswers);
               const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+              
+              console.log('🔥 [PRODUCTION] Parsed local data:', {
+                answersKeys: Object.keys(answers),
+                hasAnalysis: !!analysis,
+                analysisKeys: analysis ? Object.keys(analysis) : []
+              });
               
               setCounselingResult({
                 answers,
                 aiAnalysis: analysis,
                 userProfile: answers
               });
+            } else {
+              console.log('🔥 [PRODUCTION] No local counseling data found');
             }
+          } else {
+            console.log('🔥 [PRODUCTION] Window is undefined (server-side)');
           }
           setIsLoading(false);
           return;
         }
 
-        console.log('🔥 Making API call with lineUserId:', lineUserId);
+        console.log('🔥 [PRODUCTION] Making API call with lineUserId:', lineUserId);
+        console.log('🔥 [PRODUCTION] API endpoint: /api/counseling/status');
         
         // まずローカルストレージをチェック（即座に表示）
         if (typeof window !== 'undefined') {
           const localAnswers = localStorage.getItem('counselingAnswers');
           const localAnalysis = localStorage.getItem('aiAnalysis');
           
+          console.log('🔥 [PRODUCTION] Pre-API localStorage check:', {
+            hasAnswers: !!localAnswers,
+            hasAnalysis: !!localAnalysis
+          });
+          
           if (localAnswers) {
-            console.log('🔥 Setting localStorage data first for immediate display');
+            console.log('🔥 [PRODUCTION] Setting localStorage data first for immediate display');
             const answers = JSON.parse(localAnswers);
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+            
+            console.log('🔥 [PRODUCTION] LocalStorage data structure:', {
+              answers: {
+                keys: Object.keys(answers),
+                hasNutritionData: !!(answers.height && answers.weight),
+                hasCalorieTarget: !!(analysis?.nutritionPlan?.dailyCalories)
+              },
+              analysis: {
+                hasNutritionPlan: !!(analysis?.nutritionPlan),
+                dailyCalories: analysis?.nutritionPlan?.dailyCalories,
+                hasMacros: !!(analysis?.nutritionPlan?.macros)
+              }
+            });
             
             setCounselingResult({
               answers,
               aiAnalysis: analysis,
               userProfile: answers
             });
+          } else {
+            console.log('🔥 [PRODUCTION] No localStorage data for immediate display');
           }
         }
         
         // 次にFirestoreから最新データを取得（バックグラウンド）
         try {
+          console.log('🔥 [PRODUCTION] Starting Firestore API call...');
+          const startTime = Date.now();
+          
           const response = await fetch('/api/counseling/status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lineUserId }),
           });
 
-          console.log('🔥 API response status:', response.status);
+          const responseTime = Date.now() - startTime;
+          console.log('🔥 [PRODUCTION] API response received:', {
+            status: response.status,
+            statusText: response.statusText,
+            responseTime: `${responseTime}ms`,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+
           if (response.ok) {
             const data = await response.json();
-            console.log('🔥 Firestore API SUCCESS! Data received:', data);
-            console.log('🔥 counselingResult exists:', !!data.counselingResult);
-            console.log('🔥 counselingResult details:', data.counselingResult);
+            console.log('🔥 [PRODUCTION] Firestore API SUCCESS! Raw data:', data);
+            console.log('🔥 [PRODUCTION] Response structure:', {
+              hasCounselingResult: !!data.counselingResult,
+              hasAnswers: !!(data.counselingResult?.answers),
+              hasAiAnalysis: !!(data.counselingResult?.aiAnalysis),
+              hasNutritionPlan: !!(data.counselingResult?.aiAnalysis?.nutritionPlan),
+              dailyCalories: data.counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
+              macros: data.counselingResult?.aiAnalysis?.nutritionPlan?.macros
+            });
             
             if (data.counselingResult) {
-              console.log('🔥 Updating with Firestore counseling result');
-              console.log('🔥 Has answers:', !!data.counselingResult.answers);
-              console.log('🔥 Has aiAnalysis:', !!data.counselingResult.aiAnalysis);
-              console.log('🔥 answers details:', data.counselingResult.answers);
-              console.log('🔥 aiAnalysis details:', data.counselingResult.aiAnalysis);
+              console.log('🔥 [PRODUCTION] Updating with Firestore counseling result');
+              console.log('🔥 [PRODUCTION] Firestore data details:', {
+                answers: data.counselingResult.answers,
+                nutritionPlan: data.counselingResult.aiAnalysis?.nutritionPlan,
+                userProfile: data.counselingResult.userProfile
+              });
               
               setCounselingResult(data.counselingResult);
+              console.log('🔥 [PRODUCTION] State updated with Firestore data');
             } else {
-              console.log('🔥 No counselingResult in API response');
+              console.log('🔥 [PRODUCTION] No counselingResult in API response - using localStorage only');
             }
           } else {
-            console.log('🔥 API error:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.log('🔥 [PRODUCTION] API error:', {
+              status: response.status,
+              statusText: response.statusText,
+              errorBody: errorText
+            });
             // APIエラーでもローカルストレージデータがあれば問題なし
           }
         } catch (apiError) {
-          console.error('🔥 API fetch error (non-fatal):', apiError);
+          console.error('🔥 [PRODUCTION] API fetch error (non-fatal):', {
+            error: apiError,
+            message: apiError.message,
+            stack: apiError.stack
+          });
           // APIエラーでもローカルストレージデータがあれば問題なし
         }
         
