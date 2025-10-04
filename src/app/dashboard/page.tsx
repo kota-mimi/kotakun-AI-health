@@ -50,7 +50,8 @@ export default function DashboardPage() {
     dateBasedDataManager.updateDateData(navigation.selectedDate, updates);
   };
 
-  const { counselingResult } = useCounselingData();
+  // const { counselingResult } = useCounselingData(); // 一時的に無効化
+  const counselingResult = null; // 緊急対応
 
   const mealManager = useMealData(
     navigation.selectedDate, 
