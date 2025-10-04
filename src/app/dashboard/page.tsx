@@ -50,7 +50,33 @@ export default function DashboardPage() {
     dateBasedDataManager.updateDateData(navigation.selectedDate, updates);
   };
 
-  const { counselingResult } = useCounselingData(); // 本番環境対応API使用
+  // const { counselingResult } = useCounselingData(); // 一時的に無効化
+  
+  // ローカルストレージからカウンセリングデータを取得（緊急対応）
+  const [counselingResult, setCounselingResult] = React.useState(null);
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const answers = localStorage.getItem('counselingAnswers');
+      const analysis = localStorage.getItem('aiAnalysis');
+      
+      if (answers) {
+        const parsedAnswers = JSON.parse(answers);
+        const parsedAnalysis = analysis ? JSON.parse(analysis) : null;
+        
+        setCounselingResult({
+          answers: parsedAnswers,
+          aiAnalysis: parsedAnalysis,
+          userProfile: parsedAnswers
+        });
+        
+        console.log('🔍 Dashboard counseling data loaded:', {
+          answers: parsedAnswers,
+          analysis: parsedAnalysis
+        });
+      }
+    }
+  }, []);
 
   const mealManager = useMealData(
     navigation.selectedDate, 
