@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FirestoreService } from '@/services/firestoreService';
+import { admin } from '@/lib/firebase-admin';
 import { pushMessage } from '@/app/api/webhook/route';
 import { createCounselingResultFlexMessage } from '@/services/flexMessageTemplates';
 
@@ -14,16 +14,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Firestoreに結果を保存
+    // Firestoreに結果を保存（Admin SDK使用）
     try {
-      const firestoreService = new FirestoreService();
-      await firestoreService.saveCounselingResult(lineUserId, answers, { 
-        nutritionPlan: {
-          dailyCalories: results.targetCalories,
-          macros: results.pfc
-        }
+      const adminDb = admin.firestore();
+      const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+      
+      // 既存のカウンセリング結果を確認
+      const existingDoc = await counselingRef.get();
+      const existingData = existingDoc.exists ? existingDoc.data() : null;
+      
+      // カウンセリング結果を保存
+      await counselingRef.set({
+        answers,
+        aiAnalysis: {
+          nutritionPlan: {
+            dailyCalories: results.targetCalories,
+            macros: results.pfc
+          }
+        },
+        completedAt: adminDb.FieldValue.serverTimestamp(),
+        createdAt: existingData?.createdAt || adminDb.FieldValue.serverTimestamp(),
+        firstCompletedAt: existingData?.firstCompletedAt || adminDb.FieldValue.serverTimestamp(),
       });
-      console.log('✅ Firestore保存成功:', lineUserId);
+
+      // ユーザープロファイルも更新
+      const userRef = adminDb.collection('users').doc(lineUserId);
+      await userRef.set({
+        lineUserId,
+        profile: {
+          name: answers.name || 'ユーザー',
+          age: Number(answers.age) || 25,
+          gender: answers.gender || 'other',
+          height: Number(answers.height) || 170,
+          weight: Number(answers.weight) || 60,
+          activityLevel: answers.activityLevel || 'normal',
+          goals: [{
+            type: answers.primaryGoal || 'fitness_improve',
+            targetValue: Number(answers.targetWeight) || Number(answers.weight) || 60,
+          }],
+          medicalConditions: answers.medicalConditions ? [answers.medicalConditions] : [],
+          allergies: answers.allergies ? [answers.allergies] : [],
+        },
+        updatedAt: adminDb.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      
+      console.log('✅ Firestore保存成功（Admin SDK）:', lineUserId);
     } catch (error) {
       console.error('❌ Firestore保存エラー:', error);
       // Firestoreエラーは無視してAPIは成功として続行
