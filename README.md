@@ -153,3 +153,4 @@ npm run lint
 ---
 
 **🚀 本格展開に向けて開発中です！**
+# Force Vercel to use latest commit
