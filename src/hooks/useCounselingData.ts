@@ -43,7 +43,7 @@ export function useCounselingData() {
   console.log('🔥 useCounselingData hook - LIVE API VERSION FOR PRODUCTION');
   const { liffUser } = useAuth();
   
-  const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+  const lineUserId = liffUser?.userId;
   console.log('🔥 lineUserId:', lineUserId);
   
   const [counselingResult, setCounselingResult] = useState<CounselingResult | null>(null);
@@ -63,37 +63,7 @@ export function useCounselingData() {
       console.log('🔥 Making API call with lineUserId:', lineUserId);
       
       try {
-        // まずローカルストレージから最新のデータを確認
-        const localAnswers = localStorage.getItem('counselingAnswers');
-        const localAnalysis = localStorage.getItem('aiAnalysis');
-        
-        if (localAnswers) {
-          console.log('🔥 Found local counseling data, using it');
-          const answers = JSON.parse(localAnswers);
-          const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
-          
-          // analysisにuserProfileがない場合はanswersから作成
-          if (analysis && !analysis.userProfile) {
-            analysis.userProfile = {
-              name: answers.name,
-              age: answers.age,
-              gender: answers.gender,
-              height: answers.height,
-              weight: answers.weight,
-              targetWeight: answers.targetWeight
-            };
-          }
-          
-          setCounselingResult({
-            answers,
-            aiAnalysis: analysis,
-            userProfile: answers // answersをuserProfileとしても使用
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // ローカルストレージにない場合はAPIから取得
+        // Firestoreから最新データを取得（優先）
         const response = await fetch('/api/counseling/status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -103,13 +73,28 @@ export function useCounselingData() {
         console.log('🔥 API response status:', response.status);
         if (response.ok) {
           const data = await response.json();
-          console.log('🔥 API SUCCESS! Data received:', data);
+          console.log('🔥 Firestore API SUCCESS! Data received:', data);
           
           if (data.counselingResult) {
-            console.log('🔥 Setting counseling result:', data.counselingResult);
+            console.log('🔥 Setting Firestore counseling result:', data.counselingResult);
             setCounselingResult(data.counselingResult);
           } else {
-            console.log('🔥 No counseling result in response');
+            console.log('🔥 No Firestore data, checking localStorage fallback');
+            // Firestoreにない場合のみローカルストレージを確認
+            const localAnswers = localStorage.getItem('counselingAnswers');
+            const localAnalysis = localStorage.getItem('aiAnalysis');
+            
+            if (localAnswers) {
+              console.log('🔥 Found local counseling data as fallback');
+              const answers = JSON.parse(localAnswers);
+              const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+              
+              setCounselingResult({
+                answers,
+                aiAnalysis: analysis,
+                userProfile: answers
+              });
+            }
           }
         } else {
           console.log('🔥 API error:', response.status, response.statusText);
