@@ -204,25 +204,24 @@ export default function SimpleCounselingPage() {
       console.log('📤 送信データ:', requestData);
       
       const response = await fetch('/api/counseling/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData),
-        });
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
 
-        console.log('🔍 API Response Status:', response.status);
-        if (response.ok) {
-          const result = await response.json();
-          console.log('✅ カウンセリング結果保存・LINE通知送信完了:', result);
-        } else {
-          const errorText = await response.text();
-          console.error('❌ カウンセリング保存エラー:', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorText
-          });
-        }
+      console.log('🔍 API Response Status:', response.status);
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ カウンセリング結果保存・LINE通知送信完了:', result);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ カウンセリング保存エラー:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
       }
     } catch (error) {
       console.error('カウンセリング保存API呼び出しエラー:', error);
