@@ -49,43 +49,23 @@ export function useCounselingData() {
   const [counselingResult, setCounselingResult] = useState<CounselingResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // useLayoutEffectを使用してSSRの問題を回避
-  React.useLayoutEffect(() => {
-    console.log('🔥 useLayoutEffect triggered');
+  // useEffectを使用して、完全に安全にデータを取得
+  React.useEffect(() => {
+    console.log('🔥 useEffect triggered');
     
     const fetchData = async () => {
-      if (!lineUserId) {
-        console.log('🔥 No lineUserId, skipping API call');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('🔥 Making API call with lineUserId:', lineUserId);
-      
       try {
-        // Firestoreから最新データを取得（優先）
-        const response = await fetch('/api/counseling/status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lineUserId }),
-        });
-
-        console.log('🔥 API response status:', response.status);
-        if (response.ok) {
-          const data = await response.json();
-          console.log('🔥 Firestore API SUCCESS! Data received:', data);
-          
-          if (data.counselingResult) {
-            console.log('🔥 Setting Firestore counseling result:', data.counselingResult);
-            setCounselingResult(data.counselingResult);
-          } else {
-            console.log('🔥 No Firestore data, checking localStorage fallback');
-            // Firestoreにない場合のみローカルストレージを確認
+        setIsLoading(true);
+        
+        if (!lineUserId) {
+          console.log('🔥 No lineUserId, using localStorage only');
+          // lineUserIdがない場合はローカルストレージのみ
+          if (typeof window !== 'undefined') {
             const localAnswers = localStorage.getItem('counselingAnswers');
             const localAnalysis = localStorage.getItem('aiAnalysis');
             
             if (localAnswers) {
-              console.log('🔥 Found local counseling data as fallback');
+              console.log('🔥 Found local counseling data (no lineUserId)');
               const answers = JSON.parse(localAnswers);
               const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
               
@@ -96,30 +76,60 @@ export function useCounselingData() {
               });
             }
           }
-        } else {
-          console.log('🔥 API error:', response.status, response.statusText);
+          setIsLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('🔥 API fetch error:', error);
-        console.error('🔥 Error details:', error.message);
-        console.error('🔥 Error stack:', error.stack);
+
+        console.log('🔥 Making API call with lineUserId:', lineUserId);
         
-        // APIエラー時はローカルストレージフォールバック
-        console.log('🔥 API failed, using localStorage fallback');
-        const localAnswers = localStorage.getItem('counselingAnswers');
-        const localAnalysis = localStorage.getItem('aiAnalysis');
-        
-        if (localAnswers) {
-          console.log('🔥 Found local counseling data as error fallback');
-          const answers = JSON.parse(localAnswers);
-          const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+        // まずローカルストレージをチェック（即座に表示）
+        if (typeof window !== 'undefined') {
+          const localAnswers = localStorage.getItem('counselingAnswers');
+          const localAnalysis = localStorage.getItem('aiAnalysis');
           
-          setCounselingResult({
-            answers,
-            aiAnalysis: analysis,
-            userProfile: answers
-          });
+          if (localAnswers) {
+            console.log('🔥 Setting localStorage data first for immediate display');
+            const answers = JSON.parse(localAnswers);
+            const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+            
+            setCounselingResult({
+              answers,
+              aiAnalysis: analysis,
+              userProfile: answers
+            });
+          }
         }
+        
+        // 次にFirestoreから最新データを取得（バックグラウンド）
+        try {
+          const response = await fetch('/api/counseling/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lineUserId }),
+          });
+
+          console.log('🔥 API response status:', response.status);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('🔥 Firestore API SUCCESS! Data received:', data);
+            
+            if (data.counselingResult) {
+              console.log('🔥 Updating with Firestore counseling result:', data.counselingResult);
+              setCounselingResult(data.counselingResult);
+            }
+          } else {
+            console.log('🔥 API error:', response.status, response.statusText);
+            // APIエラーでもローカルストレージデータがあれば問題なし
+          }
+        } catch (apiError) {
+          console.error('🔥 API fetch error (non-fatal):', apiError);
+          // APIエラーでもローカルストレージデータがあれば問題なし
+        }
+        
+      } catch (error) {
+        console.error('🔥 Fatal error in useCounselingData:', error);
+        // 最悪でもnullでエラーにならない
+        setCounselingResult(null);
       } finally {
         setIsLoading(false);
       }
@@ -135,11 +145,11 @@ export function useCounselingData() {
     isLoading,
     refetch: async () => {
       console.log('🔥 Manual refetch called');
-      // useEffectと同じロジックを再実行
-      if (lineUserId) {
+      try {
         setIsLoading(true);
-        try {
-          // まずローカルストレージから最新のデータを確認
+        
+        // まずローカルストレージから最新のデータを確認
+        if (typeof window !== 'undefined') {
           const localAnswers = localStorage.getItem('counselingAnswers');
           const localAnalysis = localStorage.getItem('aiAnalysis');
           
@@ -148,44 +158,37 @@ export function useCounselingData() {
             const answers = JSON.parse(localAnswers);
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
             
-            // analysisにuserProfileがない場合はanswersから作成
-            if (analysis && !analysis.userProfile) {
-              analysis.userProfile = {
-                name: answers.name,
-                age: answers.age,
-                gender: answers.gender,
-                height: answers.height,
-                weight: answers.weight,
-                targetWeight: answers.targetWeight
-              };
-            }
-            
             setCounselingResult({
               answers,
               aiAnalysis: analysis,
-              userProfile: answers // answersをuserProfileとしても使用
+              userProfile: answers
             });
-            setIsLoading(false);
-            return;
           }
-
-          // ローカルストレージにない場合はAPIから取得
-          const response = await fetch('/api/counseling/status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lineUserId }),
-          });
-          if (response.ok) {
-            const data = await response.json();
-            if (data.counselingResult) {
-              setCounselingResult(data.counselingResult);
-            }
-          }
-        } catch (error) {
-          console.error('Refetch failed:', error);
-        } finally {
-          setIsLoading(false);
         }
+
+        // APIからも取得を試行（エラーでも無視）
+        if (lineUserId) {
+          try {
+            const response = await fetch('/api/counseling/status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ lineUserId }),
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.counselingResult) {
+                setCounselingResult(data.counselingResult);
+              }
+            }
+          } catch (apiError) {
+            console.log('🔥 Refetch API error (ignored):', apiError);
+            // エラーは無視、ローカルストレージデータを使用
+          }
+        }
+      } catch (error) {
+        console.error('🔥 Refetch fatal error:', error);
+      } finally {
+        setIsLoading(false);
       }
     },
   };
