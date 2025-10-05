@@ -1368,7 +1368,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     }
 
     // Firestoreに保存
-    const firestoreService = new FirestoreService();
+    const db = admin.firestore();
     const today = new Date().toISOString().split('T')[0];
     
     // 画像がある場合は圧縮して一時保存し、外部URLで提供
@@ -1783,11 +1783,13 @@ function checkContinuationPattern(userId: string, text: string) {
 // 継続セット記録処理
 async function recordContinuationSet(userId: string, match: any, replyToken: string) {
   try {
-    const firestoreService = new FirestoreService();
     const dateStr = new Date().toISOString().split('T')[0];
     
     // 既存の運動記録を取得
-    const dailyRecord = await firestoreService.getDailyRecord(userId, dateStr);
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
+    const dailyDoc = await recordRef.get();
+    const dailyRecord = dailyDoc.exists ? dailyDoc.data() : null;
     
     if (!dailyRecord || !dailyRecord.exercises) {
       throw new Error('既存の運動記録が見つかりません');
@@ -1831,7 +1833,10 @@ async function recordContinuationSet(userId: string, match: any, replyToken: str
     targetExercise.calories = Math.round(setCount * 25 * (match.weight / 60)); // 重量に応じてカロリー調整
     
     // Firestoreを更新
-    await firestoreService.saveDailyRecord(userId, dateStr, dailyRecord);
+    await recordRef.set({
+      ...dailyRecord,
+      updatedAt: admin.FieldValue.serverTimestamp(),
+    }, { merge: true });
     
     // 返信メッセージ
     const setNumber = targetExercise.sets.length;
@@ -2080,7 +2085,7 @@ function checkBasicExercisePatterns(text: string) {
 // ユーザー固有パターンの動的生成・更新
 async function updateUserExercisePatterns(userId: string) {
   try {
-    const firestoreService = new FirestoreService();
+    const db = admin.firestore();
     
     // ユーザーの過去の運動記録を取得（最近30日分）
     const endDate = new Date();
@@ -2103,7 +2108,7 @@ async function updateUserExercisePatterns(userId: string) {
 // ユーザーの運動履歴を取得
 async function getUserExerciseHistory(userId: string, startDate: Date, endDate: Date) {
   try {
-    const firestoreService = new FirestoreService();
+    const db = admin.firestore();
     const exercises = [];
     
     // 期間内の各日をチェック
@@ -2111,7 +2116,9 @@ async function getUserExerciseHistory(userId: string, startDate: Date, endDate: 
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0];
       try {
-        const dailyData = await firestoreService.getDailyRecord(userId, dateStr);
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
+        const dailyDoc = await recordRef.get();
+        const dailyData = dailyDoc.exists ? dailyDoc.data() : null;
         if (dailyData && dailyData.exercises) {
           exercises.push(...dailyData.exercises);
         }
@@ -2510,7 +2517,7 @@ function getUserWeightFromProfile(user: any): number | null {
 // ユーザーの体重を取得
 async function getUserWeight(userId: string): Promise<number> {
   try {
-    const firestoreService = new FirestoreService();
+    const db = admin.firestore();
     const today = new Date().toISOString().split('T')[0];
     
     // 最近7日間の体重データを探す
@@ -2520,7 +2527,9 @@ async function getUserWeight(userId: string): Promise<number> {
       const dateStr = date.toISOString().split('T')[0];
       
       try {
-        const dailyData = await firestoreService.getDailyRecord(userId, dateStr);
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
+        const dailyDoc = await recordRef.get();
+        const dailyData = dailyDoc.exists ? dailyDoc.data() : null;
         if (dailyData && dailyData.weight) {
           return dailyData.weight;
         }
