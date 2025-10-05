@@ -1105,37 +1105,11 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   }
 }
 
-// 食事タイプ選択画面（時間に基づく推奨付き）
+// 食事タイプ選択画面
 async function showMealTypeSelection(replyToken: string) {
-  // 現在の時間に基づいて推奨食事タイプを判定
-  const now = new Date();
-  const hour = now.getHours();
-  
-  let recommendedMeal = '';
-  let recommendedText = '';
-  let recommendedAction = '';
-  
-  if (hour >= 5 && hour < 11) {
-    recommendedMeal = '朝食';
-    recommendedText = '朝の時間帯ですね！';
-    recommendedAction = 'meal_breakfast';
-  } else if (hour >= 11 && hour < 15) {
-    recommendedMeal = '昼食';
-    recommendedText = 'お昼の時間帯ですね！';
-    recommendedAction = 'meal_lunch';
-  } else if (hour >= 15 && hour < 19) {
-    recommendedMeal = '間食';
-    recommendedText = '間食の時間帯ですね！';
-    recommendedAction = 'meal_snack';
-  } else {
-    recommendedMeal = '夕食';
-    recommendedText = '夜の時間帯ですね！';
-    recommendedAction = 'meal_dinner';
-  }
-
   const responseMessage = {
     type: 'text',
-    text: `${recommendedText}\nどの食事を記録しますか？\n\n💡 ${recommendedMeal}がおすすめです`,
+    text: 'どの食事を記録しますか？',
     quickReply: {
       items: [
         {
