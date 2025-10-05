@@ -20,12 +20,8 @@ if (!getApps().length) {
     
     // 開発環境またはビルド時で適切な秘密鍵がない場合は初期化をスキップ
     if (!clientEmail || !privateKey || privateKey.includes('Example')) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 開発環境：Firebase Admin SDK初期化をスキップ（本番環境でのみ必要）');
-        return;
-      } else {
-        throw new Error('Firebase Admin SDK認証情報が不足しています。FIREBASE_CLIENT_EMAIL と FIREBASE_PRIVATE_KEY を設定してください。');
-      }
+      console.log('🔧 Firebase Admin SDK初期化をスキップ（認証情報不足）');
+      return;
     }
     
     // Private Key の改行文字を正しく処理
