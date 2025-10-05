@@ -327,7 +327,8 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     if (mealId.includes('_')) {
       const parts = mealId.split('_');
       const lastPart = parts[parts.length - 1];
-      if (!isNaN(Number(lastPart))) {
+      // 最後の部分が数字で、全体が仮想ID（originalMealId_index形式）の場合のみ分割
+      if (!isNaN(Number(lastPart)) && parts.length >= 3) {
         originalMealId = parts.slice(0, -1).join('_');
         individualMealIndex = Number(lastPart);
       }
