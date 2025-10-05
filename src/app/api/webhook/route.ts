@@ -1508,6 +1508,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     // スクリーンショット通りのシンプルなFlexメッセージ（食事名を渡す）
     const mealName = tempData.text || (analysis.foodItems?.[0]) || '食事'; // テキスト優先、次にAI認識した料理名
+    console.log('FlexMessage作成 - imageUrl:', imageUrl); // デバッグログ追加
     const flexMessage = createMealFlexMessage(mealTypeJa, analysis, imageUrl, mealName);
 
     await replyMessage(replyToken, [flexMessage]);
