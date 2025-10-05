@@ -47,13 +47,26 @@ export function MyProfilePage({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // 強制リフレッシュ用のキー
   const [refreshKey, setRefreshKey] = useState(0);
+  // データ安定化フラグ
+  const [showContent, setShowContent] = useState(false);
   
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
-  // 最もシンプルな方法：LIFF認証完了まで待機のみ
-  if (!isLiffReady || !isLoggedIn) {
+  // データ安定後に表示（ちらつき完全防止）
+  React.useEffect(() => {
+    if (isLiffReady && isLoggedIn) {
+      // データが安定するまで200ms待機
+      const timer = setTimeout(() => {
+        setShowContent(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isLiffReady, isLoggedIn]);
+  
+  // データ安定まで待機
+  if (!isLiffReady || !isLoggedIn || !showContent) {
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
