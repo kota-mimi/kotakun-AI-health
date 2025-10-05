@@ -78,6 +78,17 @@ export function useCounselingData() {
             if (localAnswers) {
               console.log('🔥 [PRODUCTION] Found local counseling data (no lineUserId)');
               const answers = JSON.parse(localAnswers);
+              
+              // テストデータ「利光湖太郎」を検出して削除
+              if (answers.name === '利光湖太郎') {
+                console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage');
+                localStorage.removeItem('counselingAnswers');
+                localStorage.removeItem('aiAnalysis');
+                setCounselingResult(null);
+                setIsLoading(false);
+                return;
+              }
+              
               const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
               
               console.log('🔥 [PRODUCTION] Parsed local data:', {
@@ -117,6 +128,17 @@ export function useCounselingData() {
           if (localAnswers) {
             console.log('🔥 [PRODUCTION] Setting localStorage data first for immediate display');
             const answers = JSON.parse(localAnswers);
+            
+            // テストデータ「利光湖太郎」を検出して削除
+            if (answers.name === '利光湖太郎') {
+              console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage (pre-API)');
+              localStorage.removeItem('counselingAnswers');
+              localStorage.removeItem('aiAnalysis');
+              setCounselingResult(null);
+              setIsLoading(false);
+              return;
+            }
+            
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
             
             console.log('🔥 [PRODUCTION] LocalStorage data structure:', {
@@ -227,6 +249,17 @@ export function useCounselingData() {
           if (localAnswers) {
             console.log('🔥 Refetch: Found local counseling data, using it');
             const answers = JSON.parse(localAnswers);
+            
+            // テストデータ「利光湖太郎」を検出して削除
+            if (answers.name === '利光湖太郎') {
+              console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage (refetch)');
+              localStorage.removeItem('counselingAnswers');
+              localStorage.removeItem('aiAnalysis');
+              setCounselingResult(null);
+              setIsLoading(false);
+              return;
+            }
+            
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
             
             setCounselingResult({
