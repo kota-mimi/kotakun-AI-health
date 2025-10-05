@@ -51,7 +51,7 @@ export function MyProfilePage({
   const [refreshKey, setRefreshKey] = useState(0);
   
   // 実際のユーザーデータを取得
-  const { isLiffReady, isLoggedIn, liffUser } = useAuth();
+  const { isLiffReady, isLoggedIn, liffUser, hasCompletedCounseling } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
   // 最も安全：LIFF認証完了まで待機のみ
@@ -470,8 +470,8 @@ export function MyProfilePage({
           <div className="mt-3 space-y-2">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
-            {!counselingResult ? (
-              // ローディング中はスケルトン表示
+            {hasCompletedCounseling && !counselingResult ? (
+              // カウンセリング完了済みでデータ読み込み中はスケルトン表示
               <>
                 {/* カロリースケルトン */}
                 <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
@@ -495,8 +495,8 @@ export function MyProfilePage({
                   </div>
                 </div>
               </>
-            ) : dailyCalories > 0 ? (
-              // データがあれば表示
+            ) : hasCompletedCounseling && dailyCalories > 0 ? (
+              // カウンセリング完了済みでデータがあれば表示
               <>
                 {/* カロリー */}
                 <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
@@ -520,11 +520,36 @@ export function MyProfilePage({
                   </div>
                 </div>
               </>
-            ) : (
-              // データがない場合の表示
+            ) : !hasCompletedCounseling ? (
+              // カウンセリング未完了の場合のメッセージ
               <div className="text-center p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div className="text-sm text-slate-500">カウンセリングを完了すると表示されます</div>
               </div>
+            ) : (
+              // カウンセリング完了済みだがデータがない場合はスケルトン表示を継続
+              <>
+                {/* カロリースケルトン */}
+                <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
+                  <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-16"></div>
+                  <div className="h-4 bg-slate-200 rounded mx-auto w-20"></div>
+                </div>
+                
+                {/* PFCスケルトン */}
+                <div className="flex space-x-1.5">
+                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
+                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                  </div>
+                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-8"></div>
+                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                  </div>
+                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
+                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                  </div>
+                </div>
+              </>
             )}
           </div>
           
