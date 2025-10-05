@@ -105,7 +105,18 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  const { counselingResult, isLoading: isCounselingLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  // エラーハンドリング付きでカウンセリングデータ取得
+  let counselingResult = null;
+  let isCounselingLoading = true;
+  
+  try {
+    const counselingData = useCounselingData();
+    counselingResult = counselingData?.counselingResult || null;
+    isCounselingLoading = counselingData?.isLoading ?? true;
+  } catch (error) {
+    console.error('ダッシュボード - カウンセリングデータ取得エラー:', error);
+    isCounselingLoading = false; // エラー時はローディングを停止
+  }
 
   const mealManager = useMealData(
     navigation?.selectedDate || new Date(), 

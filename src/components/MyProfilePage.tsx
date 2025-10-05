@@ -50,7 +50,21 @@ export function MyProfilePage({
   
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser } = useAuth();
-  const { counselingResult, refetch, isLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  
+  // エラーハンドリング付きでカウンセリングデータ取得
+  let counselingResult = null;
+  let refetch = () => {};
+  let isLoading = true;
+  
+  try {
+    const counselingData = useCounselingData();
+    counselingResult = counselingData?.counselingResult || null;
+    refetch = counselingData?.refetch || (() => {});
+    isLoading = counselingData?.isLoading ?? true;
+  } catch (error) {
+    console.error('カウンセリングデータ取得エラー:', error);
+    isLoading = false; // エラー時はローディングを停止
+  }
   
   // LIFF認証完了とカウンセリングデータ読み込み完了まで待機（ちらつき防止）
   if (!isLiffReady || !isLoggedIn || isLoading) {
