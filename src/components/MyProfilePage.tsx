@@ -233,7 +233,12 @@ export function MyProfilePage({
               oldCalories: analysis.nutritionPlan?.dailyCalories,
               newCalories: newCalorieTarget,
               oldMacros: analysis.nutritionPlan?.macros,
-              newMacros: newMacros
+              newMacros: newMacros,
+              profileChange: {
+                weight: `${analysis.userProfile?.weight || 'なし'} → ${editForm.currentWeight}`,
+                goal: `${analysis.userProfile?.primaryGoal || 'なし'} → ${editForm.primaryGoal}`,
+                activity: `${analysis.userProfile?.activityLevel || 'なし'} → ${editForm.activityLevel}`
+              }
             });
             
             updatedAnalysis = {
@@ -298,8 +303,27 @@ export function MyProfilePage({
       setIsEditModalOpen(false);
       
       console.log('🔥 プロフィール更新完了 - 自動リフレッシュ実行');
-      // useCounselingDataのrefetchを実行してデータを更新
+      // LocalStorageが既に更新されているので、refetchで最新データを取得
       await refetch();
+      
+      // refetch完了後のcounselingResultをチェック
+      console.log('🔥 Refetch完了後のcounselingResult:', {
+        hasResult: !!counselingResult,
+        dailyCalories: counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
+        macros: counselingResult?.aiAnalysis?.nutritionPlan?.macros,
+        userProfile: counselingResult?.userProfile
+      });
+      
+      // 追加の安全措置：少し待ってからもう一度refetch
+      setTimeout(async () => {
+        console.log('🔥 追加リフレッシュ実行');
+        await refetch();
+        console.log('🔥 追加Refetch完了後のcounselingResult:', {
+          hasResult: !!counselingResult,
+          dailyCalories: counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
+          macros: counselingResult?.aiAnalysis?.nutritionPlan?.macros
+        });
+      }, 500);
       
     } catch (error) {
       console.error('プロフィール保存エラー:', error);
