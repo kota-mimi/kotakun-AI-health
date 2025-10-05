@@ -89,8 +89,8 @@ export async function PUT(request: NextRequest) {
       images: mealData.images || [],
       image: mealData.images?.[0] || mealData.image,
       foodItems: mealData.foodItems || [],
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: mealData.createdAt || admin.firestore.FieldValue.serverTimestamp()
+      timestamp: new Date(),
+      createdAt: mealData.createdAt || new Date()
     };
 
     // Admin SDKで食事データを追加
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
       meals: updatedMeals,
       date,
       lineUserId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: new Date()
     }, { merge: true });
 
     return NextResponse.json({ success: true });
@@ -168,8 +168,8 @@ export async function PATCH(request: NextRequest) {
       images: mealData.images || [],
       image: mealData.images?.[0] || mealData.image,
       foodItems: mealData.foodItems || [],
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      timestamp: new Date(),
+      updatedAt: new Date()
     };
 
     // 既存の食事リストを更新
@@ -180,7 +180,7 @@ export async function PATCH(request: NextRequest) {
     // 日次記録を更新（Admin SDK）
     await recordRef.update({
       meals: updatedMeals,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: new Date()
     });
 
     console.log('🔧 PATCH SUCCESS!');
@@ -260,7 +260,7 @@ export async function DELETE(request: NextRequest) {
         const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== originalMealId);
         await recordRef.update({ 
           meals: updatedMeals,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: new Date()
         });
       } else {
         // 一部削除の場合は更新
@@ -279,7 +279,7 @@ export async function DELETE(request: NextRequest) {
         );
         await recordRef.update({ 
           meals: updatedMeals,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: new Date()
         });
       }
     } else {
@@ -293,7 +293,7 @@ export async function DELETE(request: NextRequest) {
           const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== mealId);
           await recordRef.update({ 
             meals: updatedMeals,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            updatedAt: new Date()
           });
         }
       }
