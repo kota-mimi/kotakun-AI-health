@@ -120,9 +120,9 @@ export function MyProfilePage({
           try {
             const analysis = JSON.parse(localAnalysis);
             const nutritionPlan = analysis?.nutritionPlan;
-            if (nutritionPlan) {
+            if (nutritionPlan && nutritionPlan.dailyCalories > 0) {
               setNutritionData({
-                dailyCalories: nutritionPlan.dailyCalories || 0,
+                dailyCalories: nutritionPlan.dailyCalories,
                 protein: nutritionPlan.macros?.protein || 0,
                 carbs: nutritionPlan.macros?.carbs || 0,
                 fat: nutritionPlan.macros?.fat || 0
@@ -140,9 +140,9 @@ export function MyProfilePage({
     loadNutritionData();
 
     // counselingResultが更新された時も反映
-    if (counselingResult?.aiAnalysis?.nutritionPlan) {
+    if (counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories > 0) {
       setNutritionData({
-        dailyCalories: counselingResult.aiAnalysis.nutritionPlan.dailyCalories || 0,
+        dailyCalories: counselingResult.aiAnalysis.nutritionPlan.dailyCalories,
         protein: counselingResult.aiAnalysis.nutritionPlan.macros?.protein || 0,
         carbs: counselingResult.aiAnalysis.nutritionPlan.macros?.carbs || 0,
         fat: counselingResult.aiAnalysis.nutritionPlan.macros?.fat || 0
@@ -514,62 +514,65 @@ export function MyProfilePage({
           <div className="mt-3 space-y-2">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
-            {hasCompletedCounseling && dailyCalories === 0 ? (
-              // カウンセリング完了済みでまだ栄養データが読み込まれていない場合はスケルトン表示
-              <>
-                {/* カロリースケルトン */}
-                <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
-                  <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-16"></div>
-                  <div className="h-4 bg-slate-200 rounded mx-auto w-20"></div>
-                </div>
-                
-                {/* PFCスケルトン */}
-                <div className="flex space-x-1.5">
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+            {hasCompletedCounseling ? (
+              // カウンセリング完了済みは常に表示（ホームのカロリーカードと同じ仕様）
+              dailyCalories > 0 ? (
+                // 栄養データがある場合は実際の値を表示
+                <>
+                  {/* カロリー */}
+                  <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
+                    <div className="font-bold text-blue-900">{dailyCalories}kcal</div>
                   </div>
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-8"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                  
+                  {/* PFC */}
+                  <div className="flex space-x-1.5">
+                    <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
+                      <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
+                      <div className="font-bold text-red-900 text-sm">{protein}g</div>
+                    </div>
+                    <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
+                      <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
+                      <div className="font-bold text-yellow-900 text-sm">{fat}g</div>
+                    </div>
+                    <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
+                      <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
+                      <div className="font-bold text-green-900 text-sm">{carbs}g</div>
+                    </div>
                   </div>
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                </>
+              ) : (
+                // 栄養データがまだない場合はスケルトン表示
+                <>
+                  {/* カロリースケルトン */}
+                  <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
+                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-16"></div>
+                    <div className="h-4 bg-slate-200 rounded mx-auto w-20"></div>
                   </div>
-                </div>
-              </>
-            ) : hasCompletedCounseling && dailyCalories > 0 ? (
-              // カウンセリング完了済みで栄養データがある場合は即座に表示
-              <>
-                {/* カロリー */}
-                <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
-                  <div className="font-bold text-blue-900">{dailyCalories}kcal</div>
-                </div>
-                
-                {/* PFC */}
-                <div className="flex space-x-1.5">
-                  <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
-                    <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
-                    <div className="font-bold text-red-900 text-sm">{protein}g</div>
+                  
+                  {/* PFCスケルトン */}
+                  <div className="flex space-x-1.5">
+                    <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                      <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
+                      <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                    </div>
+                    <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                      <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-8"></div>
+                      <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                    </div>
+                    <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
+                      <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
+                      <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
+                    </div>
                   </div>
-                  <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
-                    <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
-                    <div className="font-bold text-yellow-900 text-sm">{fat}g</div>
-                  </div>
-                  <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
-                    <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
-                    <div className="font-bold text-green-900 text-sm">{carbs}g</div>
-                  </div>
-                </div>
-              </>
-            ) : !hasCompletedCounseling ? (
+                </>
+              )
+            ) : (
               // カウンセリング未完了の場合のメッセージ
               <div className="text-center p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div className="text-sm text-slate-500">カウンセリングを完了すると表示されます</div>
               </div>
-            ) : null}
+            )}
           </div>
           
           {/* アクションボタン */}
