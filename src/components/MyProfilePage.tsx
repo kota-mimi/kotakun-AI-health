@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '.
 import { useAuth } from '@/hooks/useAuth';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE } from '@/utils/calculations';
+import type { HealthGoal } from '@/types';
 import { 
   User,
   Scale,
@@ -220,9 +221,9 @@ export function MyProfilePage({
               activityLevel: editForm.activityLevel
             };
             
-            // 目標に基づいてカロリー計算
-            const goals = [{
-              type: editForm.primaryGoal,
+            // 目標に基づいてカロリー計算（HealthGoal型に準拠）
+            const goals: HealthGoal[] = [{
+              type: editForm.primaryGoal as HealthGoal['type'],
               targetValue: editForm.targetWeight
             }];
             
@@ -644,7 +645,7 @@ export function MyProfilePage({
                 <SelectItem value="weight_loss">減量</SelectItem>
                 <SelectItem value="weight_gain">増量</SelectItem>
                 <SelectItem value="muscle_gain">筋肉増強</SelectItem>
-                <SelectItem value="maintenance">体重維持</SelectItem>
+                <SelectItem value="fitness_improve">体重維持</SelectItem>
               </SelectContent>
             </Select>
           </div>
