@@ -1116,14 +1116,6 @@ async function showMealTypeSelection(replyToken: string) {
           type: 'action',
           action: {
             type: 'postback',
-            label: `✨ ${recommendedMeal}（推奨）`,
-            data: `action=${recommendedAction}`
-          }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
             label: '朝食',
             data: 'action=meal_breakfast'
           }
