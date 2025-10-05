@@ -10,7 +10,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
   const height = parseFloat(userProfile.height) || 0;
   const currentWeight = parseFloat(userProfile.weight) || 0;
   const targetWeight = parseFloat(userProfile.targetWeight) || currentWeight;
-  const weightDifference = currentWeight - targetWeight;
+  const weightDifference = Math.round((currentWeight - targetWeight) * 10) / 10;
 
   // 目標の日本語変換
   const getGoalText = (goal: string) => {
