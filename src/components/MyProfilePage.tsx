@@ -87,7 +87,10 @@ export function MyProfilePage({
   });
   
   // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
-  const userName = counselingResult?.answers?.name || counselingResult?.userProfile?.name || liffUser?.displayName || "ユーザー";
+  // テストデータ「利光湖太郎」を除外
+  const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
+  const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
+  const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
   const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
   const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
                  counselingResult?.answers?.gender === 'female' ? '女性' : 
