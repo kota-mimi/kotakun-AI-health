@@ -50,10 +50,10 @@ export function MyProfilePage({
   
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser } = useAuth();
-  const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  const { counselingResult, refetch, isLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
-  // LIFF認証完了まで待機（ちらつき防止）
-  if (!isLiffReady || !isLoggedIn) {
+  // LIFF認証完了とカウンセリングデータ読み込み完了まで待機（ちらつき防止）
+  if (!isLiffReady || !isLoggedIn || isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}

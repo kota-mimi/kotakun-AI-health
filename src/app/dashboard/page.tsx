@@ -105,7 +105,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  const { counselingResult } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  const { counselingResult, isLoading: isCounselingLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
 
   const mealManager = useMealData(
     navigation?.selectedDate || new Date(), 
@@ -137,6 +137,18 @@ function DashboardContent({ onError }: { onError: () => void }) {
     if (hour >= 15 && hour < 19) return 'snack';    // 15:00-18:59 間食
     return 'dinner'; // 19:00-4:59 夕食
   };
+
+  // カウンセリングデータ読み込み中の場合はローディング表示
+  if (isCounselingLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">データを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">
