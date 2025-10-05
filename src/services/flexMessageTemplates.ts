@@ -257,9 +257,9 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                   },
                   {
                     type: 'text',
-                    text: `-${Math.abs(weightDifference)}kg`,
+                    text: weightDifference > 0 ? `-${Math.abs(weightDifference)}kg` : `+${Math.abs(weightDifference)}kg`,
                     size: 'sm',
-                    color: '#FC1515',
+                    color: weightDifference > 0 ? '#FC1515' : '#10B981',
                     align: 'center',
                     margin: 'xs'
                   }

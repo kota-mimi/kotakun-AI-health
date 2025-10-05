@@ -110,11 +110,16 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
             <div className="text-lg font-bold">
               {shouldShowWeight ? (
-                currentWeight <= targetWeight ? (
+                currentWeight === targetWeight ? (
                   <span className="text-green-600">🎉 達成</span>
+                ) : currentWeight > targetWeight ? (
+                  <span className="text-red-600">
+                    -{remaining.toFixed(1)}
+                    <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
+                  </span>
                 ) : (
                   <span className="text-green-600">
-                    -{remaining.toFixed(1)}
+                    +{remaining.toFixed(1)}
                     <span className="text-sm font-medium text-slate-600 ml-1">kg</span>
                   </span>
                 )
