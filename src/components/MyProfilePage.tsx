@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -103,11 +103,55 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // カロリーとPFCデータの取得
-  const dailyCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || 0;
-  const protein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || 0;
-  const carbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 0;
-  const fat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 0;
+  // カロリーとPFCデータの取得 - LocalStorageから即座に取得
+  const [nutritionData, setNutritionData] = useState({
+    dailyCalories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+  });
+
+  // LocalStorageから即座にカロリー・PFCデータを取得
+  useEffect(() => {
+    const loadNutritionData = () => {
+      if (typeof window !== 'undefined') {
+        const localAnalysis = localStorage.getItem('aiAnalysis');
+        if (localAnalysis) {
+          try {
+            const analysis = JSON.parse(localAnalysis);
+            const nutritionPlan = analysis?.nutritionPlan;
+            if (nutritionPlan) {
+              setNutritionData({
+                dailyCalories: nutritionPlan.dailyCalories || 0,
+                protein: nutritionPlan.macros?.protein || 0,
+                carbs: nutritionPlan.macros?.carbs || 0,
+                fat: nutritionPlan.macros?.fat || 0
+              });
+              console.log('🔍 [MYPAGE] LocalStorageから栄養データを即座に取得:', nutritionPlan);
+            }
+          } catch (error) {
+            console.error('🔍 [MYPAGE] LocalStorage栄養データ解析エラー:', error);
+          }
+        }
+      }
+    };
+
+    // 初回読み込み
+    loadNutritionData();
+
+    // counselingResultが更新された時も反映
+    if (counselingResult?.aiAnalysis?.nutritionPlan) {
+      setNutritionData({
+        dailyCalories: counselingResult.aiAnalysis.nutritionPlan.dailyCalories || 0,
+        protein: counselingResult.aiAnalysis.nutritionPlan.macros?.protein || 0,
+        carbs: counselingResult.aiAnalysis.nutritionPlan.macros?.carbs || 0,
+        fat: counselingResult.aiAnalysis.nutritionPlan.macros?.fat || 0
+      });
+      console.log('🔍 [MYPAGE] counselingResultから栄養データを更新:', counselingResult.aiAnalysis.nutritionPlan);
+    }
+  }, [counselingResult]);
+
+  const { dailyCalories, protein, carbs, fat } = nutritionData;
   
   // 栄養データの詳細ログ
   console.log('🔍 [MYPAGE-PROD] Nutrition data extracted:', {
@@ -470,8 +514,8 @@ export function MyProfilePage({
           <div className="mt-3 space-y-2">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
-            {hasCompletedCounseling && !counselingResult ? (
-              // カウンセリング完了済みでデータ読み込み中はスケルトン表示
+            {hasCompletedCounseling && dailyCalories === 0 ? (
+              // カウンセリング完了済みでまだ栄養データが読み込まれていない場合はスケルトン表示
               <>
                 {/* カロリースケルトン */}
                 <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
@@ -496,7 +540,7 @@ export function MyProfilePage({
                 </div>
               </>
             ) : hasCompletedCounseling && dailyCalories > 0 ? (
-              // カウンセリング完了済みでデータがあれば表示
+              // カウンセリング完了済みで栄養データがある場合は即座に表示
               <>
                 {/* カロリー */}
                 <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
@@ -525,32 +569,7 @@ export function MyProfilePage({
               <div className="text-center p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div className="text-sm text-slate-500">カウンセリングを完了すると表示されます</div>
               </div>
-            ) : (
-              // カウンセリング完了済みだがデータがない場合はスケルトン表示を継続
-              <>
-                {/* カロリースケルトン */}
-                <div className="text-center p-2.5 bg-slate-100 rounded-lg border border-slate-200 animate-pulse">
-                  <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-16"></div>
-                  <div className="h-4 bg-slate-200 rounded mx-auto w-20"></div>
-                </div>
-                
-                {/* PFCスケルトン */}
-                <div className="flex space-x-1.5">
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
-                  </div>
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-8"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
-                  </div>
-                  <div className="flex-1 text-center p-2 bg-slate-100 rounded border border-slate-200 animate-pulse">
-                    <div className="h-3 bg-slate-200 rounded mb-1 mx-auto w-12"></div>
-                    <div className="h-4 bg-slate-200 rounded mx-auto w-8"></div>
-                  </div>
-                </div>
-              </>
-            )}
+            ) : null}
           </div>
           
           {/* アクションボタン */}
