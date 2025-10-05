@@ -1202,26 +1202,63 @@ async function recordWeight(userId: string, weight: number) {
   }
 }
 
-// 一時的な食事データ保存（メモリ）
-const tempMealData = new Map<string, { text?: string; image?: Buffer; timestamp: number }>();
-
+// 一時的な食事データ保存（Firestore）
 async function storeTempMealData(userId: string, text: string, image?: Buffer) {
-  tempMealData.set(userId, {
-    text,
-    image,
-    timestamp: Date.now()
-  });
-  
-  // 10分後にデータを削除
-  setTimeout(() => {
-    tempMealData.delete(userId);
-  }, 10 * 60 * 1000);
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_data').doc(userId);
+    
+    await tempRef.set({
+      text,
+      image: image ? image.toString('base64') : null,
+      timestamp: admin.FieldValue.serverTimestamp(),
+    });
+    
+    console.log('一時食事データ保存完了:', userId);
+  } catch (error) {
+    console.error('一時食事データ保存エラー:', error);
+  }
+}
+
+// 一時的な食事データ取得（Firestore）
+async function getTempMealData(userId: string) {
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_data').doc(userId);
+    const tempDoc = await tempRef.get();
+    
+    if (!tempDoc.exists) {
+      return null;
+    }
+    
+    const data = tempDoc.data();
+    return {
+      text: data.text,
+      image: data.image ? Buffer.from(data.image, 'base64') : null,
+      timestamp: data.timestamp?.toMillis() || Date.now(),
+    };
+  } catch (error) {
+    console.error('一時食事データ取得エラー:', error);
+    return null;
+  }
+}
+
+// 一時的な食事データ削除（Firestore）
+async function deleteTempMealData(userId: string) {
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_data').doc(userId);
+    await tempRef.delete();
+    console.log('一時食事データ削除完了:', userId);
+  } catch (error) {
+    console.error('一時食事データ削除エラー:', error);
+  }
 }
 
 // 食事内容のAI分析（カロリーのみ）
 async function analyzeMealOnly(userId: string, replyToken: string) {
   try {
-    const tempData = tempMealData.get(userId);
+    const tempData = await getTempMealData(userId);
     if (!tempData) {
       await replyMessage(replyToken, [{
         type: 'text',
@@ -1271,7 +1308,7 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
     await replyMessage(replyToken, [flexMessage]);
 
     // 一時データを削除
-    tempMealData.delete(userId);
+    await deleteTempMealData(userId);
 
   } catch (error) {
     console.error('食事分析エラー:', error);
@@ -1285,7 +1322,7 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
 // 食事記録を保存
 async function saveMealRecord(userId: string, mealType: string, replyToken: string) {
   try {
-    const tempData = tempMealData.get(userId);
+    const tempData = await getTempMealData(userId);
     if (!tempData) {
       await replyMessage(replyToken, [{
         type: 'text',
@@ -1484,7 +1521,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     await replyMessage(replyToken, [flexMessage]);
 
     // 一時データを削除
-    tempMealData.delete(userId);
+    await deleteTempMealData(userId);
 
   } catch (error) {
     console.error('食事記録エラー:', error);
