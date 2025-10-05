@@ -103,17 +103,36 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // ホームのカロリーカードと全く同じ方法 - デフォルト値を設定
-  const defaultCalories = 2000;
-  const defaultProtein = 120;
-  const defaultFat = 60;
-  const defaultCarbs = 250;
+  // LocalStorageから即座に実値を取得 (固定値なし)
+  const getStoredNutrition = () => {
+    if (typeof window === 'undefined') return { calories: 2000, protein: 120, fat: 60, carbs: 250 };
+    
+    try {
+      const stored = localStorage.getItem('aiAnalysis');
+      if (stored) {
+        const analysis = JSON.parse(stored);
+        const plan = analysis?.nutritionPlan;
+        if (plan?.dailyCalories) {
+          return {
+            calories: plan.dailyCalories,
+            protein: plan.macros?.protein || 120,
+            fat: plan.macros?.fat || 60,
+            carbs: plan.macros?.carbs || 250
+          };
+        }
+      }
+    } catch (e) {}
+    
+    return { calories: 2000, protein: 120, fat: 60, carbs: 250 };
+  };
 
-  // ホームのCalorieCardと全く同じフォールバック方式
-  const finalCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || defaultCalories;
-  const finalProtein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || defaultProtein;
-  const finalFat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || defaultFat;
-  const finalCarbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || defaultCarbs;
+  const storedNutrition = getStoredNutrition();
+  
+  // 最初から実際の値を表示 (counselingResultは更新用のみ)
+  const finalCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || storedNutrition.calories;
+  const finalProtein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || storedNutrition.protein;
+  const finalFat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || storedNutrition.fat;
+  const finalCarbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || storedNutrition.carbs;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
