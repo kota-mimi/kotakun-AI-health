@@ -8,6 +8,50 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
+// リトライ機能付き操作実行
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  operationType: string,
+  context: Record<string, any>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 ${operationType} 実行 (試行 ${attempt}/${maxRetries})`, context);
+      const result = await operation();
+      
+      if (attempt > 1) {
+        console.log(`✅ ${operationType} 成功 (試行 ${attempt}回目で成功)`, context);
+      }
+      
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ ${operationType} 失敗 (試行 ${attempt}/${maxRetries}):`, {
+        error: error.message,
+        context,
+        stack: error.stack
+      });
+      
+      if (attempt < maxRetries) {
+        const delay = delayMs * attempt; // exponential backoff
+        console.log(`⏳ ${delay}ms 待機後にリトライします...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  console.error(`💥 ${operationType} 最終的に失敗:`, {
+    maxRetries,
+    context,
+    finalError: lastError.message
+  });
+  throw lastError;
+}
+
 // 食事データベース
 const FOOD_DATABASE = {
   // 主食類
@@ -436,6 +480,7 @@ const RICH_MENU_CONFIG = {
 };
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
   try {
     console.log('🔥 LINE Webhook呼び出し開始');
     const body = await request.text();
@@ -445,22 +490,81 @@ export async function POST(request: NextRequest) {
     
     // LINE署名を検証
     if (!verifySignature(body, signature)) {
-      console.log('🔥 署名検証失敗');
+      console.error('🔥 署名検証失敗:', {
+        hasSignature: !!signature,
+        hasChannelSecret: !!process.env.LINE_CHANNEL_SECRET,
+        bodyLength: body.length
+      });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     console.log('🔥 署名検証成功');
-    const events = JSON.parse(body).events;
-
-    // 各イベントを処理
-    for (const event of events) {
-      await handleEvent(event);
+    
+    let events;
+    try {
+      const parsedBody = JSON.parse(body);
+      events = parsedBody.events;
+      console.log('🔥 イベント数:', events?.length || 0);
+    } catch (parseError) {
+      console.error('🔥 JSON解析エラー:', parseError);
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 
-    return NextResponse.json({ status: 'OK' });
+    // 各イベントを処理
+    const eventResults = [];
+    for (const event of events) {
+      try {
+        await handleEvent(event);
+        eventResults.push({ success: true, eventType: event.type });
+      } catch (eventError) {
+        console.error('🔥 イベント処理エラー:', {
+          error: eventError,
+          eventType: event.type,
+          eventSource: event.source,
+          stack: eventError.stack
+        });
+        eventResults.push({ success: false, eventType: event.type, error: eventError.message });
+        
+        // イベント処理エラーでもユーザーには適切なメッセージを送信
+        if (event.replyToken) {
+          try {
+            await replyMessage(event.replyToken, [{
+              type: 'text',
+              text: '申し訳ございません。システムで一時的な問題が発生しました。少し時間をおいて再度お試しください。'
+            }]);
+          } catch (replyError) {
+            console.error('🔥 エラーメッセージ送信失敗:', replyError);
+          }
+        }
+      }
+    }
+
+    const processingTime = Date.now() - startTime;
+    console.log('🔥 Webhook処理完了:', {
+      processingTime: `${processingTime}ms`,
+      totalEvents: events.length,
+      successCount: eventResults.filter(r => r.success).length,
+      errorCount: eventResults.filter(r => !r.success).length
+    });
+
+    return NextResponse.json({ 
+      status: 'OK',
+      processed: events.length,
+      processingTime: processingTime
+    });
   } catch (error) {
-    console.error('Webhook error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const processingTime = Date.now() - startTime;
+    console.error('🔥 致命的なWebhookエラー:', {
+      error: error,
+      message: error.message,
+      stack: error.stack,
+      processingTime: `${processingTime}ms`,
+      headers: Object.fromEntries(request.headers.entries())
+    });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      processingTime: processingTime
+    }, { status: 500 });
   }
 }
 
@@ -500,22 +604,55 @@ async function handleEvent(event: any) {
 async function handleMessage(replyToken: string, source: any, message: any) {
   const { userId } = source;
   
-  switch (message.type) {
-    case 'text':
-      await handleTextMessage(replyToken, userId, message.text);
-      break;
-    case 'image':
-      await handleImageMessage(replyToken, userId, message.id);
-      break;
-    default:
+  // ユーザー認証とプロファイル取得
+  const firestoreService = new FirestoreService();
+  try {
+    const user = await firestoreService.getUser(userId);
+    if (!user || !user.profile) {
+      // 未登録ユーザーへの応答
       await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'すみません、このタイプのメッセージには対応していません。'
+        type: 'template',
+        altText: 'アプリに登録して健康管理を始めましょう！',
+        template: {
+          type: 'buttons',
+          text: 'まずはアプリに登録して\nあなた専用の健康プランを作成しませんか？',
+          actions: [
+            {
+              type: 'uri',
+              label: 'アプリに登録する',
+              uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/counseling` : `${process.env.NEXT_PUBLIC_APP_URL}/counseling`
+            }
+          ]
+        }
       }]);
+      return;
+    }
+    
+    console.log(`🔥 認証済みユーザー: ${userId}`);
+    
+    switch (message.type) {
+      case 'text':
+        await handleTextMessage(replyToken, userId, message.text, user);
+        break;
+      case 'image':
+        await handleImageMessage(replyToken, userId, message.id, user);
+        break;
+      default:
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'すみません、このタイプのメッセージには対応していません。'
+        }]);
+    }
+  } catch (error) {
+    console.error('ユーザー認証エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: 'システムエラーが発生しました。少し時間をおいて再度お試しください。'
+    }]);
   }
 }
 
-async function handleTextMessage(replyToken: string, userId: string, text: string) {
+async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   let responseMessage;
 
   // クイックリプライボタンからの「食事を記録したいです」への応答
@@ -556,7 +693,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   }
 
   // 運動記録の判定（パターンマッチング + AI フォールバック）
-  const exerciseResult = await handleExerciseMessage(replyToken, userId, text);
+  const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
   if (exerciseResult) {
     return; // 運動記録として処理済み
   }
@@ -708,7 +845,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   }
 }
 
-async function handleImageMessage(replyToken: string, userId: string, messageId: string) {
+async function handleImageMessage(replyToken: string, userId: string, messageId: string, user: any) {
   try {
     // 画像を取得してAI解析
     const imageContent = await getImageContent(messageId);
@@ -962,13 +1099,47 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   }
 }
 
-// 食事タイプ選択画面
+// 食事タイプ選択画面（時間に基づく推奨付き）
 async function showMealTypeSelection(replyToken: string) {
+  // 現在の時間に基づいて推奨食事タイプを判定
+  const now = new Date();
+  const hour = now.getHours();
+  
+  let recommendedMeal = '';
+  let recommendedText = '';
+  let recommendedAction = '';
+  
+  if (hour >= 5 && hour < 11) {
+    recommendedMeal = '朝食';
+    recommendedText = '朝の時間帯ですね！';
+    recommendedAction = 'meal_breakfast';
+  } else if (hour >= 11 && hour < 15) {
+    recommendedMeal = '昼食';
+    recommendedText = 'お昼の時間帯ですね！';
+    recommendedAction = 'meal_lunch';
+  } else if (hour >= 15 && hour < 19) {
+    recommendedMeal = '間食';
+    recommendedText = '間食の時間帯ですね！';
+    recommendedAction = 'meal_snack';
+  } else {
+    recommendedMeal = '夕食';
+    recommendedText = '夜の時間帯ですね！';
+    recommendedAction = 'meal_dinner';
+  }
+
   const responseMessage = {
     type: 'text',
-    text: 'どの食事を記録しますか？',
+    text: `${recommendedText}\nどの食事を記録しますか？\n\n💡 ${recommendedMeal}がおすすめです`,
     quickReply: {
       items: [
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: `✨ ${recommendedMeal}（推奨）`,
+            data: `action=${recommendedAction}`
+          }
+        },
         {
           type: 'action',
           action: {
@@ -1008,15 +1179,46 @@ async function showMealTypeSelection(replyToken: string) {
   await replyMessage(replyToken, [responseMessage]);
 }
 
-// 体重記録
+// 体重記録（リトライ機能付き）
 async function recordWeight(userId: string, weight: number) {
   try {
-    const firestoreService = new FirestoreService();
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    await firestoreService.updateWeight(userId, today, weight);
+    
+    await retryOperation(
+      async () => {
+        const db = admin.firestore();
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+        
+        await recordRef.set({
+          weight,
+          date: today,
+          lineUserId: userId,
+          updatedAt: admin.FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        // ユーザープロファイルの体重も更新
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+          await userRef.update({
+            'profile.weight': weight,
+            updatedAt: admin.FieldValue.serverTimestamp(),
+          });
+        }
+      },
+      'weight_record',
+      { userId, weight, date: today }
+    );
+    
     console.log(`体重記録完了: ${userId}, ${weight}kg`);
   } catch (error) {
-    console.error('体重記録エラー:', error);
+    console.error('体重記録最終エラー:', {
+      userId,
+      weight,
+      error: error.message,
+      stack: error.stack
+    });
+    throw error; // 上位のエラーハンドリングに委ねる
   }
 }
 
@@ -1258,7 +1460,35 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     }
 
     console.log('保存する食事データ:', JSON.stringify(mealData, null, 2));
-    await firestoreService.addMeal(userId, today, mealData);
+    
+    // リトライ機能付きでデータ保存
+    await retryOperation(
+      async () => {
+        const db = admin.firestore();
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+        
+        // 既存の記録を取得
+        const existingDoc = await recordRef.get();
+        const existingData = existingDoc.exists ? existingDoc.data() : {};
+        const meals = existingData.meals || [];
+        
+        // 新しい食事を追加
+        meals.push({
+          ...mealData,
+          id: `meal_${Date.now()}`,
+          timestamp: admin.FieldValue.serverTimestamp(),
+        });
+
+        await recordRef.set({
+          meals,
+          date: today,
+          lineUserId: userId,
+          updatedAt: admin.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      },
+      'food_record',
+      { userId, mealType, today }
+    );
 
     const mealTypeJa = {
       breakfast: '朝食',
@@ -1618,7 +1848,7 @@ async function recordContinuationSet(userId: string, match: any, replyToken: str
 }
 
 // 運動記録のメイン処理
-async function handleExerciseMessage(replyToken: string, userId: string, text: string): Promise<boolean> {
+async function handleExerciseMessage(replyToken: string, userId: string, text: string, user: any): Promise<boolean> {
   try {
     console.log('=== 運動記録処理開始 ===');
     console.log('入力テキスト:', text);
@@ -1645,7 +1875,7 @@ async function handleExerciseMessage(replyToken: string, userId: string, text: s
     if (match) {
       // パターンマッチング成功 - 即座に記録
       console.log('パターンマッチ成功、記録開始');
-      await recordExerciseFromMatch(userId, match, replyToken);
+      await recordExerciseFromMatch(userId, match, replyToken, user);
       return true;
     }
     
@@ -1657,7 +1887,7 @@ async function handleExerciseMessage(replyToken: string, userId: string, text: s
       // Step 4: AI解析フォールバック
       const aiResult = await analyzeExerciseWithAI(userId, text);
       if (aiResult) {
-        await handleAIExerciseResult(userId, aiResult, replyToken);
+        await handleAIExerciseResult(userId, aiResult, replyToken, user);
         return true;
       }
       
@@ -1939,13 +2169,13 @@ function containsExerciseKeywords(text: string): boolean {
 }
 
 // パターンマッチ結果から運動記録
-async function recordExerciseFromMatch(userId: string, match: any, replyToken: string) {
+async function recordExerciseFromMatch(userId: string, match: any, replyToken: string, user: any) {
   try {
     const { exerciseName, type, source, detailType } = match;
     
     // 詳細パターンの処理
     if (source === 'detailed_pattern') {
-      return await recordDetailedExercise(userId, match, replyToken);
+      return await recordDetailedExercise(userId, match, replyToken, user);
     }
     
     // 従来の基本パターンの処理
@@ -1960,8 +2190,8 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
       durationInMinutes = unit === '回' ? Math.max(value * 0.5, 5) : value * 5;
     }
     
-    // カロリー計算
-    const userWeight = await getUserWeight(userId);
+    // カロリー計算（プロファイルから優先）
+    const userWeight = getUserWeightFromProfile(user) || await getUserWeight(userId);
     const mets = EXERCISE_METS[exerciseName] || 5.0; // デフォルトMETs値
     const calories = Math.round(mets * userWeight * (durationInMinutes / 60) * 1.05);
     
@@ -1983,10 +2213,35 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
       exerciseData.sets = Array(value).fill({ weight: 0, reps: 10 }); // デフォルト10回/セット
     }
     
-    // Firestoreに保存
-    const firestoreService = new FirestoreService();
+    // Firestoreに保存（リトライ機能付き）
     const today = new Date().toISOString().split('T')[0];
-    await firestoreService.addExercise(userId, today, exerciseData);
+    await retryOperation(
+      async () => {
+        const db = admin.firestore();
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+        
+        // 既存の記録を取得
+        const existingDoc = await recordRef.get();
+        const existingData = existingDoc.exists ? existingDoc.data() : {};
+        const exercises = existingData.exercises || [];
+        
+        // 新しい運動を追加
+        exercises.push({
+          ...exerciseData,
+          id: `exercise_${Date.now()}`,
+          timestamp: admin.FieldValue.serverTimestamp(),
+        });
+
+        await recordRef.set({
+          exercises,
+          date: today,
+          lineUserId: userId,
+          updatedAt: admin.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      },
+      'exercise_record_basic',
+      { userId, exerciseName, type, today }
+    );
     
     // 応答メッセージ
     let unitText = '';
@@ -2017,12 +2272,12 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
 }
 
 // 詳細運動記録の処理
-async function recordDetailedExercise(userId: string, match: any, replyToken: string) {
+async function recordDetailedExercise(userId: string, match: any, replyToken: string, user: any) {
   try {
     const { exerciseName, type, detailType } = match;
     
-    // ユーザーの体重取得
-    const userWeight = await getUserWeight(userId);
+    // ユーザーの体重取得（プロファイルから優先）
+    const userWeight = getUserWeightFromProfile(user) || await getUserWeight(userId);
     const mets = EXERCISE_METS[exerciseName] || 5.0;
     
     let exerciseData = {
@@ -2082,10 +2337,35 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         break;
     }
     
-    // Firestoreに保存
-    const firestoreService = new FirestoreService();
+    // Firestoreに保存（リトライ機能付き）
     const today = new Date().toISOString().split('T')[0];
-    await firestoreService.addExercise(userId, today, exerciseData);
+    await retryOperation(
+      async () => {
+        const db = admin.firestore();
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+        
+        // 既存の記録を取得
+        const existingDoc = await recordRef.get();
+        const existingData = existingDoc.exists ? existingDoc.data() : {};
+        const exercises = existingData.exercises || [];
+        
+        // 新しい運動を追加
+        exercises.push({
+          ...exerciseData,
+          id: `exercise_${Date.now()}`,
+          timestamp: admin.FieldValue.serverTimestamp(),
+        });
+
+        await recordRef.set({
+          exercises,
+          date: today,
+          lineUserId: userId,
+          updatedAt: admin.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      },
+      'exercise_record_detailed',
+      { userId, exerciseName, detailType, today }
+    );
     
     // 継続セッション保存機能は無効化
     // if (detailType === 'weight_reps_sets' || detailType === 'weight_reps') {
@@ -2201,6 +2481,26 @@ function getExerciseType(exerciseName: string, patternType: string): string {
   return 'cardio'; // デフォルト
 }
 
+// ユーザーのプロファイルから体重を取得
+function getUserWeightFromProfile(user: any): number | null {
+  try {
+    // カウンセリング結果から体重を取得
+    if (user.counselingResult?.answers?.weight) {
+      return user.counselingResult.answers.weight;
+    }
+    
+    // プロファイルから体重を取得
+    if (user.profile?.weight) {
+      return user.profile.weight;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('プロファイル体重取得エラー:', error);
+    return null;
+  }
+}
+
 // ユーザーの体重を取得
 async function getUserWeight(userId: string): Promise<number> {
   try {
@@ -2243,7 +2543,7 @@ async function analyzeExerciseWithAI(userId: string, text: string) {
 }
 
 // AI結果の処理
-async function handleAIExerciseResult(userId: string, aiResult: any, replyToken: string) {
+async function handleAIExerciseResult(userId: string, aiResult: any, replyToken: string, user: any) {
   if (aiResult.confidence > 0.8) {
     // 確信度が高い場合は自動記録
     const match = {
@@ -2253,7 +2553,7 @@ async function handleAIExerciseResult(userId: string, aiResult: any, replyToken:
       type: aiResult.type || 'cardio',
       source: 'ai_analysis'
     };
-    await recordExerciseFromMatch(userId, match, replyToken);
+    await recordExerciseFromMatch(userId, match, replyToken, user);
   } else {
     // 確信度が低い場合は確認
     await replyMessage(replyToken, [{
