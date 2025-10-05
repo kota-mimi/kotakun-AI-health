@@ -53,20 +53,8 @@ export function WeightDetailPage({
   const [isImageViewOpen, setIsImageViewOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  // デフォルトのモックデータ（propsで渡されない場合）
+  // ダミーデータは削除 - 実際のデータのみ使用
   const defaultWeightData = [
-    { date: '2024-12-01', weight: 75.2, bodyFat: 18.5, morningWeight: 74.8, eveningWeight: 75.6, note: '朝食前' },
-    { date: '2024-12-03', weight: 74.8, bodyFat: 18.2, morningWeight: 74.4, eveningWeight: 75.2, note: '' },
-    { date: '2024-12-05', weight: 74.5, bodyFat: 18.0, morningWeight: 74.1, eveningWeight: 74.9, note: '運動後' },
-    { date: '2024-12-07', weight: 74.3, bodyFat: 17.8, morningWeight: 73.9, eveningWeight: 74.7, note: '' },
-    { date: '2024-12-10', weight: 74.0, bodyFat: 17.5, morningWeight: 73.6, eveningWeight: 74.4, note: '' },
-    { date: '2024-12-12', weight: 73.8, bodyFat: 17.3, morningWeight: 73.4, eveningWeight: 74.2, note: '朝食前' },
-    { date: '2024-12-15', weight: 73.5, bodyFat: 17.0, morningWeight: 73.1, eveningWeight: 73.9, note: '' },
-    { date: '2024-12-17', weight: 73.2, bodyFat: 16.8, morningWeight: 72.8, eveningWeight: 73.6, note: '' },
-    { date: '2024-12-20', weight: 72.9, bodyFat: 16.5, morningWeight: 72.5, eveningWeight: 73.3, note: '運動後' },
-    { date: '2024-12-22', weight: 72.7, bodyFat: 16.3, morningWeight: 72.3, eveningWeight: 73.1, note: '' },
-    { date: '2024-12-25', weight: 72.5, bodyFat: 16.0, morningWeight: 72.1, eveningWeight: 72.9, note: '朝食前' },
-    { date: '2025-01-30', weight: 72.5, bodyFat: 16.0, morningWeight: 72.1, eveningWeight: 72.9, note: '今日' }
   ];
 
   const weightData = propWeightData || defaultWeightData;

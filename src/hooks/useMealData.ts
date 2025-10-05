@@ -246,7 +246,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleUpdateMeal = async (updatedMeal: Meal) => {
-    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in updateMeal:', selectedDate);
       return;
@@ -312,7 +312,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleDeleteMeal = async (mealId: string) => {
-    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in deleteMeal:', selectedDate);
       return;

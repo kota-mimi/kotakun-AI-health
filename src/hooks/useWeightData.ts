@@ -234,7 +234,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
   // 体重記録を追加
   const handleAddWeightEntry = async (data: { weight?: number; bodyFat?: number; note?: string; photo?: string }) => {
-    const lineUserId = liffUser?.userId || 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const lineUserId = liffUser?.userId;
     const dateStr = getDateKey(selectedDate);
     
     try {

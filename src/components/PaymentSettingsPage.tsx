@@ -17,51 +17,11 @@ interface PaymentSettingsPageProps {
 }
 
 export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
-  const paymentMethods = [
-    {
-      id: '1',
-      type: 'visa',
-      lastFour: '4532',
-      expiryDate: '12/25',
-      isDefault: true,
-      cardholderName: '田中 太郎'
-    },
-    {
-      id: '2',
-      type: 'mastercard',
-      lastFour: '8765',
-      expiryDate: '03/26',
-      isDefault: false,
-      cardholderName: '田中 太郎'
-    }
-  ];
+  // ダミーデータは削除 - 実際のデータのみ使用
+  const paymentMethods = [];
 
-  const billingHistory = [
-    {
-      id: '1',
-      date: '2024/01/15',
-      plan: 'プレミアム',
-      amount: 980,
-      status: 'paid',
-      receiptUrl: '#'
-    },
-    {
-      id: '2',
-      date: '2023/12/15',
-      plan: 'プレミアム',
-      amount: 980,
-      status: 'paid',
-      receiptUrl: '#'
-    },
-    {
-      id: '3',
-      date: '2023/11/15',
-      plan: 'プレミアム',
-      amount: 980,
-      status: 'paid',
-      receiptUrl: '#'
-    }
-  ];
+  // ダミーデータは削除 - 実際のデータのみ使用
+  const billingHistory = [];
 
   const getCardIcon = (type: string) => {
     const baseClasses = "w-8 h-5 rounded flex items-center justify-center text-white text-xs font-bold";

@@ -48,63 +48,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const hasRealData = validData.length > 0;
   const hasCounselingData = counselingResult?.answers?.weight && counselingResult.answers.weight > 0;
   
-  // 期間別のダミーデータ
+  // ダミーデータは削除 - 実際のデータのみ使用
   const getAllChartData = () => {
-    const weekData = [
-      { date: '12/24', weight: 73.1, bodyFat: 17.3 },
-      { date: '12/25', weight: 72.8, bodyFat: 17.2 },
-      { date: '12/26', weight: 72.9, bodyFat: 17.1 },
-      { date: '12/27', weight: 72.7, bodyFat: 17.0 },
-      { date: '12/28', weight: 72.5, bodyFat: 16.9 },
-      { date: '12/29', weight: 72.3, bodyFat: 16.8 },
-      { date: '12/30', weight: 72.2, bodyFat: 16.7 }
-    ];
-
-    const monthData = [
-      { date: '12/1', weight: 75.2, bodyFat: 18.5 },
-      { date: '12/5', weight: 74.8, bodyFat: 18.2 },
-      { date: '12/10', weight: 74.3, bodyFat: 18.0 },
-      { date: '12/15', weight: 73.8, bodyFat: 17.8 },
-      { date: '12/20', weight: 73.2, bodyFat: 17.5 },
-      { date: '12/25', weight: 72.8, bodyFat: 17.2 },
-      { date: '12/30', weight: 72.5, bodyFat: 17.0 }
-    ];
-
-    const sixMonthsData = [
-      { date: '24/6/24', weight: 78.5, bodyFat: 20.2 },
-      { date: '25/6/24', weight: 77.8, bodyFat: 19.5 },
-      { date: '26/6/24', weight: 76.9, bodyFat: 19.0 },
-      { date: '27/6/24', weight: 75.8, bodyFat: 18.5 },
-      { date: '28/6/24', weight: 74.5, bodyFat: 18.0 },
-      { date: '29/6/24', weight: 72.5, bodyFat: 17.0 }
-    ];
-
-    const yearData = [
-      { date: '24/1/24', weight: 82.1, bodyFat: 22.5 },
-      { date: '24/4/24', weight: 79.8, bodyFat: 21.2 },
-      { date: '24/6/24', weight: 76.5, bodyFat: 19.8 },
-      { date: '24/7/24', weight: 74.2, bodyFat: 18.5 },
-      { date: '24/8/24', weight: 72.5, bodyFat: 17.0 }
-    ];
-
-    const allData = [
-      { date: '24/6/23', weight: 85.2, bodyFat: 24.5 },
-      { date: '24/9/23', weight: 83.8, bodyFat: 23.8 },
-      { date: '24/12/23', weight: 82.1, bodyFat: 22.5 },
-      { date: '24/3/24', weight: 80.2, bodyFat: 21.8 },
-      { date: '24/6/24', weight: 77.8, bodyFat: 20.5 },
-      { date: '24/9/24', weight: 75.1, bodyFat: 19.2 },
-      { date: '24/12/24', weight: 72.5, bodyFat: 17.0 }
-    ];
-
-    switch (selectedPeriod) {
-      case 'week': return weekData;
-      case 'month': return monthData;
-      case '6months': return sixMonthsData;
-      case 'year': return yearData;
-      case 'all': return allData;
-      default: return monthData;
-    }
+    return [];
   };
 
   // カウンセリング結果から初期データポイントを作成
@@ -130,9 +76,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }];
   };
 
-  // 実際のデータを使用するか、カウンセリングデータまたはダミーデータを使用するかを決定
+  // 実際のデータを使用するか、カウンセリングデータを使用するかを決定
   const getRealChartData = () => {
-    if (!hasRealData && !hasCounselingData) return getAllChartData();
+    if (!hasRealData && !hasCounselingData) return [];
     if (!hasRealData && hasCounselingData) return createCounselingInitialData();
     
     
@@ -183,9 +129,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       }
     });
 
-    // データがない場合はダミーデータを使用
+    // データがない場合は空配列を返す
     if (filteredData.length === 0) {
-      return getAllChartData();
+      return [];
     }
 
     // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
