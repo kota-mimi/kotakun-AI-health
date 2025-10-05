@@ -605,9 +605,15 @@ async function handleMessage(replyToken: string, source: any, message: any) {
   const { userId } = source;
   
   // ユーザー認証とプロファイル取得
-  const firestoreService = new FirestoreService();
   try {
-    const user = await firestoreService.getUser(userId);
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(userId);
+    const userSnap = await userRef.get();
+    
+    const user = userSnap.exists ? {
+      ...userSnap.data(),
+      userId: userSnap.id,
+    } : null;
     if (!user || !user.profile) {
       // 未登録ユーザーへの応答
       await replyMessage(replyToken, [{
