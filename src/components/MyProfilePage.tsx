@@ -115,23 +115,39 @@ export function MyProfilePage({
   useEffect(() => {
     const loadNutritionData = () => {
       if (typeof window !== 'undefined') {
+        console.log('🔍 [MYPAGE-DEBUG] LocalStorage読み込み開始');
+        
         const localAnalysis = localStorage.getItem('aiAnalysis');
+        console.log('🔍 [MYPAGE-DEBUG] localAnalysis raw:', localAnalysis);
+        
         if (localAnalysis) {
           try {
             const analysis = JSON.parse(localAnalysis);
+            console.log('🔍 [MYPAGE-DEBUG] analysis parsed:', analysis);
+            console.log('🔍 [MYPAGE-DEBUG] nutritionPlan:', analysis?.nutritionPlan);
+            console.log('🔍 [MYPAGE-DEBUG] dailyCalories:', analysis?.nutritionPlan?.dailyCalories);
+            console.log('🔍 [MYPAGE-DEBUG] macros:', analysis?.nutritionPlan?.macros);
+            
             const nutritionPlan = analysis?.nutritionPlan;
-            if (nutritionPlan && nutritionPlan.dailyCalories > 0) {
-              setNutritionData({
-                dailyCalories: nutritionPlan.dailyCalories,
+            if (nutritionPlan) {
+              const newData = {
+                dailyCalories: nutritionPlan.dailyCalories || 0,
                 protein: nutritionPlan.macros?.protein || 0,
                 carbs: nutritionPlan.macros?.carbs || 0,
                 fat: nutritionPlan.macros?.fat || 0
-              });
-              console.log('🔍 [MYPAGE] LocalStorageから栄養データを即座に取得:', nutritionPlan);
+              };
+              
+              console.log('🔍 [MYPAGE-DEBUG] 設定する栄養データ:', newData);
+              setNutritionData(newData);
+              console.log('✅ [MYPAGE] LocalStorageから栄養データを即座に取得');
+            } else {
+              console.log('❌ [MYPAGE-DEBUG] nutritionPlanが存在しません');
             }
           } catch (error) {
-            console.error('🔍 [MYPAGE] LocalStorage栄養データ解析エラー:', error);
+            console.error('❌ [MYPAGE] LocalStorage栄養データ解析エラー:', error);
           }
+        } else {
+          console.log('❌ [MYPAGE-DEBUG] localAnalysisが存在しません');
         }
       }
     };
