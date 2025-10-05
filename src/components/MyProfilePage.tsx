@@ -112,11 +112,11 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // ホームと全く同じ方法でカロリーデータを取得
-  const finalCalories = mealManager?.calorieData?.targetCalories || 2000;
-  const finalProtein = mealManager?.calorieData?.pfc?.proteinTarget || 120;
-  const finalFat = mealManager?.calorieData?.pfc?.fatTarget || 60;
-  const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget || 250;
+  // 固定値を完全削除 - データがある時のみ表示
+  const finalCalories = mealManager?.calorieData?.targetCalories;
+  const finalProtein = mealManager?.calorieData?.pfc?.proteinTarget;
+  const finalFat = mealManager?.calorieData?.pfc?.fatTarget;
+  const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
@@ -468,30 +468,34 @@ export function MyProfilePage({
           <div className="mt-3 space-y-2">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
-            {/* 常に表示 - 条件なし */}
-            <>
-              {/* カロリー */}
-              <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
-                <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
-                <div className="font-bold text-blue-900">{finalCalories}kcal</div>
-              </div>
-              
-              {/* PFC */}
-              <div className="flex space-x-1.5">
-                <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
-                  <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
-                  <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
+            {/* データがある時のみ表示 */}
+            {finalCalories && finalProtein && finalFat && finalCarbs ? (
+              <>
+                {/* カロリー */}
+                <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
+                  <div className="font-bold text-blue-900">{finalCalories}kcal</div>
                 </div>
-                <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
-                  <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
-                  <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
+                
+                {/* PFC */}
+                <div className="flex space-x-1.5">
+                  <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
+                    <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
+                    <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
+                  </div>
+                  <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
+                    <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
+                    <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
+                  </div>
+                  <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
+                    <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
+                    <div className="font-bold text-green-900 text-sm">{finalCarbs}g</div>
+                  </div>
                 </div>
-                <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
-                  <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
-                  <div className="font-bold text-green-900 text-sm">{finalCarbs}g</div>
-                </div>
-              </div>
-            </>
+              </>
+            ) : (
+              <div className="text-center p-4 text-slate-500">読み込み中...</div>
+            )}
           </div>
           
           {/* アクションボタン */}
