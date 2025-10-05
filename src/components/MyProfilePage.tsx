@@ -49,8 +49,31 @@ export function MyProfilePage({
   const [refreshKey, setRefreshKey] = useState(0);
   
   // 実際のユーザーデータを取得
-  const { liffUser } = useAuth();
+  const { isLiffReady, isLoggedIn, liffUser } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  
+  // LIFF認証完了まで待機（ちらつき防止）
+  if (!isLiffReady || !isLoggedIn) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        {/* プロフィールカードスケルトン */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
+            <div className="flex-1">
+              <div className="h-6 bg-slate-200 rounded mb-2"></div>
+              <div className="h-4 bg-slate-200 rounded mb-2"></div>
+              <div className="h-4 bg-slate-200 rounded w-24"></div>
+            </div>
+          </div>
+        </div>
+        {/* メニュースケルトン */}
+        {Array(8).fill(0).map((_, i) => (
+          <div key={i} className="h-16 bg-slate-200 rounded-xl"></div>
+        ))}
+      </div>
+    );
+  }
   
   // 本番環境用詳細デバッグ: counselingResultの内容を確認
   console.log('🔍 [MYPAGE-PROD] MyProfilePage counselingResult:', counselingResult);
@@ -63,7 +86,7 @@ export function MyProfilePage({
     answersDetails: counselingResult?.answers
   });
   
-  // カウンセリング結果の名前を優先、LIFFは最後のフォールバック
+  // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
   const userName = counselingResult?.answers?.name || counselingResult?.userProfile?.name || liffUser?.displayName || "ユーザー";
   const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || 0;
   const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
