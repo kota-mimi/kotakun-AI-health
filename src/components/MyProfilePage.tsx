@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -103,82 +103,17 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // カロリーとPFCデータの取得 - LocalStorageから即座に取得
-  const [nutritionData, setNutritionData] = useState({
-    dailyCalories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0
-  });
+  // ホームのカロリーカードと全く同じ方法 - デフォルト値を設定
+  const defaultCalories = 2000;
+  const defaultProtein = 120;
+  const defaultFat = 60;
+  const defaultCarbs = 250;
 
-  // LocalStorageから即座にカロリー・PFCデータを取得
-  useEffect(() => {
-    const loadNutritionData = () => {
-      if (typeof window !== 'undefined') {
-        console.log('🔍 [MYPAGE-DEBUG] LocalStorage読み込み開始');
-        
-        const localAnalysis = localStorage.getItem('aiAnalysis');
-        console.log('🔍 [MYPAGE-DEBUG] localAnalysis raw:', localAnalysis);
-        
-        if (localAnalysis) {
-          try {
-            const analysis = JSON.parse(localAnalysis);
-            console.log('🔍 [MYPAGE-DEBUG] analysis parsed:', analysis);
-            console.log('🔍 [MYPAGE-DEBUG] nutritionPlan:', analysis?.nutritionPlan);
-            console.log('🔍 [MYPAGE-DEBUG] dailyCalories:', analysis?.nutritionPlan?.dailyCalories);
-            console.log('🔍 [MYPAGE-DEBUG] macros:', analysis?.nutritionPlan?.macros);
-            
-            const nutritionPlan = analysis?.nutritionPlan;
-            if (nutritionPlan) {
-              const newData = {
-                dailyCalories: nutritionPlan.dailyCalories || 0,
-                protein: nutritionPlan.macros?.protein || 0,
-                carbs: nutritionPlan.macros?.carbs || 0,
-                fat: nutritionPlan.macros?.fat || 0
-              };
-              
-              console.log('🔍 [MYPAGE-DEBUG] 設定する栄養データ:', newData);
-              setNutritionData(newData);
-              console.log('✅ [MYPAGE] LocalStorageから栄養データを即座に取得');
-            } else {
-              console.log('❌ [MYPAGE-DEBUG] nutritionPlanが存在しません');
-            }
-          } catch (error) {
-            console.error('❌ [MYPAGE] LocalStorage栄養データ解析エラー:', error);
-          }
-        } else {
-          console.log('❌ [MYPAGE-DEBUG] localAnalysisが存在しません');
-        }
-      }
-    };
-
-    // 初回読み込み
-    loadNutritionData();
-
-    // counselingResultが更新された時も反映
-    if (counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories > 0) {
-      setNutritionData({
-        dailyCalories: counselingResult.aiAnalysis.nutritionPlan.dailyCalories,
-        protein: counselingResult.aiAnalysis.nutritionPlan.macros?.protein || 0,
-        carbs: counselingResult.aiAnalysis.nutritionPlan.macros?.carbs || 0,
-        fat: counselingResult.aiAnalysis.nutritionPlan.macros?.fat || 0
-      });
-      console.log('🔍 [MYPAGE] counselingResultから栄養データを更新:', counselingResult.aiAnalysis.nutritionPlan);
-    }
-  }, [counselingResult]);
-
-  const { dailyCalories, protein, carbs, fat } = nutritionData;
-  
-  // 栄養データの詳細ログ
-  console.log('🔍 [MYPAGE-PROD] Nutrition data extracted:', {
-    dailyCalories,
-    protein,
-    carbs,
-    fat,
-    willShowNutritionSection: dailyCalories > 0,
-    nutritionPlanPath: counselingResult?.aiAnalysis?.nutritionPlan,
-    macrosPath: counselingResult?.aiAnalysis?.nutritionPlan?.macros
-  });
+  // ホームのCalorieCardと全く同じフォールバック方式
+  const finalCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || defaultCalories;
+  const finalProtein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || defaultProtein;
+  const finalFat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || defaultFat;
+  const finalCarbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || defaultCarbs;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
@@ -536,30 +471,22 @@ export function MyProfilePage({
                 {/* カロリー */}
                 <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
                   <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
-                  <div className="font-bold text-blue-900">
-                    {counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || dailyCalories || '2000'}kcal
-                  </div>
+                  <div className="font-bold text-blue-900">{finalCalories}kcal</div>
                 </div>
                 
                 {/* PFC */}
                 <div className="flex space-x-1.5">
                   <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
                     <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
-                    <div className="font-bold text-red-900 text-sm">
-                      {counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || protein || '120'}g
-                    </div>
+                    <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
                   </div>
                   <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
                     <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
-                    <div className="font-bold text-yellow-900 text-sm">
-                      {counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || fat || '60'}g
-                    </div>
+                    <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
                   </div>
                   <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
                     <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
-                    <div className="font-bold text-green-900 text-sm">
-                      {counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || carbs || '250'}g
-                    </div>
+                    <div className="font-bold text-green-900 text-sm">{finalCarbs}g</div>
                   </div>
                 </div>
               </>
