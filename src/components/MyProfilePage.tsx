@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useCounselingData } from '@/hooks/useCounselingData';
+import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE } from '@/utils/calculations';
 import { 
   User,
   Scale,
@@ -197,19 +198,50 @@ export function MyProfilePage({
           console.log('🔥 更新後のanswers:', updatedAnswers);
           localStorage.setItem('counselingAnswers', JSON.stringify(updatedAnswers));
           
-          // aiAnalysisも更新してuserProfileを含める
+          // aiAnalysisも更新してuserProfileを含める + カロリー・PFC再計算
           let updatedAnalysis = null;
           if (existingAnalysis) {
             const analysis = JSON.parse(existingAnalysis);
+            
+            // 新しいプロフィールでカロリー・PFC再計算
+            const newProfile = {
+              name: editForm.name,
+              age: editForm.age,
+              gender: editForm.gender,
+              height: editForm.height,
+              weight: editForm.currentWeight,
+              targetWeight: editForm.targetWeight,
+              activityLevel: analysis.userProfile?.activityLevel || 'normal'
+            };
+            
+            // 目標に基づいてカロリー計算
+            const goals = [{
+              type: editForm.currentWeight > editForm.targetWeight ? 'weight_loss' : 
+                    editForm.currentWeight < editForm.targetWeight ? 'weight_gain' : 'maintenance',
+              targetValue: editForm.targetWeight
+            }];
+            
+            const newCalorieTarget = calculateCalorieTarget(newProfile, goals);
+            const newMacros = calculateMacroTargets(newCalorieTarget);
+            
+            console.log('🔥 カロリー・PFC再計算:', {
+              oldCalories: analysis.nutritionPlan?.dailyCalories,
+              newCalories: newCalorieTarget,
+              oldMacros: analysis.nutritionPlan?.macros,
+              newMacros: newMacros
+            });
+            
             updatedAnalysis = {
               ...analysis,
-              userProfile: {
-                name: editForm.name,
-                age: editForm.age,
-                gender: editForm.gender,
-                height: editForm.height,
-                weight: editForm.currentWeight,
-                targetWeight: editForm.targetWeight
+              userProfile: newProfile,
+              nutritionPlan: {
+                ...analysis.nutritionPlan,
+                dailyCalories: newCalorieTarget,
+                macros: {
+                  protein: newMacros.protein,
+                  carbs: newMacros.carbohydrates,
+                  fat: newMacros.fat
+                }
               }
             };
             console.log('🔥 更新後のanalysis:', updatedAnalysis);
@@ -258,19 +290,9 @@ export function MyProfilePage({
       // モーダルを閉じる
       setIsEditModalOpen(false);
       
-      console.log('🔥 強制リフレッシュ実行');
-      // 開発環境用：refreshKeyを変更してコンポーネントを強制再レンダリング
-      setRefreshKey(prev => prev + 1);
-      
-      // 念のためrefetchも実行
-      setTimeout(async () => {
-        await refetch();
-        // 最後の手段：ページリロード
-        setTimeout(() => {
-          console.log('🔥 ページリロード実行');
-          window.location.reload();
-        }, 100);
-      }, 100);
+      console.log('🔥 プロフィール更新完了 - 自動リフレッシュ実行');
+      // useCounselingDataのrefetchを実行してデータを更新
+      await refetch();
       
     } catch (error) {
       console.error('プロフィール保存エラー:', error);
