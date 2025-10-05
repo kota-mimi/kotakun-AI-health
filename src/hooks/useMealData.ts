@@ -350,7 +350,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       originalMealId, 
       firestoreMeals: firestoreMealData[currentMealType].map(m => m.id) 
     });
-    const isFirestoreMeal = firestoreMealData[currentMealType].some(meal => meal.id === originalMealId);
+    const isFirestoreMeal = true; // 条件チェックを削除して常にAPI呼び出し
     
     if (isFirestoreMeal) {
       try {
