@@ -196,6 +196,12 @@ export function useCounselingData() {
             });
             
             if (data.counselingResult) {
+              // Firestoreから取得したデータも「利光湖太郎」なら無視
+              if (data.counselingResult.answers?.name === '利光湖太郎' || data.counselingResult.userProfile?.name === '利光湖太郎') {
+                console.log('🔥 [PRODUCTION] Ignoring test data "利光湖太郎" from Firestore');
+                return;
+              }
+              
               console.log('✅ カウンセリング結果をFirestoreから設定:', data.counselingResult);
               setCounselingResult(data.counselingResult);
             } else {
@@ -281,6 +287,11 @@ export function useCounselingData() {
             if (response.ok) {
               const data = await response.json();
               if (data.counselingResult) {
+                // Firestoreから取得したデータも「利光湖太郎」なら無視
+                if (data.counselingResult.answers?.name === '利光湖太郎' || data.counselingResult.userProfile?.name === '利光湖太郎') {
+                  console.log('🔥 [PRODUCTION] Ignoring test data "利光湖太郎" from Firestore (refetch)');
+                  return;
+                }
                 setCounselingResult(data.counselingResult);
               }
             }
