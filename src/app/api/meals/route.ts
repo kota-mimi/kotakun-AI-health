@@ -85,9 +85,9 @@ export async function PUT(request: NextRequest) {
       protein: mealData.protein || 0,
       fat: mealData.fat || 0,
       carbs: mealData.carbs || 0,
-      time: mealData.time,
+      time: mealData.time || '00:00',
       images: mealData.images || [],
-      image: mealData.images?.[0] || mealData.image,
+      image: mealData.images?.[0] || mealData.image || null,
       foodItems: mealData.foodItems || [],
       timestamp: new Date(),
       createdAt: mealData.createdAt || new Date()
@@ -164,9 +164,9 @@ export async function PATCH(request: NextRequest) {
       protein: mealData.protein || 0,
       fat: mealData.fat || 0,
       carbs: mealData.carbs || 0,
-      time: mealData.time,
+      time: mealData.time || '00:00',
       images: mealData.images || [],
-      image: mealData.images?.[0] || mealData.image,
+      image: mealData.images?.[0] || mealData.image || null,
       foodItems: mealData.foodItems || [],
       timestamp: new Date(),
       updatedAt: new Date()
