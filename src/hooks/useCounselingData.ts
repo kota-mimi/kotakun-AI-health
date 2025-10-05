@@ -239,33 +239,6 @@ export function useCounselingData() {
   
   console.log('🔥 Current counselingResult:', counselingResult);
 
-  // LocalStorageの変更を監視して自動更新
-  React.useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'counselingAnswers' || e.key === 'aiAnalysis') {
-        console.log('🔥 LocalStorage変更検出 - 自動refetch実行');
-        // 少し遅延させてからrefetch（データの整合性を保つため）
-        setTimeout(() => {
-          refetchLocal();
-        }, 100);
-      }
-    };
-
-    const handleCustomRefresh = () => {
-      console.log('🔥 カスタムリフレッシュイベント検出');
-      refetchLocal();
-    };
-
-    // StorageEventとカスタムイベントを監視
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('counselingDataUpdated', handleCustomRefresh);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('counselingDataUpdated', handleCustomRefresh);
-    };
-  }, []);
-
   // LocalStorageからのデータ取得専用関数
   const refetchLocal = () => {
     console.log('🔥 LocalStorage refetch実行');
@@ -308,6 +281,33 @@ export function useCounselingData() {
       console.error('🔥 RefetchLocal error:', error);
     }
   };
+
+  // LocalStorageの変更を監視して自動更新
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'counselingAnswers' || e.key === 'aiAnalysis') {
+        console.log('🔥 LocalStorage変更検出 - 自動refetch実行');
+        // 少し遅延させてからrefetch（データの整合性を保つため）
+        setTimeout(() => {
+          refetchLocal();
+        }, 100);
+      }
+    };
+
+    const handleCustomRefresh = () => {
+      console.log('🔥 カスタムリフレッシュイベント検出');
+      refetchLocal();
+    };
+
+    // StorageEventとカスタムイベントを監視
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('counselingDataUpdated', handleCustomRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('counselingDataUpdated', handleCustomRefresh);
+    };
+  }, []);
 
   return {
     counselingResult,
