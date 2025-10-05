@@ -1485,7 +1485,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         meals.push({
           ...mealData,
           id: `meal_${Date.now()}`,
-          timestamp: admin.FieldValue.serverTimestamp(),
+          timestamp: new Date(),
         });
 
         await recordRef.set({
@@ -2245,7 +2245,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
         exercises.push({
           ...exerciseData,
           id: `exercise_${Date.now()}`,
-          timestamp: admin.FieldValue.serverTimestamp(),
+          timestamp: new Date(),
         });
 
         await recordRef.set({
@@ -2369,7 +2369,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         exercises.push({
           ...exerciseData,
           id: `exercise_${Date.now()}`,
-          timestamp: admin.FieldValue.serverTimestamp(),
+          timestamp: new Date(),
         });
 
         await recordRef.set({
