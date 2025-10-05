@@ -80,9 +80,9 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       ...meal,
       name: mealName,
       calories: parseInt(calories),
-      protein: parseInt(protein) || 0,
-      fat: parseInt(fat) || 0,
-      carbs: parseInt(carbs) || 0,
+      protein: parseFloat(protein) || 0,
+      fat: parseFloat(fat) || 0,
+      carbs: parseFloat(carbs) || 0,
       time: time,
       image: uploadedImage || undefined
     };
@@ -231,11 +231,11 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="protein"
                   type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  inputMode="decimal"
+                  step="0.1"
                   value={protein}
                   onChange={(e) => setProtein(e.target.value)}
-                  placeholder="28"
+                  placeholder="28.5"
                 />
               </div>
               <div>
@@ -243,11 +243,11 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="fat"
                   type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  inputMode="decimal"
+                  step="0.1"
                   value={fat}
                   onChange={(e) => setFat(e.target.value)}
-                  placeholder="18"
+                  placeholder="18.5"
                 />
               </div>
               <div>
@@ -255,11 +255,11 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 <Input
                   id="carbs"
                   type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  inputMode="decimal"
+                  step="0.1"
                   value={carbs}
                   onChange={(e) => setCarbs(e.target.value)}
-                  placeholder="45"
+                  placeholder="45.5"
                 />
               </div>
             </div>
