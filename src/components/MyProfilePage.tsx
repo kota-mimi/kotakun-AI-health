@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useCounselingData } from '@/hooks/useCounselingData';
+import { useMealData } from '@/hooks/useMealData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE } from '@/utils/calculations';
 import type { HealthGoal } from '@/types';
 import { 
@@ -53,6 +54,14 @@ export function MyProfilePage({
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser, hasCompletedCounseling } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  
+  // ホームと同じカロリーデータを取得
+  const mealManager = useMealData(
+    new Date(), 
+    {}, 
+    () => {},
+    counselingResult
+  );
   
   // 最も安全：LIFF認証完了まで待機のみ
   if (!isLiffReady || !isLoggedIn) {
@@ -103,29 +112,11 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // LocalStorageから直接値を取得 - counselingResult無視
-  let finalCalories = 2000;
-  let finalProtein = 120;
-  let finalFat = 60;
-  let finalCarbs = 250;
-
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('aiAnalysis');
-      if (stored) {
-        const analysis = JSON.parse(stored);
-        const plan = analysis?.nutritionPlan;
-        if (plan) {
-          finalCalories = plan.dailyCalories || 2000;
-          finalProtein = plan.macros?.protein || 120;
-          finalFat = plan.macros?.fat || 60;
-          finalCarbs = plan.macros?.carbs || 250;
-        }
-      }
-    } catch (e) {
-      // エラー時はデフォルト値のまま
-    }
-  }
+  // ホームと全く同じ方法でカロリーデータを取得
+  const finalCalories = mealManager?.calorieData?.targetCalories || 2000;
+  const finalProtein = mealManager?.calorieData?.pfc?.proteinTarget || 120;
+  const finalFat = mealManager?.calorieData?.pfc?.fatTarget || 60;
+  const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget || 250;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
