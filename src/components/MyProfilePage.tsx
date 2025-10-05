@@ -88,15 +88,15 @@ export function MyProfilePage({
   
   // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
   const userName = counselingResult?.answers?.name || counselingResult?.userProfile?.name || liffUser?.displayName || "ユーザー";
-  const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || 0;
+  const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
   const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
                  counselingResult?.answers?.gender === 'female' ? '女性' : 
                  counselingResult?.userProfile?.gender === 'male' ? '男性' : 
                  counselingResult?.userProfile?.gender === 'female' ? '女性' : 
-                 counselingResult?.answers?.gender || counselingResult?.userProfile?.gender || '未設定';
-  const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || 0;
-  const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || 0;
-  const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || 0;
+                 null;
+  const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
+  const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
+  const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
   // カロリーとPFCデータの取得
   const dailyCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || 0;
@@ -342,11 +342,10 @@ export function MyProfilePage({
             <div className="flex-1">
               <h2 className="text-xl font-bold text-slate-900 mb-1">{userProfile.name}</h2>
               <div className="flex items-center space-x-2 text-sm text-slate-600">
-                <span>{userProfile.age}歳</span>
-                <span>•</span>
-                <span>{userProfile.gender}</span>
-                <span>•</span>
-                <span>{userProfile.height}cm</span>
+                {age && <><span>{age}歳</span><span>•</span></>}
+                {gender && <><span>{gender}</span><span>•</span></>}
+                {height && <span>{height}cm</span>}
+                {!age && !gender && !height && <span>プロフィール未設定</span>}
               </div>
             </div>
             
@@ -363,15 +362,15 @@ export function MyProfilePage({
           <div className="flex space-x-2">
             <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500 mb-0.5">体重</div>
-              <div className="font-bold text-slate-900">{userProfile.currentWeight}kg</div>
+              <div className="font-bold text-slate-900">{currentWeight ? `${currentWeight}kg` : '-'}</div>
             </div>
             <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500 mb-0.5">BMI</div>
-              <div className="font-bold text-slate-900">{userProfile.bmi}</div>
+              <div className="font-bold text-slate-900">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
             </div>
             <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500 mb-0.5">目標</div>
-              <div className="font-bold text-slate-900">{userProfile.targetWeight}kg</div>
+              <div className="font-bold text-slate-900">{targetWeight ? `${targetWeight}kg` : '-'}</div>
             </div>
           </div>
 
