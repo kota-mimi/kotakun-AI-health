@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -47,13 +47,26 @@ export function MyProfilePage({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // 強制リフレッシュ用のキー
   const [refreshKey, setRefreshKey] = useState(0);
+  // データ初期化完了フラグ
+  const [isDataReady, setIsDataReady] = useState(false);
   
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
-  // LIFF認証完了まで待機（ちらつき防止）
-  if (!isLiffReady || !isLoggedIn) {
+  // データ準備状態をチェック（安全にちらつき防止）
+  React.useEffect(() => {
+    if (isLiffReady && isLoggedIn) {
+      // 少し遅延してからデータ表示（ちらつき防止）
+      const timer = setTimeout(() => {
+        setIsDataReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLiffReady, isLoggedIn, counselingResult]);
+  
+  // LIFF認証完了とデータ準備完了まで待機（ちらつき防止）
+  if (!isLiffReady || !isLoggedIn || !isDataReady) {
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
