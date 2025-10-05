@@ -105,18 +105,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  // エラーハンドリング付きでカウンセリングデータ取得
-  let counselingResult = null;
-  let isCounselingLoading = true;
-  
-  try {
-    const counselingData = useCounselingData();
-    counselingResult = counselingData?.counselingResult || null;
-    isCounselingLoading = counselingData?.isLoading ?? true;
-  } catch (error) {
-    console.error('ダッシュボード - カウンセリングデータ取得エラー:', error);
-    isCounselingLoading = false; // エラー時はローディングを停止
-  }
+  const { counselingResult } = useCounselingData(); // 本番環境対応・エラー耐性強化版
 
   const mealManager = useMealData(
     navigation?.selectedDate || new Date(), 
@@ -149,17 +138,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
     return 'dinner'; // 19:00-4:59 夕食
   };
 
-  // カウンセリングデータ読み込み中の場合はローディング表示
-  if (isCounselingLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">データを読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen relative">
