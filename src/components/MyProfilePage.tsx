@@ -142,7 +142,9 @@ export function MyProfilePage({
     gender: counselingResult?.answers?.gender || 'male',
     height: height,
     currentWeight: currentWeight,
-    targetWeight: targetWeight
+    targetWeight: targetWeight,
+    activityLevel: counselingResult?.answers?.activityLevel || 'normal',
+    primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
   });
 
   // モーダルが開かれた時に最新の値で更新
@@ -153,7 +155,9 @@ export function MyProfilePage({
       gender: counselingResult?.answers?.gender || 'male',
       height: height,
       currentWeight: currentWeight,
-      targetWeight: targetWeight
+      targetWeight: targetWeight,
+      activityLevel: counselingResult?.answers?.activityLevel || 'normal',
+      primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
     });
     setIsEditModalOpen(true);
   };
@@ -192,7 +196,9 @@ export function MyProfilePage({
             gender: editForm.gender,
             height: editForm.height,
             weight: editForm.currentWeight,
-            targetWeight: editForm.targetWeight
+            targetWeight: editForm.targetWeight,
+            activityLevel: editForm.activityLevel,
+            primaryGoal: editForm.primaryGoal
           };
           
           console.log('🔥 更新後のanswers:', updatedAnswers);
@@ -211,13 +217,12 @@ export function MyProfilePage({
               height: editForm.height,
               weight: editForm.currentWeight,
               targetWeight: editForm.targetWeight,
-              activityLevel: analysis.userProfile?.activityLevel || 'normal'
+              activityLevel: editForm.activityLevel
             };
             
             // 目標に基づいてカロリー計算
             const goals = [{
-              type: editForm.currentWeight > editForm.targetWeight ? 'weight_loss' : 
-                    editForm.currentWeight < editForm.targetWeight ? 'weight_gain' : 'maintenance',
+              type: editForm.primaryGoal,
               targetValue: editForm.targetWeight
             }];
             
@@ -258,7 +263,9 @@ export function MyProfilePage({
               gender: editForm.gender,
               height: editForm.height,
               weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight
+              targetWeight: editForm.targetWeight,
+              activityLevel: editForm.activityLevel,
+              primaryGoal: editForm.primaryGoal
             }
           };
         }
@@ -469,24 +476,14 @@ export function MyProfilePage({
           
           {/* アクションボタン */}
           <div className="mt-4 pt-3 border-t border-slate-200">
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.location.href = '/counseling'}
-                className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-              >
-                カウンセリング再実施
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleOpenEditModal}
-                className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
-              >
-                プロフィール編集
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenEditModal}
+              className="w-full text-green-600 border-green-200 hover:bg-green-50"
+            >
+              プロフィール編集
+            </Button>
           </div>
         </Card>
       </div>
@@ -593,6 +590,39 @@ export function MyProfilePage({
                 className="text-center"
               />
             </div>
+          </div>
+
+          {/* 運動量レベル */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-slate-700">運動量レベル</label>
+            <Select value={editForm.activityLevel} onValueChange={(value) => handleEditFormChange('activityLevel', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="運動量を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">低い（デスクワーク中心）</SelectItem>
+                <SelectItem value="slightly_low">やや低い（軽い運動週1-2回）</SelectItem>
+                <SelectItem value="normal">普通（中程度の運動週3-4回）</SelectItem>
+                <SelectItem value="high">高い（激しい運動週5-6回）</SelectItem>
+                <SelectItem value="very_high">非常に高い（毎日激しい運動）</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 目的 */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-slate-700">目的</label>
+            <Select value={editForm.primaryGoal} onValueChange={(value) => handleEditFormChange('primaryGoal', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="目的を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weight_loss">減量</SelectItem>
+                <SelectItem value="weight_gain">増量</SelectItem>
+                <SelectItem value="muscle_gain">筋肉増強</SelectItem>
+                <SelectItem value="maintenance">体重維持</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* ボタン */}
