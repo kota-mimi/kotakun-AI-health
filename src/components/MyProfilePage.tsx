@@ -166,11 +166,12 @@ export function MyProfilePage({
   };
 
   // プロフィール保存
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     try {
       console.log('🔥 プロフィール保存開始:', editForm);
       
       // ローカルストレージのカウンセリング結果を更新
+      let updatedCounselingResult = null;
       if (typeof window !== 'undefined') {
         const existingAnswers = localStorage.getItem('counselingAnswers');
         const existingAnalysis = localStorage.getItem('aiAnalysis');
@@ -197,9 +198,10 @@ export function MyProfilePage({
           localStorage.setItem('counselingAnswers', JSON.stringify(updatedAnswers));
           
           // aiAnalysisも更新してuserProfileを含める
+          let updatedAnalysis = null;
           if (existingAnalysis) {
             const analysis = JSON.parse(existingAnalysis);
-            const updatedAnalysis = {
+            updatedAnalysis = {
               ...analysis,
               userProfile: {
                 name: editForm.name,
@@ -213,6 +215,43 @@ export function MyProfilePage({
             console.log('🔥 更新後のanalysis:', updatedAnalysis);
             localStorage.setItem('aiAnalysis', JSON.stringify(updatedAnalysis));
           }
+          
+          // Firestoreに保存するためのデータを準備
+          updatedCounselingResult = {
+            answers: updatedAnswers,
+            aiAnalysis: updatedAnalysis,
+            userProfile: {
+              name: editForm.name,
+              age: editForm.age,
+              gender: editForm.gender,
+              height: editForm.height,
+              weight: editForm.currentWeight,
+              targetWeight: editForm.targetWeight
+            }
+          };
+        }
+      }
+
+      // Firestoreに保存
+      if (updatedCounselingResult && liffUser?.userId) {
+        console.log('🔥 Firestoreに更新されたプロフィールを保存開始');
+        try {
+          const response = await fetch('/api/counseling/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lineUserId: liffUser.userId,
+              counselingResult: updatedCounselingResult
+            }),
+          });
+          
+          if (response.ok) {
+            console.log('✅ Firestoreプロフィール保存成功');
+          } else {
+            console.error('❌ Firestoreプロフィール保存失敗:', response.status);
+          }
+        } catch (error) {
+          console.error('❌ Firestoreプロフィール保存エラー:', error);
         }
       }
 

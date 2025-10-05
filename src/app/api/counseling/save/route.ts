@@ -3,10 +3,67 @@ import { admin } from '@/lib/firebase-admin';
 import { pushMessage } from '@/app/api/webhook/route';
 import { createCounselingResultFlexMessage } from '@/services/flexMessageTemplates';
 
+// プロフィール編集用のカウンセリング結果保存関数
+async function saveCounselingResult(lineUserId: string, counselingResult: any) {
+  try {
+    console.log('🔥 プロフィール編集: Firestore保存開始', { lineUserId });
+    
+    const adminDb = admin.firestore();
+    
+    // カウンセリング結果を保存
+    const saveData = {
+      answers: counselingResult.answers,
+      aiAnalysis: counselingResult.aiAnalysis,
+      userProfile: counselingResult.userProfile,
+      updatedAt: new Date(),
+      timestamp: Date.now()
+    };
+    
+    const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
+    await counselingRef.set(saveData, { merge: true });
+    
+    // ユーザープロファイルも更新
+    const userRef = adminDb.collection('users').doc(lineUserId);
+    const profileData = {
+      lineUserId,
+      profile: {
+        name: counselingResult.userProfile?.name || counselingResult.answers?.name,
+        age: counselingResult.userProfile?.age || counselingResult.answers?.age,
+        gender: counselingResult.userProfile?.gender || counselingResult.answers?.gender,
+        height: counselingResult.userProfile?.height || counselingResult.answers?.height,
+        weight: counselingResult.userProfile?.weight || counselingResult.answers?.weight,
+        targetWeight: counselingResult.userProfile?.targetWeight || counselingResult.answers?.targetWeight,
+      },
+      updatedAt: new Date(),
+    };
+    
+    await userRef.set(profileData, { merge: true });
+    console.log('✅ プロフィール編集: Firestore保存完了');
+    
+    return NextResponse.json({
+      success: true,
+      message: 'プロフィールを更新しました'
+    });
+    
+  } catch (error: any) {
+    console.error('❌ プロフィール編集: Firestore保存エラー:', error);
+    return NextResponse.json(
+      { error: 'プロフィールの保存に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { answers, results, lineUserId } = await request.json();
+    const { answers, results, lineUserId, counselingResult } = await request.json();
 
+    // プロフィール編集の場合は counselingResult を使用
+    if (counselingResult && lineUserId) {
+      return await saveCounselingResult(lineUserId, counselingResult);
+    }
+
+    // 従来のカウンセリング保存処理
     if (!answers || !results || !lineUserId) {
       return NextResponse.json(
         { error: 'カウンセリング回答、結果、またはLINE User IDが必要です' },
