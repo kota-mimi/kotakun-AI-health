@@ -1379,7 +1379,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     let imageId = null;
     if (tempData.image) {
       try {
-        const sharp = require('sharp');
+        // Vercel環境用のdynamic import
+        const sharp = (await import('sharp')).default;
         
         // 画像を圧縮（200x200ピクセル、品質60%）
         const compressedImage = await sharp(tempData.image)
