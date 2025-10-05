@@ -26,11 +26,11 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                              counselingResult.completedAt;
     
     if (counselingDateRaw) {
-      const date = new Date(counselingDateRaw);
+      let date = new Date(counselingDateRaw);
       // 日付が無効な場合は現在の日付を返す
       if (isNaN(date.getTime())) {
         console.warn('⚠️ Invalid counseling date in CompactHeader:', counselingDateRaw);
-        return new Date();
+        date = new Date();
       }
       return date;
     }

@@ -113,7 +113,14 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     // カウンセリング完了日を使用（フォールバック：作成日、最後のフォールバック：今日）
     const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
-    const counselingDate = counselingDateRaw ? new Date(counselingDateRaw) : new Date();
+    let counselingDate = counselingDateRaw ? new Date(counselingDateRaw) : new Date();
+    
+    // 日付が無効な場合のフォールバック
+    if (isNaN(counselingDate.getTime())) {
+      console.warn('⚠️ Invalid counseling date in WeightChart:', counselingDateRaw);
+      counselingDate = new Date(); // 現在の日付を使用
+    }
+    
     const dateStr = `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
     
     return [{
