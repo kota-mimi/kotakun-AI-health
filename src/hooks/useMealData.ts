@@ -334,6 +334,11 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     
     // Firestoreデータに該当する食事があるかチェック（元のIDで確認）
+    console.log('🔍 Checking Firestore meals:', { 
+      currentMealType, 
+      originalMealId, 
+      firestoreMeals: firestoreMealData[currentMealType].map(m => m.id) 
+    });
     const isFirestoreMeal = firestoreMealData[currentMealType].some(meal => meal.id === originalMealId);
     
     if (isFirestoreMeal) {
