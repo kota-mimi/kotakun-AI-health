@@ -447,9 +447,9 @@ export default function SimpleCounselingPage() {
             <div className="text-xs text-center text-slate-500">
               {goal.targetWeight && typeof basicInfo.weight === 'number' ? (
                 goal.targetWeight > basicInfo.weight ? (
-                  <span>+{goal.targetWeight - basicInfo.weight}kg増量</span>
+                  <span>+{Math.round((goal.targetWeight - basicInfo.weight) * 10) / 10}kg増量</span>
                 ) : goal.targetWeight < basicInfo.weight ? (
-                  <span>-{basicInfo.weight - goal.targetWeight}kg減量</span>
+                  <span>-{Math.round((basicInfo.weight - goal.targetWeight) * 10) / 10}kg減量</span>
                 ) : (
                   <span>現在の体重を維持</span>
                 )
@@ -476,9 +476,9 @@ export default function SimpleCounselingPage() {
                 
                 return (
                   <div className="text-xs text-center text-slate-500 space-y-1">
-                    <div>残り{daysUntilTarget}日（約{monthsUntilTarget.toFixed(1)}ヶ月）</div>
+                    <div>残り{daysUntilTarget}日（約{Math.round(monthsUntilTarget * 10) / 10}ヶ月）</div>
                     <div className={`${monthlyPace > 2 ? 'text-red-500' : 'text-slate-500'}`}>
-                      月{monthlyPace.toFixed(1)}kgペース
+                      月{Math.round(monthlyPace * 10) / 10}kgペース
                       {monthlyPace > 2 && ' ⚠️ 急激すぎる可能性があります'}
                     </div>
                   </div>
