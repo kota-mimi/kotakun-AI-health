@@ -103,36 +103,29 @@ export function MyProfilePage({
   const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
-  // LocalStorageから即座に実値を取得 (固定値なし)
-  const getStoredNutrition = () => {
-    if (typeof window === 'undefined') return { calories: 2000, protein: 120, fat: 60, carbs: 250 };
-    
+  // LocalStorageから直接値を取得 - counselingResult無視
+  let finalCalories = 2000;
+  let finalProtein = 120;
+  let finalFat = 60;
+  let finalCarbs = 250;
+
+  if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem('aiAnalysis');
       if (stored) {
         const analysis = JSON.parse(stored);
         const plan = analysis?.nutritionPlan;
-        if (plan?.dailyCalories) {
-          return {
-            calories: plan.dailyCalories,
-            protein: plan.macros?.protein || 120,
-            fat: plan.macros?.fat || 60,
-            carbs: plan.macros?.carbs || 250
-          };
+        if (plan) {
+          finalCalories = plan.dailyCalories || 2000;
+          finalProtein = plan.macros?.protein || 120;
+          finalFat = plan.macros?.fat || 60;
+          finalCarbs = plan.macros?.carbs || 250;
         }
       }
-    } catch (e) {}
-    
-    return { calories: 2000, protein: 120, fat: 60, carbs: 250 };
-  };
-
-  const storedNutrition = getStoredNutrition();
-  
-  // 最初から実際の値を表示 (counselingResultは更新用のみ)
-  const finalCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || storedNutrition.calories;
-  const finalProtein = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || storedNutrition.protein;
-  const finalFat = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || storedNutrition.fat;
-  const finalCarbs = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || storedNutrition.carbs;
+    } catch (e) {
+      // エラー時はデフォルト値のまま
+    }
+  }
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
