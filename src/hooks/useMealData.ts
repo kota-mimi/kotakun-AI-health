@@ -312,6 +312,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleDeleteMeal = async (mealId: string) => {
+    console.log('🚨 handleDeleteMeal called with:', { mealId, userId: liffUser?.userId });
     const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in deleteMeal:', selectedDate);
