@@ -246,6 +246,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleUpdateMeal = async (updatedMeal: Meal) => {
+    console.log('🔧 handleUpdateMeal called with:', { mealId: updatedMeal.id, userId: liffUser?.userId });
     const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in updateMeal:', selectedDate);
@@ -253,54 +254,63 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     const dateStr = selectedDate.toISOString().split('T')[0];
     
-    // Firestoreデータに該当する食事があるかチェック
-    const isFirestoreMeal = firestoreMealData[currentMealType].some(meal => meal.id === updatedMeal.id);
-    
-    if (isFirestoreMeal) {
-      try {
-        console.log('🔧 Updating Firestore meal:', updatedMeal.id);
-        const response = await fetch('/api/meals', {
-          method: 'PATCH',
+    // プロフィール更新と同じパターン：条件チェックなしで直接API呼び出し
+    try {
+      console.log('🔧 Updating meal via API:', updatedMeal.id);
+      const response = await fetch('/api/meals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          mealType: currentMealType,
+          mealData: updatedMeal
+        }),
+      });
+
+      if (response.ok) {
+        console.log('🔧 API update successful, refreshing data');
+        // 成功時はFirestoreデータを再取得（プロフィール更新と同じパターン）
+        const fetchResponse = await fetch('/api/meals', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lineUserId,
-            date: dateStr,
-            mealType: currentMealType,
-            mealData: updatedMeal
-          }),
+          body: JSON.stringify({ lineUserId, date: dateStr }),
         });
 
-        if (response.ok) {
-          console.log('🔧 Firestore update successful, updating local state');
-          // Firestore更新成功時のみローカルstateを更新
-          setFirestoreMealData(prev => ({
-            ...prev,
-            [currentMealType]: prev[currentMealType].map(meal => 
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.mealData) {
+            setFirestoreMealData(data.mealData);
+          }
+        }
+        
+        // ローカルデータも更新
+        const currentData = getCurrentDateData();
+        updateDateData({
+          mealData: {
+            ...currentData.mealData,
+            [currentMealType]: currentData.mealData[currentMealType].map(meal => 
               meal.id === updatedMeal.id ? updatedMeal : meal
             )
-          }));
-        } else {
-          console.error('🔧 Firestore update failed:', response.status);
-          throw new Error('Firestore update failed');
+          }
+        });
+      } else {
+        console.error('🔧 API update failed:', response.status);
+        throw new Error('API update failed');
+      }
+    } catch (error) {
+      console.error('食事更新エラー:', error);
+      // エラー時もローカルデータは更新（プロフィール更新と同じパターン）
+      const currentData = getCurrentDateData();
+      updateDateData({
+        mealData: {
+          ...currentData.mealData,
+          [currentMealType]: currentData.mealData[currentMealType].map(meal => 
+            meal.id === updatedMeal.id ? updatedMeal : meal
+          )
         }
-        return;
-      } catch (error) {
-        console.error('Firestore更新エラー:', error);
-        // エラー時はローカルデータの更新にフォールバック
-      }
+      });
     }
-    
-    // ローカルデータの更新
-    console.log('🔧 Updating local meal data');
-    const currentData = getCurrentDateData();
-    updateDateData({
-      mealData: {
-        ...currentData.mealData,
-        [currentMealType]: currentData.mealData[currentMealType].map(meal => 
-          meal.id === updatedMeal.id ? updatedMeal : meal
-        )
-      }
-    });
   };
 
   const handleUpdateMealFromEdit = async (updatedMeal: Meal) => {
