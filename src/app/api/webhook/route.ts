@@ -1374,22 +1374,13 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     const db = admin.firestore();
     const today = new Date().toISOString().split('T')[0];
     
-    // 画像がある場合は圧縮して一時保存し、外部URLで提供
+    // 画像がある場合は一時保存し、外部URLで提供
     let imageUrl = null;
     let imageId = null;
     if (tempData.image) {
       try {
-        // Sharp module import
-        const sharp = require('sharp');
-        
-        // 画像を圧縮（200x200ピクセル、品質60%）
-        const compressedImage = await sharp(tempData.image)
-          .resize(200, 200, { fit: 'cover' })
-          .jpeg({ quality: 60 })
-          .toBuffer();
-        
-        // Base64エンコード
-        const base64Data = compressedImage.toString('base64');
+        // 圧縮せずに元の画像をそのまま使用（Sharpエラー回避）
+        const base64Data = tempData.image.toString('base64');
         
         // 一意のIDを生成
         imageId = `meal_${generateId()}`;
@@ -1418,7 +1409,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
           console.log(`フォールバック画像URL生成: ${imageUrl}`);
         }
         
-        console.log(`画像圧縮完了: ${tempData.image.length} bytes → ${compressedImage.length} bytes`);
+        console.log(`画像処理完了: ${tempData.image.length} bytes`);
       } catch (error) {
         console.error('画像処理エラー:', error);
         // 画像なしで進行（ダミー画像は使用しない）
