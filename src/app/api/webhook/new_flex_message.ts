@@ -148,65 +148,74 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
 function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
   
-  // 各食事のアイテムを生成
-  const mealItems = analysis.meals.map((meal: any) => [
-    {
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: meal.name,
-          size: 'md',
-          weight: 'bold',
-          color: '#333333',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${meal.calories}kcal`,
-          size: 'md',
-          color: '#4a90e2',
-          flex: 0
-        }
-      ]
-    },
-    {
-      type: 'box',
-      layout: 'horizontal',
-      spacing: 'sm',
-      margin: 'xs',
-      contents: [
-        {
-          type: 'text',
-          text: ' ',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `P: ${meal.protein}g`,
-          size: 'xs',
-          color: '#cc0000',
-          flex: 0
-        },
-        {
-          type: 'text',
-          text: `F: ${meal.fat}g`,
-          size: 'xs',
-          color: '#ff8800',
-          flex: 0
-        },
-        {
-          type: 'text',
-          text: `C: ${meal.carbs}g`,
-          size: 'xs',
-          color: '#00aa00',
-          flex: 0
-        }
-      ]
-    }
-  ]).flat();
+  // 各食事のアイテムを生成（薄い線のフレームで囲む）
+  const mealItems = analysis.meals.map((meal: any) => ({
+    type: 'box',
+    layout: 'vertical',
+    margin: 'sm',
+    paddingAll: '12px',
+    borderWidth: '1px',
+    borderColor: '#e0e0e0',
+    cornerRadius: '8px',
+    spacing: 'xs',
+    contents: [
+      {
+        type: 'box',
+        layout: 'horizontal',
+        contents: [
+          {
+            type: 'text',
+            text: meal.name,
+            size: 'md',
+            weight: 'bold',
+            color: '#333333',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${meal.calories}kcal`,
+            size: 'md',
+            color: '#4a90e2',
+            flex: 0
+          }
+        ]
+      },
+      {
+        type: 'box',
+        layout: 'horizontal',
+        spacing: 'sm',
+        margin: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: ' ',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `P: ${meal.protein}g`,
+            size: 'xs',
+            color: '#cc0000',
+            flex: 0
+          },
+          {
+            type: 'text',
+            text: `F: ${meal.fat}g`,
+            size: 'xs',
+            color: '#ff8800',
+            flex: 0
+          },
+          {
+            type: 'text',
+            text: `C: ${meal.carbs}g`,
+            size: 'xs',
+            color: '#00aa00',
+            flex: 0
+          }
+        ]
+      }
+    ]
+  }));
 
   return {
     type: 'flex',
