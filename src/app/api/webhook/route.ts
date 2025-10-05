@@ -360,7 +360,7 @@ async function findFoodMatchWithLearning(userId: string, text: string) {
 // 複数食事の解析（学習機能付き）
 async function analyzeMultipleFoodsWithLearning(userId: string, text: string) {
   const foundFoods = [];
-  const words = text.split(/[、。・\s]+/);
+  const words = text.split(/[、。・と\s]+/);
   
   for (const word of words) {
     if (word.length >= 2) {
@@ -404,7 +404,7 @@ async function analyzeMultipleFoodsWithLearning(userId: string, text: string) {
 // 後方互換性のための関数（学習機能なし）
 function analyzeMultipleFoods(text: string) {
   const foundFoods = [];
-  const words = text.split(/[、。・\s]+/);
+  const words = text.split(/[、。・と\s]+/);
   
   for (const word of words) {
     if (word.length >= 2) {
