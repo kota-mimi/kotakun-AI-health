@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { generateId } from '@/lib/utils';
 
@@ -539,10 +539,15 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     setAddMealInitialMode('default');
   };
 
+  // カロリー・PFCデータをuseMemoで最適化（counselingResultの変更を監視）
+  const calorieData = useMemo(() => {
+    return calculateDailyNutrition();
+  }, [mealData, counselingResult]);
+
   return {
     // データ
     mealData,
-    calorieData: calculateDailyNutrition(),
+    calorieData,
     isLoading,
     
     // モーダル状態
