@@ -25,7 +25,7 @@ type DataType = 'weight' | 'bodyFat' | 'waist';
 export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('week');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);

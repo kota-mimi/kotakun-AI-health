@@ -24,11 +24,11 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
   const [userXP] = useState(2480);
   const [nextLevelXP] = useState(3000);
 
-  // ユーザー統計データ
+  // ダミーデータは削除 - 実際のLIFFユーザーデータを使用
   const userStats = {
-    name: "田中 太郎",
-    age: 28,
-    joinDate: "2024年1月"
+    name: "ユーザー",
+    age: null,
+    joinDate: "アプリ開始"
   };
 
   const menuItems = [
@@ -49,7 +49,7 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
             <Avatar className="w-20 h-20 ring-4 ring-white/50 shadow-lg">
               <AvatarImage src="https://images.unsplash.com/photo-1729559149720-2b6c5c200428?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYXBhbmVzZSUyMG1hbiUyMGhlYWx0aHklMjBwb3J0cmFpdCUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3NTY1NTQ3MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral" />
               <AvatarFallback className="text-xl font-medium" style={{backgroundColor: '#4682B4', color: 'white'}}>
-                {userStats.name.split(' ').map(n => n[0]).join('')}
+                U
               </AvatarFallback>
             </Avatar>
             <Button
