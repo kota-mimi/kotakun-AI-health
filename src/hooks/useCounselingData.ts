@@ -239,6 +239,76 @@ export function useCounselingData() {
   
   console.log('🔥 Current counselingResult:', counselingResult);
 
+  // LocalStorageの変更を監視して自動更新
+  React.useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'counselingAnswers' || e.key === 'aiAnalysis') {
+        console.log('🔥 LocalStorage変更検出 - 自動refetch実行');
+        // 少し遅延させてからrefetch（データの整合性を保つため）
+        setTimeout(() => {
+          refetchLocal();
+        }, 100);
+      }
+    };
+
+    const handleCustomRefresh = () => {
+      console.log('🔥 カスタムリフレッシュイベント検出');
+      refetchLocal();
+    };
+
+    // StorageEventとカスタムイベントを監視
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('counselingDataUpdated', handleCustomRefresh);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('counselingDataUpdated', handleCustomRefresh);
+    };
+  }, []);
+
+  // LocalStorageからのデータ取得専用関数
+  const refetchLocal = () => {
+    console.log('🔥 LocalStorage refetch実行');
+    try {
+      if (typeof window !== 'undefined') {
+        const localAnswers = localStorage.getItem('counselingAnswers');
+        const localAnalysis = localStorage.getItem('aiAnalysis');
+        
+        if (localAnswers) {
+          console.log('🔥 新しいLocalStorageデータを検出');
+          const answers = JSON.parse(localAnswers);
+          
+          // テストデータ「利光湖太郎」を検出して削除
+          if (answers.name === '利光湖太郎') {
+            console.log('🔥 テストデータ検出 - localStorage削除');
+            localStorage.removeItem('counselingAnswers');
+            localStorage.removeItem('aiAnalysis');
+            setCounselingResult(null);
+            return;
+          }
+          
+          const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
+          
+          console.log('🔥 LocalStorageから最新データ設定:', {
+            カロリー: analysis?.nutritionPlan?.dailyCalories,
+            PFC: analysis?.nutritionPlan?.macros
+          });
+          
+          setCounselingResult({
+            answers,
+            aiAnalysis: analysis,
+            userProfile: answers
+          });
+        } else {
+          console.log('🔥 LocalStorageにデータなし');
+          setCounselingResult(null);
+        }
+      }
+    } catch (error) {
+      console.error('🔥 RefetchLocal error:', error);
+    }
+  };
+
   return {
     counselingResult,
     isLoading,
@@ -248,33 +318,7 @@ export function useCounselingData() {
         setIsLoading(true);
         
         // まずローカルストレージから最新のデータを確認
-        if (typeof window !== 'undefined') {
-          const localAnswers = localStorage.getItem('counselingAnswers');
-          const localAnalysis = localStorage.getItem('aiAnalysis');
-          
-          if (localAnswers) {
-            console.log('🔥 Refetch: Found local counseling data, using it');
-            const answers = JSON.parse(localAnswers);
-            
-            // テストデータ「利光湖太郎」を検出して削除
-            if (answers.name === '利光湖太郎') {
-              console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage (refetch)');
-              localStorage.removeItem('counselingAnswers');
-              localStorage.removeItem('aiAnalysis');
-              setCounselingResult(null);
-              setIsLoading(false);
-              return;
-            }
-            
-            const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
-            
-            setCounselingResult({
-              answers,
-              aiAnalysis: analysis,
-              userProfile: answers
-            });
-          }
-        }
+        refetchLocal();
 
         // APIからも取得を試行（エラーでも無視）
         if (lineUserId) {
@@ -306,5 +350,6 @@ export function useCounselingData() {
         setIsLoading(false);
       }
     },
+    refetchLocal, // LocalStorage専用のrefetch関数も公開
   };
 }

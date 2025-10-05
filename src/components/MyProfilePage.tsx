@@ -303,28 +303,24 @@ export function MyProfilePage({
       // モーダルを閉じる
       setIsEditModalOpen(false);
       
-      console.log('🔥 プロフィール更新完了 - 自動リフレッシュ実行');
-      // LocalStorageが既に更新されているので、refetchで最新データを取得
+      console.log('🔥 プロフィール更新完了 - リアルタイム反映開始');
+      
+      // 1. カスタムイベントを発行して他のコンポーネントに即座に通知
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
+          detail: { 
+            type: 'profile_update',
+            newCalories: newCalorieTarget,
+            newMacros: newMacros
+          }
+        }));
+        console.log('🔥 カスタムイベント発行 - 他コンポーネントに通知完了');
+      }
+      
+      // 2. 現在のコンポーネントのデータも更新
       await refetch();
       
-      // refetch完了後のcounselingResultをチェック
-      console.log('🔥 Refetch完了後のcounselingResult:', {
-        hasResult: !!counselingResult,
-        dailyCalories: counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
-        macros: counselingResult?.aiAnalysis?.nutritionPlan?.macros,
-        userProfile: counselingResult?.userProfile
-      });
-      
-      // 追加の安全措置：少し待ってからもう一度refetch
-      setTimeout(async () => {
-        console.log('🔥 追加リフレッシュ実行');
-        await refetch();
-        console.log('🔥 追加Refetch完了後のcounselingResult:', {
-          hasResult: !!counselingResult,
-          dailyCalories: counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
-          macros: counselingResult?.aiAnalysis?.nutritionPlan?.macros
-        });
-      }, 500);
+      console.log('🔥 プロフィール保存 - リアルタイム反映完了！');
       
     } catch (error) {
       console.error('プロフィール保存エラー:', error);
