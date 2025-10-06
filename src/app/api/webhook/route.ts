@@ -1082,8 +1082,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
 
     case 'save_meal':
     case 'save_meal_image':
-      // 食事を記録する - 食事タイプ選択
-      await showMealTypeSelection(replyToken);
+      // 食事を記録する - まずAI分析してから食事タイプ選択
+      await analyzeMealBeforeRecord(userId, replyToken);
       break;
 
     case 'analyze_meal':
@@ -1165,7 +1165,7 @@ async function recordWeight(userId: string, weight: number) {
           weight,
           date: today,
           lineUserId: userId,
-          updatedAt: admin.FieldValue.serverTimestamp(),
+          updatedAt: new Date(),
         }, { merge: true });
 
         // ユーザープロファイルの体重も更新
@@ -1174,7 +1174,7 @@ async function recordWeight(userId: string, weight: number) {
         if (userDoc.exists) {
           await userRef.update({
             'profile.weight': weight,
-            updatedAt: admin.FieldValue.serverTimestamp(),
+            updatedAt: new Date(),
           });
         }
       },
@@ -1203,7 +1203,7 @@ async function storeTempMealData(userId: string, text: string, image?: Buffer) {
     await tempRef.set({
       text,
       image: image ? image.toString('base64') : null,
-      timestamp: admin.FieldValue.serverTimestamp(),
+      timestamp: new Date(),
     });
     
     console.log('一時食事データ保存完了:', userId);
@@ -1244,6 +1244,113 @@ async function deleteTempMealData(userId: string) {
     console.log('一時食事データ削除完了:', userId);
   } catch (error) {
     console.error('一時食事データ削除エラー:', error);
+  }
+}
+
+// AI分析結果を一時保存
+async function storeTempMealAnalysis(userId: string, analysis: any) {
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    
+    await tempRef.set({
+      analysis,
+      timestamp: new Date(),
+    });
+    
+    console.log('AI分析結果保存完了:', userId);
+  } catch (error) {
+    console.error('AI分析結果保存エラー:', error);
+    throw error;
+  }
+}
+
+// AI分析結果を取得
+async function getTempMealAnalysis(userId: string) {
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    const doc = await tempRef.get();
+    
+    if (doc.exists) {
+      return doc.data()?.analysis;
+    }
+    return null;
+  } catch (error) {
+    console.error('AI分析結果取得エラー:', error);
+    return null;
+  }
+}
+
+// AI分析結果を削除
+async function deleteTempMealAnalysis(userId: string) {
+  try {
+    const db = admin.firestore();
+    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    await tempRef.delete();
+    console.log('AI分析結果削除完了:', userId);
+  } catch (error) {
+    console.error('AI分析結果削除エラー:', error);
+  }
+}
+
+// 食事記録前のAI分析（分析結果を保存して食事タイプ選択へ）
+async function analyzeMealBeforeRecord(userId: string, replyToken: string) {
+  try {
+    const tempData = await getTempMealData(userId);
+    if (!tempData) {
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'データが見つかりません。もう一度食事内容を送ってください。'
+      }]);
+      return;
+    }
+    
+    let analysis;
+    if (tempData.image) {
+      // 画像の場合はAI分析必須
+      const aiService = new AIHealthService();
+      analysis = await aiService.analyzeMealFromImage(tempData.image);
+    } else {
+      // テキストの場合は学習機能付きパターンマッチング優先
+      analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
+      
+      if (!analysis) {
+        // パターンマッチングで見つからない場合のみAI分析
+        console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+        const aiService = new AIHealthService();
+        analysis = await aiService.analyzeMealFromText(tempData.text || '');
+        
+        // AI分析結果を学習データベースに追加
+        if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
+          for (const foodItem of analysis.foodItems) {
+            if (foodItem && typeof foodItem === 'string') {
+              await addToFoodDatabase(userId, foodItem, {
+                calories: analysis.calories / analysis.foodItems.length,
+                protein: analysis.protein / analysis.foodItems.length,
+                fat: analysis.fat / analysis.foodItems.length,
+                carbs: analysis.carbs / analysis.foodItems.length
+              });
+            }
+          }
+        }
+      } else {
+        console.log('パターンマッチング成功:', analysis);
+      }
+    }
+
+    // AI分析結果を一時データに保存
+    await storeTempMealAnalysis(userId, analysis);
+    
+    // 食事タイプ選択画面へ
+    await showMealTypeSelection(replyToken);
+
+  } catch (error) {
+    console.error('食事記録前分析エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '分析中にエラーが発生しました。もう一度お試しください。'
+    }]);
   }
 }
 
@@ -1299,6 +1406,9 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
 
     await replyMessage(replyToken, [flexMessage]);
 
+    // AI分析結果を一時データに保存
+    await storeTempMealAnalysis(userId, analysis);
+    
     // 一時データを削除
     await deleteTempMealData(userId);
 
@@ -1323,51 +1433,57 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       return;
     }
 
-    let analysis;
-
-    try {
-      if (tempData.image) {
-        // 画像の場合はAI分析必須
-        const aiService = new AIHealthService();
-        analysis = await aiService.analyzeMealFromImage(tempData.image);
-      } else {
-        // テキストの場合は学習機能付きパターンマッチング優先
-        analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
-        
-        if (!analysis) {
-          // パターンマッチングで見つからない場合のみAI分析
-          console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+    // 既存のAI分析結果を取得
+    let analysis = await getTempMealAnalysis(userId);
+    
+    if (!analysis) {
+      // 分析結果がない場合は新たに分析実行
+      try {
+        if (tempData.image) {
+          // 画像の場合はAI分析必須
           const aiService = new AIHealthService();
-          analysis = await aiService.analyzeMealFromText(tempData.text || '');
+          analysis = await aiService.analyzeMealFromImage(tempData.image);
+        } else {
+          // テキストの場合は学習機能付きパターンマッチング優先
+          analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
           
-          // AI分析結果を学習データベースに追加
-          if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
-            for (const foodItem of analysis.foodItems) {
-              if (foodItem && typeof foodItem === 'string') {
-                await addToFoodDatabase(userId, foodItem, {
-                  calories: analysis.calories / analysis.foodItems.length,
-                  protein: analysis.protein / analysis.foodItems.length,
-                  fat: analysis.fat / analysis.foodItems.length,
-                  carbs: analysis.carbs / analysis.foodItems.length
-                });
+          if (!analysis) {
+            // パターンマッチングで見つからない場合のみAI分析
+            console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+            const aiService = new AIHealthService();
+            analysis = await aiService.analyzeMealFromText(tempData.text || '');
+            
+            // AI分析結果を学習データベースに追加
+            if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
+              for (const foodItem of analysis.foodItems) {
+                if (foodItem && typeof foodItem === 'string') {
+                  await addToFoodDatabase(userId, foodItem, {
+                    calories: analysis.calories / analysis.foodItems.length,
+                    protein: analysis.protein / analysis.foodItems.length,
+                    fat: analysis.fat / analysis.foodItems.length,
+                    carbs: analysis.carbs / analysis.foodItems.length
+                  });
+                }
               }
             }
+          } else {
+            console.log('パターンマッチング成功:', analysis);
           }
-        } else {
-          console.log('パターンマッチング成功:', analysis);
         }
+      } catch (aiError) {
+        console.error('AI分析エラー、フォールバック値を使用:', aiError);
+        // フォールバック分析結果
+        analysis = {
+          foodItems: tempData.text ? [tempData.text] : ['食事'],
+          calories: 400,
+          protein: 20,
+          carbs: 50,
+          fat: 15,
+          advice: "バランスの良い食事を心がけましょう"
+        };
       }
-    } catch (aiError) {
-      console.error('AI分析エラー、フォールバック値を使用:', aiError);
-      // フォールバック分析結果
-      analysis = {
-        foodItems: tempData.text ? [tempData.text] : ['食事'],
-        calories: 400,
-        protein: 20,
-        carbs: 50,
-        fat: 15,
-        advice: "バランスの良い食事を心がけましょう"
-      };
+    } else {
+      console.log('保存済みAI分析結果を使用:', analysis);
     }
 
     // Firestoreに保存
@@ -1398,14 +1514,16 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
             });
           
           // 画像URLを生成
-          imageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/image/${imageId}`;
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
+          imageUrl = `${baseUrl}/api/image/${imageId}`;
           console.log(`画像Firestore保存完了: ${imageId}`);
         } catch (firestoreError) {
           console.error('Firestore保存エラー、フォールバックを使用:', firestoreError);
           // フォールバック: グローバルキャッシュに保存して、画像URL生成
           global.imageCache = global.imageCache || new Map();
           global.imageCache.set(imageId, `data:image/jpeg;base64,${base64Data}`);
-          imageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/image/${imageId}`;
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
+          imageUrl = `${baseUrl}/api/image/${imageId}`;
           console.log(`フォールバック画像URL生成: ${imageUrl}`);
         }
         
@@ -1476,7 +1594,6 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         // 新しい食事を追加
         meals.push({
           ...mealData,
-          id: `meal_${Date.now()}`,
           timestamp: new Date(),
         });
 
@@ -1484,7 +1601,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
           meals,
           date: today,
           lineUserId: userId,
-          updatedAt: admin.FieldValue.serverTimestamp(),
+          updatedAt: new Date(),
         }, { merge: true });
       },
       'food_record',
@@ -1507,6 +1624,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     // 一時データを削除
     await deleteTempMealData(userId);
+    await deleteTempMealAnalysis(userId);
 
   } catch (error) {
     console.error('食事記録エラー:', error);
@@ -2245,7 +2363,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
           exercises,
           date: today,
           lineUserId: userId,
-          updatedAt: admin.FieldValue.serverTimestamp(),
+          updatedAt: new Date(),
         }, { merge: true });
       },
       'exercise_record_basic',
@@ -2369,7 +2487,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
           exercises,
           date: today,
           lineUserId: userId,
-          updatedAt: admin.FieldValue.serverTimestamp(),
+          updatedAt: new Date(),
         }, { merge: true });
       },
       'exercise_record_detailed',
