@@ -113,11 +113,16 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 }
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
-  // 食事記録かチェック
+  // 食事記録かチェック（大幅に拡張）
   const isFoodName = (
-    /カレー|ラーメン|うどん|そば|パン|おにぎり|弁当|サラダ|寿司|パスタ|ご飯|丼|定食|ハンバーグ|唐揚げ|焼き魚|天ぷら|味噌汁|スープ/.test(text) &&
-    !/(記録|食べた|です|でした|ました|だった|？|\?|って|どう|カロリー|栄養|太る|痩せる|ダイエット|健康|教えて|知りたい)/.test(text) &&
-    text.length <= 15
+    // 基本的な食品パターン
+    /カレー|ラーメン|うどん|そば|パン|おにぎり|弁当|サラダ|寿司|パスタ|ご飯|丼|定食|ハンバーグ|唐揚げ|焼き魚|天ぷら|味噌汁|スープ|野菜|肉|魚|卵|米|麺|麺類|牛肉|豚肉|鶏肉|鮭|マグロ|サンマ|アジ|イワシ|エビ|カニ|イカ|タコ|ホタテ|アサリ|シジミ|ワカメ|昆布|のり|キャベツ|レタス|トマト|きゅうり|にんじん|大根|玉ねぎ|じゃがいも|さつまいも|かぼちゃ|ねぎ|ほうれん草|小松菜|ブロッコリー|アスパラ|ピーマン|なす|オクラ|ゴーヤ|とうもろこし|枝豆|大豆|豆腐|納豆|味噌|醤油|塩|砂糖|酢|油|バター|チーズ|ヨーグルト|牛乳|卵|パン|食パン|ロールパン|クロワッサン|バゲット|ピザ|ハンバーガー|サンドイッチ|おにぎり|おせんべい|クッキー|ケーキ|チョコレート|アイス|プリン|ゼリー|フルーツ|りんご|みかん|バナナ|ぶどう|いちご|メロン|スイカ|桃|梨|柿|キウイ|パイナップル|マンゴー|アボカド|コーヒー|紅茶|緑茶|ジュース|水|ビール|ワイン|日本酒|焼酎|ウイスキー|カクテル/.test(text) &&
+    // 質問・相談系は除外
+    !/(記録|食べた|です|でした|ました|だった|？|\?|って|どう|カロリー|栄養|太る|痩せる|ダイエット|健康|教えて|知りたい|何|いつ|どこ|なぜ|どのように|おすすめ|良い|悪い|効果|影響)/.test(text) &&
+    // 長すぎるテキストは除外（50文字まで拡張）
+    text.length <= 50 &&
+    // 短すぎるテキストも除外
+    text.length >= 2
   );
 
   if (isFoodName) {
@@ -284,11 +289,34 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     // Flexメッセージ作成・送信
     const user = await getUserData(userId);
-    const flexMessage = createMealFlexMessage(tempData.analysis, user);
+    const mealTypeJa = {
+      breakfast: '朝食',
+      lunch: '昼食', 
+      dinner: '夕食',
+      snack: '間食'
+    }[mealType] || '食事';
+    
+    // 画像URLを取得（保存されていれば）
+    let imageUrl = null;
+    if (tempData.imageContent) {
+      // 一度だけ画像を保存してURLを取得
+      try {
+        const imageId = `meal_${generateId()}`;
+        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+        const storageRef = ref(storage, `meals/${userId}/${today}/${imageId}.jpg`);
+        await uploadBytes(storageRef, tempData.imageContent);
+        imageUrl = await getDownloadURL(storageRef);
+      } catch (error) {
+        console.error('Flexメッセージ用画像取得エラー:', error);
+      }
+    }
+    
+    const mealName = tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
+    const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, mealName);
     await replyMessage(replyToken, [flexMessage]);
     
-    // 直接保存
-    await saveMealDirectly(userId, mealType, tempData.analysis, tempData.imageContent);
+    // 直接保存（画像URLを使用）
+    await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
     
     console.log('🔥 食事保存完了');
     
@@ -302,9 +330,9 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 }
 
 // シンプルな直接保存関数
-async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: any, imageContent?: Buffer) {
+async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: any, imageUrl?: string) {
   try {
-    console.log('🔥 直接保存開始:', { userId, mealType, hasImage: !!imageContent });
+    console.log('🔥 直接保存開始:', { userId, mealType, hasImage: !!imageUrl });
     
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
@@ -313,38 +341,44 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
       timeZone: 'Asia/Tokyo'
     });
     
-    // 画像をFirebase Storageに保存（あれば）
-    let imageUrl = null;
-    if (imageContent) {
-      const imageId = `meal_${generateId()}`;
-      const storageRef = ref(storage, `meals/${userId}/${today}/${imageId}.jpg`);
-      await uploadBytes(storageRef, imageContent);
-      imageUrl = await getDownloadURL(storageRef);
-    }
-    
-    // 食事データ作成
+    // 食事データ作成（アプリと整合性のある形式）
     const mealData = {
       id: generateId(),
       name: mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事',
+      type: mealType, // アプリが期待するフィールド名
       calories: mealAnalysis.calories || mealAnalysis.totalCalories || 400,
       protein: mealAnalysis.protein || mealAnalysis.totalProtein || 20,
       fat: mealAnalysis.fat || mealAnalysis.totalFat || 15,
       carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 50,
       time: currentTime,
       image: imageUrl,
+      images: imageUrl ? [imageUrl] : [],
+      foodItems: mealAnalysis.foodItems || [mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事'],
+      timestamp: new Date(),
       createdAt: new Date(),
-      lineUserId: userId
+      lineUserId: userId,
+      // 複数食事の場合
+      isMultipleMeals: mealAnalysis.isMultipleMeals || false,
+      meals: mealAnalysis.meals || []
     };
     
-    // Firestoreに直接保存
+    // Firestoreに直接保存（アプリが期待する形式）
     const db = admin.firestore();
-    await db.collection('users').doc(userId)
-      .collection('dailyRecords').doc(today)
-      .collection('meals').doc(mealData.id)
-      .set({
-        ...mealData,
-        mealType
-      });
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingMeals = existingData.meals || [];
+    
+    // 新しい食事を追加
+    const updatedMeals = [...existingMeals, mealData];
+    
+    await recordRef.set({
+      ...existingData,
+      meals: updatedMeals,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
     
     console.log('🔥 直接保存完了:', { mealId: mealData.id, mealType });
     
