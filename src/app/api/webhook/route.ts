@@ -1165,14 +1165,45 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'text_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '📝 食事内容を文字で入力してください！\n\n例：「カレー」「パンとコーヒー」\n\n入力後に食事タイプを選択できます。'
+        text: '📝 食事内容を文字で入力してください！\n\n例：「カレー」「パンとコーヒー」',
+        quickReply: {
+          items: [
+            { 
+              type: 'action', 
+              action: { 
+                type: 'postback',
+                label: 'キーボードで入力',
+                data: 'action=keyboard_input',
+                inputOption: 'openKeyboard'
+              }
+            }
+          ]
+        }
+      }]);
+      break;
+
+    case 'keyboard_input':
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '📝 食事内容を入力してください：'
       }]);
       break;
 
     case 'photo_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '📷 食事の写真を撮って送ってください！\n\nAIが自動で食事内容を分析し、食事タイプを選択できます。'
+        text: '📷 食事の写真を撮って送ってください！',
+        quickReply: {
+          items: [
+            { 
+              type: 'action', 
+              action: { 
+                type: 'camera',
+                label: 'カメラを開く'
+              }
+            }
+          ]
+        }
       }]);
       break;
 
