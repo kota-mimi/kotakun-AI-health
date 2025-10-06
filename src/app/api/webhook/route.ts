@@ -906,24 +906,13 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       // AI分析結果を一時保存に更新
       await storeTempMealData(userId, mealAnalysis.foodName || '写真の食事', null);
       
-      const responseMessage = {
-        type: 'text',
-        text: `「${mealAnalysis.foodName || '写真の食事'}」を記録します！\n\nどの食事タイプですか？`
-      };
-      await replyMessage(replyToken, [responseMessage]);
-      
-      // 食事タイプ選択画面表示  
+      // 食事タイプ選択画面のみ表示（メッセージは統合）
       await showMealTypeSelection(replyToken);
       
     } catch (error) {
       console.error('画像分析エラー:', error);
       
       // 分析失敗時も食事タイプ選択画面表示
-      const responseMessage = {
-        type: 'text',
-        text: '写真の食事を記録します！\n\nどの食事タイプですか？'
-      };
-      await replyMessage(replyToken, [responseMessage]);
       await showMealTypeSelection(replyToken);
     }
   } catch (error) {
@@ -1162,10 +1151,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       break;
 
     case 'text_record':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '🍽️ 食事内容を入力してください'
-      }]);
+      // メッセージなし - 直接入力待機
       break;
 
 
