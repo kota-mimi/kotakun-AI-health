@@ -13,8 +13,8 @@ async function retryOperation<T>(
   operation: () => Promise<T>,
   operationType: string,
   context: Record<string, any>,
-  maxRetries: number = 3,
-  delayMs: number = 1000
+  maxRetries: number = 2, // 3→2回に削減
+  delayMs: number = 500 // 1000→500msに短縮
 ): Promise<T> {
   let lastError: Error;
   
@@ -1154,7 +1154,7 @@ async function showMealTypeSelection(replyToken: string) {
 // 体重記録（リトライ機能付き）
 async function recordWeight(userId: string, weight: number) {
   try {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD (日本時間)
     
     await retryOperation(
       async () => {
@@ -1200,13 +1200,46 @@ async function storeTempMealData(userId: string, text: string, image?: Buffer) {
     const db = admin.firestore();
     const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
     
+    let imageId = null;
+    let imageUrl = null;
+    
+    // 画像がある場合は即座に永続保存
+    if (image) {
+      try {
+        const base64Data = image.toString('base64');
+        imageId = `meal_${generateId()}`;
+        
+        // Firestoreのユーザー画像コレクションに保存
+        await admin.firestore()
+          .collection('users')
+          .doc(userId)
+          .collection('images')
+          .doc(imageId)
+          .set({
+            base64Data: `data:image/jpeg;base64,${base64Data}`,
+            mimeType: 'image/jpeg',
+            createdAt: new Date()
+          });
+        
+        // 画像URLを生成
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
+        imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
+        console.log(`画像を永続保存完了: ${imageId}`);
+      } catch (imageError) {
+        console.error('画像永続保存エラー:', imageError);
+        // フォールバック：base64として一時保存
+      }
+    }
+    
     await tempRef.set({
       text,
-      image: image ? image.toString('base64') : null,
+      image: image && !imageId ? image.toString('base64') : null, // 永続保存失敗時のみ一時保存
+      imageId, // 永続保存されたImageID
+      imageUrl, // 生成されたURL
       timestamp: new Date(),
     });
     
-    console.log('一時食事データ保存完了:', userId);
+    console.log('一時食事データ保存完了:', userId, imageId ? `(画像ID: ${imageId})` : '');
   } catch (error) {
     console.error('一時食事データ保存エラー:', error);
   }
@@ -1227,6 +1260,8 @@ async function getTempMealData(userId: string) {
     return {
       text: data.text,
       image: data.image ? Buffer.from(data.image, 'base64') : null,
+      imageId: data.imageId, // 既存の画像ID
+      imageUrl: data.imageUrl, // 既存の画像URL
       timestamp: data.timestamp?.toMillis() || Date.now(),
     };
   } catch (error) {
@@ -1307,36 +1342,64 @@ async function analyzeMealBeforeRecord(userId: string, replyToken: string) {
     }
     
     let analysis;
-    if (tempData.image) {
-      // 画像の場合はAI分析必須
-      const aiService = new AIHealthService();
-      analysis = await aiService.analyzeMealFromImage(tempData.image);
-    } else {
-      // テキストの場合は学習機能付きパターンマッチング優先
-      analysis = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
-      
-      if (!analysis) {
-        // パターンマッチングで見つからない場合のみAI分析
-        console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
-        const aiService = new AIHealthService();
-        analysis = await aiService.analyzeMealFromText(tempData.text || '');
-        
-        // AI分析結果を学習データベースに追加
-        if (analysis && analysis.foodItems && analysis.foodItems.length > 0) {
-          for (const foodItem of analysis.foodItems) {
-            if (foodItem && typeof foodItem === 'string') {
-              await addToFoodDatabase(userId, foodItem, {
-                calories: analysis.calories / analysis.foodItems.length,
-                protein: analysis.protein / analysis.foodItems.length,
-                fat: analysis.fat / analysis.foodItems.length,
-                carbs: analysis.carbs / analysis.foodItems.length
-              });
+    try {
+      // AI分析にタイムアウト（12秒）を設定
+      const analysisPromise = tempData.image 
+        ? (() => {
+            const aiService = new AIHealthService();
+            return aiService.analyzeMealFromImage(tempData.image);
+          })()
+        : (async () => {
+            // テキストの場合は学習機能付きパターンマッチング優先
+            let result = await analyzeMultipleFoodsWithLearning(userId, tempData.text || '');
+            
+            if (!result) {
+              // パターンマッチングで見つからない場合のみAI分析
+              console.log('パターンマッチング失敗、AI分析にフォールバック:', tempData.text);
+              const aiService = new AIHealthService();
+              result = await aiService.analyzeMealFromText(tempData.text || '');
+              
+              // AI分析結果を学習データベースに追加（非同期で実行、応答を待機しない）
+              if (result && result.foodItems && result.foodItems.length > 0) {
+                Promise.all(result.foodItems.map(async (foodItem) => {
+                  if (foodItem && typeof foodItem === 'string') {
+                    try {
+                      await addToFoodDatabase(userId, foodItem, {
+                        calories: result.calories / result.foodItems.length,
+                        protein: result.protein / result.foodItems.length,
+                        fat: result.fat / result.foodItems.length,
+                        carbs: result.carbs / result.foodItems.length
+                      });
+                    } catch (error) {
+                      console.error('学習データベース更新エラー:', error);
+                    }
+                  }
+                })).catch(error => console.error('学習データベース更新エラー:', error));
+              }
+            } else {
+              console.log('パターンマッチング成功:', result);
             }
-          }
-        }
-      } else {
-        console.log('パターンマッチング成功:', analysis);
-      }
+            return result;
+          })();
+
+      // 12秒でタイムアウト
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('AI分析タイムアウト')), 12000)
+      );
+      
+      analysis = await Promise.race([analysisPromise, timeoutPromise]);
+      
+    } catch (error) {
+      console.error('AI分析エラー:', error);
+      // フォールバック分析結果
+      analysis = {
+        foodItems: [tempData.text || '食事'],
+        calories: 400,
+        protein: 20,
+        carbs: 50,
+        fat: 15,
+        advice: "分析中にエラーが発生しました"
+      };
     }
 
     // AI分析結果を一時データに保存
@@ -1488,17 +1551,16 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     // Firestoreに保存
     const db = admin.firestore();
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 画像がある場合は一時保存し、外部URLで提供
-    let imageUrl = null;
-    let imageId = null;
-    if (tempData.image) {
+    // 画像処理：既に保存済みの場合は再利用
+    let imageUrl = tempData.imageUrl; // 既存のURL使用
+    let imageId = tempData.imageId; // 既存のID使用
+    
+    // 画像が存在するが、まだ永続保存されていない場合（フォールバック処理）
+    if (tempData.image && !imageId) {
       try {
-        // 圧縮せずに元の画像をそのまま使用（Sharpエラー回避）
         const base64Data = tempData.image.toString('base64');
-        
-        // 一意のIDを生成
         imageId = `meal_${generateId()}`;
         
         try {
@@ -1514,29 +1576,23 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
               createdAt: new Date()
             });
           
-          // 画像URLを生成（ユーザーIDを含む）
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
           imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
-          console.log(`画像Firestore保存完了: ${imageId}`);
-          console.log(`🖼️ 生成された画像URL: ${imageUrl}`);
+          console.log(`フォールバック: 画像Firestore保存完了: ${imageId}`);
         } catch (firestoreError) {
-          console.error('Firestore保存エラー、フォールバックを使用:', firestoreError);
-          // フォールバック: グローバルキャッシュに保存して、画像URL生成
+          console.error('Firestore保存エラー、グローバルキャッシュを使用:', firestoreError);
           global.imageCache = global.imageCache || new Map();
           global.imageCache.set(`${userId}/${imageId}`, `data:image/jpeg;base64,${base64Data}`);
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
           imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
-          console.log(`フォールバック画像URL生成: ${imageUrl}`);
-          console.log(`🖼️ フォールバック画像URL: ${imageUrl}`);
+          console.log(`フォールバック: グローバルキャッシュ画像URL生成: ${imageUrl}`);
         }
-        
-        console.log(`画像処理完了: ${tempData.image.length} bytes`);
       } catch (error) {
-        console.error('画像処理エラー:', error);
-        // 画像なしで進行（ダミー画像は使用しない）
+        console.error('フォールバック画像処理エラー:', error);
         imageUrl = null;
-        console.log('画像処理エラー、画像なしで進行');
       }
+    } else if (imageId) {
+      console.log(`既存の画像を再利用: ${imageId} -> ${imageUrl}`);
     }
     
     // 複数食事対応の食事データ作成
@@ -1546,7 +1602,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         id: generateId(),
         name: tempData.text || analysis.meals?.map((m: any) => m.name).join('、') || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
-        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
         type: mealType,
         items: analysis.meals?.map((m: any) => m.name) || [],
         calories: analysis.totalCalories || 0,
@@ -1566,7 +1622,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         id: generateId(),
         name: tempData.text || (analysis.foodItems?.[0]) || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
-        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+        time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
         type: mealType,
         items: analysis.foodItems || [],
         calories: analysis.calories || 0,
@@ -1912,7 +1968,7 @@ function checkContinuationPattern(userId: string, text: string) {
 // 継続セット記録処理
 async function recordContinuationSet(userId: string, match: any, replyToken: string) {
   try {
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
     // 既存の運動記録を取得
     const db = admin.firestore();
@@ -2243,7 +2299,7 @@ async function getUserExerciseHistory(userId: string, startDate: Date, endDate: 
     // 期間内の各日をチェック
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = currentDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       try {
         const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
         const dailyDoc = await recordRef.get();
@@ -2344,7 +2400,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
       type: getExerciseType(exerciseName, type),
       duration: durationInMinutes,
       calories: calories,
-      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
       timestamp: new Date()
     };
     
@@ -2356,7 +2412,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     }
     
     // Firestoreに保存（リトライ機能付き）
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     await retryOperation(
       async () => {
         const db = admin.firestore();
@@ -2435,7 +2491,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
       id: generateId(),
       name: exerciseName,
       type: getExerciseType(exerciseName, type),
-      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
       timestamp: new Date()
     };
     
@@ -2489,7 +2545,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     }
     
     // Firestoreに保存（リトライ機能付き）
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     await retryOperation(
       async () => {
         const db = admin.firestore();
@@ -2665,13 +2721,13 @@ function getUserWeightFromProfile(user: any): number | null {
 async function getUserWeight(userId: string): Promise<number> {
   try {
     const db = admin.firestore();
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
     // 最近7日間の体重データを探す
     for (let i = 0; i < 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       try {
         const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);

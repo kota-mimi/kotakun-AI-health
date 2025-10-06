@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const adminDb = admin.firestore();
-    const targetDate = date || new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD (日本時間)
 
     // 指定日の食事データを取得（Admin SDK使用）
     const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       name: meal.name || meal.description || (meal.items ? meal.items.join(', ') : '食事'),
       mealTime: meal.type,
       time: meal.time || (meal.timestamp ? 
-        new Date(meal.timestamp.seconds * 1000).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) :
+        new Date(meal.timestamp.seconds * 1000).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }) :
         '00:00'),
       calories: meal.calories || (meal.analysis ? meal.analysis.calories : 0),
       protein: meal.protein || (meal.analysis ? meal.analysis.protein : 0),

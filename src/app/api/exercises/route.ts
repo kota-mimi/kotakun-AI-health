@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       const allExercises: any[] = [];
       
       for (let i = 0; i < 30; i++) {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
         const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
         const recordDoc = await recordRef.get();
         
