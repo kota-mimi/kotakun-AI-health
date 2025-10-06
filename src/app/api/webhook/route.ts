@@ -901,14 +901,15 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     // 直接AI分析して食事タイプ選択画面表示
     try {
       const aiService = new AIHealthService();
-      const mealAnalysis = await aiService.analyzeMealImage(imageContent);
+      const mealAnalysis = await aiService.analyzeMealFromImage(imageContent);
       
-      // AI分析結果を一時保存に更新
-      const recognizedFoodName = mealAnalysis.foodName || '写真の食事';
+      // AI分析結果を一時保存に更新（正しいプロパティ名を使用）
+      const recognizedFoodName = (mealAnalysis.foodItems?.[0]) || (mealAnalysis.meals?.[0]?.name) || '写真の食事';
       console.log('🍽️ AI分析結果:');
-      console.log('- foodName:', mealAnalysis.foodName);
       console.log('- foodItems:', mealAnalysis.foodItems);
-      console.log('- calories:', mealAnalysis.calories);
+      console.log('- meals:', mealAnalysis.meals);
+      console.log('- calories:', mealAnalysis.calories || mealAnalysis.totalCalories);
+      console.log('- protein:', mealAnalysis.protein || mealAnalysis.totalProtein);
       console.log('- 保存する食事名:', recognizedFoodName);
       
       await storeTempMealData(userId, recognizedFoodName, null);
