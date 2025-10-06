@@ -1467,10 +1467,10 @@ async function analyzeMealBeforeRecord(userId: string, replyToken: string) {
     await storeTempMealAnalysis(userId, analysis);
     
     // 時間帯が事前に指定されている場合は自動選択、そうでなければ選択画面
-    const tempData = await getTempMealData(userId);
-    if (tempData && tempData.mealType) {
+    const mealTempData = await getTempMealData(userId);
+    if (mealTempData && mealTempData.mealType) {
       // 時間帯が指定されている場合は直接記録
-      await saveMealRecord(userId, tempData.mealType, replyToken);
+      await saveMealRecord(userId, mealTempData.mealType, replyToken);
     } else {
       // 時間帯が指定されていない場合は選択画面
       await showMealTypeSelection(replyToken);
