@@ -1149,14 +1149,14 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   switch (action) {
 
     case 'meal_record_menu':
-      // シンプルな食事記録メニュー
+      // 直接選択（中間メッセージなし）
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '食事を記録しましょう！',
+        text: '🍽️',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'postback', label: 'テキストで記録', data: 'action=text_record' } },
-            { type: 'action', action: { type: 'postback', label: '写真で記録', data: 'action=photo_record' } }
+            { type: 'action', action: { type: 'postback', label: 'テキスト入力', data: 'action=text_record' } },
+            { type: 'action', action: { type: 'camera', label: 'カメラ撮影' } }
           ]
         }
       }]);
@@ -1165,45 +1165,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'text_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '📝 食事内容を文字で入力してください！\n\n例：「カレー」「パンとコーヒー」',
-        quickReply: {
-          items: [
-            { 
-              type: 'action', 
-              action: { 
-                type: 'postback',
-                label: 'キーボードで入力',
-                data: 'action=keyboard_input',
-                inputOption: 'openKeyboard'
-              }
-            }
-          ]
-        }
-      }]);
-      break;
-
-    case 'keyboard_input':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '📝 食事内容を入力してください：'
-      }]);
-      break;
-
-    case 'photo_record':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '📷 食事の写真を撮って送ってください！',
-        quickReply: {
-          items: [
-            { 
-              type: 'action', 
-              action: { 
-                type: 'camera',
-                label: 'カメラを開く'
-              }
-            }
-          ]
-        }
+        text: '🍽️ 食事内容を入力してください'
       }]);
       break;
 
