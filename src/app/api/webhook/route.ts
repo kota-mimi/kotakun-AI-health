@@ -1198,7 +1198,7 @@ async function recordWeight(userId: string, weight: number) {
 async function storeTempMealData(userId: string, text: string, image?: Buffer) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_data').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
     
     await tempRef.set({
       text,
@@ -1216,7 +1216,7 @@ async function storeTempMealData(userId: string, text: string, image?: Buffer) {
 async function getTempMealData(userId: string) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_data').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
     const tempDoc = await tempRef.get();
     
     if (!tempDoc.exists) {
@@ -1239,7 +1239,7 @@ async function getTempMealData(userId: string) {
 async function deleteTempMealData(userId: string) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_data').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
     await tempRef.delete();
     console.log('一時食事データ削除完了:', userId);
   } catch (error) {
@@ -1251,7 +1251,7 @@ async function deleteTempMealData(userId: string) {
 async function storeTempMealAnalysis(userId: string, analysis: any) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealAnalysis').doc('current');
     
     await tempRef.set({
       analysis,
@@ -1269,7 +1269,7 @@ async function storeTempMealAnalysis(userId: string, analysis: any) {
 async function getTempMealAnalysis(userId: string) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealAnalysis').doc('current');
     const doc = await tempRef.get();
     
     if (doc.exists) {
@@ -1286,7 +1286,7 @@ async function getTempMealAnalysis(userId: string) {
 async function deleteTempMealAnalysis(userId: string) {
   try {
     const db = admin.firestore();
-    const tempRef = db.collection('temp_meal_analysis').doc(userId);
+    const tempRef = db.collection('users').doc(userId).collection('tempMealAnalysis').doc('current');
     await tempRef.delete();
     console.log('AI分析結果削除完了:', userId);
   } catch (error) {
@@ -1502,28 +1502,29 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         imageId = `meal_${generateId()}`;
         
         try {
-          // Firestoreの画像コレクションに保存を試行
+          // Firestoreのユーザー画像コレクションに保存
           await admin.firestore()
+            .collection('users')
+            .doc(userId)
             .collection('images')
             .doc(imageId)
             .set({
               base64Data: `data:image/jpeg;base64,${base64Data}`,
               mimeType: 'image/jpeg',
-              createdAt: new Date(),
-              userId: userId
+              createdAt: new Date()
             });
           
-          // 画像URLを生成
+          // 画像URLを生成（ユーザーIDを含む）
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
-          imageUrl = `${baseUrl}/api/image/${imageId}`;
+          imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
           console.log(`画像Firestore保存完了: ${imageId}`);
         } catch (firestoreError) {
           console.error('Firestore保存エラー、フォールバックを使用:', firestoreError);
           // フォールバック: グローバルキャッシュに保存して、画像URL生成
           global.imageCache = global.imageCache || new Map();
-          global.imageCache.set(imageId, `data:image/jpeg;base64,${base64Data}`);
+          global.imageCache.set(`${userId}/${imageId}`, `data:image/jpeg;base64,${base64Data}`);
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
-          imageUrl = `${baseUrl}/api/image/${imageId}`;
+          imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
           console.log(`フォールバック画像URL生成: ${imageUrl}`);
         }
         
