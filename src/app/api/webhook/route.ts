@@ -1273,7 +1273,12 @@ async function storeTempMealData(userId: string, text: string, mealTypeOrImage?:
     let imageId = null;
     let imageUrl = null;
     
+    // mealTypeOrImageがstringなら時間帯、Bufferなら画像として処理
+    const isImage = Buffer.isBuffer(mealTypeOrImage);
+    const mealType = !isImage && typeof mealTypeOrImage === 'string' ? mealTypeOrImage : null;
+    
     // 画像がある場合は即座に永続保存
+    const image = Buffer.isBuffer(mealTypeOrImage) ? mealTypeOrImage : null;
     if (image) {
       try {
         const base64Data = image.toString('base64');
@@ -1301,15 +1306,10 @@ async function storeTempMealData(userId: string, text: string, mealTypeOrImage?:
       }
     }
     
-    // mealTypeOrImageがstringなら時間帯、Bufferなら画像として処理
-    const isImage = Buffer.isBuffer(mealTypeOrImage);
-    const mealType = !isImage ? mealTypeOrImage : null;
-    const imageData = isImage ? mealTypeOrImage : null;
-    
     await tempRef.set({
       text,
       mealType, // 時間帯情報を保存
-      image: imageData && !imageId ? imageData.toString('base64') : null, // 永続保存失敗時のみ一時保存
+      image: image && !imageId ? image.toString('base64') : null, // 永続保存失敗時のみ一時保存
       imageId, // 永続保存されたImageID
       imageUrl, // 生成されたURL
       timestamp: new Date(),
