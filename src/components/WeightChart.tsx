@@ -59,13 +59,28 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     // カウンセリング完了日を使用（フォールバック：作成日、最後のフォールバック：今日）
     const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
-    let counselingDate = counselingDateRaw ? new Date(counselingDateRaw) : new Date();
+    let counselingDate;
+    
+    // Firestoreのタイムスタンプオブジェクトかチェック
+    if (counselingDateRaw?.seconds) {
+      counselingDate = new Date(counselingDateRaw.seconds * 1000);
+    } else if (counselingDateRaw) {
+      counselingDate = new Date(counselingDateRaw);
+    } else {
+      counselingDate = new Date();
+    }
     
     // 日付が無効な場合のフォールバック
     if (isNaN(counselingDate.getTime())) {
       console.warn('⚠️ Invalid counseling date in WeightChart:', counselingDateRaw);
       counselingDate = new Date(); // 現在の日付を使用
     }
+    
+    console.log('📅 カウンセリング記録開始日:', {
+      raw: counselingDateRaw,
+      processed: counselingDate,
+      formatted: `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`
+    });
     
     const dateStr = `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
     
