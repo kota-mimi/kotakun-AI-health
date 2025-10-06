@@ -318,6 +318,9 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
     
+    // 一時データを削除（重要！）
+    await deleteTempMealAnalysis(userId);
+    
     console.log('🔥 食事保存完了');
     
   } catch (error) {
@@ -391,9 +394,21 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
 // 簡単な一時保存関数
 async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer) {
   try {
+    // AIアドバイスを除去してクリーンなデータのみ保存
+    const cleanAnalysis = {
+      calories: mealAnalysis.calories || mealAnalysis.totalCalories || 0,
+      protein: mealAnalysis.protein || mealAnalysis.totalProtein || 0,
+      fat: mealAnalysis.fat || mealAnalysis.totalFat || 0,
+      carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 0,
+      foodItems: mealAnalysis.foodItems || [],
+      meals: mealAnalysis.meals || [],
+      isMultipleMeals: mealAnalysis.isMultipleMeals || false
+      // adviceは意図的に除外
+    };
+    
     const db = admin.firestore();
     await db.collection('users').doc(userId).collection('tempMealData').doc('current').set({
-      analysis: mealAnalysis,
+      analysis: cleanAnalysis,
       image: imageContent ? imageContent.toString('base64') : null,
       createdAt: new Date()
     });
@@ -417,6 +432,16 @@ async function getTempMealAnalysis(userId: string) {
   } catch (error) {
     console.error('一時取得エラー:', error);
     return null;
+  }
+}
+
+async function deleteTempMealAnalysis(userId: string) {
+  try {
+    const db = admin.firestore();
+    await db.collection('users').doc(userId).collection('tempMealData').doc('current').delete();
+    console.log('🧹 一時データ削除完了:', userId);
+  } catch (error) {
+    console.error('一時データ削除エラー:', error);
   }
 }
 
