@@ -616,8 +616,10 @@ async function handleEvent(event: any) {
 async function handleMessage(replyToken: string, source: any, message: any) {
   const { userId } = source;
   
-  // 既存ユーザーのリッチメニューも確保
-  await ensureRichMenuForUser(userId);
+  // 既存ユーザーのリッチメニューも確保（非同期で実行、応答を待たない）
+  ensureRichMenuForUser(userId).catch(error => {
+    console.error('Rich menu setup error:', error);
+  });
   
   // ユーザー認証とプロファイル取得
   try {
@@ -936,8 +938,10 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
 async function handleFollow(replyToken: string, source: any) {
   const { userId } = source;
   
-  // リッチメニューを作成してユーザーに設定
-  await ensureRichMenuForUser(userId);
+  // リッチメニューを作成してユーザーに設定（非同期実行）
+  ensureRichMenuForUser(userId).catch(error => {
+    console.error('Rich menu setup error for new user:', error);
+  });
   
   // 新規ユーザーの場合、カウンセリングへ誘導
   const welcomeMessage = {
