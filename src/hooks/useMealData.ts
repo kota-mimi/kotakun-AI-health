@@ -120,12 +120,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     fetchMealData();
   }, [selectedDate, liffUser?.userId]);
 
-  // Firestoreデータとローカルデータを統合
+  // Firestoreデータのみを使用（localStorageとの統合を無効化）
   const mealData = {
-    breakfast: [...firestoreMealData.breakfast, ...currentDateData.mealData?.breakfast || []],
-    lunch: [...firestoreMealData.lunch, ...currentDateData.mealData?.lunch || []],
-    dinner: [...firestoreMealData.dinner, ...currentDateData.mealData?.dinner || []],
-    snack: [...firestoreMealData.snack, ...currentDateData.mealData?.snack || []]
+    breakfast: firestoreMealData.breakfast || [],
+    lunch: firestoreMealData.lunch || [],
+    dinner: firestoreMealData.dinner || [],
+    snack: firestoreMealData.snack || []
   };
 
   // 動的カロリー・PFC計算
@@ -213,25 +213,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           [currentMealType]: [...prev[currentMealType], newMeal]
         }));
       } else {
-        // Firestoreエラー時はローカルストレージに保存
-        const currentData = getCurrentDateData();
-        updateDateData({
-          mealData: {
-            ...currentData.mealData,
-            [currentMealType]: [...currentData.mealData[currentMealType], newMeal]
-          }
-        });
+        console.error('食事保存に失敗しました');
       }
     } catch (error) {
       console.error('食事保存エラー:', error);
-      // エラー時はローカルストレージに保存
-      const currentData = getCurrentDateData();
-      updateDateData({
-        mealData: {
-          ...currentData.mealData,
-          [currentMealType]: [...currentData.mealData[currentMealType], newMeal]
-        }
-      });
     }
   };
 
