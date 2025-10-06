@@ -1695,6 +1695,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
             imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
             console.log(`✅ 画像保存完了（重複防止）: ${imageId}`);
+          }
         } catch (firestoreError) {
           console.error('Firestore保存エラー、グローバルキャッシュを使用:', firestoreError);
           global.imageCache = global.imageCache || new Map();
