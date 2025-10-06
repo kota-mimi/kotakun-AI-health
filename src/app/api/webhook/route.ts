@@ -443,33 +443,45 @@ function analyzeMultipleFoods(text: string) {
   };
 }
 
-// リッチメニューの設定
+// リッチメニューの設定（3つのボタン）
 const RICH_MENU_CONFIG = {
   size: {
     width: 2500,
     height: 843
   },
   selected: false,
-  name: "食事記録メニュー",
+  name: "健康管理メニュー",
   chatBarText: "メニュー",
   areas: [
     {
       bounds: {
         x: 0,
         y: 0,
-        width: 1250,
+        width: 833,
         height: 843
       },
       action: {
-        type: "message",
-        text: "食事を記録したいです"
+        type: "postback",
+        data: "action=meal_record_menu"
       }
     },
     {
       bounds: {
-        x: 1250,
+        x: 833,
         y: 0,
-        width: 1250,
+        width: 834,
+        height: 843
+      },
+      action: {
+        type: "uri",
+        uri: "https://liff.line.me/2007945061-DEEaglg8/dashboard"
+      }
+    },
+    {
+      bounds: {
+        x: 1667,
+        y: 0,
+        width: 833,
         height: 843
       },
       action: {
@@ -774,109 +786,74 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   }
 
   // 時間帯・食事タイプの抽出
+  // シンプルな時間帯抽出（完全一致の場合のみ）
   const extractMealTimeAndFood = (text) => {
     const mealTimePatterns = {
-      breakfast: /朝|朝食|朝ごはん|朝飯|モーニング|ブレックファスト|breakfast/i,
-      lunch: /昼|昼食|昼ごはん|昼飯|ランチ|lunch/i, 
-      dinner: /夜|夕食|夕飯|夜ご飯|夜飯|晩飯|ディナー|dinner/i,
-      snack: /間食|おやつ|スナック|軽食|snack/i
+      breakfast: /朝|朝食|朝ごはん|朝飯/i,
+      lunch: /昼|昼食|昼ごはん|昼飯|ランチ/i, 
+      dinner: /夜|夕食|夕飯|夜ご飯|夜飯|晩飯|ディナー/i,
+      snack: /間食|おやつ|スナック/i
     };
     
     let mealType = null;
     let foodText = text;
     
-    // 時間帯パターンをチェック
-    for (const [type, pattern] of Object.entries(mealTimePatterns)) {
-      if (pattern.test(text)) {
-        mealType = type;
-        // マッチした時間帯文字を除去して食事名を抽出
-        foodText = text.replace(pattern, '').replace(/^[にでを]+|[にでを食べた記録して]+$/g, '').trim();
-        break;
+    // 完全な記録意図がある場合のみ時間帯を抽出
+    if (/記録/.test(text)) {
+      for (const [type, pattern] of Object.entries(mealTimePatterns)) {
+        if (pattern.test(text)) {
+          mealType = type;
+          foodText = text.replace(pattern, '').replace(/記録.*/, '').replace(/^[にでを]+|[にでを食べた]+$/g, '').trim();
+          break;
+        }
       }
     }
     
     return { mealType, foodText };
   };
   
-  // 食事記録の判定（時間帯パターン対応強化版）
+  // シンプルな食事記録判定（明確な記録意図のみ）
   const isFoodRecordMessage = (
-    // 明確な記録意図のパターン
-    /を食べた|食べました|いただきました|摂取|記録/.test(text) ||
-    
-    // 時間帯 + 食事名パターン（例：「朝にカレー」「夜ご飯でラーメン」）
-    /(朝|昼|夜|朝食|昼食|夕食|夜ご飯|ランチ|ディナー|間食|おやつ).*(カレー|ラーメン|パン|ご飯|うどん|そば|弁当|おにぎり|サラダ|卵|肉|魚|野菜|[ぁ-んァ-ン一-龯]{2,6})/.test(text) ||
-    
-    // 逆パターン（例：「カレーを朝に」「ラーメン夜食べた」）
-    /(カレー|ラーメン|パン|ご飯|うどん|そば|弁当|おにぎり|サラダ|卵|肉|魚|野菜|[ぁ-んァ-ン一-龯]{2,6}).*(朝|昼|夜|朝食|昼食|夕食|食べた|記録)/.test(text) ||
-    
-    // 複数食事（「と」で繋がれている）
-    (text.includes('と') && /[ぁ-んァ-ン一-龯]+と[ぁ-んァ-ン一-龯]+/.test(text)) ||
-    
-    // 単体の食事名のみ（質問要素がない場合）
-    (
-      // 具体的な料理名
-      (/おにぎり|おむすび|弁当|丼|カレー|シチュー|ハンバーグ|コロッケ|唐揚げ|から揚げ|焼き魚|刺身|寿司|天ぷら|フライ|煮物|炒め物|味噌汁|お味噌汁|ラーメン|うどん|そば|パスタ|チャーハン|オムライス/.test(text) ||
-       
-       // 基本食材（単体で使われる場合）
-       /^(パン|ご飯|白米|玄米|サラダ|スープ|卵|チーズ|ヨーグルト)$/.test(text) ||
-       
-       // ひらがな2-4文字の食べ物（単体）
-       /^[あ-ん]{2,4}$/.test(text)) &&
-      
-      // 質問要素がない
-      !(/？|\?|って|どう|何|なに|カロリー|栄養|太る|痩せる|健康|ダイエット|教えて|知りたい/.test(text))
-    )
+    // 「朝に唐揚げ食べた記録」「昼食でカレー記録して」など明確な記録意図
+    /(朝|昼|夜|朝食|昼食|夕食|夜ご飯|間食|おやつ).*(記録|食べた記録)/.test(text) &&
+    // 食事内容も含まれている
+    /[ぁ-んァ-ン一-龯]{2,}/.test(text.replace(/(朝|昼|夜|朝食|昼食|夕食|夜ご飯|間食|おやつ|記録|食べた|して)/g, ''))
   );
 
   if (isFoodRecordMessage) {
-    // 時間帯と食事名を抽出
+    // 直接記録処理（確認なし）
     const { mealType, foodText } = extractMealTimeAndFood(text);
     
-    // 食事内容を一時保存（postbackで使用）
-    console.log('食事記録：一時保存開始', { userId, text, mealType });
-    await storeTempMealData(userId, text, mealType);
-    console.log('食事記録：一時保存完了');
+    console.log('直接記録開始:', { userId, text, mealType, foodText });
     
-    // ローカル辞書チェック（コスト削減）
-    const quickResponse = FOOD_DATABASE[foodText] || FOOD_DATABASE[text];
+    // 食事内容を一時保存
+    await storeTempMealData(userId, foodText || text, mealType);
     
-    let displayText = foodText || text;
-    let nutritionInfo = '';
-    
-    if (quickResponse) {
-      // ローカル辞書にある場合は詳細栄養情報を表示
-      nutritionInfo = `\n${quickResponse.calories}kcal\nタンパク質 ${quickResponse.protein}g\n炭水化物 ${quickResponse.carbs}g\n脂質 ${quickResponse.fat}g`;
+    // 食事タイプが指定されている場合は直接記録
+    if (mealType) {
+      await saveMealRecord(userId, mealType, replyToken);
+      return;
+    } else {
+      // 食事タイプが未指定の場合は選択画面表示
+      await showMealTypeSelection(replyToken);
+      return;
     }
+  }
+
+  // 一般的な食事名（記録キーワードなし）の場合は食事タイプ選択
+  const isFoodName = (
+    // 食べ物の名前らしいが、記録キーワードがない
+    /カレー|ラーメン|うどん|そば|パン|おにぎり|弁当|サラダ|寿司|パスタ|ご飯|丼|定食|ハンバーグ|唐揚げ|焼き魚|天ぷら|味噌汁|スープ/.test(text) &&
+    !/(記録|食べた|です|でした|ました|だった|？|\?|って|どう|カロリー|栄養|太る|痩せる|ダイエット|健康|教えて|知りたい)/.test(text) &&
+    text.length <= 15 // 短い単語
+  );
+
+  if (isFoodName) {
+    // 食事内容を一時保存
+    await storeTempMealData(userId, text, null);
     
-    // 時間帯が指定されている場合の表示
-    const mealTypeText = mealType ? 
-      { breakfast: '朝食', lunch: '昼食', dinner: '夕食', snack: '間食' }[mealType] + 'で' : '';
-    
-    responseMessage = {
-      type: 'text',
-      text: `${mealTypeText}「${displayText}」${nutritionInfo}\n\n記録する？`,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '記録する',
-              data: 'action=save_meal'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback', 
-              label: quickResponse ? 'やめとく' : '詳細分析して記録',
-              data: quickResponse ? 'action=cancel' : 'action=analyze_meal'
-            }
-          }
-        ]
-      }
-    };
-    await replyMessage(replyToken, [responseMessage]);
+    // 食事タイプ選択画面表示
+    await showMealTypeSelection(replyToken);
     return;
   }
 
@@ -913,35 +890,37 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       return;
     }
 
-    // 食事画像を一時保存（画像のみなので meal type は未定）
+    // 食事画像を一時保存してAI分析
     await storeTempMealData(userId, '', imageContent);
-
-    const responseMessage = {
-      type: 'text',
-      text: '美味しそうな写真だね！\nAIで分析する？',
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '食事を記録',
-              data: 'action=save_meal_image'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'カロリーを知るだけ',
-              data: 'action=analyze_meal_image'
-            }
-          }
-        ]
-      }
-    };
-
-    await replyMessage(replyToken, [responseMessage]);
+    
+    // 直接AI分析して食事タイプ選択画面表示
+    try {
+      const aiService = new AIHealthService();
+      const mealAnalysis = await aiService.analyzeMealImage(imageContent);
+      
+      // AI分析結果を一時保存に更新
+      await storeTempMealData(userId, mealAnalysis.foodName || '写真の食事', null);
+      
+      const responseMessage = {
+        type: 'text',
+        text: `「${mealAnalysis.foodName || '写真の食事'}」を記録します！\n\nどの食事タイプですか？`
+      };
+      await replyMessage(replyToken, [responseMessage]);
+      
+      // 食事タイプ選択画面表示  
+      await showMealTypeSelection(replyToken);
+      
+    } catch (error) {
+      console.error('画像分析エラー:', error);
+      
+      // 分析失敗時も食事タイプ選択画面表示
+      const responseMessage = {
+        type: 'text',
+        text: '写真の食事を記録します！\n\nどの食事タイプですか？'
+      };
+      await replyMessage(replyToken, [responseMessage]);
+      await showMealTypeSelection(replyToken);
+    }
   } catch (error) {
     console.error('画像処理エラー:', error);
     await replyMessage(replyToken, [{
@@ -1115,51 +1094,35 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
 
   switch (action) {
 
+    case 'meal_record_menu':
+      // シンプルな食事記録メニュー
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '食事を記録しましょう！',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'postback', label: 'テキストで記録', data: 'action=text_record' } },
+            { type: 'action', action: { type: 'postback', label: '写真で記録', data: 'action=photo_record' } }
+          ]
+        }
+      }]);
+      break;
+
     case 'text_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '📝 テキストで記録してください！\n\n食事内容を文字で入力してください。\n例：「朝食：パンとコーヒー」\n例：「昼食：サラダとパスタ」'
+        text: '📝 食事内容を文字で入力してください！\n\n例：「カレー」「パンとコーヒー」\n\n入力後に食事タイプを選択できます。'
       }]);
       break;
 
     case 'photo_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '📷 写真で記録してください！\n\n食事の写真を撮って送ってください。\nAIが自動で食事内容を分析します。'
+        text: '📷 食事の写真を撮って送ってください！\n\nAIが自動で食事内容を分析し、食事タイプを選択できます。'
       }]);
       break;
 
 
-    case 'save_meal':
-    case 'save_meal_image':
-      // 食事を記録する - 時間帯が指定されているかチェック
-      const tempData = await getTempMealData(userId);
-      console.log('save_meal tempData:', tempData);
-      
-      if (!tempData) {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: 'データが保存されていません。もう一度食事内容を送ってください。'
-        }]);
-        return;
-      }
-      
-      if (tempData && tempData.mealType) {
-        // 時間帯が指定されている場合は直接記録
-        console.log('時間帯指定あり、直接記録:', tempData.mealType);
-        await analyzeMealBeforeRecord(userId, replyToken);
-      } else {
-        // 時間帯が未指定の場合は食事タイプ選択画面を表示
-        console.log('時間帯未指定、食事タイプ選択画面表示');
-        await showMealTypeSelection(replyToken);
-      }
-      break;
-
-    case 'analyze_meal':
-    case 'analyze_meal_image':
-      // カロリー分析のみ
-      await analyzeMealOnly(userId, replyToken);
-      break;
 
     case 'meal_breakfast':
     case 'meal_lunch':
