@@ -1576,6 +1576,9 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
 // 処理中のユーザーを追跡（重複防止）
 const processingUsers = new Set<string>();
 
+// 画像保存の重複防止（グローバル）
+const imageProcessingSet = new Set<string>();
+
 // 食事記録を保存
 async function saveMealRecord(userId: string, mealType: string, replyToken: string) {
   try {
@@ -1661,10 +1664,24 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // 画像が存在するが、まだ保存されていない場合のみ新規保存（重複防止強化）
     if (tempData.image && !imageId) {
       console.log('🖼️ 新しい画像の保存を開始...');
+      
+      // 強力な重複防止：画像のハッシュ値で一意性確保
+      const crypto = require('crypto');
+      const imageHash = crypto.createHash('md5').update(tempData.image).digest('hex');
+      const imageKey = `${userId}_${imageHash}`;
+      
+      if (imageProcessingSet.has(imageKey)) {
+        console.log('⚠️ この画像は既に処理中です:', imageKey);
+        return; // 処理を中断
+      }
+      
+      imageProcessingSet.add(imageKey);
+      
+      let shouldClearFlag = true;
+      
       try {
         const base64Data = tempData.image.toString('base64');
-        const timestamp = Date.now();
-        imageId = `meal_${userId}_${timestamp}`; // ユーザーID + タイムスタンプで一意性確保
+        imageId = `meal_${userId}_${imageHash.substring(0, 8)}`; // ハッシュベースID
         console.log('📝 生成された画像ID:', imageId);
         
         try {
@@ -1708,6 +1725,12 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       } catch (error) {
         console.error('フォールバック画像処理エラー:', error);
         imageUrl = null;
+      } finally {
+        // 処理完了時にフラグをクリア
+        if (shouldClearFlag) {
+          imageProcessingSet.delete(imageKey);
+          console.log('🧹 画像処理フラグをクリア:', imageKey);
+        }
       }
     } else if (imageId && imageUrl) {
       console.log(`既存の画像を再利用（コスト最適化): ${imageId} -> ${imageUrl}`);
