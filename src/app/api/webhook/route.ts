@@ -1518,6 +1518,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
           imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
           console.log(`画像Firestore保存完了: ${imageId}`);
+          console.log(`🖼️ 生成された画像URL: ${imageUrl}`);
         } catch (firestoreError) {
           console.error('Firestore保存エラー、フォールバックを使用:', firestoreError);
           // フォールバック: グローバルキャッシュに保存して、画像URL生成
@@ -1526,6 +1527,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
           imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
           console.log(`フォールバック画像URL生成: ${imageUrl}`);
+          console.log(`🖼️ フォールバック画像URL: ${imageUrl}`);
         }
         
         console.log(`画像処理完了: ${tempData.image.length} bytes`);

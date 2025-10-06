@@ -12,6 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    console.log('🖼️ 画像リクエスト受信:', id);
     
     // idが "userId/imageId" の形式で来る場合と、古い形式の "imageId" の場合を処理
     let userId: string;
@@ -20,6 +21,7 @@ export async function GET(
     if (id.includes('/')) {
       // 新しい形式: userId/imageId
       [userId, imageId] = id.split('/');
+      console.log(`🖼️ 新形式解析: userId=${userId}, imageId=${imageId}`);
     } else {
       // 古い形式の互換性のため、まずグローバルキャッシュをチェック
       const globalCache = global.imageCache;
@@ -96,6 +98,7 @@ export async function GET(
       if (doc.exists) {
         const data = doc.data();
         if (data?.base64Data) {
+          console.log(`🖼️ Firestore画像発見: ${userId}/${imageId}`);
           const base64Data = data.base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
           const buffer = Buffer.from(base64Data, 'base64');
           
@@ -106,6 +109,8 @@ export async function GET(
             },
           });
         }
+      } else {
+        console.log(`🖼️ Firestore画像なし: ${userId}/${imageId}`);
       }
     } catch (firestoreError) {
       console.error('Firestore画像取得エラー:', firestoreError);
