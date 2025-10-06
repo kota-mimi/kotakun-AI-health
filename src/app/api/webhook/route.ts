@@ -1149,14 +1149,13 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   switch (action) {
 
     case 'meal_record_menu':
-      // 直接選択（中間メッセージなし）
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '🍽️',
+        text: '食事を記録しましょう！',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'postback', label: 'テキスト入力', data: 'action=text_record' } },
-            { type: 'action', action: { type: 'camera', label: 'カメラ撮影' } }
+            { type: 'action', action: { type: 'postback', label: 'テキストで記録', data: 'action=text_record' } },
+            { type: 'action', action: { type: 'camera', label: '写真で記録' } }
           ]
         }
       }]);
