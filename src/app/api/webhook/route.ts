@@ -616,6 +616,9 @@ async function handleEvent(event: any) {
 async function handleMessage(replyToken: string, source: any, message: any) {
   const { userId } = source;
   
+  // 既存ユーザーのリッチメニューも確保
+  await ensureRichMenuForUser(userId);
+  
   // ユーザー認証とプロファイル取得
   try {
     const db = admin.firestore();
@@ -934,10 +937,7 @@ async function handleFollow(replyToken: string, source: any) {
   const { userId } = source;
   
   // リッチメニューを作成してユーザーに設定
-  const richMenuId = await createRichMenu();
-  if (richMenuId) {
-    await setRichMenuForUser(userId, richMenuId);
-  }
+  await ensureRichMenuForUser(userId);
   
   // 新規ユーザーの場合、カウンセリングへ誘導
   const welcomeMessage = {
@@ -991,16 +991,39 @@ async function replyMessage(replyToken: string, messages: any[]) {
 }
 
 // リッチメニューを作成する関数
+// シンプルなリッチメニュー画像を生成（PNG形式）
+function createRichMenuImage() {
+  // 簡単なテキストベースの画像データ（実際にはCanvas APIやSharpライブラリを使用）
+  // ここでは1x1の透明PNG（最小サイズ）を返す
+  const pngHeader = Buffer.from([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+    0x49, 0x48, 0x44, 0x52, // IHDR
+    0x00, 0x00, 0x09, 0xC4, // width: 2500
+    0x00, 0x00, 0x03, 0x4B, // height: 843
+    0x08, 0x02, 0x00, 0x00, 0x00, // bit depth, color type, compression, filter, interlace
+    0xA4, 0xA1, 0xB2, 0x7E, // CRC
+    0x00, 0x00, 0x00, 0x0C, // IDAT chunk length
+    0x49, 0x44, 0x41, 0x54, // IDAT
+    0x08, 0x1D, 0x01, 0x01, 0x00, 0x00, 0xFE, 0xFF, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, // minimal data
+    0x00, 0x00, 0x00, 0x00, // IEND chunk length
+    0x49, 0x45, 0x4E, 0x44, // IEND
+    0xAE, 0x42, 0x60, 0x82  // CRC
+  ]);
+  
+  return pngHeader;
+}
+
 async function createRichMenu() {
   const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   
   if (!accessToken) {
     console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
-    return;
+    return null;
   }
 
   try {
-    // リッチメニューを作成
+    // 1. リッチメニューを作成
     const response = await fetch('https://api.line.me/v2/bot/richmenu', {
       method: 'POST',
       headers: {
@@ -1017,11 +1040,63 @@ async function createRichMenu() {
     }
 
     const result = await response.json();
-    console.log('Rich menu created:', result.richMenuId);
-    return result.richMenuId;
+    const richMenuId = result.richMenuId;
+    console.log('Rich menu created:', richMenuId);
+
+    // 2. 画像をアップロード
+    const imageBuffer = createRichMenuImage();
+    
+    const imageResponse = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'image/png',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: imageBuffer,
+    });
+
+    if (!imageResponse.ok) {
+      console.error('Failed to upload rich menu image:', await imageResponse.text());
+      // 画像アップロード失敗でもメニューIDは返す
+    } else {
+      console.log('Rich menu image uploaded successfully');
+    }
+
+    return richMenuId;
   } catch (error) {
     console.error('Error creating rich menu:', error);
     return null;
+  }
+}
+
+// ユーザーのリッチメニューを確保する関数
+async function ensureRichMenuForUser(userId: string) {
+  try {
+    const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+    if (!accessToken) return;
+
+    // 既存のリッチメニューを確認
+    const checkResponse = await fetch(`https://api.line.me/v2/bot/user/${userId}/richmenu`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (checkResponse.ok) {
+      // 既にリッチメニューがある場合は何もしない
+      console.log('User already has rich menu');
+      return;
+    }
+
+    // リッチメニューがない場合は作成・設定
+    const richMenuId = await createRichMenu();
+    if (richMenuId) {
+      await setRichMenuForUser(userId, richMenuId);
+      console.log('Rich menu created and set for user');
+    }
+  } catch (error) {
+    console.error('Error ensuring rich menu:', error);
   }
 }
 
