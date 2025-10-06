@@ -705,7 +705,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   }
 
   // 「記録」ボタンの応答 - シンプル化
-  if (text === '記録' || text.includes('記録')) {
+  if (text === '記録' || (text.includes('記録') && !/(朝|昼|夜|食|食べた|オムライス|カレー|ラーメン|パン|ご飯|うどん|そば|弁当|おにぎり|サラダ|卵|肉|魚|野菜)/.test(text))) {
     responseMessage = {
       type: 'text',
       text: '何記録する？\n下から選んでね！',
@@ -715,7 +715,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             type: 'action',
             action: {
               type: 'postback',
-              label: '📝 テキストで記録',
+              label: 'テキストで記録',
               data: 'action=text_record'
             }
           },
@@ -723,7 +723,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             type: 'action',
             action: {
               type: 'postback',
-              label: '📷 写真で記録',
+              label: '写真で記録',
               data: 'action=photo_record'
             }
           }
