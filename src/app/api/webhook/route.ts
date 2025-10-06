@@ -1657,28 +1657,44 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     let imageUrl = tempData.imageUrl; // 既存URLがあれば使用
     let imageId = tempData.imageId;   // 既存IDがあれば使用
     
-    // 画像が存在するが、まだ保存されていない場合のみ新規保存
+    // 画像が存在するが、まだ保存されていない場合のみ新規保存（重複防止強化）
     if (tempData.image && !imageId) {
+      console.log('🖼️ 新しい画像の保存を開始...');
       try {
         const base64Data = tempData.image.toString('base64');
-        imageId = `meal_${userId}_${Date.now()}`; // ユーザーID + タイムスタンプで一意性確保
+        const timestamp = Date.now();
+        imageId = `meal_${userId}_${timestamp}`; // ユーザーID + タイムスタンプで一意性確保
+        console.log('📝 生成された画像ID:', imageId);
         
         try {
-          // Firestoreのユーザー画像コレクションに保存
-          await admin.firestore()
+          // 重複チェック：既に同じIDで保存済みかチェック
+          const existingDoc = await admin.firestore()
             .collection('users')
             .doc(userId)
             .collection('images')
             .doc(imageId)
-            .set({
-              base64Data: `data:image/jpeg;base64,${base64Data}`,
-              mimeType: 'image/jpeg',
-              createdAt: new Date()
-            });
-          
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
-          imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
-          console.log(`フォールバック: 画像Firestore保存完了: ${imageId}`);
+            .get();
+
+          if (existingDoc.exists) {
+            console.log('⚠️ 画像は既に保存済みです:', imageId);
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
+            imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
+          } else {
+            // 新規保存（リトライなし、一回のみ）
+            await admin.firestore()
+              .collection('users')
+              .doc(userId)
+              .collection('images')
+              .doc(imageId)
+              .set({
+                base64Data: `data:image/jpeg;base64,${base64Data}`,
+                mimeType: 'image/jpeg',
+                createdAt: new Date()
+              });
+            
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app';
+            imageUrl = `${baseUrl}/api/image/${userId}/${imageId}`;
+            console.log(`✅ 画像保存完了（重複防止）: ${imageId}`);
         } catch (firestoreError) {
           console.error('Firestore保存エラー、グローバルキャッシュを使用:', firestoreError);
           global.imageCache = global.imageCache || new Map();
