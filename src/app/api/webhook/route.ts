@@ -833,7 +833,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     const { mealType, foodText } = extractMealTimeAndFood(text);
     
     // 食事内容を一時保存（postbackで使用）
+    console.log('食事記録：一時保存開始', { userId, text, mealType });
     await storeTempMealData(userId, text, mealType);
+    console.log('食事記録：一時保存完了');
     
     // ローカル辞書チェック（コスト削減）
     const quickResponse = FOOD_DATABASE[foodText] || FOOD_DATABASE[text];
@@ -1263,6 +1265,7 @@ async function recordWeight(userId: string, weight: number) {
 
 // 一時的な食事データ保存（Firestore）
 async function storeTempMealData(userId: string, text: string, mealTypeOrImage?: string | Buffer) {
+  console.log('storeTempMealData呼び出し:', { userId, text, mealTypeOrImage: typeof mealTypeOrImage });
   try {
     const db = admin.firestore();
     const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
