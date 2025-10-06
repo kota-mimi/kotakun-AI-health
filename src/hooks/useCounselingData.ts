@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from './useAuth';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 interface CounselingResult {
   aiAnalysis: {
@@ -166,6 +167,18 @@ export function useCounselingData() {
         
         // 次にFirestoreから最新データを取得（バックグラウンド）
         try {
+          // キャッシュキー生成
+          const cacheKey = createCacheKey('counseling', lineUserId);
+          
+          // キャッシュチェック
+          const cachedCounseling = apiCache.get(cacheKey);
+          if (cachedCounseling) {
+            console.log('🎯 [PRODUCTION] カウンセリングデータをキャッシュから取得');
+            setCounselingResult(cachedCounseling);
+            setIsLoading(false);
+            return;
+          }
+          
           console.log('🔥 [PRODUCTION] Starting Firestore API call...');
           const startTime = Date.now();
           
@@ -202,6 +215,8 @@ export function useCounselingData() {
                 return;
               }
               
+              // キャッシュに保存（10分間有効）
+              apiCache.set(cacheKey, data.counselingResult, 10 * 60 * 1000);
               console.log('✅ カウンセリング結果をFirestoreから設定:', data.counselingResult);
               setCounselingResult(data.counselingResult);
             } else {

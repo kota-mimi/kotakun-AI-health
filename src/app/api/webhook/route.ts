@@ -773,10 +773,41 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
   }
 
-  // 食事記録の判定（記録する意図が明確な場合のみ）
+  // 時間帯・食事タイプの抽出
+  const extractMealTimeAndFood = (text) => {
+    const mealTimePatterns = {
+      breakfast: /朝|朝食|朝ごはん|朝飯|モーニング|ブレックファスト|breakfast/i,
+      lunch: /昼|昼食|昼ごはん|昼飯|ランチ|lunch/i, 
+      dinner: /夜|夕食|夕飯|夜ご飯|夜飯|晩飯|ディナー|dinner/i,
+      snack: /間食|おやつ|スナック|軽食|snack/i
+    };
+    
+    let mealType = null;
+    let foodText = text;
+    
+    // 時間帯パターンをチェック
+    for (const [type, pattern] of Object.entries(mealTimePatterns)) {
+      if (pattern.test(text)) {
+        mealType = type;
+        // マッチした時間帯文字を除去して食事名を抽出
+        foodText = text.replace(pattern, '').replace(/^[にでを]+|[にでを食べた記録して]+$/g, '').trim();
+        break;
+      }
+    }
+    
+    return { mealType, foodText };
+  };
+  
+  // 食事記録の判定（時間帯パターン対応強化版）
   const isFoodRecordMessage = (
     // 明確な記録意図のパターン
     /を食べた|食べました|いただきました|摂取|記録/.test(text) ||
+    
+    // 時間帯 + 食事名パターン（例：「朝にカレー」「夜ご飯でラーメン」）
+    /(朝|昼|夜|朝食|昼食|夕食|夜ご飯|ランチ|ディナー|間食|おやつ).*(カレー|ラーメン|パン|ご飯|うどん|そば|弁当|おにぎり|サラダ|卵|肉|魚|野菜|[ぁ-んァ-ン一-龯]{2,6})/.test(text) ||
+    
+    // 逆パターン（例：「カレーを朝に」「ラーメン夜食べた」）
+    /(カレー|ラーメン|パン|ご飯|うどん|そば|弁当|おにぎり|サラダ|卵|肉|魚|野菜|[ぁ-んァ-ン一-龯]{2,6}).*(朝|昼|夜|朝食|昼食|夕食|食べた|記録)/.test(text) ||
     
     // 複数食事（「と」で繋がれている）
     (text.includes('と') && /[ぁ-んァ-ン一-龯]+と[ぁ-んァ-ン一-龯]+/.test(text)) ||
@@ -798,29 +829,46 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
   );
 
   if (isFoodRecordMessage) {
+    // 時間帯と食事名を抽出
+    const { mealType, foodText } = extractMealTimeAndFood(text);
     
     // 食事内容を一時保存（postbackで使用）
-    await storeTempMealData(userId, text);
+    await storeTempMealData(userId, text, mealType);
+    
+    // ローカル辞書チェック（コスト削減）
+    const quickResponse = FOOD_DATABASE[foodText] || FOOD_DATABASE[text];
+    
+    let displayText = foodText || text;
+    let nutritionInfo = '';
+    
+    if (quickResponse) {
+      // ローカル辞書にある場合は詳細栄養情報を表示
+      nutritionInfo = `\n📊 ${quickResponse.calories}kcal P${quickResponse.protein}g C${quickResponse.carbs}g F${quickResponse.fat}g`;
+    }
+    
+    // 時間帯が指定されている場合の表示
+    const mealTypeText = mealType ? 
+      { breakfast: '朝食', lunch: '昼食', dinner: '夕食', snack: '間食' }[mealType] + 'で' : '';
     
     responseMessage = {
       type: 'text',
-      text: `「${text.length > 20 ? text.substring(0, 20) + '...' : text}」だね！\n\nどうする？`,
+      text: `${mealTypeText}「${displayText}」${nutritionInfo}\n\n記録する？`,
       quickReply: {
         items: [
           {
             type: 'action',
             action: {
               type: 'postback',
-              label: '食事を記録',
+              label: '📝 記録する',
               data: 'action=save_meal'
             }
           },
           {
             type: 'action',
             action: {
-              type: 'postback',
-              label: 'カロリーを知るだけ',
-              data: 'action=analyze_meal'
+              type: 'postback', 
+              label: quickResponse ? '❌ やめとく' : '📊 詳細分析して記録',
+              data: quickResponse ? 'action=cancel' : 'action=analyze_meal'
             }
           }
         ]
@@ -863,7 +911,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       return;
     }
 
-    // 食事画像を一時保存
+    // 食事画像を一時保存（画像のみなので meal type は未定）
     await storeTempMealData(userId, '', imageContent);
 
     const responseMessage = {
@@ -1082,8 +1130,15 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
 
     case 'save_meal':
     case 'save_meal_image':
-      // 食事を記録する - まずAI分析してから食事タイプ選択
-      await analyzeMealBeforeRecord(userId, replyToken);
+      // 食事を記録する - 時間帯が指定されているかチェック
+      const tempData = await getTempMealData(userId);
+      if (tempData && tempData.mealType) {
+        // 時間帯が指定されている場合は直接記録
+        await analyzeMealBeforeRecord(userId, replyToken);
+      } else {
+        // 時間帯が未指定の場合は食事タイプ選択画面を表示
+        await showMealTypeSelection(replyToken);
+      }
       break;
 
     case 'analyze_meal':
@@ -1195,7 +1250,7 @@ async function recordWeight(userId: string, weight: number) {
 }
 
 // 一時的な食事データ保存（Firestore）
-async function storeTempMealData(userId: string, text: string, image?: Buffer) {
+async function storeTempMealData(userId: string, text: string, mealTypeOrImage?: string | Buffer) {
   try {
     const db = admin.firestore();
     const tempRef = db.collection('users').doc(userId).collection('tempMealData').doc('current');
@@ -1231,9 +1286,15 @@ async function storeTempMealData(userId: string, text: string, image?: Buffer) {
       }
     }
     
+    // mealTypeOrImageがstringなら時間帯、Bufferなら画像として処理
+    const isImage = Buffer.isBuffer(mealTypeOrImage);
+    const mealType = !isImage ? mealTypeOrImage : null;
+    const imageData = isImage ? mealTypeOrImage : null;
+    
     await tempRef.set({
       text,
-      image: image && !imageId ? image.toString('base64') : null, // 永続保存失敗時のみ一時保存
+      mealType, // 時間帯情報を保存
+      image: imageData && !imageId ? imageData.toString('base64') : null, // 永続保存失敗時のみ一時保存
       imageId, // 永続保存されたImageID
       imageUrl, // 生成されたURL
       timestamp: new Date(),
@@ -1405,8 +1466,15 @@ async function analyzeMealBeforeRecord(userId: string, replyToken: string) {
     // AI分析結果を一時データに保存
     await storeTempMealAnalysis(userId, analysis);
     
-    // 食事タイプ選択画面へ
-    await showMealTypeSelection(replyToken);
+    // 時間帯が事前に指定されている場合は自動選択、そうでなければ選択画面
+    const tempData = await getTempMealData(userId);
+    if (tempData && tempData.mealType) {
+      // 時間帯が指定されている場合は直接記録
+      await saveMealRecord(userId, tempData.mealType, replyToken);
+    } else {
+      // 時間帯が指定されていない場合は選択画面
+      await showMealTypeSelection(replyToken);
+    }
 
   } catch (error) {
     console.error('食事記録前分析エラー:', error);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '@/lib/utils';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 interface WeightEntry {
   id: string;
@@ -52,11 +53,27 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const lineUserId = liffUser?.userId;
       if (!lineUserId) return;
       
+      // キャッシュキー生成
+      const cacheKey = createCacheKey('weight', lineUserId, 'month');
+      
+      // キャッシュチェック
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData) {
+        console.log('🎯 体重データをキャッシュから取得');
+        setRealWeightData(cachedData);
+        return;
+      }
+      
       try {
+        console.log('🔄 体重データをAPIから取得');
         const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
         if (response.ok) {
           const result = await response.json();
-          setRealWeightData(result.data || []);
+          const weightData = result.data || [];
+          
+          // キャッシュに保存（5分間有効）
+          apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
+          setRealWeightData(weightData);
         }
       } catch (error) {
         console.error('体重データ取得エラー:', error);

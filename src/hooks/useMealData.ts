@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { generateId } from '@/lib/utils';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 interface FoodItem {
   id: string;
@@ -70,7 +71,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   const currentDateData = getCurrentDateData();
   
-  // Firestoreからデータを取得
+  // Firestoreからデータを取得（キャッシュ対応）
   useEffect(() => {
     const fetchMealData = async () => {
       const lineUserId = liffUser?.userId;
@@ -81,7 +82,20 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       }
       const dateStr = selectedDate.toISOString().split('T')[0];
       
+      // キャッシュキー生成
+      const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+      
+      // キャッシュチェック
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData) {
+        console.log('🎯 食事データをキャッシュから取得:', dateStr);
+        setFirestoreMealData(cachedData);
+        setIsLoading(false);
+        return;
+      }
+      
       try {
+        console.log('🔄 食事データをAPIから取得:', dateStr);
         const response = await fetch('/api/meals', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -91,6 +105,8 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.mealData) {
+            // キャッシュに保存（5分間有効）
+            apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
           }
         }

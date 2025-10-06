@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { useAuth } from './useAuth';
 import { generateId } from '@/lib/utils';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 interface Exercise {
   id: string;
@@ -70,12 +71,28 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       }
       const currentDate = selectedDate.toISOString().split('T')[0];
       
+      // キャッシュキー生成
+      const cacheKey = createCacheKey('exercises', lineUserId, currentDate);
+      
+      // キャッシュチェック
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData) {
+        console.log('🎯 運動データをキャッシュから取得:', currentDate);
+        setFirestoreExerciseData(cachedData);
+        return;
+      }
+      
       try {
+        console.log('🔄 運動データをAPIから取得:', currentDate);
         const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${currentDate}`);
         
         if (response.ok) {
           const result = await response.json();
-          setFirestoreExerciseData(result.data || []);
+          const exerciseData = result.data || [];
+          
+          // キャッシュに保存（5分間有効）
+          apiCache.set(cacheKey, exerciseData, 5 * 60 * 1000);
+          setFirestoreExerciseData(exerciseData);
         }
       } catch (error) {
         console.error('🏃 useExerciseData fetch error:', error);
