@@ -16,6 +16,7 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
       aiAnalysis: counselingResult.aiAnalysis,
       userProfile: counselingResult.userProfile,
       updatedAt: new Date(),
+      updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
       timestamp: Date.now()
     };
     
@@ -35,6 +36,7 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
         targetWeight: counselingResult.userProfile?.targetWeight || counselingResult.answers?.targetWeight,
       },
       updatedAt: new Date(),
+      updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
     };
     
     await userRef.set(profileData, { merge: true });
@@ -89,7 +91,9 @@ export async function POST(request: NextRequest) {
           }
         },
         completedAt: new Date(),
+        completedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
         createdAt: new Date(),
+        createdAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
         lineUserId: lineUserId,
         timestamp: Date.now()
       };
@@ -121,6 +125,7 @@ export async function POST(request: NextRequest) {
           allergies: answers.allergies ? [answers.allergies] : [],
         },
         updatedAt: new Date(),
+      updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
       };
       
       await userRef.set(profileData, { merge: true });

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       recordData.note = note.trim();
     }
 
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
 
     // Admin SDK で直接保存
     const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     // 指定期間のデータを取得
     for (let i = 0; i < days; i++) {
       const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       try {
         const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);

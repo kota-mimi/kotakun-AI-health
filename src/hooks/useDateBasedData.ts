@@ -22,9 +22,9 @@ export function useDateBasedData() {
   // localStorage自動保存・復元機能
   const localStorage = useLocalStorage<Record<string, DateBasedDataEntry>>('healthApp_dateBasedData', {});
 
-  // 日付のキーを生成
+  // 日付のキーを生成（日本時間基準）
   const getDateKey = (date: Date) => {
-    return date.toISOString().split('T')[0]; // YYYY-MM-DD形式
+    return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD形式（日本時間）
   };
 
   // 現在選択されている日付のデータを取得または初期化

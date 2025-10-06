@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       riskFactors: analysis.riskFactors,
       recommendations: analysis.recommendations,
       analyzedAt: new Date().toISOString(),
+      analyzedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
     };
 
     // LINEでAIアドバイスを送信（テストモードまたは無効なuserIdではスキップ）

@@ -58,7 +58,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               },
               {
                 type: 'text',
-                text: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+                text: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
                 size: 'md',
                 color: '#999999',
                 flex: 0
@@ -146,7 +146,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
 
 // 複数食事用のFlexメッセージ
 function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string) {
-  const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
   
   // 各食事のアイテムを生成（薄い線のフレームで囲む）
   const mealItems = analysis.meals.map((meal: any) => ({
