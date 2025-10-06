@@ -904,7 +904,17 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       const mealAnalysis = await aiService.analyzeMealImage(imageContent);
       
       // AI分析結果を一時保存に更新
-      await storeTempMealData(userId, mealAnalysis.foodName || '写真の食事', null);
+      const recognizedFoodName = mealAnalysis.foodName || '写真の食事';
+      console.log('🍽️ AI分析結果:');
+      console.log('- foodName:', mealAnalysis.foodName);
+      console.log('- foodItems:', mealAnalysis.foodItems);
+      console.log('- calories:', mealAnalysis.calories);
+      console.log('- 保存する食事名:', recognizedFoodName);
+      
+      await storeTempMealData(userId, recognizedFoodName, null);
+      
+      // AI分析結果も一時保存
+      await storeTempMealAnalysis(userId, mealAnalysis);
       
       // 食事タイプ選択画面のみ表示（メッセージは統合）
       await showMealTypeSelection(replyToken);
