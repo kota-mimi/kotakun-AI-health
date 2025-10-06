@@ -1653,15 +1653,15 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     const db = admin.firestore();
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 画像処理：毎回新しい画像として保存（古い画像の再利用を防止）
-    let imageUrl = null;
-    let imageId = null;
+    // 画像処理：効率的な保存（コスト最適化）
+    let imageUrl = tempData.imageUrl; // 既存URLがあれば使用
+    let imageId = tempData.imageId;   // 既存IDがあれば使用
     
-    // 画像が存在する場合は毎回新しく保存
-    if (tempData.image) {
+    // 画像が存在するが、まだ保存されていない場合のみ新規保存
+    if (tempData.image && !imageId) {
       try {
         const base64Data = tempData.image.toString('base64');
-        imageId = `meal_${generateId()}`;
+        imageId = `meal_${userId}_${Date.now()}`; // ユーザーID + タイムスタンプで一意性確保
         
         try {
           // Firestoreのユーザー画像コレクションに保存
@@ -1691,6 +1691,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         console.error('フォールバック画像処理エラー:', error);
         imageUrl = null;
       }
+    } else if (imageId && imageUrl) {
+      console.log(`既存の画像を再利用（コスト最適化): ${imageId} -> ${imageUrl}`);
     }
     
     // 複数食事対応の食事データ作成
