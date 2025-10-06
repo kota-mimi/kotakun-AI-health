@@ -843,7 +843,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     if (quickResponse) {
       // ローカル辞書にある場合は詳細栄養情報を表示
-      nutritionInfo = `\n📊 ${quickResponse.calories}kcal P${quickResponse.protein}g C${quickResponse.carbs}g F${quickResponse.fat}g`;
+      nutritionInfo = `\n${quickResponse.calories}kcal\nタンパク質 ${quickResponse.protein}g\n炭水化物 ${quickResponse.carbs}g\n脂質 ${quickResponse.fat}g`;
     }
     
     // 時間帯が指定されている場合の表示
@@ -859,7 +859,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             type: 'action',
             action: {
               type: 'postback',
-              label: '📝 記録する',
+              label: '記録する',
               data: 'action=save_meal'
             }
           },
@@ -867,7 +867,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             type: 'action',
             action: {
               type: 'postback', 
-              label: quickResponse ? '❌ やめとく' : '📊 詳細分析して記録',
+              label: quickResponse ? 'やめとく' : '詳細分析して記録',
               data: quickResponse ? 'action=cancel' : 'action=analyze_meal'
             }
           }
@@ -1132,11 +1132,23 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'save_meal_image':
       // 食事を記録する - 時間帯が指定されているかチェック
       const tempData = await getTempMealData(userId);
+      console.log('save_meal tempData:', tempData);
+      
+      if (!tempData) {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'データが保存されていません。もう一度食事内容を送ってください。'
+        }]);
+        return;
+      }
+      
       if (tempData && tempData.mealType) {
         // 時間帯が指定されている場合は直接記録
+        console.log('時間帯指定あり、直接記録:', tempData.mealType);
         await analyzeMealBeforeRecord(userId, replyToken);
       } else {
         // 時間帯が未指定の場合は食事タイプ選択画面を表示
+        console.log('時間帯未指定、食事タイプ選択画面表示');
         await showMealTypeSelection(replyToken);
       }
       break;
