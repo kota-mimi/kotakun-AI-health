@@ -1678,7 +1678,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     if (analysis.isMultipleMeals) {
       mealData = {
         id: generateId(),
-        name: tempData.text || analysis.meals?.map((m: any) => m.name).join('、') || '食事',
+        name: analysis.meals?.map((m: any) => m.name).join('、') || tempData.text || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
         time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
         type: mealType,
@@ -1698,7 +1698,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     } else {
       mealData = {
         id: generateId(),
-        name: tempData.text || (analysis.foodItems?.[0]) || '食事',
+        name: (analysis.foodItems?.[0]) || tempData.text || '食事',
         mealTime: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
         time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
         type: mealType,
@@ -1765,7 +1765,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     }[mealType] || '食事';
 
     // スクリーンショット通りのシンプルなFlexメッセージ（食事名を渡す）
-    const mealName = tempData.text || (analysis.foodItems?.[0]) || '食事'; // テキスト優先、次にAI認識した料理名
+    const mealName = (analysis.foodItems?.[0]) || tempData.text || '食事'; // AI認識した料理名優先、次にテキスト
     console.log('FlexMessage作成 - imageUrl:', imageUrl); // デバッグログ追加
     const flexMessage = createMealFlexMessage(mealTypeJa, analysis, imageUrl, mealName);
 
