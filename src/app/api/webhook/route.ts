@@ -1581,6 +1581,14 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     console.log('保存する食事データ:', JSON.stringify(mealData, null, 2));
     
+    // 一意のID生成（リトライしても同じIDを使用）
+    const uniqueMealId = `meal_${generateId()}`;
+    const finalMealData = {
+      ...mealData,
+      id: uniqueMealId,
+      timestamp: new Date(),
+    };
+    
     // リトライ機能付きでデータ保存
     await retryOperation(
       async () => {
@@ -1592,11 +1600,15 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         const meals = existingData.meals || [];
         
-        // 新しい食事を追加
-        meals.push({
-          ...mealData,
-          timestamp: new Date(),
-        });
+        // 同じIDの食事が既に存在するかチェック（重複防止）
+        const existingMealIndex = meals.findIndex(meal => meal.id === uniqueMealId);
+        if (existingMealIndex === -1) {
+          // 新しい食事を追加（重複がない場合のみ）
+          meals.push(finalMealData);
+        } else {
+          // 既に存在する場合は更新
+          meals[existingMealIndex] = finalMealData;
+        }
 
         await recordRef.set({
           meals,
@@ -2353,12 +2365,21 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         const exercises = existingData.exercises || [];
         
-        // 新しい運動を追加
-        exercises.push({
-          ...exerciseData,
-          id: `exercise_${Date.now()}`,
-          timestamp: new Date(),
-        });
+        // 同じIDの運動が既に存在するかチェック（重複防止）
+        const existingExerciseIndex = exercises.findIndex(ex => ex.id === exerciseData.id);
+        if (existingExerciseIndex === -1) {
+          // 新しい運動を追加（重複がない場合のみ）
+          exercises.push({
+            ...exerciseData,
+            timestamp: new Date(),
+          });
+        } else {
+          // 既に存在する場合は更新
+          exercises[existingExerciseIndex] = {
+            ...exerciseData,
+            timestamp: new Date(),
+          };
+        }
 
         await recordRef.set({
           exercises,
@@ -2477,12 +2498,21 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
         const existingData = existingDoc.exists ? existingDoc.data() : {};
         const exercises = existingData.exercises || [];
         
-        // 新しい運動を追加
-        exercises.push({
-          ...exerciseData,
-          id: `exercise_${Date.now()}`,
-          timestamp: new Date(),
-        });
+        // 同じIDの運動が既に存在するかチェック（重複防止）
+        const existingExerciseIndex = exercises.findIndex(ex => ex.id === exerciseData.id);
+        if (existingExerciseIndex === -1) {
+          // 新しい運動を追加（重複がない場合のみ）
+          exercises.push({
+            ...exerciseData,
+            timestamp: new Date(),
+          });
+        } else {
+          // 既に存在する場合は更新
+          exercises[existingExerciseIndex] = {
+            ...exerciseData,
+            timestamp: new Date(),
+          };
+        }
 
         await recordRef.set({
           exercises,
