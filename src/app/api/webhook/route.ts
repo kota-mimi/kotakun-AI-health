@@ -1562,11 +1562,23 @@ async function analyzeMealOnly(userId: string, replyToken: string) {
   }
 }
 
+// 処理中のユーザーを追跡（重複防止）
+const processingUsers = new Set<string>();
+
 // 食事記録を保存
 async function saveMealRecord(userId: string, mealType: string, replyToken: string) {
   try {
+    // 重複処理防止
+    const processingKey = `${userId}_${mealType}`;
+    if (processingUsers.has(processingKey)) {
+      console.log('⚠️ 重複処理を防止:', processingKey);
+      return;
+    }
+    processingUsers.add(processingKey);
+
     const tempData = await getTempMealData(userId);
     if (!tempData) {
+      processingUsers.delete(processingKey);
       await replyMessage(replyToken, [{
         type: 'text',
         text: 'データが見つかりません。もう一度食事内容を送ってください。'
@@ -1717,12 +1729,13 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     console.log('保存する食事データ:', JSON.stringify(mealData, null, 2));
     
-    // 一意のID生成（リトライしても同じIDを使用）
-    const uniqueMealId = `meal_${generateId()}`;
+    // 一意のID生成（ユーザーID + タイムスタンプベース、重複防止）
+    const now = new Date();
+    const uniqueMealId = `meal_${userId}_${now.getTime()}_${mealType}`;
     const finalMealData = {
       ...mealData,
       id: uniqueMealId,
-      timestamp: new Date(),
+      timestamp: now,
     };
     
     // リトライ機能付きでデータ保存
@@ -1766,7 +1779,11 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
 
     // スクリーンショット通りのシンプルなFlexメッセージ（食事名を渡す）
     const mealName = (analysis.foodItems?.[0]) || tempData.text || '食事'; // AI認識した料理名優先、次にテキスト
-    console.log('FlexMessage作成 - imageUrl:', imageUrl); // デバッグログ追加
+    console.log('🔍 FlexMessage作成デバッグ:');
+    console.log('- analysis.foodItems:', analysis.foodItems);
+    console.log('- tempData.text:', tempData.text);
+    console.log('- 最終的なmealName:', mealName);
+    console.log('- imageUrl:', imageUrl);
     const flexMessage = createMealFlexMessage(mealTypeJa, analysis, imageUrl, mealName);
 
     await replyMessage(replyToken, [flexMessage]);
@@ -1775,8 +1792,15 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     await deleteTempMealData(userId);
     await deleteTempMealAnalysis(userId);
 
+    // 処理完了フラグをクリア
+    processingUsers.delete(processingKey);
+
   } catch (error) {
     console.error('食事記録エラー:', error);
+    // エラー時もフラグをクリア
+    const processingKey = `${userId}_${mealType}`;
+    processingUsers.delete(processingKey);
+    
     await replyMessage(replyToken, [{
       type: 'text',
       text: '記録中にエラーが発生しました。もう一度お試しください。'
