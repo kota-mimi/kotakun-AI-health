@@ -1073,35 +1073,10 @@ async function createRichMenu() {
   }
 }
 
-// ユーザーのリッチメニューを確保する関数
+// ユーザーのリッチメニューを確保する関数（デフォルトメニューがあるので不要）
 async function ensureRichMenuForUser(userId: string) {
-  try {
-    const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-    if (!accessToken) return;
-
-    // 既存のリッチメニューを確認
-    const checkResponse = await fetch(`https://api.line.me/v2/bot/user/${userId}/richmenu`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-
-    if (checkResponse.ok) {
-      // 既にリッチメニューがある場合は何もしない
-      console.log('User already has rich menu');
-      return;
-    }
-
-    // リッチメニューがない場合は作成・設定
-    const richMenuId = await createRichMenu();
-    if (richMenuId) {
-      await setRichMenuForUser(userId, richMenuId);
-      console.log('Rich menu created and set for user');
-    }
-  } catch (error) {
-    console.error('Error ensuring rich menu:', error);
-  }
+  // デフォルトリッチメニューが設定済みなので何もしない
+  console.log('Default rich menu should be available for user:', userId);
 }
 
 // ユーザーにリッチメニューを設定する関数
