@@ -375,47 +375,46 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
   try {
     console.log('📊 体重記録開始:', { userId, weight: weightData.weight, bodyFat: weightData.bodyFat });
     
-    // 直接Firestoreに保存
+    // 内部APIを使用（動作確認済みの方法）
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    const db = admin.firestore();
-    // dailyRecordsに保存（アプリ側と同じ場所）
-    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
-    
-    // 既存データを取得
-    const existingDoc = await recordRef.get();
-    const existingData = existingDoc.exists ? existingDoc.data() : {};
-    
-    // データをマージして保存（同じ日の体重は上書き）
-    const mergedData = { 
-      ...existingData, 
-      weight: weightData.weight,
-      date: today,
-      lineUserId: userId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: existingData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
-    };
-    
-    // 体脂肪率がある場合は追加
-    if (weightData.hasBodyFat && weightData.bodyFat) {
-      mergedData.bodyFat = weightData.bodyFat;
-    }
-    
-    await recordRef.set(mergedData, { merge: true });
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'https://kotakun-ai-health.vercel.app'}/api/weight`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lineUserId: userId,
+        date: today,
+        weight: weightData.weight,
+        bodyFat: weightData.hasBodyFat ? weightData.bodyFat : undefined,
+        note: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`
+      }),
+    });
     
     await stopLoadingAnimation(userId);
     
-    let message = `体重 ${weightData.weight}kg を記録したよ！`;
-    if (weightData.hasBodyFat && weightData.bodyFat) {
-      message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
+    if (response.ok) {
+      let message = `体重 ${weightData.weight}kg を記録したよ！`;
+      if (weightData.hasBodyFat && weightData.bodyFat) {
+        message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
+      }
+      
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: message
+      }]);
+      
+      console.log('📊 体重記録完了');
+    } else {
+      const errorData = await response.json();
+      console.error('体重記録API エラー:', errorData);
+      
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '体重記録でエラーが発生しました。もう一度お試しください。'
+      }]);
     }
-    
-    await replyMessage(replyToken, [{
-      type: 'text',
-      text: message
-    }]);
-    
-    console.log('📊 体重記録完了');
     
   } catch (error) {
     console.error('体重記録処理エラー:', error);
