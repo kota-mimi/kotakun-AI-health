@@ -133,24 +133,23 @@ async function createRichMenu(accessToken: string) {
 
 // リッチメニュー画像をアップロード
 async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
-  // シンプルな画像データを作成（SVGをBase64エンコード）
+  // 新しい3分割SVG画像を作成
   const svgImage = `
     <svg width="2500" height="1686" xmlns="http://www.w3.org/2000/svg">
-      <!-- 左半分: テキスト記録 -->
-      <rect x="0" y="0" width="1250" height="1686" fill="#4CAF50" stroke="#ffffff" stroke-width="3"/>
-      <text x="625" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="white" font-weight="bold">📝</text>
-      <text x="625" y="950" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">テキストで</text>
-      <text x="625" y="1050" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">記録</text>
+      <!-- 左: マイページ -->
+      <rect x="0" y="0" width="833" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
+      <text x="417" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">マイページ</text>
       
-      <!-- 右半分: 写真記録 -->
-      <rect x="1250" y="0" width="1250" height="1686" fill="#2196F3" stroke="#ffffff" stroke-width="3"/>
-      <text x="1875" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="white" font-weight="bold">📷</text>
-      <text x="1875" y="950" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">写真で</text>
-      <text x="1875" y="1050" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">記録</text>
+      <!-- 中央: 食事記録 -->
+      <rect x="833" y="0" width="834" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
+      <text x="1250" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">食事記録</text>
+      
+      <!-- 右: テスト -->
+      <rect x="1667" y="0" width="833" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
+      <text x="2084" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">テスト</text>
     </svg>
   `;
 
-  // SVGをPNGに変換する必要がありますが、シンプルにするため一時的にダミーデータを使用
   const canvas = Buffer.from(svgImage);
 
   const response = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
