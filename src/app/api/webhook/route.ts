@@ -375,43 +375,44 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
   try {
     console.log('📊 体重記録開始:', { userId, weight: weightData.weight, bodyFat: weightData.bodyFat });
     
-    // 体重記録APIに送信
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/weight`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        lineUserId: userId,
-        date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
-        weight: weightData.weight,
-        bodyFat: weightData.hasBodyFat ? weightData.bodyFat : null,
-        note: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`
-      }),
+    // 直接Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const currentTime = new Date().toLocaleTimeString('ja-JP', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
     });
-
-    if (response.ok) {
-      await stopLoadingAnimation(userId);
-      
-      let message = `体重 ${weightData.weight}kg を記録したよ！`;
-      if (weightData.hasBodyFat && weightData.bodyFat) {
-        message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
-      }
-      
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: message
-      }]);
-    } else {
-      const errorData = await response.json();
-      console.error('体重記録API エラー:', errorData);
-      
-      await stopLoadingAnimation(userId);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '体重記録でエラーが発生しました。もう一度お試しください。'
-      }]);
+    
+    const weightRecord = {
+      id: generateId(),
+      date: today,
+      weight: weightData.weight,
+      time: currentTime,
+      timestamp: Date.now(),
+      lineUserId: userId,
+      note: `LINE記録 ${currentTime}`,
+      createdAt: new Date()
+    };
+    
+    // 体脂肪率がある場合は追加
+    if (weightData.hasBodyFat && weightData.bodyFat) {
+      weightRecord.bodyFat = weightData.bodyFat;
     }
+    
+    const db = admin.firestore();
+    await db.collection('users').doc(userId).collection('weightRecords').doc(weightRecord.id).set(weightRecord);
+    
+    await stopLoadingAnimation(userId);
+    
+    let message = `体重 ${weightData.weight}kg を記録したよ！`;
+    if (weightData.hasBodyFat && weightData.bodyFat) {
+      message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
+    }
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: message
+    }]);
     
     console.log('📊 体重記録完了');
     
