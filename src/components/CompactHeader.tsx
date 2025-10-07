@@ -129,7 +129,10 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           <div className="grid grid-cols-7 gap-1 flex-1 mx-3">
             {weekDates.map((date, index) => {
               const appStartDate = getAppStartDate();
-              const isBeforeAppStart = date < appStartDate;
+              // 日付のみで比較（時間は無視）
+              const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+              const appStartDateOnly = new Date(appStartDate.getFullYear(), appStartDate.getMonth(), appStartDate.getDate());
+              const isBeforeAppStart = dateOnly < appStartDateOnly;
               
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
