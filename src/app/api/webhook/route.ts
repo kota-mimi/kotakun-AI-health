@@ -266,10 +266,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await saveMealRecord(userId, mealType, replyToken);
       break;
     case 'meal_record':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '食事記録を開始します！写真を送るか、食事名を入力してください📸🍽️'
-      }]);
+      await showMealTypeSelection(replyToken);
       break;
     case 'test':
       await replyMessage(replyToken, [{
