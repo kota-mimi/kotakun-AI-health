@@ -8,7 +8,7 @@ async function createRichMenuImage() {
     
     // 各ボタンのサイズ計算
     const totalWidth = 2500;
-    const totalHeight = 843;
+    const totalHeight = 1686;
     const buttonWidth = Math.floor(totalWidth / 3); // 833px each
     
     // 背景色（薄いグレー）
