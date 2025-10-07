@@ -13,7 +13,10 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
   const getWeekDates = (weekOffset: number = 0) => {
     const today = new Date();
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + weekOffset * 7);
+    // 月曜日を週の始まりとする（日本標準）
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 日曜日の場合は-6、それ以外は1-dayOfWeek
+    startOfWeek.setDate(today.getDate() + mondayOffset + weekOffset * 7);
     
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -25,7 +28,7 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
   };
 
   const weekDates = getWeekDates(selectedWeek);
-  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dayNames = ['月', '火', '水', '木', '金', '土', '日'];
   
   const isToday = (date: Date) => {
     const today = new Date();
