@@ -133,24 +133,18 @@ async function createRichMenu(accessToken: string) {
 
 // リッチメニュー画像をアップロード
 async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
-  // 新しい3分割SVG画像を作成
-  const svgImage = `
-    <svg width="2500" height="1686" xmlns="http://www.w3.org/2000/svg">
-      <!-- 左: マイページ -->
-      <rect x="0" y="0" width="833" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
-      <text x="417" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">マイページ</text>
-      
-      <!-- 中央: 食事記録 -->
-      <rect x="833" y="0" width="834" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
-      <text x="1250" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">食事記録</text>
-      
-      <!-- 右: テスト -->
-      <rect x="1667" y="0" width="833" height="1686" fill="#e8e8e8" stroke="#d0d0d0" stroke-width="2"/>
-      <text x="2084" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="#333" font-weight="bold">テスト</text>
-    </svg>
-  `;
+  // シンプルな1px PNG画像を作成（テスト用）
+  const simplePng = Buffer.from([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+    0x00, 0x00, 0x09, 0xC4, 0x00, 0x00, 0x06, 0x96, // width: 2500, height: 1686
+    0x08, 0x02, 0x00, 0x00, 0x00, 0x8C, 0x4D, 0x4B,
+    0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, // IDAT chunk (minimal data)
+    0x78, 0x9C, 0x63, 0xF8, 0x0F, 0x00, 0x00, 0x01, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82 // IEND
+  ]);
 
-  const canvas = Buffer.from(svgImage);
+  const canvas = simplePng;
 
   const response = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
     method: 'POST',
