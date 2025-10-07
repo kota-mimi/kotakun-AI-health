@@ -133,25 +133,23 @@ async function createRichMenu(accessToken: string) {
 
 // リッチメニュー画像をアップロード
 async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
-  // シンプルな画像データを作成（SVGをBase64エンコード）
-  const svgImage = `
-    <svg width="2500" height="1686" xmlns="http://www.w3.org/2000/svg">
-      <!-- 左半分: テキスト記録 -->
-      <rect x="0" y="0" width="1250" height="1686" fill="#4CAF50" stroke="#ffffff" stroke-width="3"/>
-      <text x="625" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="white" font-weight="bold">📝</text>
-      <text x="625" y="950" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">テキストで</text>
-      <text x="625" y="1050" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">記録</text>
-      
-      <!-- 右半分: 写真記録 -->
-      <rect x="1250" y="0" width="1250" height="1686" fill="#2196F3" stroke="#ffffff" stroke-width="3"/>
-      <text x="1875" y="800" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" fill="white" font-weight="bold">📷</text>
-      <text x="1875" y="950" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">写真で</text>
-      <text x="1875" y="1050" text-anchor="middle" font-family="Arial, sans-serif" font-size="80" fill="white" font-weight="bold">記録</text>
-    </svg>
-  `;
-
-  // SVGをPNGに変換する必要がありますが、シンプルにするため一時的にダミーデータを使用
-  const canvas = Buffer.from(svgImage);
+  try {
+    // 生成されたPNG画像を読み込み
+    const fs = require('fs');
+    const path = require('path');
+    const imagePath = path.join(process.cwd(), 'rich-menu-final.png');
+    
+    let imageBuffer;
+    
+    if (fs.existsSync(imagePath)) {
+      console.log('📸 生成された画像を使用:', imagePath);
+      imageBuffer = fs.readFileSync(imagePath);
+    } else {
+      console.log('⚠️ 画像ファイルが見つかりません、スキップします');
+      return;
+    }
+    
+    const canvas = imageBuffer;
 
   const response = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
     method: 'POST',
@@ -168,6 +166,10 @@ async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
     // 画像アップロードが失敗しても続行
   } else {
     console.log('リッチメニュー画像アップロード成功');
+  }
+  } catch (error) {
+    console.error('画像アップロードエラー:', error);
+    throw error;
   }
 }
 
