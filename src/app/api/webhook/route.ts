@@ -343,12 +343,17 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     if (tempData.imageContent) {
       // Admin SDKを使用して画像をアップロード
       try {
-        // 🔧 明示的にバケット名を指定
-        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID 
-          ? `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`
-          : 'kotakun-19990629-gmailcoms-projects.appspot.com'; // フォールバック
+        // 🔧 環境変数から正しいバケット名を取得
+        console.log('🔍 環境変数確認:', {
+          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        });
         
-        console.log('🔍 使用するバケット名:', bucketName);
+        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 
+          || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`
+          || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // フォールバック
+        
+        console.log('🔍 最終的に使用するバケット名:', bucketName);
         const bucket = admin.storage().bucket(bucketName);
         
         const imageId = `meal_${generateId()}`;
