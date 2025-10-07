@@ -56,7 +56,7 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
               className="h-14 flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 text-slate-600 hover:bg-white/60 border border-transparent hover:border-white/40"
             >
               <span className="text-xs mb-2 text-slate-500">
-                {dayNames[index]}
+                {dayNames[date.getDay()]}
               </span>
               <div className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
                 isSameDate(date, currentDate)
