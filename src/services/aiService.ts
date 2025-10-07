@@ -529,6 +529,60 @@ class AIHealthService {
 あなたの生活スタイルに合わせて、無理なく継続できる健康習慣を身につけていきましょう。一歩一歩着実に進んでいけば、必ず目標達成できます。応援しています！`;
   }
 
+  // テキストが食事記録の意図かどうかを判定
+  async analyzeFoodRecordIntent(text: string) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+テキスト「${text}」を分析して、食事記録の意図があるかどうか以下のJSONで返してください：
+
+{
+  "isFoodRecord": boolean,
+  "isDefiniteRecord": boolean,
+  "hasSpecificMealTime": boolean,
+  "mealTime": string,
+  "foodText": string,
+  "confidence": number
+}
+
+判定基準：
+- 食べ物の名前が含まれている（例：「唐揚げ」「ラーメン」「りんご」）
+- 食事に関する動詞（食べた、飲んだ、摂取した、記録して）
+- 明確な記録意図：「記録して」「食べた」「摂取した」
+- 曖昧な表現：「食べた！」「美味しかった」（確認が必要）
+- 食事時間：「朝」「昼」「夜」「朝食」「昼食」「夕食」「間食」「おやつ」
+- 質問・相談は除外：「～はダイエットに良い？」「～のカロリーは？」
+
+例：
+- 「唐揚げ食べた記録して」→ isFoodRecord: true, isDefiniteRecord: true
+- 「朝にパン食べた記録して」→ hasSpecificMealTime: true, mealTime: "breakfast"
+- 「今日唐揚げ食べた！」→ isFoodRecord: true, isDefiniteRecord: false
+- 「唐揚げってカロリー高い？」→ isFoodRecord: false
+`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('食事記録意図分析エラー:', error);
+      // フォールバック: 食べ物名が含まれているかチェック
+      const hasFoodName = /カレー|ラーメン|うどん|そば|パン|おにぎり|弁当|サラダ|寿司|パスタ|ご飯|丼|定食|ハンバーグ|唐揚げ|焼き魚|天ぷら|味噌汁|スープ|野菜|肉|魚|卵|米|麺|牛肉|豚肉|鶏肉|りんご|バナナ|ヨーグルト|チーズ|コーヒー|紅茶/.test(text);
+      const hasRecordIntent = /食べた|飲んだ|摂取|記録/.test(text);
+      
+      return {
+        isFoodRecord: hasFoodName,
+        isDefiniteRecord: hasRecordIntent,
+        hasSpecificMealTime: false,
+        mealTime: null,
+        foodText: text,
+        confidence: 0.5
+      };
+    }
+  }
+
   // テキストから食事内容を分析
   async analyzeMealFromText(mealText: string) {
     try {
