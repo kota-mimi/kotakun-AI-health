@@ -8,6 +8,9 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
+// 処理済みイベントを追跡（メモリベース）
+const processedEvents = new Map<string, number>();
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   try {
@@ -26,6 +29,25 @@ export async function POST(request: NextRequest) {
     
     // 各イベントを処理
     for (const event of events) {
+      // 重複チェック
+      const eventKey = `${event.source?.userId || 'unknown'}_${event.message?.id || event.timestamp}`;
+      const now = Date.now();
+      
+      if (processedEvents.has(eventKey)) {
+        console.log('🚫 重複イベントをスキップ:', eventKey);
+        continue;
+      }
+      
+      // 5分間のTTLで記録
+      processedEvents.set(eventKey, now);
+      
+      // 古いエントリを削除（5分以上前）
+      for (const [key, timestamp] of processedEvents.entries()) {
+        if (now - timestamp > 5 * 60 * 1000) {
+          processedEvents.delete(key);
+        }
+      }
+      
       await handleEvent(event);
     }
 
@@ -302,6 +324,11 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     
     // 画像URLを取得（保存されていれば）
     let imageUrl = null;
+    console.log('🖼️ 画像チェック:', {
+      hasImageContent: !!tempData.imageContent,
+      imageContentSize: tempData.imageContent?.length || 0
+    });
+    
     if (tempData.imageContent) {
       // 一度だけ画像を保存してURLを取得
       try {
@@ -310,9 +337,12 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         const storageRef = ref(storage, `meals/${userId}/${today}/${imageId}.jpg`);
         await uploadBytes(storageRef, tempData.imageContent);
         imageUrl = await getDownloadURL(storageRef);
+        console.log('✅ 画像アップロード成功:', imageUrl);
       } catch (error) {
-        console.error('Flexメッセージ用画像取得エラー:', error);
+        console.error('❌ Flexメッセージ用画像取得エラー:', error);
       }
+    } else {
+      console.log('⚠️ 画像データが見つかりません');
     }
     
     const mealName = tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
