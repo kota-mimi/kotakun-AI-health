@@ -561,6 +561,71 @@ class AIHealthService {
     }
   }
 
+  // テキストが体重記録の意図かどうかを判定
+  async analyzeWeightRecordIntent(text: string) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+テキスト「${text}」を分析して、体重記録の意図があるかどうか以下のJSONで返してください：
+
+{
+  "isWeightRecord": boolean,
+  "weight": number,
+  "hasBodyFat": boolean,
+  "bodyFat": number,
+  "confidence": number
+}
+
+判定基準：
+- 数値＋体重単位：「65kg」「64.5キロ」「63.2」
+- 体重記録の表現：「体重65kg」「今日の体重は64キロ」「体重記録 65.5」
+- 体脂肪率：「体脂肪15%」「体脂肪率20.5%」
+- 複合記録：「体重65kg 体脂肪18%」
+- 質問・相談は除外：「体重どうやって減らす？」「何キロがいい？」
+
+例：
+- 「65kg」→ isWeightRecord: true, weight: 65
+- 「体重64.5キロ」→ isWeightRecord: true, weight: 64.5
+- 「今日の体重は63kg 体脂肪17%」→ isWeightRecord: true, weight: 63, hasBodyFat: true, bodyFat: 17
+- 「体重どうやって減らす？」→ isWeightRecord: false
+`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('体重記録意図分析エラー:', error);
+      // フォールバック: 体重パターンマッチング
+      const weightMatch = text.match(/(\d+(?:\.\d+)?)(?:kg|キロ|キログラム)?/);
+      const hasWeightKeyword = /体重|kg|キロ|キログラム/.test(text);
+      const hasBodyFatKeyword = /体脂肪|体脂肪率|%/.test(text);
+      
+      if (weightMatch && hasWeightKeyword) {
+        const weight = parseFloat(weightMatch[1]);
+        const bodyFatMatch = text.match(/(\d+(?:\.\d+)?)%/);
+        
+        return {
+          isWeightRecord: true,
+          weight: weight,
+          hasBodyFat: hasBodyFatKeyword && bodyFatMatch,
+          bodyFat: bodyFatMatch ? parseFloat(bodyFatMatch[1]) : null,
+          confidence: 0.8
+        };
+      }
+      
+      return {
+        isWeightRecord: false,
+        weight: null,
+        hasBodyFat: false,
+        bodyFat: null,
+        confidence: 0.5
+      };
+    }
+  }
+
   // テキストが食事記録の意図かどうかを判定
   async analyzeFoodRecordIntent(text: string) {
     try {

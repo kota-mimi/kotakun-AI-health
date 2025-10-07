@@ -161,8 +161,18 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     // Loading Animation開始（AIが考え中）
     await startLoadingAnimation(userId, 15);
     
-    // AIで食事記録の判定を行う
     const aiService = new AIHealthService();
+    
+    // まず体重記録の判定を行う
+    const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
+    
+    if (weightJudgment.isWeightRecord) {
+      // 体重記録処理
+      await handleWeightRecord(userId, weightJudgment, replyToken);
+      return;
+    }
+    
+    // 体重記録でない場合、食事記録の判定を行う
     const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
     
     if (mealJudgment.isFoodRecord) {
@@ -357,6 +367,61 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       break;
     default:
       console.log('Unknown postback action:', action);
+  }
+}
+
+// 体重記録処理
+async function handleWeightRecord(userId: string, weightData: any, replyToken: string) {
+  try {
+    console.log('📊 体重記録開始:', { userId, weight: weightData.weight, bodyFat: weightData.bodyFat });
+    
+    // 体重記録APIに送信
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/weight`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lineUserId: userId,
+        date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
+        weight: weightData.weight,
+        bodyFat: weightData.hasBodyFat ? weightData.bodyFat : null,
+        note: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`
+      }),
+    });
+
+    if (response.ok) {
+      await stopLoadingAnimation(userId);
+      
+      let message = `体重 ${weightData.weight}kg を記録したよ！`;
+      if (weightData.hasBodyFat && weightData.bodyFat) {
+        message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
+      }
+      
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: message
+      }]);
+    } else {
+      const errorData = await response.json();
+      console.error('体重記録API エラー:', errorData);
+      
+      await stopLoadingAnimation(userId);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '体重記録でエラーが発生しました。もう一度お試しください。'
+      }]);
+    }
+    
+    console.log('📊 体重記録完了');
+    
+  } catch (error) {
+    console.error('体重記録処理エラー:', error);
+    await stopLoadingAnimation(userId);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '体重記録でエラーが発生しました。もう一度お試しください。'
+    }]);
   }
 }
 
