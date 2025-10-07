@@ -144,9 +144,9 @@ export async function PUT(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { lineUserId, date, mealType, mealData } = await request.json();
+    const { lineUserId, date, mealType, mealData, mealId, individualMealIndex } = await request.json();
 
-    console.log('🔧 PATCH API called with:', { lineUserId, date, mealType, mealId: mealData.id });
+    console.log('🔧 PATCH API called with:', { lineUserId, date, mealType, mealId: mealData.id, originalMealId: mealId, individualMealIndex });
 
     if (!lineUserId || !date || !mealType || !mealData) {
       return NextResponse.json(
@@ -176,33 +176,91 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 食事データをFirestore形式に変換
-    const updatedMealData = {
-      id: mealData.id,
-      name: mealData.name,
-      type: mealType,
-      calories: mealData.calories || 0,
-      protein: mealData.protein || 0,
-      fat: mealData.fat || 0,
-      carbs: mealData.carbs || 0,
-      time: mealData.time || '00:00',
-      images: mealData.images || [],
-      image: mealData.images?.[0] || mealData.image || null,
-      foodItems: mealData.foodItems || [],
-      timestamp: new Date(),
-      updatedAt: new Date()
-    };
+    // 複数食事の個別更新かチェック
+    if (mealId && individualMealIndex !== undefined) {
+      console.log('🔧 Individual meal update detected:', { mealId, individualMealIndex });
+      
+      // 対象の複数食事を見つける
+      const targetMealIndex = existingRecord.meals.findIndex((meal: any) => meal.id === mealId);
+      if (targetMealIndex === -1) {
+        return NextResponse.json(
+          { error: '食事記録が見つかりません' },
+          { status: 404 }
+        );
+      }
 
-    // 既存の食事リストを更新
-    const updatedMeals = existingRecord.meals.map((meal: any) => 
-      meal.id === mealData.id ? updatedMealData : meal
-    );
+      const targetMeal = existingRecord.meals[targetMealIndex];
+      if (!targetMeal.isMultipleMeals || !targetMeal.meals) {
+        return NextResponse.json(
+          { error: '複数食事記録ではありません' },
+          { status: 400 }
+        );
+      }
 
-    // 日次記録を更新（Admin SDK）
-    await recordRef.update({
-      meals: updatedMeals,
-      updatedAt: new Date()
-    });
+      // 個別食事を更新
+      const updatedIndividualMeals = targetMeal.meals.map((meal: any, index: number) => {
+        if (index === individualMealIndex) {
+          return {
+            ...meal,
+            name: mealData.name,
+            calories: mealData.calories || 0,
+            protein: mealData.protein || 0,
+            fat: mealData.fat || 0,
+            carbs: mealData.carbs || 0,
+          };
+        }
+        return meal;
+      });
+
+      // 複数食事の栄養価を再計算
+      const updatedMeal = {
+        ...targetMeal,
+        meals: updatedIndividualMeals,
+        calories: updatedIndividualMeals.reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0),
+        protein: updatedIndividualMeals.reduce((sum: number, meal: any) => sum + (meal.protein || 0), 0),
+        fat: updatedIndividualMeals.reduce((sum: number, meal: any) => sum + (meal.fat || 0), 0),
+        carbs: updatedIndividualMeals.reduce((sum: number, meal: any) => sum + (meal.carbs || 0), 0),
+        time: mealData.time || targetMeal.time,
+        updatedAt: new Date()
+      };
+      
+      const updatedMeals = existingRecord.meals.map((meal: any) => 
+        meal.id === mealId ? updatedMeal : meal
+      );
+
+      await recordRef.update({
+        meals: updatedMeals,
+        updatedAt: new Date()
+      });
+    } else {
+      // 通常の更新
+      const updatedMealData = {
+        id: mealData.id,
+        name: mealData.name,
+        type: mealType,
+        calories: mealData.calories || 0,
+        protein: mealData.protein || 0,
+        fat: mealData.fat || 0,
+        carbs: mealData.carbs || 0,
+        time: mealData.time || '00:00',
+        images: mealData.images || [],
+        image: mealData.images?.[0] || mealData.image || null,
+        foodItems: mealData.foodItems || [],
+        timestamp: new Date(),
+        updatedAt: new Date()
+      };
+
+      // 既存の食事リストを更新
+      const updatedMeals = existingRecord.meals.map((meal: any) => 
+        meal.id === mealData.id ? updatedMealData : meal
+      );
+
+      // 日次記録を更新（Admin SDK）
+      await recordRef.update({
+        meals: updatedMeals,
+        updatedAt: new Date()
+      });
+    }
 
     console.log('🔧 PATCH SUCCESS!');
     return NextResponse.json({ success: true });

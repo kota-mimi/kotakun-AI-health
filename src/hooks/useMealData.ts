@@ -255,9 +255,28 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     const dateStr = selectedDate.toISOString().split('T')[0];
     
-    // プロフィール更新と同じパターン：条件チェックなしで直接API呼び出し
+    // 複数食事の個別更新かチェック
+    let originalMealId = updatedMeal.id;
+    let individualMealIndex;
+    
+    if (updatedMeal.originalMealId && updatedMeal.individualMealIndex !== undefined) {
+      // EditMealModalで設定された場合
+      originalMealId = updatedMeal.originalMealId;
+      individualMealIndex = updatedMeal.individualMealIndex;
+      console.log('🔧 Individual meal update detected:', { originalMealId, individualMealIndex });
+    } else if (updatedMeal.id.includes('_')) {
+      // 仮想IDの場合（originalMealId_index形式）
+      const parts = updatedMeal.id.split('_');
+      const lastPart = parts[parts.length - 1];
+      if (!isNaN(Number(lastPart)) && parts.length >= 3) {
+        originalMealId = parts.slice(0, -1).join('_');
+        individualMealIndex = Number(lastPart);
+        console.log('🔧 Virtual ID detected for individual meal:', { originalMealId, individualMealIndex });
+      }
+    }
+    
     try {
-      console.log('🔧 Updating meal via API:', updatedMeal.id);
+      console.log('🔧 Updating meal via API:', originalMealId);
       const response = await fetch('/api/meals', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -265,13 +284,15 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           lineUserId,
           date: dateStr,
           mealType: currentMealType,
-          mealData: updatedMeal
+          mealData: updatedMeal,
+          mealId: originalMealId,
+          individualMealIndex
         }),
       });
 
       if (response.ok) {
         console.log('🔧 API update successful, refreshing data');
-        // 成功時はFirestoreデータを再取得（プロフィール更新と同じパターン）
+        // 成功時はFirestoreデータを再取得
         const fetchResponse = await fetch('/api/meals', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -291,7 +312,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           mealData: {
             ...currentData.mealData,
             [currentMealType]: currentData.mealData[currentMealType].map(meal => 
-              meal.id === updatedMeal.id ? updatedMeal : meal
+              meal.id === originalMealId ? updatedMeal : meal
             )
           }
         });
@@ -301,13 +322,13 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       }
     } catch (error) {
       console.error('食事更新エラー:', error);
-      // エラー時もローカルデータは更新（プロフィール更新と同じパターン）
+      // エラー時もローカルデータは更新
       const currentData = getCurrentDateData();
       updateDateData({
         mealData: {
           ...currentData.mealData,
           [currentMealType]: currentData.mealData[currentMealType].map(meal => 
-            meal.id === updatedMeal.id ? updatedMeal : meal
+            meal.id === originalMealId ? updatedMeal : meal
           )
         }
       });

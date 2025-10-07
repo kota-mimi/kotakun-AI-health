@@ -286,7 +286,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
               },
               {
                 type: 'text',
-                text: `${analysis.totalCalories}kcal`,
+                text: `${analysis.totalCalories || analysis.calories || 0}kcal`,
                 size: 'xl',
                 weight: 'bold',
                 color: '#4a90e2',
@@ -311,7 +311,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 contents: [
                   {
                     type: 'text',
-                    text: `P: ${analysis.totalProtein}g`,
+                    text: `P: ${analysis.totalProtein || analysis.protein || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#cc0000',
@@ -329,7 +329,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 contents: [
                   {
                     type: 'text',
-                    text: `F: ${analysis.totalFat}g`,
+                    text: `F: ${analysis.totalFat || analysis.fat || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#ff8800',
@@ -347,7 +347,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 contents: [
                   {
                     type: 'text',
-                    text: `C: ${analysis.totalCarbs}g`,
+                    text: `C: ${analysis.totalCarbs || analysis.carbs || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#00aa00',
@@ -597,7 +597,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
               },
               {
                 type: 'text',
-                text: `${analysis.totalCalories}kcal`,
+                text: `${analysis.totalCalories || analysis.calories || 0}kcal`,
                 size: 'xl',
                 weight: 'bold',
                 color: '#4a90e2',
@@ -622,7 +622,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 contents: [
                   {
                     type: 'text',
-                    text: `P: ${analysis.totalProtein}g`,
+                    text: `P: ${analysis.totalProtein || analysis.protein || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#cc0000',
@@ -640,7 +640,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 contents: [
                   {
                     type: 'text',
-                    text: `F: ${analysis.totalFat}g`,
+                    text: `F: ${analysis.totalFat || analysis.fat || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#ff8800',
@@ -658,7 +658,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 contents: [
                   {
                     type: 'text',
-                    text: `C: ${analysis.totalCarbs}g`,
+                    text: `C: ${analysis.totalCarbs || analysis.carbs || 0}g`,
                     size: 'sm',
                     weight: 'bold',
                     color: '#00aa00',
