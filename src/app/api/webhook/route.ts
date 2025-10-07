@@ -8,22 +8,33 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
-// 処理済みイベントを追跡（Firestoreベース）
+// 🔒 UserIDをハッシュ化する関数
+function hashUserId(userId: string): string {
+  return crypto.createHash('sha256').update(userId + process.env.LINE_CHANNEL_SECRET).digest('hex').substring(0, 16);
+}
+
+// 🔒 セキュアな処理済みイベント追跡（UserIDハッシュ化 + 5分TTL）
 async function checkAndMarkProcessed(eventKey: string): Promise<boolean> {
   try {
     const db = admin.firestore();
-    const docRef = db.collection('processedEvents').doc(eventKey);
+    
+    // 🔒 イベントキーをハッシュ化（UserIDを含む場合があるため）
+    const hashedEventKey = crypto.createHash('sha256').update(eventKey).digest('hex').substring(0, 20);
+    const docRef = db.collection('processedEvents').doc(hashedEventKey);
     const doc = await docRef.get();
     
     if (doc.exists) {
-      console.log('🚫 重複イベント検出 (Firestore):', eventKey);
+      console.log('🚫 重複イベント検出 (Firestore):', hashedEventKey);
       return true; // 既に処理済み
     }
     
-    // 30分のTTLで記録
+    // 🚨 セキュリティ改善: 5分TTL + 自動削除設定
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5分後
     await docRef.set({
       processedAt: new Date(),
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000)
+      expiresAt: expiresAt,
+      // 🔒 Firestoreの自動削除（TTL）を設定
+      ttl: expiresAt
     });
     
     return false; // 新しいイベント
