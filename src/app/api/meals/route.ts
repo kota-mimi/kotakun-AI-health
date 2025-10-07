@@ -21,24 +21,45 @@ export async function POST(request: NextRequest) {
     const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
     
     // Firestoreデータを変換してInstagramLikeFeed形式に合わせる
-    const convertFirestoreMealToDisplay = (meal: any) => ({
-      id: meal.id,
-      name: meal.name || meal.description || (meal.items ? meal.items.join(', ') : '食事'),
-      mealTime: meal.type,
-      time: meal.time || (meal.timestamp ? 
-        new Date(meal.timestamp.seconds * 1000).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }) :
-        '00:00'),
-      calories: meal.calories || (meal.analysis ? meal.analysis.calories : 0),
-      protein: meal.protein || (meal.analysis ? meal.analysis.protein : 0),
-      fat: meal.fat || (meal.analysis ? meal.analysis.fat : 0),
-      carbs: meal.carbs || (meal.analysis ? meal.analysis.carbs : 0),
-      images: meal.images || (meal.image ? [meal.image] : []),
-      image: meal.image || meal.imageUrl,
-      foodItems: meal.foodItems || meal.items || [],
-      // 複数食事対応
-      isMultipleMeals: meal.isMultipleMeals || false,
-      meals: meal.meals || []
-    });
+    const convertFirestoreMealToDisplay = (meal: any) => {
+      const convertedMeal = {
+        id: meal.id,
+        name: meal.name || meal.description || (meal.items ? meal.items.join(', ') : '食事'),
+        mealTime: meal.type,
+        time: meal.time || (meal.timestamp ? 
+          new Date(meal.timestamp.seconds * 1000).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }) :
+          '00:00'),
+        calories: meal.calories || (meal.analysis ? meal.analysis.calories : 0),
+        protein: meal.protein || (meal.analysis ? meal.analysis.protein : 0),
+        fat: meal.fat || (meal.analysis ? meal.analysis.fat : 0),
+        carbs: meal.carbs || (meal.analysis ? meal.analysis.carbs : 0),
+        images: meal.images || (meal.image ? [meal.image] : []),
+        image: meal.image || meal.imageUrl,
+        foodItems: meal.foodItems || meal.items || [],
+        // 複数食事対応
+        isMultipleMeals: meal.isMultipleMeals || false,
+        meals: meal.meals || []
+      };
+      
+      // 🔍 デバッグログ: 画像データの変換を確認
+      console.log('🔍 Meal conversion debug:', {
+        originalMeal: {
+          id: meal.id,
+          name: meal.name,
+          image: meal.image,
+          images: meal.images,
+          imageUrl: meal.imageUrl
+        },
+        convertedMeal: {
+          id: convertedMeal.id,
+          name: convertedMeal.name,
+          image: convertedMeal.image,
+          images: convertedMeal.images
+        }
+      });
+      
+      return convertedMeal;
+    };
 
     const meals = dailyRecord?.meals || [];
     const mealData = {

@@ -162,7 +162,28 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
             {/* 食事リスト - 個別フレーム */}
             <div className="space-y-3">
               {mealsOfType.map((meal) => {
-                const images = meal.images || (meal.image ? [meal.image] : []);
+                // 🔧 改善: 複数の画像ソースを堅牢にチェック
+                let images: string[] = [];
+                
+                // 1. imagesフィールドがあり、有効な配列の場合
+                if (meal.images && Array.isArray(meal.images) && meal.images.length > 0) {
+                  images = meal.images.filter(img => img && typeof img === 'string' && img.trim() !== '');
+                }
+                
+                // 2. imagesが空で、imageフィールドがある場合
+                if (images.length === 0 && meal.image && typeof meal.image === 'string' && meal.image.trim() !== '') {
+                  images = [meal.image];
+                }
+                
+                // 🔍 デバッグログ: 画像データの確認
+                console.log('🖼️ 画像デバッグ:', {
+                  mealId: meal.id,
+                  mealName: meal.name,
+                  originalImages: meal.images,
+                  originalImage: meal.image,
+                  finalImages: images,
+                  hasImages: images.length > 0
+                });
                 
                 return (
                   <div key={meal.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
