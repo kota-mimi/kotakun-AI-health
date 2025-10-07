@@ -268,10 +268,10 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'meal_record':
       await showMealTypeSelection(replyToken);
       break;
-    case 'test':
+    case 'photo_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: 'テスト機能です！現在開発中です🔧'
+        text: '写真で食事記録します！写真を送ってください📸'
       }]);
       break;
     default:

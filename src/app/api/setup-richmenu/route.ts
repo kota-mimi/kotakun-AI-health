@@ -67,7 +67,7 @@ async function createRichMenu(accessToken: string) {
   const richMenuData = {
     size: {
       width: 2500,
-      height: 843
+      height: 1686
     },
     selected: true,
     name: "健康記録メニュー",
@@ -78,19 +78,7 @@ async function createRichMenu(accessToken: string) {
           x: 0,
           y: 0,
           width: 833,
-          height: 843
-        },
-        action: {
-          type: "uri",
-          uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-        }
-      },
-      {
-        bounds: {
-          x: 833,
-          y: 0,
-          width: 834,
-          height: 843
+          height: 1686
         },
         action: {
           type: "postback",
@@ -99,14 +87,26 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
+          x: 833,
+          y: 0,
+          width: 834,
+          height: 1686
+        },
+        action: {
+          type: "uri",
+          uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+        }
+      },
+      {
+        bounds: {
           x: 1667,
           y: 0,
           width: 833,
-          height: 843
+          height: 1686
         },
         action: {
           type: "postback",
-          data: "action=test"
+          data: "action=photo_record"
         }
       }
     ]
