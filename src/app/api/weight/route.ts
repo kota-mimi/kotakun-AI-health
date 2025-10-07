@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
       ...recordData,
       date: targetDate,
       lineUserId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: existingData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: new Date(),
+      createdAt: existingData.createdAt || new Date(),
     };
     
     await recordRef.set(mergedData, { merge: true });
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       const userRef = adminDb.collection('users').doc(lineUserId);
       await userRef.update({
         'profile.weight': recordData.weight,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: new Date(),
       });
     }
 
