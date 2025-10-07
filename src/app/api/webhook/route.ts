@@ -377,27 +377,6 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     
     // 直接Firestoreに保存
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const currentTime = new Date().toLocaleTimeString('ja-JP', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      timeZone: 'Asia/Tokyo'
-    });
-    
-    const weightRecord = {
-      id: generateId(),
-      date: today,
-      weight: weightData.weight,
-      time: currentTime,
-      timestamp: Date.now(),
-      lineUserId: userId,
-      note: `LINE記録 ${currentTime}`,
-      createdAt: new Date()
-    };
-    
-    // 体脂肪率がある場合は追加
-    if (weightData.hasBodyFat && weightData.bodyFat) {
-      weightRecord.bodyFat = weightData.bodyFat;
-    }
     
     const db = admin.firestore();
     // dailyRecordsに保存（アプリ側と同じ場所）
