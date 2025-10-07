@@ -400,7 +400,29 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     }
     
     const db = admin.firestore();
-    await db.collection('users').doc(userId).collection('weightRecords').doc(weightRecord.id).set(weightRecord);
+    // dailyRecordsに保存（アプリ側と同じ場所）
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    
+    // 既存データを取得
+    const existingDoc = await recordRef.get();
+    const existingData = existingDoc.exists ? existingDoc.data() : {};
+    
+    // データをマージして保存（同じ日の体重は上書き）
+    const mergedData = { 
+      ...existingData, 
+      weight: weightData.weight,
+      date: today,
+      lineUserId: userId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: existingData.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+    };
+    
+    // 体脂肪率がある場合は追加
+    if (weightData.hasBodyFat && weightData.bodyFat) {
+      mergedData.bodyFat = weightData.bodyFat;
+    }
+    
+    await recordRef.set(mergedData, { merge: true });
     
     await stopLoadingAnimation(userId);
     
