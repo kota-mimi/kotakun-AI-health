@@ -8,8 +8,30 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
-// 処理済みイベントを追跡（メモリベース）
-const processedEvents = new Map<string, number>();
+// 処理済みイベントを追跡（Firestoreベース）
+async function checkAndMarkProcessed(eventKey: string): Promise<boolean> {
+  try {
+    const db = admin.firestore();
+    const docRef = db.collection('processedEvents').doc(eventKey);
+    const doc = await docRef.get();
+    
+    if (doc.exists) {
+      console.log('🚫 重複イベント検出 (Firestore):', eventKey);
+      return true; // 既に処理済み
+    }
+    
+    // 30分のTTLで記録
+    await docRef.set({
+      processedAt: new Date(),
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000)
+    });
+    
+    return false; // 新しいイベント
+  } catch (error) {
+    console.error('重複チェックエラー:', error);
+    return false; // エラー時は処理を継続
+  }
+}
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -29,23 +51,12 @@ export async function POST(request: NextRequest) {
     
     // 各イベントを処理
     for (const event of events) {
-      // 重複チェック
+      // 重複チェック（Firestoreベース）
       const eventKey = `${event.source?.userId || 'unknown'}_${event.message?.id || event.timestamp}`;
-      const now = Date.now();
       
-      if (processedEvents.has(eventKey)) {
-        console.log('🚫 重複イベントをスキップ:', eventKey);
-        continue;
-      }
-      
-      // 5分間のTTLで記録
-      processedEvents.set(eventKey, now);
-      
-      // 古いエントリを削除（5分以上前）
-      for (const [key, timestamp] of processedEvents.entries()) {
-        if (now - timestamp > 5 * 60 * 1000) {
-          processedEvents.delete(key);
-        }
+      const isProcessed = await checkAndMarkProcessed(eventKey);
+      if (isProcessed) {
+        continue; // 重複をスキップ
       }
       
       await handleEvent(event);
