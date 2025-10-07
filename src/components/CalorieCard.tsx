@@ -72,10 +72,10 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
     }
   });
   
-  const intakeProgress = finalTargetCalories > 0 ? (displayTotalCalories / finalTargetCalories) * 100 : 0;
-  const proteinProgress = finalProteinTarget > 0 ? (displayPfc.protein / finalProteinTarget) * 100 : 0;
-  const fatProgress = finalFatTarget > 0 ? (displayPfc.fat / finalFatTarget) * 100 : 0;
-  const carbsProgress = finalCarbsTarget > 0 ? (displayPfc.carbs / finalCarbsTarget) * 100 : 0;
+  const intakeProgress = finalTargetCalories > 0 ? Math.round((displayTotalCalories / finalTargetCalories) * 100 * 10) / 10 : 0;
+  const proteinProgress = finalProteinTarget > 0 ? Math.round((displayPfc.protein / finalProteinTarget) * 100 * 10) / 10 : 0;
+  const fatProgress = finalFatTarget > 0 ? Math.round((displayPfc.fat / finalFatTarget) * 100 * 10) / 10 : 0;
+  const carbsProgress = finalCarbsTarget > 0 ? Math.round((displayPfc.carbs / finalCarbsTarget) * 100 * 10) / 10 : 0;
 
   // 消費カロリーデータ（カウンセリング結果に基づく動的計算）
   const basalMetabolismBase = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
@@ -93,10 +93,10 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
     : 0;
   const basalMetabolism = basalMetabolismBase;
   
-  // 消費カロリーの進捗計算
-  const burnProgress = targetBurnedCalories > 0 ? (burnedCalories / targetBurnedCalories) * 100 : 0;
-  const basalProgress = burnedCalories > 0 ? (basalMetabolism / burnedCalories) * 100 : 0;
-  const activityProgress = burnedCalories > 0 ? (totalActivityCalories / burnedCalories) * 100 : 0;
+  // 消費カロリーの進捗計算（小数点第1位まで）
+  const burnProgress = targetBurnedCalories > 0 ? Math.round((burnedCalories / targetBurnedCalories) * 100 * 10) / 10 : 0;
+  const basalProgress = burnedCalories > 0 ? Math.round((basalMetabolism / burnedCalories) * 100 * 10) / 10 : 0;
+  const activityProgress = burnedCalories > 0 ? Math.round((totalActivityCalories / burnedCalories) * 100 * 10) / 10 : 0;
 
   const colors = {
     primary: '#3B82F6',  // 体重グラフと同じブルー
@@ -301,7 +301,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                           </span>
                         </div>
                         <Progress 
-                          value={(exerciseCalories / burnedCalories) * 100} 
+                          value={Math.round((exerciseCalories / burnedCalories) * 100 * 10) / 10} 
                           className="h-2" 
                           color="#3B82F6"
                           backgroundColor="rgba(59, 130, 246, 0.1)"

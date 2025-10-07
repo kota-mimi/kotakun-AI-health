@@ -157,44 +157,74 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 }
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
-  // 食事記録かチェック（大幅に拡張）
-  const isFoodName = (
-    // 基本的な食品パターン
-    /カレー|ラーメン|うどん|そば|パン|おにぎり|弁当|サラダ|寿司|パスタ|ご飯|丼|定食|ハンバーグ|唐揚げ|焼き魚|天ぷら|味噌汁|スープ|野菜|肉|魚|卵|米|麺|麺類|牛肉|豚肉|鶏肉|鮭|マグロ|サンマ|アジ|イワシ|エビ|カニ|イカ|タコ|ホタテ|アサリ|シジミ|ワカメ|昆布|のり|キャベツ|レタス|トマト|きゅうり|にんじん|大根|玉ねぎ|じゃがいも|さつまいも|かぼちゃ|ねぎ|ほうれん草|小松菜|ブロッコリー|アスパラ|ピーマン|なす|オクラ|ゴーヤ|とうもろこし|枝豆|大豆|豆腐|納豆|味噌|醤油|塩|砂糖|酢|油|バター|チーズ|ヨーグルト|牛乳|卵|パン|食パン|ロールパン|クロワッサン|バゲット|ピザ|ハンバーガー|サンドイッチ|おにぎり|おせんべい|クッキー|ケーキ|チョコレート|アイス|プリン|ゼリー|フルーツ|りんご|みかん|バナナ|ぶどう|いちご|メロン|スイカ|桃|梨|柿|キウイ|パイナップル|マンゴー|アボカド|コーヒー|紅茶|緑茶|ジュース|水|ビール|ワイン|日本酒|焼酎|ウイスキー|カクテル/.test(text) &&
-    // 質問・相談系は除外
-    !/(記録|食べた|です|でした|ました|だった|？|\?|って|どう|カロリー|栄養|太る|痩せる|ダイエット|健康|教えて|知りたい|何|いつ|どこ|なぜ|どのように|おすすめ|良い|悪い|効果|影響)/.test(text) &&
-    // 長すぎるテキストは除外（50文字まで拡張）
-    text.length <= 50 &&
-    // 短すぎるテキストも除外
-    text.length >= 2
-  );
-
-  if (isFoodName) {
-    // テキスト分析して食事タイプ選択表示
-    try {
-      const aiService = new AIHealthService();
-      const mealAnalysis = await aiService.analyzeMealFromText(text);
-      
-      // 分析結果を一時保存
+  try {
+    // AIで食事記録の判定を行う
+    const aiService = new AIHealthService();
+    const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
+    
+    if (mealJudgment.isFoodRecord) {
+      // AI分析で食べ物と判定された場合
+      const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
       await storeTempMealAnalysis(userId, mealAnalysis);
       
-      // 食事タイプ選択のクイックリプライ表示
-      await showMealTypeSelection(replyToken);
-      
-      return;
-    } catch (error) {
-      console.error('テキスト分析エラー:', error);
+      if (mealJudgment.hasSpecificMealTime) {
+        // 「朝に唐揚げ食べた記録して」のような具体的な食事時間がある場合
+        const mealType = mealJudgment.mealTime; // 'breakfast', 'lunch', 'dinner', 'snack'
+        await saveMealRecord(userId, mealType, replyToken);
+        return;
+      } else if (mealJudgment.isDefiniteRecord) {
+        // 「唐揚げ食べた」のような明確な記録意図がある場合、食事タイプ選択
+        await showMealTypeSelection(replyToken);
+        return;
+      } else {
+        // 「今日唐揚げ食べた！」のような曖昧な場合、確認のクイックリプライ
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: `${mealJudgment.foodText || text}の記録をしますか？`,
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '📝 記録する',
+                  data: 'action=confirm_record&confirm=yes'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '❌ 記録しない',
+                  data: 'action=confirm_record&confirm=no'
+                }
+              }
+            ]
+          }
+        }]);
+        return;
+      }
     }
+    
+    // 食事記録ではない場合、一般会話AIで応答
+    const aiResponse = await aiService.generateGeneralResponse(text);
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
+    }]);
+    
+  } catch (error) {
+    console.error('テキストメッセージ処理エラー:', error);
+    // エラー時は一般会話で応答
+    const aiService = new AIHealthService();
+    const aiResponse = await aiService.generateGeneralResponse(text);
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
+    }]);
   }
-
-  // その他のメッセージには一般会話AIで応答
-  const aiService = new AIHealthService();
-  const aiResponse = await aiService.generateGeneralResponse(text);
-  
-  await replyMessage(replyToken, [{
-    type: 'text',
-    text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
-  }]);
 }
 
 async function handleImageMessage(replyToken: string, userId: string, messageId: string, user: any) {
@@ -284,6 +314,21 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
           ]
         }
       }]);
+      break;
+    case 'confirm_record':
+      const confirm = params.get('confirm');
+      if (confirm === 'yes') {
+        await showMealTypeSelection(replyToken);
+      } else if (confirm === 'no') {
+        const tempData = await getTempMealAnalysis(userId);
+        await deleteTempMealAnalysis(userId);
+        
+        const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは');
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: generalResponse
+        }]);
+      }
       break;
     default:
       console.log('Unknown postback action:', action);
