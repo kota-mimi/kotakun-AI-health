@@ -77,24 +77,36 @@ async function createRichMenu(accessToken: string) {
         bounds: {
           x: 0,
           y: 0,
-          width: 1250,
+          width: 833,
           height: 1686
         },
         action: {
-          type: "postback",
-          data: "action=text_record"
+          type: "uri",
+          uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
         }
       },
       {
         bounds: {
-          x: 1250,
+          x: 833,
           y: 0,
-          width: 1250,
+          width: 834,
           height: 1686
         },
         action: {
           type: "postback",
-          data: "action=photo_record"
+          data: "action=meal_record"
+        }
+      },
+      {
+        bounds: {
+          x: 1667,
+          y: 0,
+          width: 833,
+          height: 1686
+        },
+        action: {
+          type: "postback",
+          data: "action=test"
         }
       }
     ]

@@ -35,9 +35,9 @@ async function createRichMenuImage() {
     
     // 各ボタンの中央位置計算
     const positions = [
-      { left: Math.floor((buttonWidth - iconSize) / 2), top: iconTop }, // 食事記録 (左)
-      { left: buttonWidth + Math.floor((buttonWidth - iconSize) / 2), top: iconTop }, // マイページ (中央)
-      { left: buttonWidth * 2 + Math.floor((buttonWidth - iconSize) / 2), top: iconTop } // カメラ (右)
+      { left: Math.floor((buttonWidth - iconSize) / 2), top: iconTop }, // マイページ (左)
+      { left: buttonWidth + Math.floor((buttonWidth - iconSize) / 2), top: iconTop }, // 食事記録 (中央)
+      { left: buttonWidth * 2 + Math.floor((buttonWidth - iconSize) / 2), top: iconTop } // テスト (右)
     ];
     
     // アイコンを事前に処理
@@ -57,20 +57,20 @@ async function createRichMenuImage() {
       }
     }).png().toBuffer();
     
-    // アイコンを配置
+    // アイコンを配置（新しい順序：マイページ、食事記録、テスト）
     const composite = [
       {
-        input: mealIconBuffer,
+        input: myPageIconBuffer, // マイページ (左)
         left: positions[0].left,
         top: positions[0].top
       },
       {
-        input: myPageIconBuffer,
+        input: mealIconBuffer, // 食事記録 (中央)
         left: positions[1].left,
         top: positions[1].top
       },
       {
-        input: cameraIconBuffer,
+        input: cameraIconBuffer, // テスト (右)
         left: positions[2].left,
         top: positions[2].top
       }
@@ -104,7 +104,7 @@ async function createRichMenuImage() {
     
     console.log('✅ リッチメニュー画像作成完了:', outputPath);
     console.log(`📐 サイズ: ${totalWidth}x${totalHeight}px`);
-    console.log('🎯 レイアウト: [食事記録] [マイページ] [カメラ]');
+    console.log('🎯 レイアウト: [マイページ] [食事記録] [テスト]');
     
     return outputPath;
     

@@ -265,6 +265,18 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const mealType = action.replace('meal_', '');
       await saveMealRecord(userId, mealType, replyToken);
       break;
+    case 'meal_record':
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '食事記録を開始します！写真を送るか、食事名を入力してください📸🍽️'
+      }]);
+      break;
+    case 'test':
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'テスト機能です！現在開発中です🔧'
+      }]);
+      break;
     default:
       console.log('Unknown postback action:', action);
   }
