@@ -265,13 +265,24 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const mealType = action.replace('meal_', '');
       await saveMealRecord(userId, mealType, replyToken);
       break;
-    case 'meal_record':
+    case 'text_record':
       await showMealTypeSelection(replyToken);
       break;
     case 'photo_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '写真で食事記録します！写真を送ってください📸'
+        text: 'カメラで撮影してください📸',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'camera',
+                label: 'カメラ'
+              }
+            }
+          ]
+        }
       }]);
       break;
     default:
