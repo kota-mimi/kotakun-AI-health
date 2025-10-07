@@ -158,6 +158,9 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   try {
+    // Loading Animation開始（AIが考え中）
+    await startLoadingAnimation(userId, 15);
+    
     // AIで食事記録の判定を行う
     const aiService = new AIHealthService();
     const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
@@ -174,6 +177,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         return;
       } else {
         // 「唐揚げ食べた」や「今日唐揚げ食べた！」の場合、5つの選択肢を表示
+        await stopLoadingAnimation(userId);
         await replyMessage(replyToken, [{
           type: 'text',
           text: `${mealJudgment.foodText || text}の記録をしますか？`,
@@ -229,6 +233,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     // 食事記録ではない場合、一般会話AIで応答
     const aiResponse = await aiService.generateGeneralResponse(text);
     
+    await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
       text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
@@ -240,6 +245,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     const aiService = new AIHealthService();
     const aiResponse = await aiService.generateGeneralResponse(text);
     
+    await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
       text: aiResponse || 'すみません、よく分からなかったです。健康管理についてお手伝いできることがあれば、お気軽にお声がけください！'
@@ -722,6 +728,71 @@ async function replyMessage(replyToken: string, messages: any[]) {
     }
   } catch (error) {
     console.error('Error replying message:', error);
+  }
+}
+
+// Loading Animation開始
+async function startLoadingAnimation(userId: string, seconds: number = 20) {
+  const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  
+  if (!accessToken) {
+    console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.line.me/v2/bot/chat/loading/start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        chatId: userId,
+        loadingSeconds: Math.min(seconds, 60) // 最大60秒
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Loading animation start failed:', error);
+    } else {
+      console.log('✨ Loading animation started');
+    }
+  } catch (error) {
+    console.error('Error starting loading animation:', error);
+  }
+}
+
+// Loading Animation停止
+async function stopLoadingAnimation(userId: string) {
+  const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  
+  if (!accessToken) {
+    console.error('LINE_CHANNEL_ACCESS_TOKEN is not set');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.line.me/v2/bot/chat/loading/stop', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        chatId: userId
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Loading animation stop failed:', error);
+    } else {
+      console.log('⏹️ Loading animation stopped');
+    }
+  } catch (error) {
+    console.error('Error stopping loading animation:', error);
   }
 }
 
