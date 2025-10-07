@@ -501,8 +501,11 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // pushMessageでFlexメッセージ送信
     await pushMessage(userId, [flexMessage]);
     
-    // 空のreplyMessageでクイックリプライ無効化
-    await replyMessage(replyToken, []);
+    // replyMessageでクイックリプライ無効化
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '記録したよ！'
+    }]);
     
     console.log('🔥 食事保存完了');
     
