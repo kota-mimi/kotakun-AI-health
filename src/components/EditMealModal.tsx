@@ -97,7 +97,12 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
 
   const handleDelete = () => {
     if (meal && window.confirm('この食事記録を削除しますか？')) {
-      onDeleteMeal(meal.id);
+      // 複数食事の個別削除の場合、元のIDを使用
+      const deleteId = meal.originalMealId && meal.individualMealIndex !== undefined 
+        ? `${meal.originalMealId}_${meal.individualMealIndex}`
+        : meal.id;
+      console.log('🚨 EditModal delete:', { originalId: meal.id, deleteId, originalMealId: meal.originalMealId, individualMealIndex: meal.individualMealIndex });
+      onDeleteMeal(deleteId);
       onClose();
     }
   };
