@@ -529,6 +529,38 @@ class AIHealthService {
 あなたの生活スタイルに合わせて、無理なく継続できる健康習慣を身につけていきましょう。一歩一歩着実に進んでいけば、必ず目標達成できます。応援しています！`;
   }
 
+  // 一般的な会話レスポンスを生成
+  async generateGeneralResponse(userMessage: string): Promise<string> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+ユーザーのメッセージ「${userMessage}」に対して、健康管理アプリのAIアシスタントとして自然で親しみやすい返事をしてください。
+
+回答の指針：
+- 健康・食事・運動・ダイエットに関する話題の場合は、簡潔で実用的なアドバイスを含める
+- 食事記録を断られた場合は、理解を示しつつ健康に関する軽いアドバイスをする
+- 一般的な挨拶や雑談には親しみやすく応答
+- 50文字以内で簡潔に
+- 絵文字は使わない
+- 敬語は使わず、親しみやすい口調で
+
+例：
+- 「唐揚げ食べた」→「唐揚げ美味しそう！たまには揚げ物も良いけど、野菜も忘れずにね」
+- 「今日は疲れた」→「お疲れ様！しっかり休んで、明日に備えようね」
+- 「ありがとう」→「どういたしまして！また何かあったら気軽に話しかけてね」
+`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
+    } catch (error) {
+      console.error('一般レスポンス生成エラー:', error);
+      // フォールバック応答
+      return 'ありがとう！また何かあったら気軽に話しかけてね。健康管理、一緒に頑張ろう！';
+    }
+  }
+
   // テキストが食事記録の意図かどうかを判定
   async analyzeFoodRecordIntent(text: string) {
     try {
