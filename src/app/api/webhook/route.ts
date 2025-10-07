@@ -341,6 +341,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         const tempData = await getTempMealAnalysis(userId);
         await deleteTempMealAnalysis(userId);
         
+        const aiService = new AIHealthService();
         const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは');
         await replyMessage(replyToken, [{
           type: 'text',
@@ -500,11 +501,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // pushMessageでFlexメッセージ送信
     await pushMessage(userId, [flexMessage]);
     
-    // replyMessageで記録完了メッセージ（クイックリプライ無効化）
-    await replyMessage(replyToken, [{
-      type: 'text',
-      text: `✅ ${mealTypeJa}を記録しました！`
-    }]);
+    // 空のreplyMessageでクイックリプライ無効化
+    await replyMessage(replyToken, []);
     
     console.log('🔥 食事保存完了');
     
