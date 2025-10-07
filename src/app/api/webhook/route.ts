@@ -341,16 +341,26 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     });
     
     if (tempData.imageContent) {
-      // 一度だけ画像を保存してURLを取得
+      // Admin SDKを使用して画像をアップロード
       try {
+        const bucket = admin.storage().bucket();
         const imageId = `meal_${generateId()}`;
         const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        const storageRef = ref(storage, `meals/${userId}/${today}/${imageId}.jpg`);
-        await uploadBytes(storageRef, tempData.imageContent);
-        imageUrl = await getDownloadURL(storageRef);
-        console.log('✅ 画像アップロード成功:', imageUrl);
+        const fileName = `meals/${userId}/${today}/${imageId}.jpg`;
+        
+        const file = bucket.file(fileName);
+        await file.save(tempData.imageContent, {
+          metadata: {
+            contentType: 'image/jpeg',
+          },
+        });
+        
+        // Public URLを生成
+        await file.makePublic();
+        imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        console.log('✅ 画像アップロード成功 (Admin SDK):', imageUrl);
       } catch (error) {
-        console.error('❌ Flexメッセージ用画像取得エラー:', error);
+        console.error('❌ Admin SDK画像アップロードエラー:', error);
       }
     } else {
       console.log('⚠️ 画像データが見つかりません');
