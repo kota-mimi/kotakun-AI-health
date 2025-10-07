@@ -148,7 +148,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                       : 'text-slate-600 hover:bg-slate-100/60'
                   }`}
                 >
-                <span className="text-xs font-medium opacity-80">{dayNames[index]}</span>
+                <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
                 <span className="text-sm font-semibold">
                   {date.getDate()}
                 </span>
