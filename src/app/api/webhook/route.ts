@@ -286,6 +286,10 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       }]);
       return;
     }
+    
+    // 🚨 重複防止: 一時データを即座に削除（最重要！）
+    await deleteTempMealAnalysis(userId);
+    console.log('🔒 重複防止: 一時データを削除しました');
 
     // Flexメッセージ作成・送信
     const user = await getUserData(userId);
@@ -313,13 +317,18 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     
     const mealName = tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
     const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, mealName);
-    await replyMessage(replyToken, [flexMessage]);
     
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
     
-    // 一時データを削除（重要！）
-    await deleteTempMealAnalysis(userId);
+    // pushMessageでFlexメッセージ送信
+    await pushMessage(userId, [flexMessage]);
+    
+    // replyMessageで記録完了メッセージ（クイックリプライ無効化）
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: `✅ ${mealTypeJa}を記録しました！`
+    }]);
     
     console.log('🔥 食事保存完了');
     
@@ -442,6 +451,31 @@ async function deleteTempMealAnalysis(userId: string) {
     console.log('🧹 一時データ削除完了:', userId);
   } catch (error) {
     console.error('一時データ削除エラー:', error);
+  }
+}
+
+// 🚨 緊急: 全ユーザーの一時データを削除する関数
+export async function cleanupAllTempMealData() {
+  try {
+    const db = admin.firestore();
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.get();
+    
+    let cleanedCount = 0;
+    const batch = db.batch();
+    
+    for (const userDoc of snapshot.docs) {
+      const tempRef = userDoc.ref.collection('tempMealData').doc('current');
+      batch.delete(tempRef);
+      cleanedCount++;
+    }
+    
+    await batch.commit();
+    console.log(`🧹 緊急清掃完了: ${cleanedCount}件の一時データを削除`);
+    return { success: true, cleaned: cleanedCount };
+  } catch (error) {
+    console.error('🚨 緊急清掃エラー:', error);
+    return { success: false, error: error.message };
   }
 }
 
