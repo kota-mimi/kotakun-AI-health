@@ -172,12 +172,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         const mealType = mealJudgment.mealTime; // 'breakfast', 'lunch', 'dinner', 'snack'
         await saveMealRecord(userId, mealType, replyToken);
         return;
-      } else if (mealJudgment.isDefiniteRecord) {
-        // 「唐揚げ食べた」のような明確な記録意図がある場合、食事タイプ選択
-        await showMealTypeSelection(replyToken);
-        return;
       } else {
-        // 「今日唐揚げ食べた！」のような曖昧な場合、確認のクイックリプライ
+        // 「唐揚げ食べた」や「今日唐揚げ食べた！」の場合、5つの選択肢を表示
         await replyMessage(replyToken, [{
           type: 'text',
           text: `${mealJudgment.foodText || text}の記録をしますか？`,
@@ -187,15 +183,39 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
                 type: 'action',
                 action: {
                   type: 'postback',
-                  label: '📝 記録する',
-                  data: 'action=confirm_record&confirm=yes'
+                  label: '朝食',
+                  data: 'action=meal_breakfast'
                 }
               },
               {
                 type: 'action',
                 action: {
                   type: 'postback',
-                  label: '❌ 記録しない',
+                  label: '昼食',
+                  data: 'action=meal_lunch'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '夕食',
+                  data: 'action=meal_dinner'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '間食',
+                  data: 'action=meal_snack'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '記録しない',
                   data: 'action=confirm_record&confirm=no'
                 }
               }
@@ -317,9 +337,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       break;
     case 'confirm_record':
       const confirm = params.get('confirm');
-      if (confirm === 'yes') {
-        await showMealTypeSelection(replyToken);
-      } else if (confirm === 'no') {
+      if (confirm === 'no') {
         const tempData = await getTempMealAnalysis(userId);
         await deleteTempMealAnalysis(userId);
         
