@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 if (!getApps().length) {
   try {
@@ -35,6 +36,7 @@ if (!getApps().length) {
         privateKey: formattedPrivateKey,
       }),
       projectId,
+      storageBucket: `${projectId}.appspot.com`,
     });
     
     if (process.env.NODE_ENV === 'production') {
@@ -80,6 +82,19 @@ export const admin = {
         } as any;
       } else {
         console.error('❌ 本番環境 Firebase Admin Firestore取得エラー:', error);
+      }
+      throw error;
+    }
+  },
+  storage: () => {
+    try {
+      return getStorage();
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 開発環境：Storage エラーを無視');
+        return null;
+      } else {
+        console.error('❌ 本番環境 Firebase Admin Storage取得エラー:', error);
       }
       throw error;
     }
