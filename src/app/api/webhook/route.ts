@@ -343,11 +343,19 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     if (tempData.imageContent) {
       // Admin SDKを使用して画像をアップロード
       try {
-        const bucket = admin.storage().bucket();
+        // 🔧 明示的にバケット名を指定
+        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID 
+          ? `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`
+          : 'kotakun-19990629-gmailcoms-projects.appspot.com'; // フォールバック
+        
+        console.log('🔍 使用するバケット名:', bucketName);
+        const bucket = admin.storage().bucket(bucketName);
+        
         const imageId = `meal_${generateId()}`;
         const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
         const fileName = `meals/${userId}/${today}/${imageId}.jpg`;
         
+        console.log('🔍 アップロード先:', fileName);
         const file = bucket.file(fileName);
         await file.save(tempData.imageContent, {
           metadata: {
@@ -357,10 +365,28 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
         
         // Public URLを生成
         await file.makePublic();
-        imageUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+        imageUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
         console.log('✅ 画像アップロード成功 (Admin SDK):', imageUrl);
       } catch (error) {
         console.error('❌ Admin SDK画像アップロードエラー:', error);
+        
+        // 🔄 フォールバック: Client SDK を使用して再試行
+        try {
+          console.log('🔄 Client SDK でのアップロードを試行...');
+          const clientStorage = storage;
+          const storageRef = ref(clientStorage, `meals/${userId}/${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })}/meal_${generateId()}.jpg`);
+          
+          const snapshot = await uploadBytes(storageRef, tempData.imageContent, {
+            contentType: 'image/jpeg'
+          });
+          
+          imageUrl = await getDownloadURL(snapshot.ref);
+          console.log('✅ フォールバック画像アップロード成功 (Client SDK):', imageUrl);
+        } catch (clientError) {
+          console.error('❌ Client SDK フォールバックも失敗:', clientError);
+          // 🎯 最後の手段: 画像データを一時的にbase64で保存（後で改善）
+          console.log('⚠️ 画像アップロード完全失敗 - 画像なしで記録継続');
+        }
       }
     } else {
       console.log('⚠️ 画像データが見つかりません');
