@@ -889,6 +889,58 @@ class AIHealthService {
     }
   }
 
+  // 高性能な会話レスポンスを生成（AIアドバイスモード用）
+  async generateAdvancedResponse(userMessage: string): Promise<string> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+あなたは健康管理の専門知識を持つプロフェッショナル「こたくん」です。
+ユーザーからの健康相談に、専門的で詳細なアドバイスを提供してください。
+
+専門知識領域:
+- 栄養学: PFCバランス、ビタミン・ミネラル、食品の栄養価、栄養療法
+- 運動生理学: 筋トレ理論、有酸素運動、ストレッチ、リハビリテーション
+- 生活習慣医学: 睡眠科学、ストレス管理、メンタルヘルス、予防医学
+- 体重管理: ダイエット理論、基礎代謝、身体組成、内分泌学
+- 病気予防: 生活習慣病、免疫学、健康診断データ解釈
+- 食材知識: 機能性食品、調理栄養学、食事療法
+- 水分・電解質バランス: 適切な水分摂取、ミネラル補給
+
+回答スタイル:
+- 専門的だが分かりやすい説明
+- 科学的根拠に基づいた正確な情報
+- 具体的で実践しやすい提案
+- 個別化されたアドバイス
+- 200-300文字程度の詳細な回答
+- 必要に応じて複数の改善案を提示
+
+ユーザーのメッセージ: "${userMessage}"
+
+返答:`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      
+      // マークダウン記号を除去してプレーンテキストに変換
+      let cleanText = response.text();
+      cleanText = cleanText.replace(/\*\*/g, '');
+      cleanText = cleanText.replace(/\*/g, '');
+      cleanText = cleanText.replace(/#{1,6}\s*/g, '');
+      cleanText = cleanText.replace(/`{1,3}/g, '');
+      cleanText = cleanText.replace(/^\s*[-\*\+]\s*/gm, '');
+      cleanText = cleanText.replace(/^\s*\d+\.\s*/gm, '');
+      cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+      cleanText = cleanText.replace(/\n\s*\n/g, '\n');
+      cleanText = cleanText.trim();
+      
+      return cleanText;
+    } catch (error) {
+      console.error('高性能会話AI エラー:', error);
+      return 'すみません、現在詳細なアドバイスができません。少し時間をおいてもう一度お試しください。';
+    }
+  }
+
   // 一般会話機能
   async generateGeneralResponse(userMessage: string): Promise<string> {
     try {

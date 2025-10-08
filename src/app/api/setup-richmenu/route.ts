@@ -67,30 +67,18 @@ async function createRichMenu(accessToken: string) {
   const richMenuData = {
     size: {
       width: 2500,
-      height: 1686
+      height: 843
     },
     selected: true,
-    name: "健康記録メニュー",
-    chatBarText: "記録メニュー",
+    name: "健康管理メニュー",
+    chatBarText: "メニュー",
     areas: [
       {
         bounds: {
           x: 0,
           y: 0,
           width: 833,
-          height: 1686
-        },
-        action: {
-          type: "postback",
-          data: "action=text_record"
-        }
-      },
-      {
-        bounds: {
-          x: 833,
-          y: 0,
-          width: 834,
-          height: 1686
+          height: 843
         },
         action: {
           type: "uri",
@@ -99,14 +87,26 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
-          x: 1667,
+          x: 833,
           y: 0,
-          width: 833,
-          height: 1686
+          width: 834,
+          height: 843
         },
         action: {
           type: "postback",
-          data: "action=photo_record"
+          data: "action=record_menu"
+        }
+      },
+      {
+        bounds: {
+          x: 1667,
+          y: 0,
+          width: 833,
+          height: 843
+        },
+        action: {
+          type: "postback",
+          data: "action=ai_advice"
         }
       }
     ]
