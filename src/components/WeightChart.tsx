@@ -686,12 +686,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           ))}
 
 
-          {/* エリアグラデーション */}
-          <path
-            d={areaPathData}
-            fill={`url(#gradient-${selectedDataType})`}
-            className="transition-all duration-700 ease-out"
-          />
+          {/* エリアグラデーション - 削除してシンプルに */}
 
           
           {/* メインライン */}
