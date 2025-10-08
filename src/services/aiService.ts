@@ -895,7 +895,7 @@ class AIHealthService {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
-あなたは健康管理の専門知識を持つアシスタント「kotakun」です。
+あなたは健康管理の専門知識を持つアシスタント「こたくん」です。
 ユーザーからの質問や雑談に、親しみやすく答えてください。
 
 専門知識領域:
