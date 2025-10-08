@@ -138,9 +138,9 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     ];
 
     const totalCalories = allMeals.reduce((sum, meal) => sum + meal.calories, 0);
-    const totalProtein = allMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
-    const totalFat = allMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
-    const totalCarbs = allMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+    const totalProtein = Math.round(allMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0) * 10) / 10;
+    const totalFat = Math.round(allMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0) * 10) / 10;
+    const totalCarbs = Math.round(allMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0) * 10) / 10;
 
     // カウンセリング結果があればそれを使用、なければデフォルト値
     const targetCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || 2000;
@@ -457,9 +457,9 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
               meals: updatedMeals,
               // 栄養価も再計算
               calories: updatedMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0),
-              protein: updatedMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0),
-              fat: updatedMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0),
-              carbs: updatedMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0)
+              protein: Math.round(updatedMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0) * 10) / 10,
+              fat: Math.round(updatedMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0) * 10) / 10,
+              carbs: Math.round(updatedMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0) * 10) / 10
             };
             
             updateDateData({
