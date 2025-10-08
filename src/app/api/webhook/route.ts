@@ -358,26 +358,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const mealType = action.replace('meal_', '');
       await saveMealRecord(userId, mealType, replyToken);
       break;
-    case 'text_record':
-      await showMealTypeSelection(replyToken);
-      break;
-    case 'photo_record':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'カメラで撮影してください📸',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'camera',
-                label: 'カメラ'
-              }
-            }
-          ]
-        }
-      }]);
-      break;
     case 'record_menu':
       await showRecordMenu(replyToken);
       break;
@@ -1727,56 +1707,31 @@ function checkUserExercisePatterns(userId: string, text: string) {
   return null;
 }// 記録メニューを表示
 async function showRecordMenu(replyToken: string) {
-  const recordMenuMessage = {
-    type: 'flex',
-    altText: '記録メニュー',
-    contents: {
-      type: 'bubble',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '📝 記録メニュー',
-            weight: 'bold',
-            size: 'lg',
-            color: '#ffffff'
+  const recordMessage = {
+    type: 'text',
+    text: '記録モードです！\n\n体重・食事・運動など、なんでも記録してくださいね。\n\n「65kg」「カレー食べた」「ランニング30分」など、自由にお話しください',
+    quickReply: {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: 'テキストで記録',
+            text: 'テキストで記録します'
           }
-        ],
-        backgroundColor: '#4CAF50',
-        paddingAll: 'md'
-      },
-      body: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'button',
-            action: {
-              type: 'postback',
-              label: '📸 写真で食事記録',
-              data: 'action=photo_record'
-            },
-            style: 'primary',
-            color: '#FF9800'
-          },
-          {
-            type: 'button',
-            action: {
-              type: 'postback',
-              label: '📝 テキストで記録',
-              data: 'action=text_record'
-            },
-            style: 'secondary',
-            margin: 'md'
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'camera',
+            label: 'カメラで記録'
           }
-        ]
-      }
+        }
+      ]
     }
   };
 
-  await replyMessage(replyToken, [recordMenuMessage]);
+  await replyMessage(replyToken, [recordMessage]);
 }
 
 // AIアドバイスモードを開始
