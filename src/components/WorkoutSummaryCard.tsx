@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Activity, ChevronRight, ChevronDown, ChevronUp, Flame, Clock, Dumbbell, Zap, User, Trophy } from 'lucide-react';
+import { Activity, ChevronRight, ChevronDown, ChevronUp, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2 } from 'lucide-react';
+import { ExerciseDeleteModal } from './ExerciseDeleteModal';
 
 interface ExerciseSet {
   weight: number;
@@ -66,6 +67,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   
   // 緊急修正: useExerciseDataが動かないので直接フェッチ (localhost URL fix)
   const [emergencyExerciseData, setEmergencyExerciseData] = useState<Exercise[]>([]);
@@ -141,6 +143,18 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   const totalDuration = actualExerciseData.reduce((sum, ex) => sum + ex.duration, 0);
   const hasWorkout = actualExerciseData.length > 0;
 
+  const handleDeleteClick = (e: React.MouseEvent, exercise: Exercise) => {
+    e.stopPropagation(); // 親要素のクリックイベントを阻止
+    setDeleteModal({ isOpen: true, exercise });
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModal.exercise && onDeleteExercise) {
+      onDeleteExercise(deleteModal.exercise.id);
+    }
+    setDeleteModal({ isOpen: false, exercise: null });
+  };
+
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <Button
@@ -213,11 +227,20 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           </span>
                           <span className="text-xs text-slate-500">{exercise.time}</span>
                         </div>
-                        <div className="text-right">
-                          <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
-                          {exercise.calories && (
-                            <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
-                          )}
+                        <div className="flex items-center space-x-2">
+                          <div className="text-right">
+                            <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
+                            {exercise.calories && (
+                              <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
+                            )}
+                          </div>
+                          <button
+                            onClick={(e) => handleDeleteClick(e, exercise)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                            title="削除"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </div>
                       
@@ -286,6 +309,14 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
           )}
         </div>
       )}
+
+      {/* 削除確認モーダル */}
+      <ExerciseDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
+        onConfirm={handleDeleteConfirm}
+        exercise={deleteModal.exercise}
+      />
     </Card>
   );
 }
