@@ -296,8 +296,20 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const createSmoothPath = (points: typeof pathPoints) => {
     if (points.length < 2) return '';
     
+    // 同じ値の場合は直線で描画
+    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    
     let path = `M ${points[0].x},${points[0].y}`;
     
+    if (allSameValue) {
+      // 同じ値なら直線で接続
+      for (let i = 1; i < points.length; i++) {
+        path += ` L ${points[i].x},${points[i].y}`;
+      }
+      return path;
+    }
+    
+    // 値に変化がある場合は滑らかなベジェ曲線
     for (let i = 0; i < points.length - 1; i++) {
       const current = points[i];
       const next = points[i + 1];
@@ -329,12 +341,13 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     // 同じ値の場合でも適切な高さを保つ
     const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
     
-    if (allSameValue && points.length === 2) {
-      // 2点で同じ値の場合、少し厚みを持たせる
-      const minHeight = 15;
+    if (allSameValue) {
+      // 同じ値の場合、適切な厚みを持った帯状のエリアを作成
+      const minHeight = 12;
       const topY = Math.max(10, points[0].y - minHeight / 2);
       const bottomY = Math.min(svgHeight - 10, points[0].y + minHeight / 2);
       
+      // 直線の帯状エリア
       return `M ${firstPoint.x},${topY} L ${lastPoint.x},${topY} L ${lastPoint.x},${bottomY} L ${firstPoint.x},${bottomY} Z`;
     }
     
