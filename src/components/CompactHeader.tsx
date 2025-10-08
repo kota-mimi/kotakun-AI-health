@@ -145,7 +145,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               // 日付のみで比較（時間は無視）
               const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
               const appStartDateOnly = new Date(appStartDate.getFullYear(), appStartDate.getMonth(), appStartDate.getDate());
-              const isBeforeAppStart = dateOnly.getTime() < appStartDateOnly.getTime();
+              const isBeforeAppStart = dateOnly.getTime() <= appStartDateOnly.getTime();
               
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
