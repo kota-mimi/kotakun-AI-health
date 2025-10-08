@@ -759,10 +759,17 @@ class AIHealthService {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
       
       const prompt = `
-この食事の写真を分析して、以下の形式のJSONで返してください：
+この画像を分析してください。まず、この画像が食事・料理・食べ物の写真かどうかを判定してください。
+
+食事・料理・食べ物の場合は、以下の形式のJSONで返してください：
+{
+  "isFoodImage": true,
+  // 以下の分析内容
+}
 
 複数の料理が写っている場合：
 {
+  "isFoodImage": true,
   "isMultipleMeals": true,
   "meals": [
     {
@@ -789,6 +796,7 @@ class AIHealthService {
 
 単一の料理の場合：
 {
+  "isFoodImage": true,
   "isMultipleMeals": false,
   "foodItems": ["料理名"],
   "calories": 推定カロリー数値（整数）,
@@ -805,6 +813,17 @@ class AIHealthService {
 - カロリーは整数、PFC（タンパク質・脂質・炭水化物）は小数点第1位まで正確に計算
 - 単位は含めない（例：カロリー350、タンパク質23.4）
 - 推定は一般的な分量で計算
+
+食事・料理・食べ物ではない場合（風景、人物、物など）：
+{
+  "isFoodImage": false,
+  "description": "画像の簡潔な説明（30文字以内）"
+}
+
+例：
+- 空の写真 → {"isFoodImage": false, "description": "青い空と雲の風景"}
+- ペットの写真 → {"isFoodImage": false, "description": "可愛い犬の写真"}
+- 建物の写真 → {"isFoodImage": false, "description": "建物の外観"}
 `;
 
       const imagePart = {

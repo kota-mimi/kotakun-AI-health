@@ -287,10 +287,21 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     const aiService = new AIHealthService();
     const mealAnalysis = await aiService.analyzeMealFromImage(imageContent);
     
-    // 3. 分析結果を一時保存（食事タイプ選択のため）
+    // 3. 食事画像かどうかチェック
+    if (!mealAnalysis.isFoodImage) {
+      // 食事じゃない画像の場合：一般AIで会話
+      const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: aiResponse
+      }]);
+      return;
+    }
+    
+    // 4. 食事画像の場合：分析結果を一時保存（食事タイプ選択のため）
     await storeTempMealAnalysis(userId, mealAnalysis, imageContent);
     
-    // 4. 食事タイプ選択のクイックリプライ表示
+    // 5. 食事タイプ選択のクイックリプライ表示
     await showMealTypeSelection(replyToken);
     
     console.log('🔥 シンプル画像処理完了');
