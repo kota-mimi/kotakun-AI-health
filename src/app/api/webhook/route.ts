@@ -396,7 +396,47 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await saveMealRecord(userId, mealType, replyToken);
       break;
     case 'record_menu':
-      await showRecordMenu(replyToken);
+      // AIアドバイスモード中なら自動終了
+      const wasInAdviceMode = await isAIAdviceMode(userId);
+      if (wasInAdviceMode) {
+        await setAIAdviceMode(userId, false);
+        // モード切り替えメッセージと記録メニューを組み合わせ
+        const recordMessage = {
+          type: 'text',
+          text: 'AIアドバイスモードを終了しました！\n\n記録モードです！\n\n食事 体重 運動記録してね！',
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: 'テキストで記録',
+                  data: 'action=open_keyboard',
+                  inputOption: 'openKeyboard'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'camera',
+                  label: 'カメラで記録'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '記録をやめる',
+                  data: 'action=cancel_record'
+                }
+              }
+            ]
+          }
+        };
+        await replyMessage(replyToken, [recordMessage]);
+      } else {
+        await showRecordMenu(replyToken);
+      }
       break;
     case 'ai_advice':
       await startAIAdviceMode(replyToken, userId);
