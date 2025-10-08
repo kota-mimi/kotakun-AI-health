@@ -119,12 +119,24 @@ export async function GET(request: NextRequest) {
           const dailyRecord = recordDoc.data();
           // 体重または体脂肪のデータがあれば含める
           if (dailyRecord && (dailyRecord.weight || dailyRecord.bodyFat)) {
-            weightData.push({
-              date: dateStr,
-              weight: dailyRecord.weight || 0, // 体重がない場合は0
-              bodyFat: dailyRecord.bodyFat,
-              note: dailyRecord.note
-            });
+            // 体重が0以下の場合は除外（無効なデータとして扱う）
+            const weightValue = dailyRecord.weight;
+            if (weightValue && weightValue > 0) {
+              weightData.push({
+                date: dateStr,
+                weight: weightValue,
+                bodyFat: dailyRecord.bodyFat,
+                note: dailyRecord.note
+              });
+            } else if (dailyRecord.bodyFat && dailyRecord.bodyFat > 0) {
+              // 体脂肪のみの記録の場合
+              weightData.push({
+                date: dateStr,
+                weight: 0, // 体重なしを明示的に示す
+                bodyFat: dailyRecord.bodyFat,
+                note: dailyRecord.note
+              });
+            }
           }
         }
       } catch (error) {

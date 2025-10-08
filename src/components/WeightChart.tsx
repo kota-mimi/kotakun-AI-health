@@ -179,7 +179,14 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
   // データから適切な範囲を計算（動的スケーリング対応）
   const calculateDataRange = (dataType: DataType) => {
-    const values = chartData.map(item => item[dataType]).filter(val => val != null && val > 0);
+    const values = chartData.map(item => item[dataType]).filter(val => {
+      // 体重の場合は0より大きい値のみ、体脂肪の場合は0以上の値を許可
+      if (dataType === 'weight') {
+        return val != null && val > 0;
+      } else {
+        return val != null && val >= 0;
+      }
+    });
     
     if (values.length === 0) {
       // デフォルト値
@@ -197,10 +204,22 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     // 体重の場合は動的スケーリング
     if (dataType === 'weight') {
+      // 単一データポイントの場合の処理
+      if (values.length === 1) {
+        const singleValue = values[0];
+        return {
+          min: singleValue - 2, // 単一ポイントなら±2kgの範囲で表示
+          max: singleValue + 2
+        };
+      }
+      
       // 実際のデータの範囲に応じて適切な表示範囲を決定
       let displayRange;
       
-      if (actualRange <= 1) {
+      if (actualRange <= 0.1) {
+        // 0.1kg以下の変化なら1kg幅で表示（非常に細かい変化）
+        displayRange = 1;
+      } else if (actualRange <= 1) {
         // 1kg以下の変化なら2kg幅で表示（細かい変化を見やすく）
         displayRange = 2;
       } else if (actualRange <= 2) {
@@ -225,6 +244,15 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     // 体脂肪の場合
     if (dataType === 'bodyFat') {
+      // 単一データポイントの場合の処理
+      if (values.length === 1) {
+        const singleValue = values[0];
+        return {
+          min: Math.max(0, singleValue - 4), // 単一ポイントなら±4%の範囲で表示
+          max: singleValue + 4
+        };
+      }
+      
       const fixedRange = 8; // 8%幅
       return {
         min: Math.max(0, center - fixedRange / 2),
@@ -249,7 +277,14 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const currentData = chartData.map(item => ({
     date: item.date,
     value: item[selectedDataType]
-  })).filter(item => item.value != null && item.value > 0);
+  })).filter(item => {
+    // 体重の場合は0より大きい値のみ、体脂肪の場合は0以上の値を許可
+    if (selectedDataType === 'weight') {
+      return item.value != null && item.value > 0;
+    } else {
+      return item.value != null && item.value >= 0;
+    }
+  });
   
 
   const chartRange = currentConfig.max - currentConfig.min;
@@ -296,8 +331,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const createSmoothPath = (points: typeof pathPoints) => {
     if (points.length < 2) return '';
     
-    // 同じ値の場合は直線で描画
-    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    // 同じ値の場合は直線で描画（有効なデータポイントが2つ以上ある場合のみチェック）
+    const allSameValue = points.length >= 2 && points.every(p => Math.abs(p.value - points[0].value) < 0.01);
     
     let path = `M ${points[0].x},${points[0].y}`;
     
@@ -338,8 +373,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     const lastPoint = points[points.length - 1];
     const firstPoint = points[0];
     
-    // 同じ値の場合でも適切な高さを保つ
-    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    // 同じ値の場合でも適切な高さを保つ（有効なデータポイントが2つ以上ある場合のみチェック）
+    const allSameValue = points.length >= 2 && points.every(p => Math.abs(p.value - points[0].value) < 0.01);
     
     if (allSameValue) {
       // 同じ値の場合、適切な厚みを持った帯状のエリアを作成
