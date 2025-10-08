@@ -1594,7 +1594,7 @@ function generateUserExercisePatterns(exerciseNames: string[]) {
     if (match) {
       const names = match[1].split('|');
       names.forEach(name => {
-        if (name.includes('\\\\'))) {
+        if (name.includes('\\\\')) {
           // エスケープされた文字を元に戻す
           basicExerciseNames.add(name.replace(/\\\\/g, ''));
         } else {
