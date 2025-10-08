@@ -249,29 +249,11 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           </span>
                           <span className="text-xs text-slate-500">{exercise.time}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="text-right">
-                            <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
-                            {exercise.calories && (
-                              <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <button
-                              onClick={(e) => handleEditClick(e, exercise)}
-                              className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                              title="編集"
-                            >
-                              <Edit3 size={14} />
-                            </button>
-                            <button
-                              onClick={(e) => handleDeleteClick(e, exercise)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
-                              title="削除"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                        <div className="text-right">
+                          <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
+                          {exercise.calories && (
+                            <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
+                          )}
                         </div>
                       </div>
                       
