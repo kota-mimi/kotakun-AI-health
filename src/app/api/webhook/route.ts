@@ -259,10 +259,19 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     console.error('テキストメッセージ処理エラー:', error);
     // エラー時は一般会話で応答（AIアドバイスモードを考慮）
     const aiService = new AIHealthService();
+    const wasAdviceMode = aiAdviceModeUsers.has(userId); // タイムアウト前の状態
     const isAdviceMode = await isAIAdviceMode(userId);
-    const aiResponse = isAdviceMode 
-      ? await aiService.generateAdvancedResponse(text)  // 高性能モデル
-      : await aiService.generateGeneralResponse(text);  // 軽量モデル
+    
+    // タイムアウト検出時にお知らせ
+    let aiResponse;
+    if (wasAdviceMode && !isAdviceMode) {
+      aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
+                   await aiService.generateGeneralResponse(text);
+    } else {
+      aiResponse = isAdviceMode 
+        ? await aiService.generateAdvancedResponse(text)  // 高性能モデル
+        : await aiService.generateGeneralResponse(text);  // 軽量モデル
+    }
     
     await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
@@ -1830,17 +1839,37 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
   await replyMessage(replyToken, [adviceMessage]);
 }
 
-// AIアドバイスモードの設定（簡単なメモリキャッシュ）
-const aiAdviceModeUsers = new Set<string>();
+// AIアドバイスモードの設定（タイムアウト付きセッション管理）
+const aiAdviceModeUsers = new Map<string, number>();
+const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
-    aiAdviceModeUsers.add(userId);
+    aiAdviceModeUsers.set(userId, Date.now());
+    console.log(`🤖 AIアドバイスモード開始: ${userId}`);
   } else {
     aiAdviceModeUsers.delete(userId);
+    console.log(`⏹️ AIアドバイスモード終了: ${userId}`);
   }
 }
 
 async function isAIAdviceMode(userId: string): Promise<boolean> {
-  return aiAdviceModeUsers.has(userId);
+  const startTime = aiAdviceModeUsers.get(userId);
+  
+  if (!startTime) {
+    return false; // モードが設定されていない
+  }
+  
+  const elapsed = Date.now() - startTime;
+  
+  if (elapsed > AI_ADVICE_TIMEOUT) {
+    // タイムアウト：自動的に通常モードに戻す
+    aiAdviceModeUsers.delete(userId);
+    console.log(`⏰ AIアドバイスモード タイムアウト (${Math.round(elapsed/1000/60)}分経過): ${userId}`);
+    return false;
+  }
+  
+  // まだ有効：時間を更新
+  aiAdviceModeUsers.set(userId, Date.now());
+  return true;
 }
