@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Activity, ChevronRight, ChevronDown, ChevronUp, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2 } from 'lucide-react';
+import { Activity, ChevronRight, ChevronDown, ChevronUp, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2, Edit3 } from 'lucide-react';
 import { ExerciseDeleteModal } from './ExerciseDeleteModal';
+import { ExerciseEditModal } from './ExerciseEditModal';
 
 interface ExerciseSet {
   weight: number;
@@ -29,6 +30,7 @@ interface WorkoutSummaryCardProps {
   onAddExercise?: () => void;
   onEditExercise?: (exerciseId: string) => void;
   onDeleteExercise?: (exerciseId: string) => void;
+  onUpdateExercise?: (exerciseId: string, updates: Partial<Exercise>) => void;
 }
 
 const getExerciseTypeLabel = (type: Exercise['type']) => {
@@ -61,13 +63,14 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
   return icons[type];
 };
 
-export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise }: WorkoutSummaryCardProps) {
+export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise, onUpdateExercise }: WorkoutSummaryCardProps) {
   console.log('💪 WorkoutSummaryCard received exerciseData:', exerciseData);
   console.log('💪 exerciseData length:', exerciseData?.length || 0);
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   
   // 緊急修正: useExerciseDataが動かないので直接フェッチ (localhost URL fix)
   const [emergencyExerciseData, setEmergencyExerciseData] = useState<Exercise[]>([]);
@@ -155,6 +158,25 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     setDeleteModal({ isOpen: false, exercise: null });
   };
 
+  const handleEditClick = (e: React.MouseEvent, exercise: Exercise) => {
+    e.stopPropagation(); // 親要素のクリックイベントを阻止
+    setEditModal({ isOpen: true, exercise });
+  };
+
+  const handleUpdateExercise = (exerciseId: string, updates: Partial<Exercise>) => {
+    if (onUpdateExercise) {
+      onUpdateExercise(exerciseId, updates);
+    }
+    setEditModal({ isOpen: false, exercise: null });
+  };
+
+  const handleDeleteFromEdit = (exerciseId: string) => {
+    if (onDeleteExercise) {
+      onDeleteExercise(exerciseId);
+    }
+    setEditModal({ isOpen: false, exercise: null });
+  };
+
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <Button
@@ -234,13 +256,22 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                               <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
                             )}
                           </div>
-                          <button
-                            onClick={(e) => handleDeleteClick(e, exercise)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
-                            title="削除"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="flex items-center space-x-1">
+                            <button
+                              onClick={(e) => handleEditClick(e, exercise)}
+                              className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                              title="編集"
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button
+                              onClick={(e) => handleDeleteClick(e, exercise)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                              title="削除"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                       
@@ -316,6 +347,16 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
         onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
         onConfirm={handleDeleteConfirm}
         exercise={deleteModal.exercise}
+      />
+
+      {/* 編集モーダル */}
+      <ExerciseEditModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, exercise: null })}
+        onUpdate={handleUpdateExercise}
+        onDelete={handleDeleteFromEdit}
+        exercise={editModal.exercise}
+        userWeight={70}
       />
     </Card>
   );

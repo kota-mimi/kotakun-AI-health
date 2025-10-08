@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
     // Firestoreに保存（Admin SDK）
     await recordRef.update({
       exercises: updatedExercises,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.Timestamp.now()
     });
 
     console.log('✅ 運動データ更新完了:', exerciseId);
@@ -177,7 +177,7 @@ export async function DELETE(request: NextRequest) {
     // Firestoreに保存（Admin SDK）
     await recordRef.update({
       exercises: filteredExercises,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.Timestamp.now()
     });
 
     console.log('✅ 運動データ削除完了:', exerciseId);

@@ -278,6 +278,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                     }
                   }}
                   onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise?.(exerciseId)}
+                  onUpdateExercise={(exerciseId, updates) => exerciseManager.handleUpdateExercise?.(exerciseId, updates)}
                 />
               )}
             </div>
