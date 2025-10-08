@@ -294,7 +294,17 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   
   // 滑らかなベジェ曲線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
-    if (points.length < 2) return '';
+    if (points.length < 1) return '';
+    
+    // 1点のみの場合は点として描画
+    if (points.length === 1) {
+      return `M ${points[0].x},${points[0].y}`;
+    }
+    
+    // 2点で同じ値の場合は直線
+    if (points.length === 2 && Math.abs(points[0].value - points[1].value) < 0.01) {
+      return `M ${points[0].x},${points[0].y} L ${points[1].x},${points[1].y}`;
+    }
     
     let path = `M ${points[0].x},${points[0].y}`;
     
@@ -320,12 +330,39 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
   // グラデーション用のエリアパス
   const createAreaPath = (points: typeof pathPoints) => {
-    if (points.length < 2) return '';
+    if (points.length < 1) return '';
     
+    // 1点しかない場合の処理
+    if (points.length === 1) {
+      const point = points[0];
+      const minHeight = 30; // 最小表示高さ
+      const topY = Math.max(10, point.y - minHeight);
+      const bottomY = svgHeight - 10;
+      
+      // 単一点の場合は小さな矩形を作成
+      return `M ${point.x - 15},${topY} L ${point.x + 15},${topY} L ${point.x + 15},${bottomY} L ${point.x - 15},${bottomY} Z`;
+    }
+    
+    // 2点以上の場合
     let path = createSmoothPath(points);
+    if (!path) return '';
+    
     const lastPoint = points[points.length - 1];
     const firstPoint = points[0];
     
+    // 同じ値の場合でも適切な高さを保つ
+    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    
+    if (allSameValue && points.length === 2) {
+      // 2点で同じ値の場合、少し厚みを持たせる
+      const minHeight = 20;
+      const topY = Math.max(10, points[0].y - minHeight / 2);
+      const bottomY = Math.min(svgHeight - 10, points[0].y + minHeight / 2);
+      
+      return `M ${firstPoint.x},${topY} L ${lastPoint.x},${topY} L ${lastPoint.x},${bottomY} L ${firstPoint.x},${bottomY} Z`;
+    }
+    
+    // 通常の場合（値に変化がある、または3点以上）
     path += ` L ${lastPoint.x},${svgHeight - 10}`;
     path += ` L ${firstPoint.x},${svgHeight - 10}`;
     path += ' Z';
@@ -713,35 +750,54 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             />
           )}
 
-          {/* 記録開始ポイント（最初のポイント）を常に表示 */}
-          {pathPoints.length > 0 && (
-            <>
-              <circle
-                cx={pathPoints[0].x}
-                cy={pathPoints[0].y}
-                r="5"
-                fill="white"
-                stroke={currentConfig.color}
-                strokeWidth="3"
-                filter="url(#dropshadow)"
-              />
-              <circle
-                cx={pathPoints[0].x}
-                cy={pathPoints[0].y}
-                r="2"
-                fill={currentConfig.color}
-              />
-              {/* スタートラベル */}
-              <text
-                x={pathPoints[0].x}
-                y={pathPoints[0].y - 15}
-                textAnchor="middle"
-                className="text-xs font-bold fill-blue-600"
-              >
-                記録開始
-              </text>
-            </>
-          )}
+          {/* データ点の表示 */}
+          {pathPoints.map((point, index) => {
+            // 最初と最後の点は常に表示、1点のみの場合も表示
+            const shouldShowPoint = pathPoints.length === 1 || index === 0 || index === pathPoints.length - 1;
+            
+            if (!shouldShowPoint) return null;
+            
+            return (
+              <g key={index}>
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="5"
+                  fill="white"
+                  stroke={currentConfig.color}
+                  strokeWidth="3"
+                  filter="url(#dropshadow)"
+                />
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="2"
+                  fill={currentConfig.color}
+                />
+                {/* ラベル表示 */}
+                {(pathPoints.length === 1 || index === 0) && (
+                  <text
+                    x={point.x}
+                    y={point.y - 15}
+                    textAnchor="middle"
+                    className="text-xs font-bold fill-blue-600"
+                  >
+                    {pathPoints.length === 1 ? '記録' : '記録開始'}
+                  </text>
+                )}
+                {pathPoints.length > 1 && index === pathPoints.length - 1 && (
+                  <text
+                    x={point.x}
+                    y={point.y - 15}
+                    textAnchor="middle"
+                    className="text-xs font-bold fill-green-600"
+                  >
+                    最新
+                  </text>
+                )}
+              </g>
+            );
+          })}
 
           {/* 選択されたポイントのみ表示 */}
           {selectedPoint && (
