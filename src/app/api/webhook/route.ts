@@ -366,21 +366,11 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
+      break;
+    case 'cancel_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: 'どんなことでも記録してください',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '記録をやめる',
-                data: 'action=cancel_record'
-              }
-            }
-          ]
-        }
+        text: 'また記録してね！'
       }]);
       break;
     case 'confirm_record':
@@ -1728,7 +1718,7 @@ function checkUserExercisePatterns(userId: string, text: string) {
 async function showRecordMenu(replyToken: string) {
   const recordMessage = {
     type: 'text',
-    text: '記録モードです！\n\n体重・食事・運動など、なんでも記録してくださいね。\n\n「65kg」「カレー食べた」「ランニング30分」など、自由にお話しください',
+    text: '記録モードです！\n\n食事 体重 運動記録してね！',
     quickReply: {
       items: [
         {
@@ -1745,6 +1735,14 @@ async function showRecordMenu(replyToken: string) {
           action: {
             type: 'camera',
             label: 'カメラで記録'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: '記録をやめる',
+            data: 'action=cancel_record'
           }
         }
       ]
