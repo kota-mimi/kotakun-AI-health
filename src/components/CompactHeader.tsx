@@ -145,7 +145,10 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               // 日付のみで比較（時間は無視）
               const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
               const appStartDateOnly = new Date(appStartDate.getFullYear(), appStartDate.getMonth(), appStartDate.getDate());
-              const isBeforeAppStart = dateOnly.getTime() <= appStartDateOnly.getTime();
+              // アプリ開始日の前日まで無効化（アプリ開始日は選択可能）
+              const dayBefore = new Date(appStartDateOnly);
+              dayBefore.setDate(dayBefore.getDate() - 1);
+              const isBeforeAppStart = dateOnly.getTime() <= dayBefore.getTime();
               
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
