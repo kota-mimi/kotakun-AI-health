@@ -1258,29 +1258,24 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
       type: exerciseType,
       duration: duration,
       intensity: getIntensity(mets),
-      caloriesBurned: caloriesBurned,
+      calories: caloriesBurned, // アプリはcaloriesフィールドを期待
       notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
       timestamp: new Date(),
       time: new Date().toLocaleTimeString('ja-JP', { 
         hour: '2-digit', 
         minute: '2-digit',
         timeZone: 'Asia/Tokyo'
-      }),
-      lineUserId: userId
+      })
     };
     
     // 追加情報があれば設定
     if (match.distance) {
       exerciseData.distance = match.distance;
     }
-    if (match.weight) {
-      exerciseData.weight = match.weight;
-    }
-    if (match.reps) {
-      exerciseData.reps = match.reps;
-    }
-    if (match.sets) {
-      exerciseData.sets = match.sets;
+    // sets情報をアプリの型定義に合わせる
+    if (match.weight && match.reps) {
+      const setsCount = match.sets || 1;
+      exerciseData.sets = Array(setsCount).fill({ weight: match.weight, reps: match.reps });
     }
     
     // Firestoreに保存
@@ -1342,25 +1337,21 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     const baseMets = EXERCISE_METS[exerciseName] || 6.0;
     const caloriesBurned = Math.round((baseMets * userWeight * estimatedDuration) / 60);
     
-    // 運動データ作成
+    // 運動データ作成（アプリの型定義に合わせる）
     const exerciseData = {
       id: generateId(),
       name: exerciseName,
       type: 'strength',
       duration: estimatedDuration,
-      intensity: 'moderate',
-      caloriesBurned: caloriesBurned,
-      weight: weight,
-      reps: reps,
-      sets: sets,
+      calories: caloriesBurned, // アプリはcaloriesフィールドを期待
+      sets: Array(sets).fill({ weight: weight, reps: reps }), // アプリの型定義に合わせる
       notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
       timestamp: new Date(),
       time: new Date().toLocaleTimeString('ja-JP', { 
         hour: '2-digit', 
         minute: '2-digit',
         timeZone: 'Asia/Tokyo'
-      }),
-      lineUserId: userId
+      })
     };
     
     // Firestoreに保存
