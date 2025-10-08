@@ -172,7 +172,13 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       return;
     }
     
-    // 体重記録でない場合、食事記録の判定を行う
+    // 運動記録の判定（パターンマッチング）
+    const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
+    if (exerciseResult) {
+      return; // 運動記録として処理済み
+    }
+    
+    // 体重記録でも運動記録でもない場合、食事記録の判定を行う
     const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
     
     if (mealJudgment.isFoodRecord) {
@@ -891,4 +897,798 @@ export async function pushMessage(userId: string, messages: any[]) {
   } catch (error) {
     console.error('Error pushing message:', error);
   }
+}
+
+// === 運動記録機能 ===
+// 動的パターンキャッシュ（ユーザー別）
+const userExercisePatterns = new Map();
+
+// 基本運動パターン（詳細版）
+const BASIC_EXERCISE_PATTERNS = [
+  // 詳細筋トレパターン（重量×回数×セット）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック)\s*(\d+(?:\.\d+)?)\s*(kg|キロ|ｋｇ|KG)\s*(\d+)\s*(回|レップ|rep|reps)\s*(\d+)\s*(セット|set|sets)$/i, 
+    type: 'strength_detailed',
+    captureGroups: ['exercise', 'weight', 'weightUnit', 'reps', 'repsUnit', 'sets', 'setsUnit']
+  },
+  
+  // 距離+時間パターン
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング|走る|歩く|ジョグ|自転車|チャリ|散歩|早歩き|マラソン|ハイキング|トレッキング|ウォーク|ラン|サイクル)\s*(\d+(?:\.\d+)?)\s*(km|キロ|ｋｍ|KM|キロメートル|m|メートル|ｍ|M)\s*(\d+)\s*(分|時間|秒|min|mins|hour|hours|sec|secs|分間|時|h|m|s)$/i, 
+    type: 'cardio_distance',
+    captureGroups: ['exercise', 'distance', 'distanceUnit', 'duration', 'durationUnit']
+  },
+  
+  // 重量×回数パターン（セット数なし）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック)\s*(\d+(?:\.\d+)?)\s*(kg|キロ|ｋｇ|KG)\s*(\d+)\s*(回|レップ|rep|reps)$/i, 
+    type: 'strength_weight_reps',
+    captureGroups: ['exercise', 'weight', 'weightUnit', 'reps', 'repsUnit']
+  },
+  
+  // 距離のみパターン
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング|走る|歩く|ジョグ|自転車|チャリ|散歩|早歩き|マラソン|ハイキング|トレッキング|ウォーク|ラン|サイクル)\s*(\d+(?:\.\d+)?)\s*(km|キロ|ｋｍ|KM|キロメートル|m|メートル|ｍ|M)$/i, 
+    type: 'cardio_distance_only',
+    captureGroups: ['exercise', 'distance', 'distanceUnit']
+  },
+  
+  // 有酸素運動（時間のみ）
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング|水泳|エアロビクス|走る|歩く|泳ぐ|ジョグ|自転車|チャリ|散歩|早歩き|マラソン|ハイキング|トレッキング|ウォーク|ラン|サイクル|スイミング|プール|クロール|平泳ぎ|背泳ぎ|バタフライ|水中ウォーキング|アクアビクス|ズンバ|エアロ|ステップ|踏み台昇降|縄跳び|なわとび|ロープジャンプ|ボクシング|キックボクシング|ムエタイ|格闘技|太極拳|気功|ダンス|社交ダンス|フラダンス|ベリーダンス|ヒップホップ|ジャズダンス|バレエ|フィットネス|有酸素|カーディオ|HIIT|タバタ|インターバル|クロストレーニング|ローイング|ボート漕ぎ|エリプティカル|トレッドミル|ランニングマシン|ウォーキングマシン|エアロバイク|スピンバイク|ステッパー|クライミング|ボルダリング|登山)\s*(\d+)\s*(分|時間|秒|min|mins|hour|hours|sec|secs|分間|時|h|m|s)$/i, 
+    type: 'cardio' 
+  },
+  
+  // 筋力トレーニング（時間・回数・セット）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック|筋トレ|ウェイトトレーニング|マシントレーニング|フリーウェイト|ダンベル|バーベル|ケトルベル|チューブ|エクササイズ|ストレングス|レジスタンス|体幹|コア|インナーマッスル|アウターマッスル|上半身|下半身|胸筋|背筋|腹筋|脚|腕|肩|太もも|ふくらはぎ|お尻|臀筋|大胸筋|広背筋|僧帽筋|三角筋|上腕二頭筋|上腕三頭筋|前腕|大腿四頭筋|ハムストリング|腓腹筋|ヒラメ筋)\s*(\d+)\s*(分|時間|秒|回|セット|min|mins|hour|hours|sec|secs|rep|reps|set|sets|分間|時|h|m|s)$/i, 
+    type: 'strength' 
+  },
+  
+  // スポーツ
+  { 
+    pattern: /^(テニス|バドミントン|卓球|バスケ|サッカー|野球|ゴルフ|バレーボール|ハンドボール|ラグビー|アメフト|ホッケー|フィールドホッケー|アイスホッケー|スケート|フィギュアスケート|スピードスケート|アイススケート|ローラースケート|インラインスケート|スキー|スノーボード|スノボ|クロスカントリー|アルペン|ジャンプ|ノルディック|水上スキー|ジェットスキー|サーフィン|ウィンドサーフィン|セーリング|ヨット|カヌー|カヤック|ラフティング|釣り|フィッシング|弓道|アーチェリー|射撃|フェンシング|剣道|柔道|空手|合気道|少林寺拳法|テコンドー|ボクシング|キックボクシング|レスリング|相撲|体操|新体操|器械体操|トランポリン|陸上|短距離|中距離|長距離|マラソン|駅伝|ハードル|走り幅跳び|走り高跳び|棒高跳び|砲丸投げ|ハンマー投げ|やり投げ|円盤投げ|十種競技|七種競技|競歩|クライミング|ボルダリング|登山|ハイキング|トレッキング|オリエンテーリング|トライアスロン|アイアンマン|デュアスロン|アクアスロン|ペンタスロン|モダンペンタスロン|バイアスロン)\s*(\d+)\s*(分|時間|秒|min|mins|hour|hours|sec|secs|分間|時|h|m|s)$/i, 
+    type: 'sports' 
+  },
+  
+  // ストレッチ・柔軟性・リラクゼーション
+  { 
+    pattern: /^(ヨガ|ピラティス|ストレッチ|柔軟|柔軟体操|ラジオ体操|準備運動|整理運動|クールダウン|ウォームアップ|マッサージ|セルフマッサージ|リンパマッサージ|指圧|ツボ押し|整体|カイロプラクティック|オステオパシー|リフレクソロジー|アロマテラピー|瞑想|メディテーション|呼吸法|深呼吸|腹式呼吸|胸式呼吸|ブレス|ブリージング|リラックス|リラクゼーション|ストレス解消|癒し|ヒーリング)\s*(\d+)\s*(分|時間|秒|min|mins|hour|hours|sec|secs|分間|時|h|m|s)$/i, 
+    type: 'flexibility' 
+  },
+  
+  // 日常生活活動（NEAT）
+  { 
+    pattern: /^(掃除|そうじ|清掃|洗濯|せんたく|料理|りょうり|クッキング|調理|買い物|かいもの|ショッピング|庭仕事|にわしごと|ガーデニング|草取り|くさとり|除草|水やり|みずやり|植物の世話|しょくぶつのせわ|ペットの散歩|ペットのさんぽ|犬の散歩|いぬのさんぽ|猫の世話|ねこのせわ|階段昇降|かいだんしょうこう|階段|かいだん|エスカレーター回避|階段利用|かいだんりよう|立ち仕事|たちしごと)\s*(\d+)\s*(分|時間|秒|min|mins|hour|hours|sec|secs|分間|時|h|m|s)$/i, 
+    type: 'daily_activity' 
+  },
+  
+  // 種目名のみパターン（時間なし）
+  { 
+    pattern: /^(ランニング|ウォーキング|ジョギング|サイクリング|水泳|エアロビクス|走る|歩く|泳ぐ|ジョグ|自転車|チャリ|散歩|早歩き|マラソン|ハイキング|トレッキング|ウォーク|ラン|サイクル|スイミング|プール|クロール|平泳ぎ|背泳ぎ|バタフライ|水中ウォーキング|アクアビクス|ズンバ|エアロ|ステップ|踏み台昇降|縄跳び|なわとび|ロープジャンプ|ボクシング|キックボクシング|ムエタイ|格闘技|太極拳|気功|ダンス|社交ダンス|フラダンス|ベリーダンス|ヒップホップ|ジャズダンス|バレエ|フィットネス|有酸素|カーディオ|HIIT|タバタ|インターバル|クロストレーニング|ローイング|ボート漕ぎ|エリプティカル|トレッドミル|ランニングマシン|ウォーキングマシン|エアロバイク|スピンバイク|ステッパー|クライミング|ボルダリング|登山|ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック|筋トレ|ウェイトトレーニング|マシントレーニング|フリーウェイト|ダンベル|バーベル|ケトルベル|チューブ|エクササイズ|ストレングス|レジスタンス|体幹|コア|インナーマッスル|アウターマッスル|上半身|下半身|胸筋|背筋|腹筋|脚|腕|肩|太もも|ふくらはぎ|お尻|臀筋|大胸筋|広背筋|僧帽筋|三角筋|上腕二頭筋|上腕三頭筋|前腕|大腿四頭筋|ハムストリング|腓腹筋|ヒラメ筋|テニス|バドミントン|卓球|バスケ|サッカー|野球|ゴルフ|バレーボール|ハンドボール|ラグビー|アメフト|ホッケー|フィールドホッケー|アイスホッケー|スケート|フィギュアスケート|スピードスケート|アイススケート|ローラースケート|インラインスケート|スキー|スノーボード|スノボ|クロスカントリー|アルペン|ジャンプ|ノルディック|水上スキー|ジェットスキー|サーフィン|ウィンドサーフィン|セーリング|ヨット|カヌー|カヤック|ラフティング|釣り|フィッシング|弓道|アーチェリー|射撃|フェンシング|剣道|柔道|空手|合気道|少林寺拳法|テコンドー|レスリング|相撲|体操|新体操|器械体操|トランポリン|陸上|短距離|中距離|長距離|駅伝|ハードル|走り幅跳び|走り高跳び|棒高跳び|砲丸投げ|ハンマー投げ|やり投げ|円盤投げ|十種競技|七種競技|競歩|オリエンテーリング|トライアスロン|アイアンマン|デュアスロン|アクアスロン|ペンタスロン|モダンペンタスロン|バイアスロン|ヨガ|ピラティス|ストレッチ|柔軟|柔軟体操|ラジオ体操|準備運動|整理運動|クールダウン|ウォームアップ|マッサージ|セルフマッサージ|リンパマッサージ|指圧|ツボ押し|整体|カイロプラクティック|オステオパシー|リフレクソロジー|アロマテラピー|瞑想|メディテーション|呼吸法|深呼吸|腹式呼吸|胸式呼吸|ブレス|ブリージング|リラックス|リラクゼーション|ストレス解消|癒し|ヒーリング|掃除|そうじ|清掃|洗濯|せんたく|料理|りょうり|クッキング|調理|買い物|かいもの|ショッピング|庭仕事|にわしごと|ガーデニング|草取り|くさとり|除草|水やり|みずやり|植物の世話|しょくぶつのせわ|ペットの散歩|ペットのさんぽ|犬の散歩|いぬのさんぽ|猫の世話|ねこのせわ|階段昇降|かいだんしょうこう|階段|かいだん|エスカレーター回避|階段利用|かいだんりよう|立ち仕事|たちしごと)$/i, 
+    type: 'exercise_only' 
+  }
+];
+
+// METs値マップ（カロリー計算用）
+const EXERCISE_METS = {
+  // 有酸素運動
+  'ランニング': 8.0, '走る': 8.0, 'ラン': 8.0,
+  'ウォーキング': 3.5, '歩く': 3.5, 'ウォーク': 3.5, '散歩': 3.0, '早歩き': 4.0,
+  'ジョギング': 6.0, 'ジョグ': 6.0,
+  'サイクリング': 6.8, '自転車': 6.8, 'チャリ': 6.8, 'サイクル': 6.8,
+  'マラソン': 9.0,
+  'ハイキング': 6.0, 'トレッキング': 7.0, '登山': 8.0,
+  
+  // 水泳・水中運動
+  '水泳': 6.0, '泳ぐ': 6.0, 'スイミング': 6.0, 'プール': 6.0,
+  'クロール': 8.0, '平泳ぎ': 6.0, '背泳ぎ': 7.0, 'バタフライ': 10.0,
+  '水中ウォーキング': 4.0, 'アクアビクス': 5.0,
+  
+  // エアロビクス・ダンス
+  'エアロビクス': 7.3, 'エアロ': 7.3, 'ズンバ': 8.0,
+  'ステップ': 8.0, '踏み台昇降': 7.0,
+  'ダンス': 4.8, '社交ダンス': 4.0, 'フラダンス': 3.0, 'ベリーダンス': 4.0,
+  'ヒップホップ': 6.0, 'ジャズダンス': 5.0, 'バレエ': 4.0,
+  
+  // 筋力トレーニング
+  'ベンチプレス': 6.0, 'スクワット': 5.0, 'デッドリフト': 6.0,
+  '懸垂': 8.0, 'チンアップ': 8.0, 'プルアップ': 8.0,
+  '腕立て伏せ': 4.0, '腕立て': 4.0,
+  '腹筋': 4.0, 'クランチ': 4.0, 'サイドクランチ': 4.0,
+  '背筋': 4.0, '肩トレ': 5.0, 'ショルダープレス': 5.0, 'サイドレイズ': 4.0,
+  'ラットプルダウン': 5.0, 'レッグプレス': 6.0,
+  'プランク': 3.5, 'バーベルカール': 4.0, 'ダンベルカール': 4.0, 'アームカール': 4.0,
+  'ディップス': 6.0, 'レッグエクステンション': 4.0, 'レッグカール': 4.0,
+  'カーフレイズ': 3.0, 'シュラッグ': 3.5,
+  'ロシアンツイスト': 5.0, 'レッグレイズ': 4.0,
+  'マウンテンクライマー': 8.0, 'バーピー': 8.0, 'ジャンピングジャック': 7.0,
+  '筋トレ': 6.0, 'ウェイトトレーニング': 6.0, 'マシントレーニング': 5.0,
+  'フリーウェイト': 6.0, 'ダンベル': 5.0, 'バーベル': 6.0, 'ケトルベル': 8.0,
+  
+  // 体幹・コア
+  '体幹': 4.0, 'コア': 4.0, 'インナーマッスル': 3.5,
+  
+  // 格闘技・武道
+  'ボクシング': 12.0, 'キックボクシング': 10.0, 'ムエタイ': 10.0,
+  '格闘技': 10.0, '剣道': 8.0, '柔道': 10.0, '空手': 8.0,
+  '合気道': 6.0, '少林寺拳法': 8.0, 'テコンドー': 8.0,
+  'レスリング': 12.0, '相撲': 10.0, 'フェンシング': 6.0,
+  '太極拳': 3.0, '気功': 2.5,
+  
+  // 球技・スポーツ
+  'テニス': 7.3, 'バドミントン': 5.5, '卓球': 4.0,
+  'バスケ': 6.5, 'サッカー': 7.0, '野球': 5.0,
+  'ゴルフ': 4.8, 'バレーボール': 6.0, 'ハンドボール': 8.0,
+  'ラグビー': 10.0, 'アメフト': 8.0, 'ホッケー': 8.0,
+  
+  // ウィンタースポーツ
+  'スキー': 7.0, 'スノーボード': 6.0, 'スノボ': 6.0,
+  'クロスカントリー': 9.0, 'アルペン': 6.0,
+  'スケート': 7.0, 'フィギュアスケート': 6.0, 'スピードスケート': 9.0,
+  'アイススケート': 7.0, 'ローラースケート': 7.0, 'インラインスケート': 8.0,
+  
+  // ウォータースポーツ
+  'サーフィン': 6.0, 'ウィンドサーフィン': 8.0, 'セーリング': 3.0, 'ヨット': 3.0,
+  'カヌー': 5.0, 'カヤック': 5.0, 'ラフティング': 5.0,
+  '水上スキー': 6.0, 'ジェットスキー': 4.0,
+  
+  // アウトドア・その他
+  'クライミング': 8.0, 'ボルダリング': 8.0,
+  '釣り': 2.5, 'フィッシング': 2.5,
+  '弓道': 3.5, 'アーチェリー': 4.0, '射撃': 2.5,
+  
+  // 体操・陸上
+  '体操': 4.0, '新体操': 4.0, '器械体操': 4.0, 'トランポリン': 4.0,
+  '陸上': 8.0, '短距離': 9.0, '中距離': 8.0, '長距離': 8.0,
+  '駅伝': 8.0, 'ハードル': 9.0, '走り幅跳び': 6.0, '走り高跳び': 6.0,
+  '棒高跳び': 6.0, '砲丸投げ': 4.0, 'ハンマー投げ': 4.0, 'やり投げ': 4.0,
+  '円盤投げ': 4.0, '競歩': 6.5,
+  
+  // 複合競技
+  'トライアスロン': 9.0, 'アイアンマン': 9.0, 'デュアスロン': 8.0,
+  'アクアスロン': 8.0, 'ペンタスロン': 7.0, 'モダンペンタスロン': 7.0,
+  'バイアスロン': 8.0, '十種競技': 7.0, '七種競技': 7.0,
+  'オリエンテーリング': 6.0,
+  
+  // ストレッチ・リラクゼーション
+  'ヨガ': 2.5, 'ピラティス': 3.0, 'ストレッチ': 2.3,
+  '柔軟': 2.3, '柔軟体操': 2.3, 'ラジオ体操': 3.0,
+  '準備運動': 3.0, '整理運動': 2.5, 'クールダウン': 2.5, 'ウォームアップ': 3.0,
+  'マッサージ': 1.5, 'セルフマッサージ': 2.0, 'リンパマッサージ': 2.0,
+  '瞑想': 1.2, 'メディテーション': 1.2, '呼吸法': 1.2, '深呼吸': 1.2,
+  'リラックス': 1.2, 'リラクゼーション': 1.2,
+  
+  // マシン・器具
+  'トレッドミル': 8.0, 'ランニングマシン': 8.0, 'ウォーキングマシン': 3.5,
+  'エアロバイク': 6.8, 'スピンバイク': 8.0, 'ステッパー': 7.0,
+  'エリプティカル': 7.0, 'ローイング': 8.0, 'ボート漕ぎ': 8.0,
+  
+  // フィットネス
+  'フィットネス': 5.0, '有酸素': 6.0, 'カーディオ': 6.0,
+  'HIIT': 8.0, 'タバタ': 8.0, 'インターバル': 8.0,
+  'クロストレーニング': 6.0,
+  
+  // 日常生活活動（NEAT）
+  '掃除': 3.5, 'そうじ': 3.5, '清掃': 3.5,
+  '洗濯': 2.0, 'せんたく': 2.0,
+  '料理': 2.5, 'りょうり': 2.5, 'クッキング': 2.5, '調理': 2.5,
+  '買い物': 2.3, 'かいもの': 2.3, 'ショッピング': 2.3,
+  '庭仕事': 4.0, 'にわしごと': 4.0, 'ガーデニング': 4.0,
+  '草取り': 4.5, 'くさとり': 4.5, '除草': 4.5,
+  '水やり': 2.5, 'みずやり': 2.5, '植物の世話': 2.5,
+  'ペットの散歩': 3.0, '犬の散歩': 3.0,
+  '階段昇降': 8.0, '階段': 8.0, '階段利用': 8.0,
+  '立ち仕事': 2.5
+};
+
+// 運動記録処理の主要関数
+async function handleExerciseMessage(replyToken: string, userId: string, text: string, user: any): Promise<boolean> {
+  try {
+    console.log('=== 運動記録処理開始 ===');
+    console.log('入力テキスト:', text);
+    
+    // Step 1: 基本パターンマッチング
+    let match = checkBasicExercisePatterns(text);
+    console.log('基本パターンマッチ結果:', match);
+    
+    if (!match) {
+      // Step 2: ユーザー固有の動的パターンチェック
+      await updateUserExercisePatterns(userId);
+      match = checkUserExercisePatterns(userId, text);
+      console.log('ユーザーパターンマッチ結果:', match);
+    }
+    
+    if (match) {
+      // パターンマッチング成功 - 即座に記録
+      console.log('パターンマッチ成功、記録開始');
+      await recordExerciseFromMatch(userId, match, replyToken, user);
+      return true;
+    }
+    
+    // 運動キーワード検出
+    const hasKeywords = containsExerciseKeywords(text);
+    console.log('運動キーワード検出:', hasKeywords);
+    
+    if (hasKeywords) {
+      // 確認メッセージ送信
+      console.log('運動キーワード検出、確認メッセージ送信');
+      await askForExerciseDetails(replyToken, text);
+      return true;
+    }
+    
+    console.log('運動関連ではないと判定');
+    return false; // 運動関連ではない
+    
+  } catch (error) {
+    console.error('運動記録処理エラー:', error);
+    return false;
+  }
+}
+
+// 基本パターンチェック関数
+function checkBasicExercisePatterns(text: string) {
+  for (const patternObj of BASIC_EXERCISE_PATTERNS) {
+    const { pattern, type, captureGroups } = patternObj;
+    const match = text.match(pattern);
+    if (match) {
+      console.log('🎯 パターンマッチ成功:', { type, match: match.slice(1) });
+      
+      // 詳細パターンの処理
+      if (type === 'strength_detailed') {
+        const weight = convertWeightToKg(parseFloat(match[2]), match[3]);
+        const reps = parseInt(match[4]);
+        const sets = parseInt(match[6]);
+        
+        return {
+          exerciseName: match[1],
+          weight: weight,
+          reps: reps,
+          sets: sets,
+          type: 'strength',
+          source: 'detailed_pattern',
+          detailType: 'weight_reps_sets'
+        };
+      }
+      
+      if (type === 'cardio_distance') {
+        const distance = convertDistanceToKm(parseFloat(match[2]), match[3]);
+        const duration = convertTimeToMinutes(parseInt(match[4]), match[5]);
+        
+        return {
+          exerciseName: match[1],
+          distance: distance,
+          duration: duration,
+          type: 'cardio',
+          source: 'distance_time_pattern'
+        };
+      }
+      
+      if (type === 'strength_weight_reps') {
+        const weight = convertWeightToKg(parseFloat(match[2]), match[3]);
+        const reps = parseInt(match[4]);
+        
+        return {
+          exerciseName: match[1],
+          weight: weight,
+          reps: reps,
+          sets: 1, // デフォルト
+          type: 'strength',
+          source: 'weight_reps_pattern'
+        };
+      }
+      
+      if (type === 'cardio_distance_only') {
+        const distance = convertDistanceToKm(parseFloat(match[2]), match[3]);
+        
+        return {
+          exerciseName: match[1],
+          distance: distance,
+          duration: estimateDurationFromDistance(distance, match[1]),
+          type: 'cardio',
+          source: 'distance_only_pattern'
+        };
+      }
+      
+      // 時間ベースのパターン
+      if (['cardio', 'strength', 'sports', 'flexibility', 'daily_activity'].includes(type)) {
+        const duration = convertTimeToMinutes(parseInt(match[2]), match[3]);
+        
+        return {
+          exerciseName: match[1],
+          duration: duration,
+          type: type,
+          source: 'time_pattern'
+        };
+      }
+      
+      // 種目名のみパターン
+      if (type === 'exercise_only') {
+        return {
+          exerciseName: match[1],
+          duration: 30, // デフォルト30分
+          type: getExerciseType(match[1]),
+          source: 'exercise_only_pattern'
+        };
+      }
+    }
+  }
+  return null;
+}
+
+// 運動キーワード検出
+function containsExerciseKeywords(text: string): boolean {
+  const exerciseKeywords = [
+    '運動', '筋トレ', 'トレーニング', 'ワークアウト', 'ジム', 'フィットネス',
+    'ランニング', 'ウォーキング', 'ジョギング', 'マラソン',
+    'ベンチプレス', 'スクワット', 'デッドリフト', '懸垂', '腕立て', '腹筋',
+    'ヨガ', 'ピラティス', 'ストレッチ', 'ダンス',
+    'テニス', 'バドミントン', '卓球', 'バスケ', 'サッカー', '野球', 'ゴルフ',
+    '水泳', 'サイクリング', 'エアロビクス'
+  ];
+  
+  return exerciseKeywords.some(keyword => text.includes(keyword));
+}
+
+// パターンマッチ結果から運動記録
+async function recordExerciseFromMatch(userId: string, match: any, replyToken: string, user: any) {
+  try {
+    await stopLoadingAnimation(userId);
+    
+    const { exerciseName, type, source, detailType } = match;
+    
+    // 詳細パターンの処理
+    if (source === 'detailed_pattern') {
+      return await recordDetailedExercise(userId, match, replyToken, user);
+    }
+    
+    // 基本パターンの処理
+    const duration = match.duration || 30;
+    const exerciseType = getExerciseType(exerciseName, type);
+    
+    // カロリー計算
+    const userWeight = await getUserWeight(userId) || 70;
+    const mets = EXERCISE_METS[exerciseName] || 5.0;
+    const caloriesBurned = Math.round((mets * userWeight * duration) / 60);
+    
+    // 運動データ作成
+    const exerciseData = {
+      id: generateId(),
+      name: exerciseName,
+      type: exerciseType,
+      duration: duration,
+      intensity: getIntensity(mets),
+      caloriesBurned: caloriesBurned,
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      }),
+      lineUserId: userId
+    };
+    
+    // 追加情報があれば設定
+    if (match.distance) {
+      exerciseData.distance = match.distance;
+    }
+    if (match.weight) {
+      exerciseData.weight = match.weight;
+    }
+    if (match.reps) {
+      exerciseData.reps = match.reps;
+    }
+    if (match.sets) {
+      exerciseData.sets = match.sets;
+    }
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    // 新しい運動を追加
+    const updatedExercises = [...existingExercises, exerciseData];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // 応答メッセージ作成
+    let responseText = `${exerciseName} ${duration}分 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+    
+    if (match.distance) {
+      responseText = `${exerciseName} ${match.distance}km ${duration}分 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+    } else if (match.weight && match.reps && match.sets) {
+      responseText = `${exerciseName} ${match.weight}kg ${match.reps}回 ${match.sets}セット を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+    } else if (match.weight && match.reps) {
+      responseText = `${exerciseName} ${match.weight}kg ${match.reps}回 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+    }
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: responseText
+    }]);
+    
+    console.log('✅ 運動記録完了:', exerciseData);
+    
+  } catch (error) {
+    console.error('❌ 運動記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// 詳細運動記録（重量・回数・セット）
+async function recordDetailedExercise(userId: string, match: any, replyToken: string, user: any) {
+  try {
+    const { exerciseName, weight, reps, sets } = match;
+    
+    // 筋トレの場合の時間推定（セット間休憩含む）
+    const estimatedDuration = sets * 3 + (sets - 1) * 2; // セット時間3分 + 休憩2分
+    
+    // カロリー計算（筋トレ用）
+    const userWeight = await getUserWeight(userId) || 70;
+    const baseMets = EXERCISE_METS[exerciseName] || 6.0;
+    const caloriesBurned = Math.round((baseMets * userWeight * estimatedDuration) / 60);
+    
+    // 運動データ作成
+    const exerciseData = {
+      id: generateId(),
+      name: exerciseName,
+      type: 'strength',
+      duration: estimatedDuration,
+      intensity: 'moderate',
+      caloriesBurned: caloriesBurned,
+      weight: weight,
+      reps: reps,
+      sets: sets,
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      }),
+      lineUserId: userId
+    };
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const updatedExercises = [...existingExercises, exerciseData];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: `${exerciseName} ${weight}kg ${reps}回 ${sets}セット を記録したよ！\n推定時間: ${estimatedDuration}分\n消費カロリー: ${caloriesBurned}kcal`
+    }]);
+    
+    console.log('✅ 詳細運動記録完了:', exerciseData);
+    
+  } catch (error) {
+    console.error('❌ 詳細運動記録エラー:', error);
+    throw error;
+  }
+}
+
+// 運動詳細の確認
+async function askForExerciseDetails(replyToken: string, originalText: string) {
+  await replyMessage(replyToken, [{
+    type: 'text',
+    text: `運動を記録しますか？\n具体的な運動名と時間を教えてください。\n\n例：「ランニング30分」「ベンチプレス 50kg 10回 3セット」`,
+    quickReply: {
+      items: [
+        { type: 'action', action: { type: 'text', label: 'ランニング30分' } },
+        { type: 'action', action: { type: 'text', label: '筋トレ45分' } },
+        { type: 'action', action: { type: 'text', label: 'ウォーキング20分' } }
+      ]
+    }
+  }]);
+}
+
+// ユーティリティ関数
+function convertWeightToKg(value: number, unit: string): number {
+  if (unit.toLowerCase().includes('kg') || unit === 'キロ') {
+    return value;
+  }
+  return value; // デフォルトはkg
+}
+
+function convertDistanceToKm(value: number, unit: string): number {
+  if (unit.toLowerCase().includes('km') || unit === 'キロ') {
+    return value;
+  }
+  if (unit.toLowerCase().includes('m') || unit === 'メートル') {
+    return value / 1000;
+  }
+  return value; // デフォルトはkm
+}
+
+function convertTimeToMinutes(value: number, unit: string): number {
+  const timeUnits = {
+    '秒': value / 60,
+    'sec': value / 60,
+    's': value / 60,
+    '分': value,
+    'min': value,
+    'm': value,
+    '時間': value * 60,
+    'hour': value * 60,
+    'h': value * 60
+  };
+  
+  for (const [unitKey, convertedValue] of Object.entries(timeUnits)) {
+    if (unit.includes(unitKey)) {
+      return convertedValue;
+    }
+  }
+  
+  return value; // デフォルトは分
+}
+
+function estimateDurationFromDistance(distance: number, exerciseName: string): number {
+  // 距離から時間を推定（速度ベース）
+  const speeds = {
+    'ランニング': 10, // 10km/h
+    'ウォーキング': 5, // 5km/h
+    'ジョギング': 8, // 8km/h
+    'サイクリング': 20, // 20km/h
+    '自転車': 20
+  };
+  
+  const speed = speeds[exerciseName] || 8; // デフォルト8km/h
+  return Math.round((distance / speed) * 60); // 分に変換
+}
+
+function getExerciseType(exerciseName: string, patternType?: string): string {
+  if (patternType) return patternType;
+  
+  const cardioExercises = [
+    'ランニング', 'ウォーキング', 'ジョギング', 'サイクリング', '水泳', 'エアロビクス',
+    '走る', '歩く', '泳ぐ', 'ジョグ', '自転車', 'チャリ', '散歩', '早歩き', 'マラソン'
+  ];
+  
+  const strengthExercises = [
+    'ベンチプレス', 'スクワット', 'デッドリフト', '懸垂', '腕立て伏せ', '腕立て', '腹筋', 
+    '背筋', '肩トレ', 'ショルダープレス', 'ラットプルダウン', 'レッグプレス', 'プランク',
+    'バーベルカール', 'ダンベルカール', 'チンアップ', 'プルアップ', 'ディップス'
+  ];
+  
+  const flexibilityExercises = [
+    'ヨガ', 'ピラティス', 'ストレッチ', '柔軟', '柔軟体操', 'ラジオ体操'
+  ];
+  
+  const sportsExercises = [
+    'テニス', 'バドミントン', '卓球', 'バスケ', 'サッカー', '野球', 'ゴルフ',
+    'バレーボール', 'ハンドボール', 'ラグビー', 'アメフト'
+  ];
+  
+  if (cardioExercises.includes(exerciseName)) return 'cardio';
+  if (strengthExercises.includes(exerciseName)) return 'strength';
+  if (flexibilityExercises.includes(exerciseName)) return 'flexibility';
+  if (sportsExercises.includes(exerciseName)) return 'sports';
+  
+  return 'other';
+}
+
+function getIntensity(mets: number): string {
+  if (mets < 3) return 'low';
+  if (mets < 6) return 'moderate';
+  return 'high';
+}
+
+// ユーザーの体重を取得
+async function getUserWeight(userId: string): Promise<number | null> {
+  try {
+    const db = admin.firestore();
+    
+    // 最近7日間の体重記録をチェック
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      try {
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
+        const dailyDoc = await recordRef.get();
+        const dailyData = dailyDoc.exists ? dailyDoc.data() : null;
+        if (dailyData && dailyData.weight) {
+          return dailyData.weight;
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+    
+    return 70; // デフォルト体重
+  } catch (error) {
+    console.error('体重取得エラー:', error);
+    return 70;
+  }
+}
+
+// === ユーザー固有パターン機能 ===
+// ユーザー固有パターンの動的生成・更新
+async function updateUserExercisePatterns(userId: string) {
+  try {
+    const db = admin.firestore();
+    
+    // ユーザーの過去の運動記録を取得（最近30日分）
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    const userExercises = await getUserExerciseHistory(userId, startDate, endDate);
+    
+    if (userExercises.length > 0) {
+      const uniqueExercises = [...new Set(userExercises.map(ex => ex.name))];
+      const patterns = generateUserExercisePatterns(uniqueExercises);
+      userExercisePatterns.set(userId, patterns);
+      console.log(`ユーザー ${userId} の動的パターン更新: ${uniqueExercises.join(', ')}`);
+    }
+  } catch (error) {
+    console.error('ユーザーパターン更新エラー:', error);
+  }
+}
+
+// ユーザーの運動履歴を取得
+async function getUserExerciseHistory(userId: string, startDate: Date, endDate: Date) {
+  try {
+    const db = admin.firestore();
+    const exercises = [];
+    
+    // 期間内の各日をチェック
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      try {
+        const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(dateStr);
+        const dailyDoc = await recordRef.get();
+        const dailyData = dailyDoc.exists ? dailyDoc.data() : null;
+        if (dailyData && dailyData.exercises) {
+          exercises.push(...dailyData.exercises);
+        }
+      } catch (error) {
+        // 日付データがない場合は無視
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return exercises;
+  } catch (error) {
+    console.error('運動履歴取得エラー:', error);
+    return [];
+  }
+}
+
+// ユーザー固有パターンの生成
+function generateUserExercisePatterns(exerciseNames: string[]) {
+  // 既存の基本パターンに含まれない運動名だけを抽出
+  const basicExerciseNames = new Set();
+  BASIC_EXERCISE_PATTERNS.forEach(patternObj => {
+    const patternStr = patternObj.pattern.source;
+    // 最初のグループから運動名を抽出
+    const match = patternStr.match(/\^\(([^)]+)\)/);
+    if (match) {
+      const names = match[1].split('|');
+      names.forEach(name => {
+        if (name.includes('\\\\'))) {
+          // エスケープされた文字を元に戻す
+          basicExerciseNames.add(name.replace(/\\\\/g, ''));
+        } else {
+          basicExerciseNames.add(name);
+        }
+      });
+    }
+  });
+  
+  // 新しい運動名のみをフィルタリング
+  const newExerciseNames = exerciseNames.filter(name => !basicExerciseNames.has(name));
+  
+  if (newExerciseNames.length === 0) {
+    return [];
+  }
+  
+  const escapedNames = newExerciseNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const namePattern = `(${escapedNames.join('|')})`;
+  
+  return [
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)\\s*(分|時間|min|mins|hour|hours|h|m)$`, 'i'), type: 'user_exercise_time' },
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)\\s*(回|レップ|セット|rep|reps|set|sets)$`, 'i'), type: 'user_exercise_reps' },
+    { pattern: new RegExp(`^${namePattern}\\s*(\\d+)$`, 'i'), type: 'user_exercise_simple' }, // 単位なし
+    { pattern: new RegExp(`^${namePattern}$`, 'i'), type: 'user_exercise_only' } // 運動名のみ
+  ];
+}
+
+// ユーザーパターンチェック
+function checkUserExercisePatterns(userId: string, text: string) {
+  const patterns = userExercisePatterns.get(userId);
+  if (!patterns || patterns.length === 0) return null;
+  
+  for (const { pattern, type } of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      console.log('🎯 ユーザーパターンマッチ:', { type, exerciseName: match[1], match: match.slice(1) });
+      
+      if (type === 'user_exercise_time') {
+        const duration = convertTimeToMinutes(parseInt(match[2]), match[3]);
+        return {
+          exerciseName: match[1],
+          duration: duration,
+          type: getExerciseType(match[1]),
+          source: 'user_time_pattern'
+        };
+      }
+      
+      if (type === 'user_exercise_reps') {
+        const value = parseInt(match[2]);
+        const unit = match[3];
+        
+        if (unit.includes('回') || unit.includes('レップ') || unit.includes('rep')) {
+          // 回数ベースの場合、時間を推定
+          const estimatedDuration = Math.max(value / 10, 5); // 10回=1分、最低5分
+          return {
+            exerciseName: match[1],
+            duration: estimatedDuration,
+            reps: value,
+            type: getExerciseType(match[1]),
+            source: 'user_reps_pattern'
+          };
+        } else {
+          // セットベースの場合
+          const estimatedDuration = value * 3; // 1セット=3分
+          return {
+            exerciseName: match[1],
+            duration: estimatedDuration,
+            sets: value,
+            type: getExerciseType(match[1]),
+            source: 'user_sets_pattern'
+          };
+        }
+      }
+      
+      if (type === 'user_exercise_simple') {
+        // 数値のみの場合、デフォルトで分として処理
+        return {
+          exerciseName: match[1],
+          duration: parseInt(match[2]),
+          type: getExerciseType(match[1]),
+          source: 'user_simple_pattern'
+        };
+      }
+      
+      if (type === 'user_exercise_only') {
+        // 運動名のみの場合、デフォルト30分
+        return {
+          exerciseName: match[1],
+          duration: 30,
+          type: getExerciseType(match[1]),
+          source: 'user_only_pattern'
+        };
+      }
+    }
+  }
+  return null;
 }
