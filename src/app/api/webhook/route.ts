@@ -273,9 +273,13 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
   try {
     console.log('🔥 シンプル画像処理開始:', { userId, messageId });
     
+    // Loading Animation開始（AIが画像分析中）
+    await startLoadingAnimation(userId, 30);
+    
     // 1. 画像を取得
     const imageContent = await getImageContent(messageId);
     if (!imageContent) {
+      await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
         text: '画像がうまく受け取れなかった！もう一度送ってみて？'
@@ -291,6 +295,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     if (!mealAnalysis.isFoodImage) {
       // 食事じゃない画像の場合：一般AIで会話
       const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`);
+      await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
         text: aiResponse
@@ -303,11 +308,13 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     
     // 5. 食事タイプ選択のクイックリプライ表示
     await showMealTypeSelection(replyToken);
+    await stopLoadingAnimation(userId);
     
     console.log('🔥 シンプル画像処理完了');
     
   } catch (error) {
     console.error('🔥 画像処理エラー:', error);
+    await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
       text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？'
