@@ -364,6 +364,25 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'ai_advice':
       await startAIAdviceMode(replyToken, userId);
       break;
+    case 'open_keyboard':
+      // キーボードを開くための空のメッセージ（自動でキーボードが開く）
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'どんなことでも記録してください',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: '記録をやめる',
+                data: 'action=cancel_record'
+              }
+            }
+          ]
+        }
+      }]);
+      break;
     case 'confirm_record':
       const confirm = params.get('confirm');
       if (confirm === 'no') {
@@ -1715,9 +1734,10 @@ async function showRecordMenu(replyToken: string) {
         {
           type: 'action',
           action: {
-            type: 'message',
+            type: 'postback',
             label: 'テキストで記録',
-            text: 'テキストで記録します'
+            data: 'action=open_keyboard',
+            inputOption: 'openKeyboard'
           }
         },
         {
