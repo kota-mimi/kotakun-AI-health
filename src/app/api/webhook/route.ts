@@ -163,6 +163,22 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     const aiService = new AIHealthService();
     
+    // AIアドバイスモード中かチェック
+    const isAdviceMode = await isAIAdviceMode(userId);
+    
+    if (isAdviceMode) {
+      // AIアドバイスモード中は記録機能を無効化し、高性能AIで応答
+      const aiResponse = await aiService.generateAdvancedResponse(text);
+      await stopLoadingAnimation(userId);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: aiResponse || 'すみません、現在詳細なアドバイスができません。少し時間をおいてもう一度お試しください。'
+      }]);
+      return;
+    }
+    
+    // 通常モード：記録機能が有効
+    
     // まず体重記録の判定を行う
     const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
     
@@ -285,6 +301,18 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
   try {
     console.log('🔥 シンプル画像処理開始:', { userId, messageId });
     
+    // AIアドバイスモード中かチェック
+    const isAdviceMode = await isAIAdviceMode(userId);
+    
+    if (isAdviceMode) {
+      // AIアドバイスモード中は画像記録を無効化
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'AIアドバイスモード中は画像での記録はできません。\n\n画像について相談されたい場合は、まず通常モードに戻ってから再度お試しください。'
+      }]);
+      return;
+    }
+    
     // Loading Animation開始（AIが画像分析中）
     await startLoadingAnimation(userId, 30);
     
@@ -380,6 +408,13 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await replyMessage(replyToken, [{
         type: 'text',
         text: 'また記録してね！'
+      }]);
+      break;
+    case 'exit_ai_advice':
+      await setAIAdviceMode(userId, false);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '通常モードに戻りました！\n\n記録機能が使えるようになりました。'
       }]);
       break;
     case 'confirm_record':
@@ -1830,6 +1865,29 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
             color: '#9C27B0',
             margin: 'md',
             weight: 'bold'
+          },
+          {
+            type: 'text',
+            text: '※記録機能は無効になります\n※10分で自動終了します',
+            size: 'xs',
+            color: '#999999',
+            margin: 'md'
+          }
+        ]
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'button',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_ai_advice'
+            },
+            style: 'secondary',
+            color: '#666666'
           }
         ]
       }
