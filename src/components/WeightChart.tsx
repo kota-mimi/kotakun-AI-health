@@ -292,7 +292,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return { x: safeX, y: safeY, value: point.value, date: point.date };
   }) : [];
   
-  // 滑らかなベジェ曲線を生成
+  // シンプルな直線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
     if (points.length < 1) return '';
     
@@ -301,26 +301,11 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       return `M ${points[0].x},${points[0].y}`;
     }
     
-    // 2点で同じ値の場合は直線
-    if (points.length === 2 && Math.abs(points[0].value - points[1].value) < 0.01) {
-      return `M ${points[0].x},${points[0].y} L ${points[1].x},${points[1].y}`;
-    }
-    
+    // 全て直線で接続（シンプルで見やすく）
     let path = `M ${points[0].x},${points[0].y}`;
     
-    for (let i = 0; i < points.length - 1; i++) {
-      const current = points[i];
-      const next = points[i + 1];
-      
-      if (i === 0) {
-        const controlX = current.x + (next.x - current.x) * 0.3;
-        path += ` C ${controlX},${current.y} ${next.x - (next.x - current.x) * 0.3},${next.y} ${next.x},${next.y}`;
-      } else {
-        const prev = points[i - 1];
-        const controlX1 = current.x + (next.x - prev.x) * 0.15;
-        const controlX2 = next.x - (points[Math.min(i + 2, points.length - 1)].x - current.x) * 0.15;
-        path += ` C ${controlX1},${current.y} ${controlX2},${next.y} ${next.x},${next.y}`;
-      }
+    for (let i = 1; i < points.length; i++) {
+      path += ` L ${points[i].x},${points[i].y}`;
     }
     
     return path;
@@ -750,54 +735,35 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             />
           )}
 
-          {/* データ点の表示 */}
-          {pathPoints.map((point, index) => {
-            // 最初と最後の点は常に表示、1点のみの場合も表示
-            const shouldShowPoint = pathPoints.length === 1 || index === 0 || index === pathPoints.length - 1;
-            
-            if (!shouldShowPoint) return null;
-            
-            return (
-              <g key={index}>
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r="5"
-                  fill="white"
-                  stroke={currentConfig.color}
-                  strokeWidth="3"
-                  filter="url(#dropshadow)"
-                />
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r="2"
-                  fill={currentConfig.color}
-                />
-                {/* ラベル表示 */}
-                {(pathPoints.length === 1 || index === 0) && (
-                  <text
-                    x={point.x}
-                    y={point.y - 15}
-                    textAnchor="middle"
-                    className="text-xs font-bold fill-blue-600"
-                  >
-                    {pathPoints.length === 1 ? '記録' : '記録開始'}
-                  </text>
-                )}
-                {pathPoints.length > 1 && index === pathPoints.length - 1 && (
-                  <text
-                    x={point.x}
-                    y={point.y - 15}
-                    textAnchor="middle"
-                    className="text-xs font-bold fill-green-600"
-                  >
-                    最新
-                  </text>
-                )}
-              </g>
-            );
-          })}
+          {/* 記録開始ポイントのみ表示 */}
+          {pathPoints.length > 0 && (
+            <>
+              <circle
+                cx={pathPoints[0].x}
+                cy={pathPoints[0].y}
+                r="5"
+                fill="white"
+                stroke={currentConfig.color}
+                strokeWidth="3"
+                filter="url(#dropshadow)"
+              />
+              <circle
+                cx={pathPoints[0].x}
+                cy={pathPoints[0].y}
+                r="2"
+                fill={currentConfig.color}
+              />
+              {/* 記録開始ラベル */}
+              <text
+                x={pathPoints[0].x}
+                y={pathPoints[0].y - 15}
+                textAnchor="middle"
+                className="text-xs font-bold fill-blue-600"
+              >
+                記録開始
+              </text>
+            </>
+          )}
 
           {/* 選択されたポイントのみ表示 */}
           {selectedPoint && (
