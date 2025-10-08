@@ -292,20 +292,25 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return { x: safeX, y: safeY, value: point.value, date: point.date };
   }) : [];
   
-  // シンプルな直線を生成
+  // 滑らかなベジェ曲線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
-    if (points.length < 1) return '';
+    if (points.length < 2) return '';
     
-    // 1点のみの場合は点として描画
-    if (points.length === 1) {
-      return `M ${points[0].x},${points[0].y}`;
-    }
-    
-    // 全て直線で接続（シンプルで見やすく）
     let path = `M ${points[0].x},${points[0].y}`;
     
-    for (let i = 1; i < points.length; i++) {
-      path += ` L ${points[i].x},${points[i].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const current = points[i];
+      const next = points[i + 1];
+      
+      if (i === 0) {
+        const controlX = current.x + (next.x - current.x) * 0.3;
+        path += ` C ${controlX},${current.y} ${next.x - (next.x - current.x) * 0.3},${next.y} ${next.x},${next.y}`;
+      } else {
+        const prev = points[i - 1];
+        const controlX1 = current.x + (next.x - prev.x) * 0.15;
+        const controlX2 = next.x - (points[Math.min(i + 2, points.length - 1)].x - current.x) * 0.15;
+        path += ` C ${controlX1},${current.y} ${controlX2},${next.y} ${next.x},${next.y}`;
+      }
     }
     
     return path;
@@ -315,23 +320,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
   // グラデーション用のエリアパス
   const createAreaPath = (points: typeof pathPoints) => {
-    if (points.length < 1) return '';
+    if (points.length < 2) return '';
     
-    // 1点しかない場合の処理
-    if (points.length === 1) {
-      const point = points[0];
-      const minHeight = 30; // 最小表示高さ
-      const topY = Math.max(10, point.y - minHeight);
-      const bottomY = svgHeight - 10;
-      
-      // 単一点の場合は小さな矩形を作成
-      return `M ${point.x - 15},${topY} L ${point.x + 15},${topY} L ${point.x + 15},${bottomY} L ${point.x - 15},${bottomY} Z`;
-    }
-    
-    // 2点以上の場合
     let path = createSmoothPath(points);
-    if (!path) return '';
-    
     const lastPoint = points[points.length - 1];
     const firstPoint = points[0];
     
@@ -340,14 +331,14 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     if (allSameValue && points.length === 2) {
       // 2点で同じ値の場合、少し厚みを持たせる
-      const minHeight = 20;
+      const minHeight = 15;
       const topY = Math.max(10, points[0].y - minHeight / 2);
       const bottomY = Math.min(svgHeight - 10, points[0].y + minHeight / 2);
       
       return `M ${firstPoint.x},${topY} L ${lastPoint.x},${topY} L ${lastPoint.x},${bottomY} L ${firstPoint.x},${bottomY} Z`;
     }
     
-    // 通常の場合（値に変化がある、または3点以上）
+    // 通常の場合
     path += ` L ${lastPoint.x},${svgHeight - 10}`;
     path += ` L ${firstPoint.x},${svgHeight - 10}`;
     path += ' Z';
@@ -686,7 +677,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           ))}
 
 
-          {/* エリアグラデーション - 削除してシンプルに */}
+          {/* エリアグラデーション */}
+          <path
+            d={areaPathData}
+            fill={`url(#gradient-${selectedDataType})`}
+            className="transition-all duration-700 ease-out"
+          />
 
           
           {/* メインライン */}
@@ -730,7 +726,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             />
           )}
 
-          {/* 記録開始ポイントのみ表示 */}
+          {/* 記録開始ポイント（最初のポイント）を常に表示 */}
           {pathPoints.length > 0 && (
             <>
               <circle
@@ -748,7 +744,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 r="2"
                 fill={currentConfig.color}
               />
-              {/* 記録開始ラベル */}
+              {/* スタートラベル */}
               <text
                 x={pathPoints[0].x}
                 y={pathPoints[0].y - 15}
