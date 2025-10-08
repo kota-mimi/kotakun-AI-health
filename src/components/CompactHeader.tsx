@@ -46,12 +46,17 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     const daysSinceStart = Math.floor((today.getTime() - appStartDate.getTime()) / msPerDay);
     const weeksSinceStart = Math.floor(daysSinceStart / 7);
     
-    // 週オフセットが負の場合、アプリ開始前には戻れない
-    const actualWeekOffset = Math.max(weekOffset, -weeksSinceStart);
+    // アプリ開始日の週まで戻れるように計算
+    const appStartDayOfWeek = appStartDate.getDay();
+    const appStartWeekStart = new Date(appStartDate);
+    appStartWeekStart.setDate(appStartDate.getDate() - appStartDayOfWeek);
     
-    // アプリ開始日を基準に週の開始を計算
-    const startOfWeek = new Date(appStartDate);
-    startOfWeek.setDate(appStartDate.getDate() + actualWeekOffset * 7);
+    const maxWeeksBack = Math.floor((today.getTime() - appStartWeekStart.getTime()) / (7 * msPerDay));
+    const actualWeekOffset = Math.max(weekOffset, -maxWeeksBack);
+    
+    // 今日を基準に週の開始を計算
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() + actualWeekOffset * 7 - today.getDay());
     
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -65,14 +70,22 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
   const weekDates = getWeekDates(selectedWeek);
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
   
-  // 前の週に戻れるかチェック
+  // 前の週に戻れるかチェック（アプリ開始日の週まで戻れる）
   const canGoPrevious = () => {
     const appStartDate = getAppStartDate();
-    const msPerDay = 24 * 60 * 60 * 1000;
     const today = new Date();
-    const daysSinceStart = Math.floor((today.getTime() - appStartDate.getTime()) / msPerDay);
-    const weeksSinceStart = Math.floor(daysSinceStart / 7);
-    return selectedWeek > -weeksSinceStart;
+    
+    // アプリ開始日の週の開始日を計算
+    const appStartDayOfWeek = appStartDate.getDay();
+    const appStartWeekStart = new Date(appStartDate);
+    appStartWeekStart.setDate(appStartDate.getDate() - appStartDayOfWeek);
+    
+    // 現在表示中の週の開始日を計算
+    const currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() + selectedWeek * 7 - today.getDay());
+    
+    // アプリ開始日の週まで戻れる
+    return currentWeekStart >= appStartWeekStart;
   };
   
   const isToday = (date: Date) => {
