@@ -532,7 +532,7 @@ class AIHealthService {
   // 一般的な会話レスポンスを生成
   async generateGeneralResponse(userMessage: string): Promise<string> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 ユーザーのメッセージ「${userMessage}」に対して、健康管理アプリのAIアシスタントとして自然で親しみやすい返事をしてください。
@@ -564,7 +564,7 @@ class AIHealthService {
   // テキストが体重記録の意図かどうかを判定
   async analyzeWeightRecordIntent(text: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 テキスト「${text}」を分析して、体重記録の意図があるかどうか以下のJSONで返してください：
@@ -892,7 +892,7 @@ class AIHealthService {
   // 一般会話機能
   async generateGeneralResponse(userMessage: string): Promise<string> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 あなたは健康管理の専門知識を持つアシスタント「kotakun」です。
