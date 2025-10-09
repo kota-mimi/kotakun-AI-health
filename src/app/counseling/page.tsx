@@ -250,8 +250,6 @@ export default function SimpleCounselingPage() {
       }
     } catch (error) {
       console.error('カウンセリング保存API呼び出しエラー:', error);
-    } finally {
-      setIsSubmitting(false);
     }
 
     // LINEに戻る
@@ -262,6 +260,9 @@ export default function SimpleCounselingPage() {
       // フォールバック：ダッシュボードに移動
       router.push('/dashboard');
     }
+    
+    // 最後にフラグをリセット
+    setIsSubmitting(false);
   };
 
   const generateAdvice = (goalType: Goal['type'], basicInfo: BasicInfo) => {
