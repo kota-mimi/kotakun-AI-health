@@ -629,7 +629,7 @@ class AIHealthService {
   // テキストが食事記録の意図かどうかを判定
   async analyzeFoodRecordIntent(text: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 テキスト「${text}」を分析して、食事記録の意図があるかどうか以下のJSONで返してください：
@@ -683,7 +683,7 @@ class AIHealthService {
   // テキストから食事内容を分析
   async analyzeMealFromText(mealText: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 食事内容のテキスト「${mealText}」を分析して、以下の形式のJSONで返してください：
@@ -756,7 +756,7 @@ class AIHealthService {
   // 画像から食事内容を分析
   async analyzeMealFromImage(imageBuffer: Buffer) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 この画像を分析してください。まず、この画像が食事・料理・食べ物の写真かどうかを判定してください。
@@ -855,7 +855,7 @@ class AIHealthService {
   // 食事写真を分析（将来の機能 - 後方互換性のため残す）
   async analyzeMealImage(imageBuffer: Buffer) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 この食事の写真を分析して、以下の情報を日本語のJSONで返してください：
