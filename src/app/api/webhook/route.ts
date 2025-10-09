@@ -583,6 +583,13 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
   try {
     console.log('🔥 食事保存開始:', { userId, mealType });
     
+    // クイックリプライを即座に消すためのメッセージ送信
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '📝 記録中です...',
+      quickReply: { items: [] }
+    }]);
+    
     // クイックリプライ押下後すぐにローディング開始
     await startLoadingAnimation(userId, 15);
     
@@ -590,7 +597,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     const tempData = await getTempMealAnalysis(userId);
     if (!tempData) {
       await stopLoadingAnimation(userId);
-      await replyMessage(replyToken, [{
+      await pushMessage(userId, [{
         type: 'text',
         text: 'データが見つかりません。もう一度食事内容を送ってください。'
       }]);
@@ -683,8 +690,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // pushMessageでFlexメッセージ送信
     await pushMessage(userId, [flexMessage]);
     
-    // replyMessageでクイックリプライ無効化
-    await replyMessage(replyToken, [{
+    // 完了メッセージをpushMessageで送信
+    await pushMessage(userId, [{
       type: 'text',
       text: '記録したよ！'
     }]);
@@ -697,7 +704,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
   } catch (error) {
     console.error('🔥 食事保存エラー:', error);
     await stopLoadingAnimation(userId);
-    await replyMessage(replyToken, [{
+    await pushMessage(userId, [{
       type: 'text',
       text: '保存中にエラーが発生しました。もう一度お試しください。'
     }]);
