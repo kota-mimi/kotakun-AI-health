@@ -80,6 +80,7 @@ const calculatePFC = (targetCalories: number, weight: number, goal: Goal['type']
 export default function SimpleCounselingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // 開始時に古いカウンセリングキャッシュをクリア
   React.useEffect(() => {
@@ -104,6 +105,12 @@ export default function SimpleCounselingPage() {
   const totalSteps = 3;
 
   const handleComplete = async () => {
+    // 重複送信防止
+    if (isSubmitting) {
+      console.log('🚫 既に送信中です。重複送信を防止しました。');
+      return;
+    }
+    
     // 名前が入力されているかチェック
     console.log('🔍 basicInfo.name:', basicInfo.name);
     console.log('🔍 basicInfo:', basicInfo);
@@ -112,6 +119,8 @@ export default function SimpleCounselingPage() {
       setStep(1); // Step1に戻る
       return;
     }
+    
+    setIsSubmitting(true);
     console.log('🔥 カウンセリング完了ボタンが押されました - 名前チェックOK');
     
     // 空の値をデフォルト値で置き換え
@@ -241,6 +250,8 @@ export default function SimpleCounselingPage() {
       }
     } catch (error) {
       console.error('カウンセリング保存API呼び出しエラー:', error);
+    } finally {
+      setIsSubmitting(false);
     }
 
     // LINEに戻る
@@ -618,9 +629,10 @@ export default function SimpleCounselingPage() {
           ) : (
             <Button 
               onClick={handleComplete} 
-              className="flex-1 h-14 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-2xl text-base shadow-md"
+              disabled={isSubmitting}
+              className="flex-1 h-14 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-medium rounded-2xl text-base shadow-md"
             >
-              完了
+              {isSubmitting ? '送信中...' : '完了'}
             </Button>
           )}
         </div>
