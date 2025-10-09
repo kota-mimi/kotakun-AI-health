@@ -583,9 +583,13 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
   try {
     console.log('🔥 食事保存開始:', { userId, mealType });
     
+    // クイックリプライ押下後すぐにローディング開始
+    await startLoadingAnimation(userId, 15);
+    
     // 一時保存されたAI分析結果を取得
     const tempData = await getTempMealAnalysis(userId);
     if (!tempData) {
+      await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
         text: 'データが見つかりません。もう一度食事内容を送ってください。'
@@ -685,10 +689,14 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       text: '記録したよ！'
     }]);
     
+    // ローディング停止
+    await stopLoadingAnimation(userId);
+    
     console.log('🔥 食事保存完了');
     
   } catch (error) {
     console.error('🔥 食事保存エラー:', error);
+    await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
       text: '保存中にエラーが発生しました。もう一度お試しください。'
