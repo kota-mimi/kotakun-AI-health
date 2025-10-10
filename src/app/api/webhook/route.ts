@@ -447,18 +447,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await saveMealRecord(userId, mealType, replyToken);
       break;
     case 'record_menu':
-      // 既存の記録モードがタイムアウトしていないかチェック
-      const isStillActive = await isRecordMode(userId);
-      
-      if (!isStillActive) {
-        // タイムアウト済み：エラーメッセージ表示
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '記録モードの時間が終了しました。\n新しく記録したい場合は「記録」と送ってください。'
-        }]);
-        return;
-      }
-      
       // 記録モードを開始
       await setRecordMode(userId, true);
       
@@ -475,6 +463,15 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await startAIAdviceMode(replyToken, userId);
       break;
     case 'open_keyboard':
+      // タイムアウトチェック
+      const isInRecordMode = await isRecordMode(userId);
+      if (!isInRecordMode) {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '記録モードの時間が終了しました。\n新しく記録したい場合は記録ボタンを押してください。'
+        }]);
+        return;
+      }
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;
     case 'cancel_record':
