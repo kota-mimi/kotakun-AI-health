@@ -616,8 +616,8 @@ class AIHealthService {
 
 判定基準：
 - 食べ物の名前が含まれている（例：「唐揚げ」「からあげ」「ラーメン」「らーめん」「りんご」）
-- 食事に関する動詞（食べた、たべた、飲んだ、のんだ、摂取した、記録して、きろくして）※動詞なしでも食事名があれば記録可能
-- 明確な記録意図：「記録して」「きろくして」「食べた」「たべた」「摂取した」「昼 ラーメン」「夜 カツ丼」
+- 食事に関する動詞（食べた、たべた、飲んだ、のんだ、摂取した、記録して、きろくして、記録しといて、記録しとく）※動詞なしでも食事名があれば記録可能
+- 明確な記録意図：「記録して」「きろくして」「記録しといて」「記録しとく」「食べた」「たべた」「摂取した」「昼 ラーメン」「夜 カツ丼」
 - **重要：一回のテキストで2つ以上の食事時間が含まれている場合は必ずisMultipleMealTimes: trueにする**
 - 曖昧な表現：「食べた！」「美味しかった」「おいしかった」（確認が必要）
 - 食事時間：「朝」「あさ」「昼」「ひる」「夜」「よる」「朝食」「昼食」「夕食」「間食」「おやつ」
@@ -633,6 +633,7 @@ class AIHealthService {
 - 「今日唐揚げ食べた！」→ isFoodRecord: true, isDefiniteRecord: false, foodText: "唐揚げ"
 - 「きょうからあげたべた」→ isFoodRecord: true, isDefiniteRecord: false, foodText: "からあげ"
 - 「唐揚げとご飯100g食べた！」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "唐揚げとご飯100g"
+- 「昼に唐揚げ食べたから記録しといて」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "唐揚げ"
 - 「ご飯100g」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "ご飯100g"
 - 「食パン2枚記録して」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "食パン2枚"
 - 「らーめん」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "らーめん"

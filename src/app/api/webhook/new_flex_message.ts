@@ -916,3 +916,94 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     }
   };
 }
+
+// 体重記録用のFlexメッセージ
+export function createWeightFlexMessage(weight: number, bodyFat?: number) {
+  const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
+  
+  const contents = [
+    // 体重記録ヘッダー
+    {
+      type: 'text',
+      text: '体重記録',
+      size: 'md',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'none'
+    },
+    // 区切り線
+    {
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    },
+    // 体重と時刻
+    {
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: `${weight}kg`,
+          size: 'xl',
+          weight: 'bold',
+          color: '#333333',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: currentTime,
+          size: 'md',
+          color: '#999999',
+          flex: 0
+        }
+      ]
+    }
+  ];
+
+  // 体脂肪率がある場合は追加
+  if (bodyFat !== undefined && bodyFat !== null) {
+    contents.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '体脂肪率',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${bodyFat}%`,
+          size: 'sm',
+          color: '#4a90e2',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: '体重記録完了',
+    contents: {
+      type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: contents
+      }
+    }
+  };
+}

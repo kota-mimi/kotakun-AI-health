@@ -5,7 +5,7 @@ import AIHealthService from '@/services/aiService';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
-import { createMealFlexMessage, createMultipleMealTimesFlexMessage } from './new_flex_message';
+import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
 // 🔒 UserIDをハッシュ化する関数
@@ -529,14 +529,13 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     await stopLoadingAnimation(userId);
     
     if (response.ok) {
-      let message = `体重 ${weightData.weight}kg を記録したよ！`;
-      if (weightData.hasBodyFat && weightData.bodyFat) {
-        message = `体重 ${weightData.weight}kg、体脂肪率 ${weightData.bodyFat}% を記録したよ！`;
-      }
+      const weightFlexMessage = createWeightFlexMessage(
+        weightData.weight,
+        weightData.hasBodyFat ? weightData.bodyFat : undefined
+      );
       
       await replyMessage(replyToken, [{
-        type: 'text',
-        text: message,
+        ...weightFlexMessage,
         quickReply: {
           items: [
             {
