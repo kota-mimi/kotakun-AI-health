@@ -917,69 +917,6 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     margin: 'md'
   });
 
-  contents.push({
-    type: 'box',
-    layout: 'horizontal',
-    spacing: 'md',
-    margin: 'sm',
-    contents: [
-      {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#ffe6e6',
-        cornerRadius: '8px',
-        paddingAll: '8px',
-        flex: 1,
-        contents: [
-          {
-            type: 'text',
-            text: `P: ${Math.round(totalProtein * 10) / 10}g`,
-            size: 'sm',
-            weight: 'bold',
-            color: '#cc0000',
-            align: 'center'
-          }
-        ]
-      },
-      {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#fff2e6',
-        cornerRadius: '8px',
-        paddingAll: '8px',
-        flex: 1,
-        contents: [
-          {
-            type: 'text',
-            text: `F: ${Math.round(totalFat * 10) / 10}g`,
-            size: 'sm',
-            weight: 'bold',
-            color: '#ff8800',
-            align: 'center'
-          }
-        ]
-      },
-      {
-        type: 'box',
-        layout: 'vertical',
-        backgroundColor: '#e6f7e6',
-        cornerRadius: '8px',
-        paddingAll: '8px',
-        flex: 1,
-        contents: [
-          {
-            type: 'text',
-            text: `C: ${Math.round(totalCarbs * 10) / 10}g`,
-            size: 'sm',
-            weight: 'bold',
-            color: '#008800',
-            align: 'center'
-          }
-        ]
-      }
-    ]
-  });
-
   return {
     type: 'flex',
     altText: '複数食事記録完了',
