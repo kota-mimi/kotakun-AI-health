@@ -200,7 +200,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     if (mealJudgment.isFoodRecord) {
       // AI分析で食べ物と判定された場合
       const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
-      await storeTempMealAnalysis(userId, mealAnalysis);
+      await storeTempMealAnalysis(userId, mealAnalysis, null, text); // 元のテキストも保存
       
       if (mealJudgment.hasSpecificMealTime) {
         // 「朝に唐揚げ食べた記録して」のような具体的な食事時間がある場合
@@ -681,8 +681,9 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       console.log('⚠️ 画像データが見つかりません');
     }
     
-    const mealName = tempData.analysis.displayName || tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
-    const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, mealName);
+    // 元のユーザー入力テキストを取得
+    const originalText = tempData.originalText || tempData.analysis.displayName || tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
+    const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, originalText);
     
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
@@ -775,7 +776,7 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
 }
 
 // 簡単な一時保存関数
-async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer) {
+async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer, originalText?: string) {
   try {
     // AIアドバイスを除去してクリーンなデータのみ保存
     const cleanAnalysis = {
@@ -797,6 +798,7 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
     await db.collection('users').doc(userId).collection('tempMealData').doc('current').set({
       analysis: cleanAnalysis,
       image: imageContent ? imageContent.toString('base64') : null,
+      originalText: originalText || '', // 元のテキストを保存
       createdAt: new Date()
     });
   } catch (error) {
