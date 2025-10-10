@@ -65,7 +65,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       console.warn('⚠️ Invalid selectedDate in useMealData:', selectedDate);
       return { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
     }
-    const dateKey = selectedDate.toISOString().split('T')[0];
+    const dateKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     return dateBasedData[dateKey] || { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
   };
 
@@ -80,7 +80,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         console.warn('⚠️ Invalid selectedDate in fetchMealData:', selectedDate);
         return;
       }
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       // キャッシュキー生成
       const cacheKey = createCacheKey('meals', lineUserId, dateStr);
@@ -193,7 +193,7 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         console.warn('⚠️ Invalid selectedDate in addMeal:', selectedDate);
         return;
       }
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       const response = await fetch('/api/meals', {
         method: 'PUT',

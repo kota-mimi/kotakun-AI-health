@@ -513,7 +513,13 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     console.log('📊 体重記録開始:', { userId, weight: weightData.weight, bodyFat: weightData.bodyFat });
     
     // 内部APIを使用（動作確認済みの方法）
-    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const now = new Date();
+    const today = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    console.log('📅 日付計算:', { 
+      UTC: now.toISOString(), 
+      JST_full: now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+      JST_date: today 
+    });
     
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'https://kotakun-ai-health.vercel.app'}/api/weight`, {
       method: 'POST',
@@ -790,7 +796,13 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
   try {
     console.log('🔥 直接保存開始:', { userId, mealType, hasImage: !!imageUrl });
     
-    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const now = new Date();
+    const today = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    console.log('📅 食事記録日付計算:', { 
+      UTC: now.toISOString(), 
+      JST_full: now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+      JST_date: today 
+    });
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
       minute: '2-digit',

@@ -99,13 +99,13 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
-    const dateKey = selectedDate.toISOString().split('T')[0];
+    const dateKey = getDateKey(selectedDate);
     return dateBasedData[dateKey] || { weightData: { current: 0, previous: 0, target: 0 } };
   };
 
-  // 日付のキーを生成
+  // 日付のキーを生成（日本時間基準で統一）
   const getDateKey = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
   };
 
   // 体重履歴を取得（全期間）
