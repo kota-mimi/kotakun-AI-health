@@ -198,7 +198,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
       if (weightJudgment.isWeightRecord) {
         await handleWeightRecord(userId, weightJudgment, replyToken);
-        await setRecordMode(userId, false); // 記録完了後はモード終了
+        // 体重記録後もクイックリプライで記録モード継続（食事記録と同様）
         return;
       }
       
@@ -545,7 +545,28 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
       
       await replyMessage(replyToken, [{
         type: 'text',
-        text: message
+        text: message,
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: 'テキストで記録',
+                data: 'action=open_keyboard',
+                inputOption: 'openKeyboard'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: '通常モードに戻る',
+                data: 'action=exit_record_mode'
+              }
+            }
+          ]
+        }
       }]);
       
       console.log('📊 体重記録完了');
