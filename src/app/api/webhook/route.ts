@@ -1137,6 +1137,13 @@ const userExercisePatterns = new Map();
 
 // 基本運動パターン（詳細版）
 const BASIC_EXERCISE_PATTERNS = [
+  // 複数重量パターン（重量を変えて複数セット）
+  { 
+    pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック)\s+((?:\d+(?:\.\d+)?\s*(?:kg|キロ|ｋｇ|KG)\s*\d+\s*(?:回|レップ|rep|reps)(?:\s|$))+)$/i, 
+    type: 'strength_multiple_weights',
+    captureGroups: ['exercise', 'weightRepsString']
+  },
+  
   // 詳細筋トレパターン（重量×回数×セット）
   { 
     pattern: /^(ベンチプレス|スクワット|デッドリフト|懸垂|腕立て伏せ|腕立て|腹筋|背筋|肩トレ|ショルダープレス|ラットプルダウン|レッグプレス|カールアップ|プランク|バーベルカール|ダンベルカール|チンアップ|プルアップ|ディップス|レッグエクステンション|レッグカール|カーフレイズ|アームカール|サイドレイズ|フロントレイズ|リアレイズ|アップライトロウ|シュラッグ|クランチ|サイドクランチ|ロシアンツイスト|レッグレイズ|マウンテンクライマー|バーピー|ジャンピングジャック)\s*(\d+(?:\.\d+)?)\s*(kg|キロ|ｋｇ|KG)\s*(\d+)\s*(回|レップ|rep|reps)\s*(\d+)\s*(セット|set|sets)$/i, 
@@ -1366,6 +1373,21 @@ function checkBasicExercisePatterns(text: string) {
     if (match) {
       console.log('🎯 パターンマッチ成功:', { type, match: match.slice(1) });
       
+      // 複数重量パターンの処理
+      if (type === 'strength_multiple_weights') {
+        const exerciseName = match[1];
+        const weightRepsString = match[2];
+        const parsedSets = parseMultipleWeightSets(weightRepsString);
+        
+        return {
+          exerciseName: exerciseName,
+          sets: parsedSets,
+          type: 'strength',
+          source: 'multiple_weights_pattern',
+          detailType: 'multiple_weights'
+        };
+      }
+      
       // 詳細パターンの処理
       if (type === 'strength_detailed') {
         const weight = convertWeightToKg(parseFloat(match[2]), match[3]);
@@ -1468,6 +1490,11 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     await stopLoadingAnimation(userId);
     
     const { exerciseName, type, source, detailType } = match;
+    
+    // 複数重量パターンの処理
+    if (source === 'multiple_weights_pattern') {
+      return await recordMultipleWeightExercise(userId, match, replyToken, user);
+    }
     
     // 詳細パターンの処理
     if (source === 'detailed_pattern') {
@@ -1577,6 +1604,113 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
   }
 }
 
+// 複数重量運動記録（重量を変えて複数セット）
+async function recordMultipleWeightExercise(userId: string, match: any, replyToken: string, user: any) {
+  try {
+    const { exerciseName, sets } = match;
+    
+    if (!sets || sets.length === 0) {
+      throw new Error('セット情報が見つかりません');
+    }
+    
+    // 総時間推定（セット数×3分+休憩時間）
+    const totalSets = sets.length;
+    const estimatedDuration = totalSets * 3 + (totalSets - 1) * 2;
+    
+    // 平均重量でカロリー計算
+    const avgWeight = sets.reduce((sum, set) => sum + set.weight, 0) / sets.length;
+    const userWeight = await getUserWeight(userId) || 70;
+    const baseMets = EXERCISE_METS[exerciseName] || 6.0;
+    const caloriesBurned = Math.round((baseMets * userWeight * estimatedDuration) / 60);
+    
+    // 運動データ作成（アプリの型定義に合わせる）
+    const exerciseData = {
+      id: generateId(),
+      name: exerciseName,
+      type: 'strength',
+      duration: estimatedDuration,
+      calories: caloriesBurned,
+      sets: sets, // 複数重量セット配列
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - 複数重量`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      }),
+      // 統計情報
+      totalSets: totalSets,
+      avgWeight: Math.round(avgWeight * 10) / 10,
+      totalReps: sets.reduce((sum, set) => sum + set.reps, 0)
+    };
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const updatedExercises = [...existingExercises, exerciseData];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // 詳細な成功メッセージ
+    const setsInfo = sets.map((set, index) => 
+      `${index + 1}セット目: ${set.weight}kg × ${set.reps}回`
+    ).join('\n');
+    
+    const responseText = `💪 ${exerciseName}を記録しました！\n\n📊 詳細:\n${setsInfo}\n\n📈 統計:\n・総セット数: ${totalSets}セット\n・総回数: ${exerciseData.totalReps}回\n・平均重量: ${exerciseData.avgWeight}kg\n・推定時間: ${estimatedDuration}分\n🔥 推定消費カロリー: ${caloriesBurned}kcal\n\n段階的な重量アップ、素晴らしいトレーニングです！💪`;
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: responseText,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'テキストで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: '通常モード'
+            }
+          }
+        ]
+      }
+    }]);
+    
+    console.log('✅ 複数重量運動記録完了:', exerciseData);
+    
+  } catch (error) {
+    console.error('❌ 複数重量運動記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '複数重量運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+    throw error;
+  }
+}
+
 // 詳細運動記録（重量・回数・セット）
 async function recordDetailedExercise(userId: string, match: any, replyToken: string, user: any) {
   try {
@@ -1680,6 +1814,23 @@ function convertWeightToKg(value: number, unit: string): number {
     return value;
   }
   return value; // デフォルトはkg
+}
+
+// 複数重量セットを解析する関数
+function parseMultipleWeightSets(weightRepsString: string): Array<{weight: number, reps: number}> {
+  const sets = [];
+  // "50kg 10回 70kg 8回 100kg 8回" のような文字列を解析
+  const setPattern = /(\d+(?:\.\d+)?)\s*(?:kg|キロ|ｋｇ|KG)\s*(\d+)\s*(?:回|レップ|rep|reps)/gi;
+  let match;
+  
+  while ((match = setPattern.exec(weightRepsString)) !== null) {
+    const weight = parseFloat(match[1]);
+    const reps = parseInt(match[2]);
+    sets.push({ weight, reps });
+  }
+  
+  console.log('🏋️‍♂️ 複数重量セット解析結果:', sets);
+  return sets;
 }
 
 function convertDistanceToKm(value: number, unit: string): number {
