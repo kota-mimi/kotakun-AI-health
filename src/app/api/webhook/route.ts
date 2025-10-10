@@ -591,8 +591,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // クイックリプライを即座に消すためのメッセージ送信
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '📝 記録中です...',
-      quickReply: { items: [] }
+      text: '📝 記録中です...'
+      // quickReplyは削除（空配列はエラーになる）
     }]);
     
     // クイックリプライ押下後すぐにローディング開始

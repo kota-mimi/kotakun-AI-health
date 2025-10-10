@@ -651,11 +651,14 @@ class AIHealthService {
 - 食事時間：「朝」「昼」「夜」「朝食」「昼食」「夕食」「間食」「おやつ」
 - 質問・相談は除外：「～はダイエットに良い？」「～のカロリーは？」
 
+**重要: foodTextには分量を含む食事部分全体を入れる**
+
 例：
-- 「唐揚げ食べた記録して」→ isFoodRecord: true, isDefiniteRecord: true
-- 「朝にパン食べた記録して」→ hasSpecificMealTime: true, mealTime: "breakfast"
-- 「今日唐揚げ食べた！」→ isFoodRecord: true, isDefiniteRecord: false
-- 「唐揚げってカロリー高い？」→ isFoodRecord: false
+- 「唐揚げ食べた記録して」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "唐揚げ"
+- 「朝にパン食べた記録して」→ hasSpecificMealTime: true, mealTime: "breakfast", foodText: "パン"
+- 「今日唐揚げ食べた！」→ isFoodRecord: true, isDefiniteRecord: false, foodText: "唐揚げ"
+- 「ご飯100g」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "ご飯100g"
+- 「食パン2枚記録して」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "食パン2枚"
 `;
 
       const result = await model.generateContent(prompt);
