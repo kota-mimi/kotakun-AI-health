@@ -614,8 +614,8 @@ class AIHealthService {
 
 判定基準：
 - 食べ物の名前が含まれている（例：「唐揚げ」「からあげ」「ラーメン」「らーめん」「りんご」）
-- 食事に関する動詞（食べた、たべた、飲んだ、のんだ、摂取した、記録して、きろくして）
-- 明確な記録意図：「記録して」「きろくして」「食べた」「たべた」「摂取した」
+- 食事に関する動詞（食べた、たべた、飲んだ、のんだ、摂取した、記録して、きろくして）※動詞なしでも食事名があれば記録可能
+- 明確な記録意図：「記録して」「きろくして」「食べた」「たべた」「摂取した」「昼 ラーメン」「夜 カツ丼」
 - 曖昧な表現：「食べた！」「美味しかった」「おいしかった」（確認が必要）
 - 食事時間：「朝」「あさ」「昼」「ひる」「夜」「よる」「朝食」「昼食」「夕食」「間食」「おやつ」
 - 質問・相談は除外：「～はダイエットに良い？」「～のカロリーは？」
@@ -632,6 +632,9 @@ class AIHealthService {
 - 「ご飯100g」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "ご飯100g"
 - 「食パン2枚記録して」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "食パン2枚"
 - 「らーめん」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "らーめん"
+- 「昼 ラーメン」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン"
+- 「夜 カツ丼とオムライス」→ hasSpecificMealTime: true, mealTime: "dinner", foodText: "カツ丼とオムライス"
+- 「今 昼 ラーメン 唐揚げ4個 チャーハン 記録」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン 唐揚げ4個 チャーハン"
 `;
 
       const result = await model.generateContent(prompt);
@@ -716,7 +719,8 @@ class AIHealthService {
 - 単位は含めない（例：カロリー350、タンパク質23.4）
 - 食品名・料理名は日本語で
 - **重要: 分量が指定されている場合は必ずその分量で正確に計算する**
-- displayNameにはユーザーが入力した文字をそのまま記録
+- **displayNameにはユーザーが入力した文字をそのまま記録（勝手に分量を追加しない）**
+- **nameには基本的な食品名のみ（「(3個)」「(1人前)」などの分量表記は追加しない）**
 - baseFoodは基本的な食品名、portionは分量部分を分離
 - アドバイスは栄養バランスや改善点を含める
 

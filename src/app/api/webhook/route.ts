@@ -247,8 +247,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     // 通常モード：AI会話がメイン、明確な記録意図があれば記録も可能
     
     // 明確な記録意図がある場合のみ記録処理を実行
-    // 「記録して」「食べた記録」「体重記録」などの明確な意図語をチェック
-    const hasExplicitRecordIntent = /記録して|記録しておいて|記録お願い|体重記録|食べた記録|運動記録/.test(text);
+    // 通常モードでは非常に明確な記録意図のみ処理（簡単な「記録して」は無視）
+    const hasExplicitRecordIntent = /体重記録|食べた記録|運動記録|記録しておいて|記録お願い/.test(text);
     
     if (hasExplicitRecordIntent) {
       console.log('🎯 明確な記録意図を検出、記録処理を実行');
