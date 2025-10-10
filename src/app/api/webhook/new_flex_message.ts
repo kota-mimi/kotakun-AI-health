@@ -721,7 +721,7 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
       margin: 'md'
     });
 
-    // 各食事の表示
+    // 各食事の表示（既存のスタイルに合わせて枠線付きボックス）
     meals.forEach(meal => {
       totalCalories += meal.calories || 0;
       totalProtein += meal.protein || 0;
@@ -730,61 +730,97 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
 
       contents.push({
         type: 'box',
-        layout: 'horizontal',
+        layout: 'vertical',
         margin: 'sm',
+        paddingAll: '12px',
+        borderWidth: '1px',
+        borderColor: '#e0e0e0',
+        cornerRadius: '8px',
+        spacing: 'xs',
         contents: [
           {
-            type: 'text',
-            text: meal.displayName || meal.name,
-            size: 'md',
-            weight: 'bold',
-            color: '#333333',
-            flex: 1
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'text',
+                text: meal.displayName || meal.name,
+                size: 'md',
+                weight: 'bold',
+                color: '#333333',
+                flex: 1
+              },
+              {
+                type: 'text',
+                text: `${meal.calories || 0}kcal`,
+                size: 'md',
+                color: '#4a90e2',
+                flex: 0
+              }
+            ]
           },
+          // PFC表示（既存スタイルに合わせて背景色付きボックス）
           {
-            type: 'text',
-            text: `${meal.calories || 0}kcal`,
-            size: 'md',
-            weight: 'bold',
-            color: '#333333',
-            align: 'end',
-            flex: 0
-          }
-        ]
-      });
-
-      // PFC表示
-      contents.push({
-        type: 'box',
-        layout: 'horizontal',
-        spacing: 'sm',
-        margin: 'xs',
-        contents: [
-          {
-            type: 'text',
-            text: ' ',
-            flex: 1
-          },
-          {
-            type: 'text',
-            text: `P: ${meal.protein || 0}g`,
-            size: 'xs',
-            color: '#cc0000',
-            flex: 0
-          },
-          {
-            type: 'text',
-            text: `F: ${meal.fat || 0}g`,
-            size: 'xs',
-            color: '#ff8800',
-            flex: 0
-          },
-          {
-            type: 'text',
-            text: `C: ${meal.carbs || 0}g`,
-            size: 'xs',
-            color: '#008800',
-            flex: 0
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'xs',
+            margin: 'sm',
+            contents: [
+              {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: '#ffe6e6',
+                cornerRadius: '4px',
+                paddingAll: '4px',
+                flex: 1,
+                contents: [
+                  {
+                    type: 'text',
+                    text: `P: ${meal.protein || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#cc0000',
+                    align: 'center'
+                  }
+                ]
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: '#fff2e6',
+                cornerRadius: '4px',
+                paddingAll: '4px',
+                flex: 1,
+                contents: [
+                  {
+                    type: 'text',
+                    text: `F: ${meal.fat || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#ff8800',
+                    align: 'center'
+                  }
+                ]
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: '#e6f7e6',
+                cornerRadius: '4px',
+                paddingAll: '4px',
+                flex: 1,
+                contents: [
+                  {
+                    type: 'text',
+                    text: `C: ${meal.carbs || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#00aa00',
+                    align: 'center'
+                  }
+                ]
+              }
+            ]
           }
         ]
       });
@@ -806,21 +842,79 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     margin: 'md'
   });
 
+  // 合計PFC表示（既存スタイルに合わせて横一列のボックス）
   contents.push({
     type: 'box',
     layout: 'horizontal',
-    margin: 'sm',
+    spacing: 'md',
+    margin: 'md',
     contents: [
       {
-        type: 'text',
-        text: `${Math.round(totalCalories)}kcal`,
-        size: 'xl',
-        weight: 'bold',
-        color: '#333333',
-        align: 'center',
-        flex: 1
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#ffe6e6',
+        cornerRadius: '8px',
+        paddingAll: '8px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `P: ${Math.round(totalProtein)}g`,
+            size: 'sm',
+            weight: 'bold',
+            color: '#cc0000',
+            align: 'center'
+          }
+        ]
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#fff2e6',
+        cornerRadius: '8px',
+        paddingAll: '8px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `F: ${Math.round(totalFat)}g`,
+            size: 'sm',
+            weight: 'bold',
+            color: '#ff8800',
+            align: 'center'
+          }
+        ]
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#e6f7e6',
+        cornerRadius: '8px',
+        paddingAll: '8px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `C: ${Math.round(totalCarbs)}g`,
+            size: 'sm',
+            weight: 'bold',
+            color: '#00aa00',
+            align: 'center'
+          }
+        ]
       }
     ]
+  });
+
+  // カロリー表示（既存スタイルに合わせて右端配置）
+  contents.push({
+    type: 'text',
+    text: `${Math.round(totalCalories)}kcal`,
+    size: 'xl',
+    weight: 'bold',
+    color: '#4a90e2',
+    align: 'end',
+    margin: 'md'
   });
 
   contents.push({
