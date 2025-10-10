@@ -2162,6 +2162,21 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
   try {
     console.log('🍽️ 複数食事時間記録開始:', { userId, mealTimes });
     
+    // 🚨 既存と同じ流れ：一時保存されたデータを取得
+    const tempData = await getTempMealAnalysis(userId);
+    if (!tempData) {
+      await stopLoadingAnimation(userId);
+      await pushMessage(userId, [{
+        type: 'text',
+        text: 'データが見つかりません。もう一度食事内容を送ってください。'
+      }]);
+      return;
+    }
+    
+    // 🚨 重複防止：一時データを即座に削除（既存と同じ）
+    await deleteTempMealAnalysis(userId);
+    console.log('🔒 重複防止: 一時データを削除しました');
+    
     const aiService = new AIHealthService();
     const mealData = {};
     
