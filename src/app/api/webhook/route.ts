@@ -163,6 +163,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     const aiService = new AIHealthService();
     
+    // 記録モード中かチェック
+    const isInRecordMode = await isRecordMode(userId);
     // AIアドバイスモード中かチェック
     const isAdviceMode = await isAIAdviceMode(userId);
     
@@ -177,98 +179,126 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       return;
     }
     
-    // 通常モード：記録機能が有効
-    
-    // まず体重記録の判定を行う
-    const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
-    
-    if (weightJudgment.isWeightRecord) {
-      // 体重記録処理
-      await handleWeightRecord(userId, weightJudgment, replyToken);
+    if (isInRecordMode) {
+      // 記録モード中：食事・運動・体重記録のみ処理
+      console.log('📝 記録モード中 - 記録処理のみ実行');
+      
+      // まず体重記録の判定を行う
+      const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
+      if (weightJudgment.isWeightRecord) {
+        await handleWeightRecord(userId, weightJudgment, replyToken);
+        await setRecordMode(userId, false); // 記録完了後はモード終了
+        return;
+      }
+      
+      // 運動記録の判定
+      const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
+      if (exerciseResult) {
+        await setRecordMode(userId, false); // 記録完了後はモード終了
+        return;
+      }
+      
+      // 食事記録の判定
+      console.log('🍽️ 記録モード - 食事記録判定開始:', text);
+      const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
+      console.log('🍽️ 記録モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
+      
+      if (mealJudgment.isFoodRecord) {
+        console.log('🍽️ 記録モード - 食事として認識、AI分析開始');
+        const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+        console.log('🍽️ 記録モード - AI分析結果:', JSON.stringify(mealAnalysis, null, 2));
+        await storeTempMealAnalysis(userId, mealAnalysis, null, text);
+        
+        if (mealJudgment.hasSpecificMealTime) {
+          const mealType = mealJudgment.mealTime;
+          await saveMealRecord(userId, mealType, replyToken);
+          await setRecordMode(userId, false); // 記録完了後はモード終了
+          return;
+        } else {
+          // 食事タイプ選択のクイックリプライ表示
+          await stopLoadingAnimation(userId);
+          await replyMessage(replyToken, [{
+            type: 'text',
+            text: `${mealJudgment.foodText || text}の記録をしますか？`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
+                { type: 'action', action: { type: 'postback', label: '昼食', data: 'action=meal_lunch' }},
+                { type: 'action', action: { type: 'postback', label: '夕食', data: 'action=meal_dinner' }},
+                { type: 'action', action: { type: 'postback', label: '間食', data: 'action=meal_snack' }},
+                { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
+              ]
+            }
+          }]);
+          return;
+        }
+      }
+      
+      // 記録モード中だが、記録として認識されなかった場合
+      await stopLoadingAnimation(userId);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '記録モード中です。食事・運動・体重を記録してください。\n\n例：「ご飯100g」「ランニング30分」「体重65kg」\n\n通常の会話に戻りたい場合は、何か他のことを話しかけてください。'
+      }]);
+      await setRecordMode(userId, false); // モード終了
       return;
     }
     
-    // 運動記録の判定（パターンマッチング）
-    const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
-    if (exerciseResult) {
-      return; // 運動記録として処理済み
-    }
+    // 通常モード：AI会話がメイン、明確な記録意図があれば記録も可能
     
-    // 体重記録でも運動記録でもない場合、食事記録の判定を行う
-    console.log('🍽️ 食事記録判定開始 - テキスト:', text);
-    const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
-    console.log('🍽️ 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
+    // 明確な記録意図がある場合のみ記録処理を実行
+    // 「記録して」「食べた記録」「体重記録」などの明確な意図語をチェック
+    const hasExplicitRecordIntent = /記録して|記録しておいて|記録お願い|体重記録|食べた記録|運動記録/.test(text);
     
-    if (mealJudgment.isFoodRecord) {
-      // AI分析で食べ物と判定された場合
-      console.log('🍽️ 食事として認識、AI分析開始');
-      const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
-      console.log('🍽️ AI分析結果:', JSON.stringify(mealAnalysis, null, 2));
-      await storeTempMealAnalysis(userId, mealAnalysis, null, text); // 元のテキストも保存
+    if (hasExplicitRecordIntent) {
+      console.log('🎯 明確な記録意図を検出、記録処理を実行');
       
-      if (mealJudgment.hasSpecificMealTime) {
-        // 「朝に唐揚げ食べた記録して」のような具体的な食事時間がある場合
-        const mealType = mealJudgment.mealTime; // 'breakfast', 'lunch', 'dinner', 'snack'
-        await saveMealRecord(userId, mealType, replyToken);
+      // 体重記録の判定
+      const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
+      if (weightJudgment.isWeightRecord) {
+        await handleWeightRecord(userId, weightJudgment, replyToken);
         return;
-      } else {
-        // 「唐揚げ食べた」や「今日唐揚げ食べた！」の場合、5つの選択肢を表示
-        await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: `${mealJudgment.foodText || text}の記録をしますか？`,
-          quickReply: {
-            items: [
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '朝食',
-                  data: 'action=meal_breakfast'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '昼食',
-                  data: 'action=meal_lunch'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '夕食',
-                  data: 'action=meal_dinner'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '間食',
-                  data: 'action=meal_snack'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '記録しない',
-                  data: 'action=confirm_record&confirm=no'
-                }
-              }
-            ]
-          }
-        }]);
+      }
+      
+      // 運動記録の判定
+      const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
+      if (exerciseResult) {
         return;
+      }
+      
+      // 食事記録の判定
+      const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
+      if (mealJudgment.isFoodRecord) {
+        const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+        await storeTempMealAnalysis(userId, mealAnalysis, null, text);
+        
+        if (mealJudgment.hasSpecificMealTime) {
+          const mealType = mealJudgment.mealTime;
+          await saveMealRecord(userId, mealType, replyToken);
+          return;
+        } else {
+          await stopLoadingAnimation(userId);
+          await replyMessage(replyToken, [{
+            type: 'text',
+            text: `${mealJudgment.foodText || text}の記録をしますか？`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
+                { type: 'action', action: { type: 'postback', label: '昼食', data: 'action=meal_lunch' }},
+                { type: 'action', action: { type: 'postback', label: '夕食', data: 'action=meal_dinner' }},
+                { type: 'action', action: { type: 'postback', label: '間食', data: 'action=meal_snack' }},
+                { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
+              ]
+            }
+          }]);
+          return;
+        }
       }
     }
     
-    // 食事記録ではない場合、一般会話AIで応答
-    console.log('🍽️ 食事記録ではないと判定、一般会話AIで応答');
-    const aiResponse = await aiService.generateGeneralResponse(text);
+    // 通常モード：AI会話で応答（高性能モデル使用）
+    console.log('🤖 通常モード - AI会話で応答');
+    const aiResponse = await aiService.generateAdvancedResponse(text);
     
     await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
@@ -1971,6 +2001,10 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
 const aiAdviceModeUsers = new Map<string, number>();
 const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
+// 記録モードの設定（タイムアウト付きセッション管理）
+const recordModeUsers = new Map<string, number>();
+const RECORD_MODE_TIMEOUT = 3 * 60 * 1000; // 3分でタイムアウト
+
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
     aiAdviceModeUsers.set(userId, Date.now());
@@ -1999,5 +2033,37 @@ async function isAIAdviceMode(userId: string): Promise<boolean> {
   
   // まだ有効：時間を更新
   aiAdviceModeUsers.set(userId, Date.now());
+  return true;
+}
+
+// 記録モード管理関数
+async function setRecordMode(userId: string, enabled: boolean) {
+  if (enabled) {
+    recordModeUsers.set(userId, Date.now());
+    console.log(`📝 記録モード開始: ${userId}`);
+  } else {
+    recordModeUsers.delete(userId);
+    console.log(`⏹️ 記録モード終了: ${userId}`);
+  }
+}
+
+async function isRecordMode(userId: string): Promise<boolean> {
+  const startTime = recordModeUsers.get(userId);
+  
+  if (!startTime) {
+    return false; // モードが設定されていない
+  }
+  
+  const elapsed = Date.now() - startTime;
+  
+  if (elapsed > RECORD_MODE_TIMEOUT) {
+    // タイムアウト：自動的に通常モードに戻す
+    recordModeUsers.delete(userId);
+    console.log(`⏰ 記録モード タイムアウト (${Math.round(elapsed/1000/60)}分経過): ${userId}`);
+    return false;
+  }
+  
+  // まだ有効：時間を更新
+  recordModeUsers.set(userId, Date.now());
   return true;
 }
