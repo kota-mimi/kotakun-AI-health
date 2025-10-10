@@ -1976,9 +1976,55 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
 
 // 記録モード開始
 async function startRecordMode(replyToken: string, userId: string) {
-  await replyMessage(replyToken, [{
-    type: 'text',
-    text: '記録モードです！\n\n食事 体重 運動記録してね！',
+  const recordMessage = {
+    type: 'flex',
+    altText: '記録モード',
+    contents: {
+      type: 'bubble',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: '記録モード',
+            weight: 'bold',
+            size: 'lg',
+            color: '#ffffff'
+          }
+        ],
+        backgroundColor: '#4CAF50',
+        paddingAll: 'md'
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: '食事・運動・体重を記録できます',
+            weight: 'bold',
+            size: 'md'
+          }
+        ],
+        paddingAll: 'lg'
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'button',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            },
+            style: 'secondary'
+          }
+        ]
+      }
+    },
     quickReply: {
       items: [
         {
@@ -1996,18 +2042,12 @@ async function startRecordMode(replyToken: string, userId: string) {
             type: 'camera',
             label: 'カメラで記録'
           }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: '通常モードに戻る',
-            data: 'action=exit_record_mode'
-          }
         }
       ]
     }
-  }]);
+  };
+  
+  await replyMessage(replyToken, [recordMessage]);
 }
 
 // AIアドバイスモードの設定（タイムアウト付きセッション管理）
