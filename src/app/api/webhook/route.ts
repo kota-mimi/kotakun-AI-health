@@ -195,11 +195,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
     
     // 体重記録でも運動記録でもない場合、食事記録の判定を行う
+    console.log('🍽️ 食事記録判定開始 - テキスト:', text);
     const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
+    console.log('🍽️ 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
     
     if (mealJudgment.isFoodRecord) {
       // AI分析で食べ物と判定された場合
+      console.log('🍽️ 食事として認識、AI分析開始');
       const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+      console.log('🍽️ AI分析結果:', JSON.stringify(mealAnalysis, null, 2));
       await storeTempMealAnalysis(userId, mealAnalysis, null, text); // 元のテキストも保存
       
       if (mealJudgment.hasSpecificMealTime) {
@@ -263,6 +267,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
     
     // 食事記録ではない場合、一般会話AIで応答
+    console.log('🍽️ 食事記録ではないと判定、一般会話AIで応答');
     const aiResponse = await aiService.generateGeneralResponse(text);
     
     await stopLoadingAnimation(userId);
