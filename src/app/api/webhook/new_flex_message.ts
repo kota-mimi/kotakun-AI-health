@@ -10,6 +10,10 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
     altText: `${mealTypeJa}記録完了`,
     contents: {
       type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
       body: {
         type: 'box',
         layout: 'vertical',
@@ -222,6 +226,10 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
     altText: `${mealTypeJa}記録完了`,
     contents: {
       type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
       body: {
         type: 'box',
         layout: 'vertical',
@@ -894,6 +902,10 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     altText: '複数食事記録完了',
     contents: {
       type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
       body: {
         type: 'box',
         layout: 'vertical',

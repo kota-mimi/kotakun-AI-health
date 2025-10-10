@@ -2094,7 +2094,7 @@ const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
 // 記録モードの設定（タイムアウト付きセッション管理）
 const recordModeUsers = new Map<string, number>();
-const RECORD_MODE_TIMEOUT = 15 * 60 * 1000; // 15分でタイムアウト
+const RECORD_MODE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
