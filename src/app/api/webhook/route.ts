@@ -595,12 +595,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
   try {
     console.log('🔥 食事保存開始:', { userId, mealType });
     
-    // クイックリプライを即座に消すためのメッセージ送信
-    await replyMessage(replyToken, [{
-      type: 'text',
-      text: '📝 記録中です...'
-      // quickReplyは削除（空配列はエラーになる）
-    }]);
+    // クイックリプライを即座に消すため
     
     // クイックリプライ押下後すぐにローディング開始
     await startLoadingAnimation(userId, 15);
@@ -700,14 +695,41 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
     
-    // pushMessageでFlexメッセージ送信
-    await pushMessage(userId, [flexMessage]);
+    // pushMessageでFlexメッセージ送信（クイックリプライ付き）
+    const messageWithQuickReply = {
+      ...flexMessage,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'camera',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
+    };
+    await pushMessage(userId, [messageWithQuickReply]);
     
-    // 完了メッセージをpushMessageで送信
-    await pushMessage(userId, [{
-      type: 'text',
-      text: '記録したよ！'
-    }]);
+    // 記録完了
     
     // ローディング停止
     await stopLoadingAnimation(userId);
