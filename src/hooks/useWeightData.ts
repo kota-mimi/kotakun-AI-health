@@ -137,11 +137,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
     
-    // 未来の日付の場合は空のデータを返す
+    // 未来の日付の場合は最新の体重を表示（前日比は0）
     if (dateKey > today) {
+      const latestWeight = getLatestWeight();
       return {
-        current: 0,
-        previous: 0,
+        current: latestWeight,
+        previous: 0, // 未来なので前日比は表示しない
         target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
@@ -202,12 +203,45 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // デフォルトデータを返す（目標体重が設定されていない場合のデフォルト値も追加）
+    // デフォルトデータを返す（最新の体重を表示）
+    const latestWeight = getLatestWeight();
     return {
-      current: 0,
-      previous: 0,
+      current: latestWeight,
+      previous: 0, // 記録がない日は前日比なし
       target: weightSettingsStorage.value.targetWeight || 68.0
     };
+  };
+
+  // 最新の体重を取得（未来日付用）
+  const getLatestWeight = (): number => {
+    // まずrealWeightDataから最新の体重を取得
+    if (realWeightData.length > 0) {
+      const sortedData = realWeightData
+        .filter(item => item.weight && item.weight > 0)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      if (sortedData.length > 0) {
+        return sortedData[0].weight;
+      }
+    }
+    
+    // realWeightDataにない場合はlocalDataから検索
+    const today = new Date();
+    for (let i = 0; i <= 30; i++) { // 最大30日前まで検索
+      const searchDate = new Date(today);
+      searchDate.setDate(searchDate.getDate() - i);
+      const searchDateKey = getDateKey(searchDate);
+      
+      const dayData = dateBasedData[searchDateKey];
+      if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
+        const latestEntry = dayData.weightEntries[dayData.weightEntries.length - 1];
+        if (latestEntry.weight > 0) {
+          return latestEntry.weight;
+        }
+      }
+    }
+    
+    return 0; // 何も見つからない場合
   };
 
   // 前日の体重を取得
