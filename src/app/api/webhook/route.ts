@@ -183,6 +183,17 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中：食事・運動・体重記録のみ処理
       console.log('📝 記録モード中 - 記録処理のみ実行');
       
+      // 記録モード終了の確認
+      if (text.includes('終了') || text.includes('やめる') || text.includes('キャンセル')) {
+        await stopLoadingAnimation(userId);
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '記録モードを終了しました。\n何か質問があればお気軽にどうぞ！'
+        }]);
+        await setRecordMode(userId, false);
+        return;
+      }
+      
       // まず体重記録の判定を行う
       const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
       if (weightJudgment.isWeightRecord) {
@@ -243,9 +254,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '記録モード中です。食事・運動・体重を記録してください。\n\n例：「ご飯100g」「ランニング30分」「体重65kg」\n\n通常の会話に戻りたい場合は、何か他のことを話しかけてください。'
+        text: '申し訳ありません。記録として認識できませんでした。\n\nもう一度、食事・運動・体重の内容を送ってください。\n\n例：「ご飯100g」「ランニング30分」「体重65kg」\n\n記録を終了したい場合は「終了」と送ってください。'
       }]);
-      await setRecordMode(userId, false); // モード終了
+      // 記録モードは継続（終了しない）
       return;
     }
     
