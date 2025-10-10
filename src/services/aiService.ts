@@ -547,7 +547,7 @@ class AIHealthService {
 }
 
 判定基準：
-- 数値＋体重単位：「65kg」「64.5キロ」「63.2」
+- 数値＋体重単位：「65kg」「64.5キロ」「63.2」「81.5kg」「80kg」
 - 体重記録の表現：「体重65kg」「今日の体重は64キロ」「体重記録 65.5」
 - 体脂肪率：「体脂肪15%」「体脂肪率20.5%」
 - 複合記録：「体重65kg 体脂肪18%」
@@ -555,9 +555,12 @@ class AIHealthService {
 
 例：
 - 「65kg」→ isWeightRecord: true, weight: 65
+- 「81.5kg」→ isWeightRecord: true, weight: 81.5
 - 「体重64.5キロ」→ isWeightRecord: true, weight: 64.5
 - 「今日の体重は63kg 体脂肪17%」→ isWeightRecord: true, weight: 63, hasBodyFat: true, bodyFat: 17
 - 「体重どうやって減らす？」→ isWeightRecord: false
+
+**重要：「81.5kg」「65kg」など数値+単位の単独入力は必ず体重記録として判定してください**
 `;
 
       const result = await model.generateContent(prompt);

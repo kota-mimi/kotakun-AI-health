@@ -48,9 +48,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const hasRealData = validData.length > 0;
   const hasCounselingData = counselingResult?.answers?.weight && counselingResult.answers.weight > 0;
   
-  // ダミーデータは削除 - 実際のデータのみ使用
+  // 実際のデータとカウンセリングデータを組み合わせて返す
   const getAllChartData = () => {
-    return [];
+    return getRealChartData();
   };
 
   // カウンセリング結果から初期データポイントを作成
