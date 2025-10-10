@@ -179,6 +179,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       return;
     }
     
+    console.log('🔍 記録モードチェック:', { userId, isInRecordMode });
     if (isInRecordMode) {
       // 記録モード中：食事・運動・体重記録のみ処理
       console.log('📝 記録モード中 - 記録処理のみ実行');
@@ -195,7 +196,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       }
       
       // まず体重記録の判定を行う
+      console.log('📊 記録モード - 体重記録判定開始:', text);
       const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
+      console.log('📊 記録モード - 体重判定結果:', JSON.stringify(weightJudgment, null, 2));
       if (weightJudgment.isWeightRecord) {
         await handleWeightRecord(userId, weightJudgment, replyToken);
         // 体重記録後もクイックリプライで記録モード継続（食事記録と同様）
