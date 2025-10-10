@@ -826,7 +826,10 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
       portion: mealAnalysis.portion || '',
       // 複数食事の場合
       isMultipleMeals: mealAnalysis.isMultipleMeals || false,
-      meals: mealAnalysis.meals || []
+      meals: (mealAnalysis.meals || []).map(meal => ({
+        ...meal,
+        name: meal.displayName || meal.name // displayNameを優先
+      }))
     };
     
     // Firestoreに直接保存（アプリが期待する形式）
@@ -865,7 +868,10 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
       fat: mealAnalysis.fat || mealAnalysis.totalFat || 0,
       carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 0,
       foodItems: mealAnalysis.foodItems || [],
-      meals: mealAnalysis.meals || [],
+      meals: (mealAnalysis.meals || []).map(meal => ({
+        ...meal,
+        name: meal.displayName || meal.name // displayNameを優先
+      })),
       isMultipleMeals: mealAnalysis.isMultipleMeals || false,
       // 分量情報を追加
       displayName: mealAnalysis.displayName || '',
