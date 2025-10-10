@@ -1976,102 +1976,38 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
 
 // 記録モード開始
 async function startRecordMode(replyToken: string, userId: string) {
-  // 記録モードのフラグを設定（セッション管理）
-  await setRecordMode(userId, true);
-  
-  const recordMessage = {
-    type: 'flex',
-    altText: '📝 記録モード',
-    contents: {
-      type: 'bubble',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '📝 記録モード',
-            weight: 'bold',
-            size: 'lg',
-            color: '#ffffff'
+  await replyMessage(replyToken, [{
+    type: 'text',
+    text: '記録モードです！\n\n食事 体重 運動記録してね！',
+    quickReply: {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: 'テキストで記録',
+            data: 'action=open_keyboard',
+            inputOption: 'openKeyboard'
           }
-        ],
-        backgroundColor: '#4CAF50',
-        paddingAll: 'md'
-      },
-      body: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '食事・運動・体重を記録できます！',
-            weight: 'bold',
-            size: 'md',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: 'テキストまたは写真で記録してください',
-            size: 'sm',
-            color: '#666666',
-            wrap: true,
-            margin: 'sm'
-          },
-          {
-            type: 'separator',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: '✅ 記録例',
-            weight: 'bold',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: '• ご飯100g、味噌汁\n• ランニング30分\n• 体重65kg\n• 食パン2枚、卵',
-            size: 'sm',
-            color: '#333333',
-            wrap: true,
-            margin: 'sm'
-          },
-          {
-            type: 'text',
-            text: 'お気軽に記録してください！',
-            size: 'sm',
-            color: '#4CAF50',
-            margin: 'md',
-            weight: 'bold'
-          },
-          {
-            type: 'text',
-            text: '※AIアドバイス機能は無効になります\n※15分で自動終了します',
-            size: 'xs',
-            color: '#999999',
-            margin: 'md'
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'camera',
+            label: 'カメラで記録'
           }
-        ]
-      },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'button',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            },
-            style: 'secondary',
-            color: '#666666'
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: '通常モードに戻る',
+            data: 'action=exit_record_mode'
           }
-        ]
-      }
+        }
+      ]
     }
-  };
-  await replyMessage(replyToken, [recordMessage]);
+  }]);
 }
 
 // AIアドバイスモードの設定（タイムアウト付きセッション管理）
@@ -2080,7 +2016,7 @@ const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
 // 記録モードの設定（タイムアウト付きセッション管理）
 const recordModeUsers = new Map<string, number>();
-const RECORD_MODE_TIMEOUT = 3 * 60 * 1000; // 3分でタイムアウト
+const RECORD_MODE_TIMEOUT = 15 * 60 * 1000; // 15分でタイムアウト
 
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
