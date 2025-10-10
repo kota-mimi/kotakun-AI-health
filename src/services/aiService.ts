@@ -671,7 +671,7 @@ class AIHealthService {
       
       return {
         isFoodRecord: hasFoodName,
-        isDefiniteRecord: hasRecordIntent,
+        isDefiniteRecord: hasFoodName, // 食べ物名があれば記録として扱う
         hasSpecificMealTime: false,
         mealTime: null,
         foodText: text,
