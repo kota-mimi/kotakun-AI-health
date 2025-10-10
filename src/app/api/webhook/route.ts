@@ -5,7 +5,7 @@ import AIHealthService from '@/services/aiService';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
-import { createMealFlexMessage } from './new_flex_message';
+import { createMealFlexMessage, createMultipleMealTimesFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
 // 🔒 UserIDをハッシュ化する関数
@@ -209,7 +209,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         console.log('🍽️ 記録モード - AI分析結果:', JSON.stringify(mealAnalysis, null, 2));
         await storeTempMealAnalysis(userId, mealAnalysis, null, text);
         
-        if (mealJudgment.hasSpecificMealTime) {
+        if (mealJudgment.isMultipleMealTimes) {
+          // 複数食事時間の処理
+          await handleMultipleMealTimesRecord(userId, mealJudgment.mealTimes, replyToken);
+          await setRecordMode(userId, false); // 記録完了後はモード終了
+          return;
+        } else if (mealJudgment.hasSpecificMealTime) {
           const mealType = mealJudgment.mealTime;
           await saveMealRecord(userId, mealType, replyToken);
           await setRecordMode(userId, false); // 記録完了後はモード終了
@@ -2141,4 +2146,131 @@ async function isRecordMode(userId: string): Promise<boolean> {
   // まだ有効：時間を更新
   recordModeUsers.set(userId, Date.now());
   return true;
+}// 複数食事時間の記録処理
+async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], replyToken: string) {
+  try {
+    console.log('🍽️ 複数食事時間記録開始:', { userId, mealTimes });
+    
+    const aiService = new AIHealthService();
+    const mealData = {};
+    
+    // 各食事時間ごとに分析・記録
+    for (const mealTimeInfo of mealTimes) {
+      const { mealTime, foodText } = mealTimeInfo;
+      
+      console.log(`🍽️ 食事時間 ${mealTime} の分析開始: ${foodText}`);
+      
+      // 食事内容を分析
+      const mealAnalysis = await aiService.analyzeMealFromText(foodText);
+      
+      if (mealAnalysis.isMultipleMeals) {
+        // 複数食事の場合
+        mealData[mealTime] = mealAnalysis.meals.map(meal => ({
+          ...meal,
+          mealType: mealTime,
+          id: generateId(),
+          recordedAt: new Date(),
+          lineUserId: userId
+        }));
+      } else {
+        // 単一食事の場合
+        mealData[mealTime] = [{
+          name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || foodText,
+          displayName: mealAnalysis.displayName || foodText,
+          baseFood: mealAnalysis.baseFood || foodText,
+          portion: mealAnalysis.portion || '',
+          calories: mealAnalysis.calories || 0,
+          protein: mealAnalysis.protein || 0,
+          fat: mealAnalysis.fat || 0,
+          carbs: mealAnalysis.carbs || 0,
+          mealType: mealTime,
+          id: generateId(),
+          recordedAt: new Date(),
+          lineUserId: userId
+        }];
+      }
+      
+      // Firestoreに保存
+      await saveMultipleMealsByType(userId, mealTime, mealData[mealTime]);
+    }
+    
+    // 複数食事時間用のFlexメッセージを作成・送信
+    const flexMessage = createMultipleMealTimesFlexMessage(mealData);
+    
+    // クイックリプライ付きでFlexメッセージ送信
+    const messageWithQuickReply = {
+      ...flexMessage,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'camera',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
+    };
+    
+    await stopLoadingAnimation(userId);
+    await pushMessage(userId, [messageWithQuickReply]);
+    
+    console.log('🍽️ 複数食事時間記録完了');
+    
+  } catch (error) {
+    console.error('🍽️ 複数食事時間記録エラー:', error);
+    await stopLoadingAnimation(userId);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '複数食事の記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// 複数食事を食事タイプ別にFirestoreに保存
+async function saveMultipleMealsByType(userId: string, mealType: string, meals: any[]) {
+  try {
+    const hashedUserId = hashUserId(userId);
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const recordRef = admin.firestore().collection('health_records').doc(`${hashedUserId}_${today}`);
+    
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingMeals = existingData.meals || [];
+    
+    // 新しい食事を追加
+    const updatedMeals = [...existingMeals, ...meals];
+    
+    await recordRef.set({
+      ...existingData,
+      meals: updatedMeals,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    console.log(`🍽️ ${mealType} 食事保存完了:`, meals.length, '件');
+    
+  } catch (error) {
+    console.error(`🍽️ ${mealType} 食事保存エラー:`, error);
+    throw error;
+  }
 }

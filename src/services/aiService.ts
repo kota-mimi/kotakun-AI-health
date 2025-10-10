@@ -608,6 +608,8 @@ class AIHealthService {
   "isDefiniteRecord": boolean,
   "hasSpecificMealTime": boolean,
   "mealTime": string,
+  "isMultipleMealTimes": boolean,
+  "mealTimes": [{"mealTime": string, "foodText": string}],
   "foodText": string,
   "confidence": number
 }
@@ -635,6 +637,8 @@ class AIHealthService {
 - 「昼 ラーメン」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン"
 - 「夜 カツ丼とオムライス」→ hasSpecificMealTime: true, mealTime: "dinner", foodText: "カツ丼とオムライス"
 - 「今 昼 ラーメン 唐揚げ4個 チャーハン 記録」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン 唐揚げ4個 チャーハン"
+- 「朝にパンとコーヒー 昼にカツ丼 夜に納豆」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "パンとコーヒー"}, {"mealTime": "lunch", "foodText": "カツ丼"}, {"mealTime": "dinner", "foodText": "納豆"}]
+- 「昼食でハンバーガー 間食でケーキ記録して」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "lunch", "foodText": "ハンバーガー"}, {"mealTime": "snack", "foodText": "ケーキ"}]
 `;
 
       const result = await model.generateContent(prompt);
