@@ -693,14 +693,20 @@ class AIHealthService {
   "isMultipleMeals": true,
   "meals": [
     {
-      "name": "料理名1",
+      "name": "料理名1（分量込み）",
+      "displayName": "ユーザーが入力した正確な表記",
+      "baseFood": "基本食品名",
+      "portion": "分量部分",
       "calories": 推定カロリー数値（整数）,
       "protein": タンパク質のグラム数（小数点第1位まで）,
       "carbs": 炭水化物のグラム数（小数点第1位まで）,
       "fat": 脂質のグラム数（小数点第1位まで）
     },
     {
-      "name": "料理名2", 
+      "name": "料理名2（分量込み）",
+      "displayName": "ユーザーが入力した正確な表記",
+      "baseFood": "基本食品名",
+      "portion": "分量部分",
       "calories": 推定カロリー数値（整数）,
       "protein": タンパク質のグラム数（小数点第1位まで）,
       "carbs": 炭水化物のグラム数（小数点第1位まで）,
@@ -717,7 +723,10 @@ class AIHealthService {
 単一の食事の場合：
 {
   "isMultipleMeals": false,
-  "foodItems": ["食品名"],
+  "foodItems": ["食品名（分量込み）"],
+  "displayName": "ユーザーが入力した正確な表記",
+  "baseFood": "基本食品名",
+  "portion": "分量部分",
   "calories": 推定カロリー数値（整数）,
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
@@ -730,8 +739,15 @@ class AIHealthService {
 - カロリーは整数、PFC（タンパク質・脂質・炭水化物）は小数点第1位まで正確に計算
 - 単位は含めない（例：カロリー350、タンパク質23.4）
 - 食品名・料理名は日本語で
-- 推定は一般的な分量で計算
+- **重要: 分量が指定されている場合は必ずその分量で正確に計算する**
+- displayNameにはユーザーが入力した文字をそのまま記録
+- baseFoodは基本的な食品名、portionは分量部分を分離
 - アドバイスは栄養バランスや改善点を含める
+
+分量指定の例：
+- 「ご飯100g」→ displayName: "ご飯100g", baseFood: "ご飯", portion: "100g"
+- 「餃子5個」→ displayName: "餃子5個", baseFood: "餃子", portion: "5個"
+- 「食パン2枚」→ displayName: "食パン2枚", baseFood: "食パン", portion: "2枚"
 `;
 
       const result = await model.generateContent(prompt);
@@ -744,6 +760,9 @@ class AIHealthService {
       // フォールバック値を返す
       return {
         foodItems: [mealText],
+        displayName: mealText,
+        baseFood: mealText,
+        portion: "",
         calories: 400,
         protein: 20.0,
         carbs: 50.0,

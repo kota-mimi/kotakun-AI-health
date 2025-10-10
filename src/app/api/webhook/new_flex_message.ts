@@ -49,7 +49,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             contents: [
               {
                 type: 'text',
-                text: originalMealName || analysis.foodItems?.[0] || '食事',
+                text: originalMealName || analysis.displayName || analysis.foodItems?.[0] || '食事',
                 size: 'xl',
                 weight: 'bold',
                 color: '#333333',
@@ -165,7 +165,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
         contents: [
           {
             type: 'text',
-            text: meal.name,
+            text: meal.displayName || meal.name,
             size: 'md',
             weight: 'bold',
             color: '#333333',
@@ -400,7 +400,7 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
           // 食事名
           {
             type: 'text',
-            text: originalMealName,
+            text: analysis.displayName || originalMealName,
             size: 'xl',
             weight: 'bold',
             color: '#333333',
@@ -496,7 +496,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
       contents: [
         {
           type: 'text',
-          text: meal.name,
+          text: meal.displayName || meal.name,
           size: 'md',
           weight: 'bold',
           color: '#333333',

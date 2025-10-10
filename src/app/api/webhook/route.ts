@@ -681,7 +681,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       console.log('⚠️ 画像データが見つかりません');
     }
     
-    const mealName = tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
+    const mealName = tempData.analysis.displayName || tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
     const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, mealName);
     
     // 直接保存（画像URLを使用）
@@ -726,7 +726,7 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
     // 食事データ作成（アプリと整合性のある形式）
     const mealData = {
       id: generateId(),
-      name: mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事',
+      name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事',
       type: mealType, // アプリが期待するフィールド名
       calories: mealAnalysis.calories || mealAnalysis.totalCalories || 400,
       protein: mealAnalysis.protein || mealAnalysis.totalProtein || 20,
@@ -735,10 +735,14 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
       time: currentTime,
       image: imageUrl,
       images: imageUrl ? [imageUrl] : [],
-      foodItems: mealAnalysis.foodItems || [mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事'],
+      foodItems: mealAnalysis.foodItems || [mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事'],
       timestamp: new Date(),
       createdAt: new Date(),
       lineUserId: userId,
+      // 分量情報を追加
+      displayName: mealAnalysis.displayName || '',
+      baseFood: mealAnalysis.baseFood || '',
+      portion: mealAnalysis.portion || '',
       // 複数食事の場合
       isMultipleMeals: mealAnalysis.isMultipleMeals || false,
       meals: mealAnalysis.meals || []
@@ -781,7 +785,11 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
       carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 0,
       foodItems: mealAnalysis.foodItems || [],
       meals: mealAnalysis.meals || [],
-      isMultipleMeals: mealAnalysis.isMultipleMeals || false
+      isMultipleMeals: mealAnalysis.isMultipleMeals || false,
+      // 分量情報を追加
+      displayName: mealAnalysis.displayName || '',
+      baseFood: mealAnalysis.baseFood || '',
+      portion: mealAnalysis.portion || ''
       // adviceは意図的に除外
     };
     
