@@ -632,6 +632,7 @@ class AIHealthService {
 - 「あさにぱんたべた」→ hasSpecificMealTime: true, mealTime: "breakfast", foodText: "ぱん"
 - 「今日唐揚げ食べた！」→ isFoodRecord: true, isDefiniteRecord: false, foodText: "唐揚げ"
 - 「きょうからあげたべた」→ isFoodRecord: true, isDefiniteRecord: false, foodText: "からあげ"
+- 「唐揚げとご飯100g食べた！」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "唐揚げとご飯100g"
 - 「ご飯100g」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "ご飯100g"
 - 「食パン2枚記録して」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "食パン2枚"
 - 「らーめん」→ isFoodRecord: true, isDefiniteRecord: true, foodText: "らーめん"
