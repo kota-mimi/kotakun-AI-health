@@ -2202,7 +2202,9 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
       }
       
       // Firestoreに保存
+      console.log(`🍽️ ${mealTime} 保存データ:`, JSON.stringify(mealData[mealTime], null, 2));
       await saveMultipleMealsByType(userId, mealTime, mealData[mealTime]);
+      console.log(`🍽️ ${mealTime} 保存完了`);
     }
     
     // 複数食事時間用のFlexメッセージを作成・送信
@@ -2259,16 +2261,23 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
 // 複数食事を食事タイプ別にFirestoreに保存
 async function saveMultipleMealsByType(userId: string, mealType: string, meals: any[]) {
   try {
+    console.log(`🍽️ ${mealType} 保存開始:`, { userId, meals: meals.length });
     const hashedUserId = hashUserId(userId);
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     const recordRef = admin.firestore().collection('health_records').doc(`${hashedUserId}_${today}`);
+    
+    console.log(`🍽️ ${mealType} Firestore参照:`, `${hashedUserId}_${today}`);
     
     const recordDoc = await recordRef.get();
     const existingData = recordDoc.exists ? recordDoc.data() : {};
     const existingMeals = existingData.meals || [];
     
+    console.log(`🍽️ ${mealType} 既存食事:`, existingMeals.length, '件');
+    
     // 新しい食事を追加
     const updatedMeals = [...existingMeals, ...meals];
+    
+    console.log(`🍽️ ${mealType} 更新後食事:`, updatedMeals.length, '件');
     
     await recordRef.set({
       ...existingData,
