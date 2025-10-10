@@ -53,7 +53,9 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
   const difference = hasData ? (currentWeight - data.previous) : 0;
   // カウンセリング結果の目標体重があれば優先、なければデータの目標体重を使用
   const targetWeight = counselingResult?.answers?.targetWeight || data.target;
-  const remaining = hasData ? Math.abs(currentWeight - targetWeight) : (counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
+  // 目標体重が設定されているかチェック（0より大きい値）
+  const hasTargetWeight = targetWeight && targetWeight > 0;
+  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
   
   // カウンセリング結果がある場合は表示を有効にする
   const shouldShowWeight = hasData || (counselingResult?.answers?.weight && counselingResult.answers.weight > 0);
@@ -75,7 +77,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
           >
             <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">現在</div>
             <div className="text-lg font-bold text-slate-900">
-              {shouldShowWeight ? currentWeight : '--'}
+              {shouldShowWeight ? currentWeight.toFixed(1) : '--'}
               {shouldShowWeight && <span className="text-sm font-medium text-slate-600 ml-1">kg</span>}
             </div>
           </div>
@@ -109,7 +111,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
           >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
             <div className="text-lg font-bold">
-              {shouldShowWeight ? (
+              {shouldShowWeight && hasTargetWeight ? (
                 currentWeight === targetWeight ? (
                   <span className="text-green-600">🎉 達成</span>
                 ) : currentWeight > targetWeight ? (
