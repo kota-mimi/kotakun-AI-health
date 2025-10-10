@@ -223,12 +223,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         if (mealJudgment.isMultipleMealTimes) {
           // 複数食事時間の処理
           await handleMultipleMealTimesRecord(userId, mealJudgment.mealTimes, replyToken);
-          await setRecordMode(userId, false); // 記録完了後はモード終了
+          // 記録後もクイックリプライで記録モード継続
           return;
         } else if (mealJudgment.hasSpecificMealTime) {
           const mealType = mealJudgment.mealTime;
           await saveMealRecord(userId, mealType, replyToken);
-          await setRecordMode(userId, false); // 記録完了後はモード終了
+          // 記録後もクイックリプライで記録モード継続
           return;
         } else {
           // 食事タイプ選択のクイックリプライ表示
