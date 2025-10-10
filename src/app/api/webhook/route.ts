@@ -2140,6 +2140,17 @@ async function isRecordMode(userId: string): Promise<boolean> {
     // タイムアウト：自動的に通常モードに戻す
     recordModeUsers.delete(userId);
     console.log(`⏰ 記録モード タイムアウト (${Math.round(elapsed/1000/60)}分経過): ${userId}`);
+    
+    // クイックリプライを消すメッセージを送信
+    try {
+      await pushMessage(userId, [{
+        type: 'text',
+        text: '記録モードが自動的に終了しました。\n何か記録したい場合は「記録」と送信してください。'
+      }]);
+    } catch (error) {
+      console.error('タイムアウト通知の送信に失敗:', error);
+    }
+    
     return false;
   }
   
