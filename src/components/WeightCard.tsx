@@ -77,7 +77,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult }: Weigh
           >
             <div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">現在</div>
             <div className="text-lg font-bold text-slate-900">
-              {shouldShowWeight ? currentWeight.toFixed(1) : '--'}
+              {shouldShowWeight ? (currentWeight % 1 === 0 ? currentWeight.toString() : currentWeight.toFixed(1)) : '--'}
               {shouldShowWeight && <span className="text-sm font-medium text-slate-600 ml-1">kg</span>}
             </div>
           </div>
