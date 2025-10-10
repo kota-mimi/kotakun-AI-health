@@ -205,7 +205,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 運動記録の判定
       const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
       if (exerciseResult) {
-        await setRecordMode(userId, false); // 記録完了後はモード終了
+        // 運動記録後もクイックリプライで記録モード継続
         return;
       }
       
@@ -463,15 +463,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await startAIAdviceMode(replyToken, userId);
       break;
     case 'open_keyboard':
-      // タイムアウトチェック
-      const isInRecordMode = await isRecordMode(userId);
-      if (!isInRecordMode) {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '記録モードの時間が終了しました。\n新しく記録したい場合は記録ボタンを押してください。'
-        }]);
-        return;
-      }
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;
     case 'cancel_record':
@@ -1537,7 +1528,28 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: responseText
+      text: responseText,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
     }]);
     
     console.log('✅ 運動記録完了:', exerciseData);
@@ -1601,7 +1613,28 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: `${exerciseName} ${weight}kg ${reps}回 ${sets}セット を記録したよ！\n推定時間: ${estimatedDuration}分\n消費カロリー: ${caloriesBurned}kcal`
+      text: `${exerciseName} ${weight}kg ${reps}回 ${sets}セット を記録したよ！\n推定時間: ${estimatedDuration}分\n消費カロリー: ${caloriesBurned}kcal`,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
     }]);
     
     console.log('✅ 詳細運動記録完了:', exerciseData);
@@ -2130,7 +2163,7 @@ const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
 // 記録モードの設定（タイムアウト付きセッション管理）
 const recordModeUsers = new Map<string, number>();
-const RECORD_MODE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
+// タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
 
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
@@ -2175,35 +2208,7 @@ async function setRecordMode(userId: string, enabled: boolean) {
 }
 
 async function isRecordMode(userId: string): Promise<boolean> {
-  const startTime = recordModeUsers.get(userId);
-  
-  if (!startTime) {
-    return false; // モードが設定されていない
-  }
-  
-  const elapsed = Date.now() - startTime;
-  
-  if (elapsed > RECORD_MODE_TIMEOUT) {
-    // タイムアウト：自動的に通常モードに戻す
-    recordModeUsers.delete(userId);
-    console.log(`⏰ 記録モード タイムアウト (${Math.round(elapsed/1000/60)}分経過): ${userId}`);
-    
-    // クイックリプライを消すメッセージを送信
-    try {
-      await pushMessage(userId, [{
-        type: 'text',
-        text: '記録モードが自動的に終了しました。\n何か記録したい場合は「記録」と送信してください。'
-      }]);
-    } catch (error) {
-      console.error('タイムアウト通知の送信に失敗:', error);
-    }
-    
-    return false;
-  }
-  
-  // まだ有効：時間を更新
-  recordModeUsers.set(userId, Date.now());
-  return true;
+  return recordModeUsers.has(userId);
 }// 複数食事時間の記録処理
 async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], replyToken: string) {
   try {
