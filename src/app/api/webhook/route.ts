@@ -2213,6 +2213,7 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
         // 複数食事の場合
         mealData[mealTime] = mealAnalysis.meals.map(meal => ({
           ...meal,
+          name: meal.displayName || meal.name, // displayNameを優先
           mealType: mealTime,
           id: generateId(),
           recordedAt: new Date(),
