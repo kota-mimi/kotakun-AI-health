@@ -618,6 +618,7 @@ class AIHealthService {
 - 食べ物の名前が含まれている（例：「唐揚げ」「からあげ」「ラーメン」「らーめん」「りんご」）
 - 食事に関する動詞（食べた、たべた、飲んだ、のんだ、摂取した、記録して、きろくして）※動詞なしでも食事名があれば記録可能
 - 明確な記録意図：「記録して」「きろくして」「食べた」「たべた」「摂取した」「昼 ラーメン」「夜 カツ丼」
+- **重要：一回のテキストで2つ以上の食事時間が含まれている場合は必ずisMultipleMealTimes: trueにする**
 - 曖昧な表現：「食べた！」「美味しかった」「おいしかった」（確認が必要）
 - 食事時間：「朝」「あさ」「昼」「ひる」「夜」「よる」「朝食」「昼食」「夕食」「間食」「おやつ」
 - 質問・相談は除外：「～はダイエットに良い？」「～のカロリーは？」
@@ -638,7 +639,9 @@ class AIHealthService {
 - 「夜 カツ丼とオムライス」→ hasSpecificMealTime: true, mealTime: "dinner", foodText: "カツ丼とオムライス"
 - 「今 昼 ラーメン 唐揚げ4個 チャーハン 記録」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン 唐揚げ4個 チャーハン"
 - 「朝にパンとコーヒー 昼にカツ丼 夜に納豆」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "パンとコーヒー"}, {"mealTime": "lunch", "foodText": "カツ丼"}, {"mealTime": "dinner", "foodText": "納豆"}]
+- 「朝に唐揚げ 夜に納豆 記録して」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "唐揚げ"}, {"mealTime": "dinner", "foodText": "納豆"}]
 - 「昼食でハンバーガー 間食でケーキ記録して」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "lunch", "foodText": "ハンバーガー"}, {"mealTime": "snack", "foodText": "ケーキ"}]
+- 「朝 パン 夜 カツ丼」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "パン"}, {"mealTime": "dinner", "foodText": "カツ丼"}]
 `;
 
       const result = await model.generateContent(prompt);
