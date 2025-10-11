@@ -1250,21 +1250,24 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
             type: 'action',
             action: {
               type: 'text',
-              label: 'テキストで記録'
+              label: 'テキストで記録',
+              text: 'テキストで記録'
             }
           },
           {
             type: 'action',
             action: {
               type: 'text',
-              label: 'カメラで記録'
+              label: 'カメラで記録',
+              text: 'カメラで記録'
             }
           },
           {
             type: 'action',
             action: {
               type: 'text',
-              label: '通常モード'
+              label: '通常モード',
+              text: '通常モード'
             }
           }
         ]
@@ -1342,21 +1345,24 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
             type: 'action',
             action: {
               type: 'text',
-              label: 'テキストで記録'
+              label: 'テキストで記録',
+              text: 'テキストで記録'
             }
           },
           {
             type: 'action',
             action: {
               type: 'text',
-              label: 'カメラで記録'
+              label: 'カメラで記録',
+              text: 'カメラで記録'
             }
           },
           {
             type: 'action',
             action: {
               type: 'text',
-              label: '通常モード'
+              label: '通常モード',
+              text: '通常モード'
             }
           }
         ]
