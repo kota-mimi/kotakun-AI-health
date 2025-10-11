@@ -212,6 +212,19 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         return;
       }
       
+      // 記録モード中の自由な運動記録（AI分析）
+      console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', text);
+      const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
+      console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
+      if (exerciseJudgment.isExerciseRecord) {
+        if (exerciseJudgment.isMultipleExercises) {
+          await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+        } else {
+          await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+        }
+        return;
+      }
+      
       // 食事記録の判定
       console.log('🍽️ 記録モード - 食事記録判定開始:', text);
       const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
@@ -1129,6 +1142,243 @@ export async function pushMessage(userId: string, messages: any[]) {
   } catch (error) {
     console.error('Error pushing message:', error);
   }
+}
+
+// AI運動記録処理（記録モード中の自由記録）
+// 複数運動記録を処理
+async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any, replyToken: string) {
+  try {
+    console.log('🏃‍♂️ 複数AI運動記録開始:', { userId, exerciseData });
+    
+    const { exercises } = exerciseData;
+    const userWeight = await getUserWeight(userId) || 70;
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    
+    // Firestoreから既存記録を取得
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const addedExercises = [];
+    let totalCalories = 0;
+    
+    // 各運動を処理
+    for (const exercise of exercises) {
+      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay } = exercise;
+      
+      // カロリー計算
+      const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
+      const calculationDuration = duration || 30;
+      const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+      totalCalories += caloriesBurned;
+      
+      // 運動データ作成
+      const exerciseRecord = {
+        id: generateId(),
+        name: exerciseName,
+        type: exerciseType,
+        duration: duration || 0,
+        calories: caloriesBurned,
+        intensity: intensity || getIntensity(mets),
+        sets: sets || 0,
+        reps: reps || 0,
+        weight: weight || 0,
+        distance: distance || 0,
+        timeOfDay: timeOfDay || '',
+        notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - AI認識（複数運動）`,
+        timestamp: new Date(),
+        time: new Date().toLocaleTimeString('ja-JP', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          timeZone: 'Asia/Tokyo'
+        })
+      };
+      
+      addedExercises.push(exerciseRecord);
+    }
+    
+    // Firestoreに保存
+    const updatedExercises = [...existingExercises, ...addedExercises];
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // 成功メッセージ
+    const exerciseList = addedExercises.map(ex => {
+      const timeText = ex.duration && ex.duration > 0 ? `${ex.duration}分` : '時間なし';
+      const weightText = ex.weight && ex.weight > 0 ? ` ${ex.weight}kg` : '';
+      const repsText = ex.reps && ex.reps > 0 ? ` ${ex.reps}回` : '';
+      const distanceText = ex.distance && ex.distance > 0 ? ` ${ex.distance}km` : '';
+      const timeOfDayText = ex.timeOfDay ? `【${ex.timeOfDay}】` : '';
+      
+      return `${timeOfDayText}${ex.name}${weightText}${repsText}${distanceText} (${timeText}, ${ex.calories}kcal)`;
+    }).join('\n');
+    
+    const responseText = `🏃‍♂️ 複数の運動を記録しました！\n\n${exerciseList}\n\n🔥 合計消費カロリー: ${totalCalories}kcal\n\nお疲れさまでした！💪`;
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: responseText,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'テキストで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: '通常モード'
+            }
+          }
+        ]
+      }
+    }]);
+    
+    console.log('✅ 複数AI運動記録完了:', addedExercises);
+    
+  } catch (error) {
+    console.error('❌ 複数AI運動記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '複数運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+async function handleAIExerciseRecord(userId: string, exerciseData: any, replyToken: string) {
+  try {
+    console.log('🏃‍♂️ AI運動記録開始:', { userId, exerciseData });
+    
+    const { exerciseName, exerciseType, duration, intensity } = exerciseData;
+    
+    // カロリー計算（時間がない場合は30分でカロリー計算、表示は「時間なし」）
+    const userWeight = await getUserWeight(userId) || 70;
+    const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
+    const calculationDuration = duration || 30; // カロリー計算用
+    const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+    
+    // 運動データ作成
+    const exerciseRecord = {
+      id: generateId(),
+      name: exerciseName,
+      type: exerciseType,
+      duration: duration || 0, // 時間が指定されていない場合は0
+      calories: caloriesBurned,
+      intensity: intensity || getIntensity(mets),
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - AI認識`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      })
+    };
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const updatedExercises = [...existingExercises, exerciseRecord];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // 成功メッセージ
+    const timeText = duration && duration > 0 ? `${duration}分` : '時間なし';
+    const responseText = `🏃‍♂️ ${exerciseName}を記録しました！\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${caloriesBurned}kcal\n\nお疲れさまでした！💪`;
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: responseText,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'テキストで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'text',
+              label: '通常モード'
+            }
+          }
+        ]
+      }
+    }]);
+    
+    console.log('✅ AI運動記録完了:', exerciseRecord);
+    
+  } catch (error) {
+    console.error('❌ AI運動記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// デフォルト時間を取得
+function getDefaultDuration(exerciseType: string, exerciseName: string): number {
+  const durationMap: { [key: string]: number } = {
+    'cardio': 30,        // 有酸素運動: 30分
+    'strength': 45,      // 筋力トレーニング: 45分
+    'sports': 60,        // スポーツ: 60分
+    'flexibility': 20,   // ストレッチ・ヨガ: 20分
+    'daily_activity': 30 // 日常活動: 30分
+  };
+  
+  return durationMap[exerciseType] || 30;
+}
+
+// デフォルトMETsを取得
+function getDefaultMETs(exerciseType: string): number {
+  const metsMap: { [key: string]: number } = {
+    'cardio': 6.0,
+    'strength': 6.0,
+    'sports': 7.0,
+    'flexibility': 2.5,
+    'daily_activity': 3.0
+  };
+  
+  return metsMap[exerciseType] || 5.0;
 }
 
 // === 運動記録機能 ===

@@ -951,6 +951,155 @@ class AIHealthService {
     }
   }
 
+  // テキストが運動記録の意図かどうかを判定
+  async analyzeExerciseRecordIntent(text: string) {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      const prompt = `
+テキスト「${text}」を分析して、運動記録の意図があるかどうか以下のJSONで返してください：
+
+単一の運動の場合：
+{
+  "isExerciseRecord": boolean,
+  "isMultipleExercises": false,
+  "exerciseType": string,
+  "exerciseName": string,
+  "duration": number,
+  "intensity": string,
+  "hasSpecificDetails": boolean,
+  "sets": number,
+  "reps": number,
+  "weight": number,
+  "distance": number,
+  "confidence": number
+}
+
+複数の運動が含まれている場合：
+{
+  "isExerciseRecord": boolean,
+  "isMultipleExercises": true,
+  "exercises": [
+    {
+      "exerciseType": string,
+      "exerciseName": string,
+      "duration": number,
+      "intensity": string,
+      "hasSpecificDetails": boolean,
+      "sets": number,
+      "reps": number,
+      "weight": number,
+      "distance": number,
+      "timeOfDay": string
+    }
+  ],
+  "confidence": number
+}
+
+判定基準：
+- 運動・スポーツ・トレーニングに関する動詞（した、やった、行った、練習した、鍛えた、走った、歩いた、泳いだ、踊った、etc）
+- 運動・スポーツ名（野球、サッカー、ランニング、筋トレ、ジム、ヨガ、テニス、バスケ、etc）
+- 身体活動（散歩、ウォーキング、ジョギング、ストレッチ、腹筋、腕立て、スクワット、etc）
+- 過去形表現（〜した、〜やった、〜行った）
+- 時間・場所の表現（朝、夜、今日、昨日、ジムで、公園で、家で、etc）
+
+運動の分類：
+- "strength": 筋トレ、ウェイトトレーニング（腹筋、腕立て、スクワット、ベンチプレス、etc）
+- "cardio": 有酸素運動（ランニング、ジョギング、ウォーキング、サイクリング、etc）
+- "sports": スポーツ活動（野球、サッカー、テニス、バスケ、バレー、etc）
+- "flexibility": ストレッチ、ヨガ、ピラティス
+- "daily": 日常活動（掃除、階段昇降、買い物、etc）
+
+**重要：記録モード中はより敏感に判定し、運動の可能性があるものは積極的に記録として扱う**
+
+例：
+- 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", duration: 0, intensity: null
+- 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", duration: 0, intensity: "light"
+- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋", reps: 100, hasSpecificDetails: true
+- 「今日朝に野球して、夕方にジムに行ってベンチプレス100kg 10回と120kg 15回した」→ 
+  isMultipleExercises: true, exercises: [
+    {exerciseType: "sports", exerciseName: "野球", timeOfDay: "朝"},
+    {exerciseType: "strength", exerciseName: "ベンチプレス", weight: 100, reps: 10, timeOfDay: "夕方"},
+    {exerciseType: "strength", exerciseName: "ベンチプレス", weight: 120, reps: 15, timeOfDay: "夕方"}
+  ]
+- 「朝15分くらい歩いた！多分3キロくらい」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ウォーキング", duration: 15, distance: 3, timeOfDay: "朝"
+
+判定しない例：
+- 「野球のルール教えて」→ isExerciseRecord: false（質問）
+- 「ランニングシューズ買った」→ isExerciseRecord: false（買い物）
+- 「ジムに行こうと思う」→ isExerciseRecord: false（予定・意図）
+
+**重要：ユーザーの入力をそのまま保持する**
+- duration: 明記されている場合のみ数値、されていない場合は0
+- intensity: 明記されている場合のみ設定、されていない場合はnull
+- sets, reps, weight, distance: 明記されている場合のみ数値、されていない場合は0
+- **デフォルト値は一切追加せず、ユーザーが入力した情報のみを抽出する**
+`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      return JSON.parse(jsonText);
+    } catch (error) {
+      console.error('運動記録意図分析エラー:', error);
+      // フォールバック: 基本的な運動関連キーワードをチェック
+      const exerciseKeywords = /野球|サッカー|テニス|バスケ|バレー|ランニング|ジョギング|ウォーキング|散歩|筋トレ|ジム|ヨガ|ピラティス|ストレッチ|腹筋|腕立て|スクワット|ベンチプレス|泳|水泳|サイクリング|自転車|踊|ダンス|階段|掃除|した|やった|行った|練習|鍛え|走っ|歩い|泳い|踊っ/;
+      const hasExerciseKeyword = exerciseKeywords.test(text);
+      const hasPastTense = /した|やった|行った|練習した|鍛えた|走った|歩いた|泳いだ|踊った/.test(text);
+      
+      if (hasExerciseKeyword && hasPastTense) {
+        // 簡単な運動タイプ判定
+        let exerciseType = "daily";
+        let exerciseName = "運動";
+        
+        if (/野球|サッカー|テニス|バスケ|バレー/.test(text)) {
+          exerciseType = "sports";
+          exerciseName = text.match(/野球|サッカー|テニス|バスケ|バレー/)?.[0] || "スポーツ";
+        } else if (/ランニング|ジョギング|ウォーキング|散歩|走っ|歩い/.test(text)) {
+          exerciseType = "cardio";
+          exerciseName = "ランニング";
+        } else if (/筋トレ|ジム|腹筋|腕立て|スクワット|ベンチプレス|鍛え/.test(text)) {
+          exerciseType = "strength";
+          exerciseName = "筋トレ";
+        } else if (/ヨガ|ピラティス|ストレッチ/.test(text)) {
+          exerciseType = "flexibility";
+          exerciseName = text.match(/ヨガ|ピラティス|ストレッチ/)?.[0] || "ストレッチ";
+        }
+        
+        return {
+          isExerciseRecord: true,
+          isMultipleExercises: false,
+          exerciseType,
+          exerciseName,
+          duration: 0, // デフォルト値は設定しない
+          intensity: null, // デフォルト値は設定しない
+          hasSpecificDetails: false,
+          sets: 0,
+          reps: 0,
+          weight: 0,
+          distance: 0,
+          confidence: 0.7
+        };
+      }
+      
+      return {
+        isExerciseRecord: false,
+        isMultipleExercises: false,
+        exerciseType: null,
+        exerciseName: null,
+        duration: 0,
+        intensity: null,
+        hasSpecificDetails: false,
+        sets: 0,
+        reps: 0,
+        weight: 0,
+        distance: 0,
+        confidence: 0.5
+      };
+    }
+  }
+
   // 一般会話機能
   async generateGeneralResponse(userMessage: string): Promise<string> {
     try {
