@@ -93,13 +93,23 @@ export interface NutritionAnalysis {
 
 export interface Exercise {
   id: string;
-  type: 'cardio' | 'strength' | 'flexibility' | 'sports' | 'other';
+  type: 'cardio' | 'strength' | 'flexibility' | 'sports' | 'other' | 'daily';
   name: string;
   duration: number; // minutes
-  intensity: 'low' | 'moderate' | 'high';
+  intensity?: 'low' | 'moderate' | 'high' | 'light' | 'medium' | null;
   caloriesBurned?: number;
+  calories?: number; // Added for compatibility
   notes?: string;
   timestamp: Date;
+  time?: string; // Time string for display
+  sets?: number;
+  reps?: number;
+  weight?: number;
+  distance?: number;
+  timeOfDay?: string; // Time of day (morning, evening, etc.)
+  totalSets?: number;
+  avgWeight?: number;
+  totalReps?: number;
 }
 
 export interface SleepRecord {

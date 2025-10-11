@@ -179,7 +179,17 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       return;
     }
     
-    console.log('🔍 記録モードチェック:', { userId, isInRecordMode });
+    console.log('🔍 記録モードチェック:', { userId, isInRecordMode, text });
+    
+    // デバッグ: ステータス確認コマンド
+    if (text.includes('ステータス') || text.includes('状態')) {
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: `現在の状態:\n記録モード: ${isInRecordMode ? 'ON' : 'OFF'}\nAIアドバイスモード: ${isInAdviceMode ? 'ON' : 'OFF'}`
+      }]);
+      return;
+    }
+    
     if (isInRecordMode) {
       // 記録モード中：食事・運動・体重記録のみ処理
       console.log('📝 記録モード中 - 記録処理のみ実行');
@@ -214,15 +224,24 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       
       // 記録モード中の自由な運動記録（AI分析）
       console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', text);
-      const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
-      console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
-      if (exerciseJudgment.isExerciseRecord) {
-        if (exerciseJudgment.isMultipleExercises) {
-          await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+      try {
+        const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
+        console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
+        if (exerciseJudgment.isExerciseRecord) {
+          console.log('✅ AI運動記録として認識、処理開始');
+          if (exerciseJudgment.isMultipleExercises) {
+            console.log('🔄 複数運動記録処理');
+            await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+          } else {
+            console.log('🔄 単一運動記録処理');
+            await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+          }
+          return;
         } else {
-          await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+          console.log('❌ AI運動記録として認識されませんでした');
         }
-        return;
+      } catch (error) {
+        console.error('❌ AI運動記録判定エラー:', error);
       }
       
       // 食事記録の判定
