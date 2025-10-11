@@ -470,8 +470,12 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   const { userId } = source;
   const { data } = postback;
   
+  console.log('📤 Postback受信:', { userId, data, timestamp: new Date().toISOString() });
+  
   const params = new URLSearchParams(data);
   const action = params.get('action');
+  
+  console.log('🎯 Postbackアクション:', { userId, action });
 
   switch (action) {
     case 'meal_breakfast':
@@ -482,17 +486,32 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await saveMealRecord(userId, mealType, replyToken);
       break;
     case 'record_menu':
+      console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
+      
       // 記録モードを開始
       await setRecordMode(userId, true);
+      console.log('✅ 記録モード設定完了:', { userId, isNowInRecordMode: await isRecordMode(userId) });
       
       // AIアドバイスモード中なら自動終了
       const wasInAdviceMode = await isAIAdviceMode(userId);
       if (wasInAdviceMode) {
+        console.log('🤖 AIアドバイスモード自動終了:', userId);
         await setAIAdviceMode(userId, false);
       }
       
-      // 記録モード開始のFlexメッセージ
-      await startRecordMode(replyToken, userId);
+      try {
+        // 記録モード開始のFlexメッセージ
+        console.log('📝 記録モードFlexメッセージ送信開始:', userId);
+        await startRecordMode(replyToken, userId);
+        console.log('✅ 記録モードFlexメッセージ送信完了:', userId);
+      } catch (error) {
+        console.error('❌ 記録モードFlexメッセージ送信エラー:', error);
+        // フォールバック: シンプルなテキストメッセージ
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '記録モードを開始しました！\n\n食事・運動・体重を記録してください。'
+        }]);
+      }
       break;
     case 'ai_advice':
       await startAIAdviceMode(replyToken, userId);
