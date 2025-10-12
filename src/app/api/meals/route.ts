@@ -318,9 +318,13 @@ export async function DELETE(request: NextRequest) {
       
       // 既存の日次記録を取得（Admin SDK）
       const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      console.log('🔍 Getting document:', { userId: lineUserId, date });
+      
       const recordDoc = await recordRef.get();
+      console.log('🔍 Document retrieved:', { exists: recordDoc.exists });
       
       if (!recordDoc.exists) {
+        console.log('🔍 Document not found - returning 404');
         return NextResponse.json(
           { error: '食事記録が見つかりません' },
           { status: 404 }
@@ -328,7 +332,14 @@ export async function DELETE(request: NextRequest) {
       }
       
       const existingRecord = recordDoc.data();
+      console.log('🔍 Document data:', { 
+        hasRecord: !!existingRecord, 
+        hasMeals: !!existingRecord?.meals,
+        mealsCount: existingRecord?.meals?.length || 0
+      });
+      
       if (!existingRecord || !existingRecord.meals) {
+        console.log('🔍 No meals data found - returning 404');
         return NextResponse.json(
           { error: '食事記録が見つかりません' },
           { status: 404 }
@@ -336,8 +347,16 @@ export async function DELETE(request: NextRequest) {
       }
 
       // 対象の複数食事を見つける
+      console.log('🔍 Searching for meal:', { 
+        originalMealId, 
+        availableMealIds: existingRecord.meals.map((m: any) => m.id) 
+      });
+      
       const targetMealIndex = existingRecord.meals.findIndex((meal: any) => meal.id === originalMealId);
+      console.log('🔍 Target meal search result:', { targetMealIndex });
+      
       if (targetMealIndex === -1) {
+        console.log('🔍 Target meal not found - returning 404');
         return NextResponse.json(
           { error: '食事記録が見つかりません' },
           { status: 404 }
@@ -345,7 +364,14 @@ export async function DELETE(request: NextRequest) {
       }
 
       const targetMeal = existingRecord.meals[targetMealIndex];
+      console.log('🔍 Target meal found:', { 
+        isMultipleMeals: targetMeal.isMultipleMeals,
+        hasMealsArray: !!targetMeal.meals,
+        mealsArrayLength: targetMeal.meals?.length || 0
+      });
+      
       if (!targetMeal.isMultipleMeals || !targetMeal.meals) {
+        console.log('🔍 Not a multiple meal record - returning 400');
         return NextResponse.json(
           { error: '複数食事記録ではありません' },
           { status: 400 }
@@ -353,15 +379,27 @@ export async function DELETE(request: NextRequest) {
       }
 
       // 個別食事を削除
+      console.log('🔍 Before deletion:', { 
+        originalLength: targetMeal.meals.length,
+        indexToDelete: finalIndividualMealIndex
+      });
+      
       const updatedIndividualMeals = targetMeal.meals.filter((_: any, index: number) => index !== finalIndividualMealIndex);
+      console.log('🔍 After filtering:', { 
+        newLength: updatedIndividualMeals.length,
+        willDeleteEntireMeal: updatedIndividualMeals.length === 0
+      });
       
       if (updatedIndividualMeals.length === 0) {
         // 全て削除された場合は食事全体を削除
         const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== originalMealId);
+        console.log('🔍 Deleting entire meal, remaining meals:', updatedMeals.length);
+        
         await recordRef.update({ 
           meals: updatedMeals,
           updatedAt: new Date()
         });
+        console.log('🔍 Entire meal deletion completed');
       } else {
         // 一部削除の場合は更新
         const updatedMeal = {
