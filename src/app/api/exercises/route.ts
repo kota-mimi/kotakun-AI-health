@@ -13,7 +13,19 @@ export async function GET(request: NextRequest) {
 
     console.log('運動API: データ取得開始', { lineUserId, date });
 
-    const adminDb = admin.firestore();
+    let adminDb;
+    try {
+      adminDb = admin.firestore();
+      if (!adminDb) {
+        throw new Error('Firestore not available');
+      }
+    } catch (error) {
+      console.error('❌ Firestore初期化エラー:', error);
+      return NextResponse.json({
+        success: true,
+        data: []
+      });
+    }
     
     if (date) {
       // 特定の日付のデータを取得（Admin SDK）

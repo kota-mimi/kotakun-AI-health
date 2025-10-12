@@ -56,10 +56,27 @@ if (!getApps().length) {
   }
 }
 
+// Firestoreインスタンスを格納する変数
+let firestoreInstance: any = null;
+
+// 初期化が完了した後にFirestoreインスタンスを取得
+try {
+  if (getApps().length > 0) {
+    firestoreInstance = getFirestore();
+  }
+} catch (error) {
+  console.log('🔧 Firestore初期化時エラー:', error);
+}
+
 export const admin = {
   firestore: () => {
+    if (firestoreInstance) {
+      return firestoreInstance;
+    }
+    
     try {
-      return getFirestore();
+      firestoreInstance = getFirestore();
+      return firestoreInstance;
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.log('🔧 開発環境：Firestoreエラーを無視（ダミーオブジェクトを返却）');
