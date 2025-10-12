@@ -203,16 +203,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中：食事・運動・体重記録のみ処理
       console.log('📝 記録モード中 - 記録処理のみ実行');
       
-      // 記録モード終了の確認
-      if (text.includes('終了') || text.includes('やめる') || text.includes('キャンセル')) {
-        await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '記録モードを終了しました。\n何か質問があればお気軽にどうぞ！'
-        }]);
-        await setRecordMode(userId, false);
-        return;
-      }
+      // 記録モード終了はクイックリプライの「通常モードに戻る」ボタンのみで可能
+      // テキストでの終了は無効化（記録処理に専念）
       
       // まず体重記録の判定を行う
       console.log('📊 記録モード - 体重記録判定開始:', text);
@@ -302,9 +294,22 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         await setRecordMode(userId, true);
       }
       
+      // 記録モード中は記録処理のみ受付、AI会話は行わない
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '申し訳ありません。記録として認識できませんでした。\n\nもう一度、食事・運動・体重の内容を送ってください。\n\n例：「ご飯100g」「ランニング30分」「体重65kg」\n\n記録を終了したい場合は「終了」と送ってください。'
+        text: '記録モード中です。食事・運動・体重の記録のみ受け付けています。\n\n記録例：\n• 「ご飯100g」\n• 「ランニング30分」 \n• 「体重65kg」\n\n通常モードに戻りたい場合は下のボタンを押してください。',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: '通常モードに戻る',
+                data: 'action=exit_record_mode'
+              }
+            }
+          ]
+        }
       }]);
       // 記録モードは継続（終了しない）
       return;
