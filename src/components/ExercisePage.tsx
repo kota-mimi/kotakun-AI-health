@@ -367,7 +367,7 @@ export function ExercisePage({
                         if (exercise.weight && exercise.weight > 0) parts.push(`${exercise.weight}kg`);
                         if (exercise.reps && exercise.reps > 0) parts.push(`${exercise.reps}回`);
                         if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
-                        if (exercise.duration && exercise.duration > 0 && !exercise.reps) parts.push(`${exercise.duration}分`);
+                        if (exercise.duration && exercise.duration > 0 && !exercise.reps && !exercise.weight) parts.push(`${exercise.duration}分`);
                         
                         if (parts.length > 0) {
                           return (
