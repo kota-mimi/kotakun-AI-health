@@ -1017,10 +1017,30 @@ class AIHealthService {
 
 **重要：記録モード中はより敏感に判定し、運動の可能性があるものは積極的に記録として扱う**
 
+**短縮表記の正式名称変換規則：**
+- 腕立て → 腕立て伏せ
+- 腹筋 → 腹筋運動
+- 背筋 → 背筋運動
+- スクワット → スクワット
+- ベンチ → ベンチプレス
+- デッド → デッドリフト
+
+**カタカナ・数字のみ表記の対応：**
+- キロ/kg → 重量単位として認識
+- セット → セット数として認識
+- 数字のみ（例：「ベンチ 120 10」）→ 重量 + 回数として解釈
+- 運動名 + 数字のみ（例：「腕立て 10」）→ 運動名 + 回数として解釈
+- 「回」がなくても数字は回数として認識
+
 例：
 - 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", displayName: "野球", duration: 0, intensity: null
 - 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", displayName: "ランニング", duration: 0, intensity: "light", timeOfDay: "朝"
-- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
+- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋運動", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
+- 「腕立て10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
+- 「腕立て 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
+- 「ベンチ 120キロ 10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
+- 「ベンチ 120 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
+- 「ベンチ120kg 10回 2セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回 2セット", weight: 120, reps: 10, sets: 2, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 2}]
 - 「ベンチプレス 100kg 10回 1セット 120kg 10回 1セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス", weightSets: [{"weight": 100, "reps": 10, "sets": 1}, {"weight": 120, "reps": 10, "sets": 1}], hasSpecificDetails: true
 - 「今日野球して、ジムに行って筋トレした」→ 
   isMultipleExercises: true, exercises: [
@@ -1048,8 +1068,8 @@ class AIHealthService {
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('運動記録意図分析エラー:', error);
-      // フォールバック: 基本的な運動関連キーワードをチェック
-      const exerciseKeywords = /野球|サッカー|テニス|バスケ|バレー|ランニング|ジョギング|ウォーキング|散歩|筋トレ|ジム|ヨガ|ピラティス|ストレッチ|腹筋|腕立て|スクワット|ベンチプレス|泳|水泳|サイクリング|自転車|踊|ダンス|階段|掃除|した|やった|行った|練習|鍛え|走っ|歩い|泳い|踊っ/;
+      // フォールバック: 基本的な運動関連キーワードをチェック（短縮名・カタカナ表記対応）
+      const exerciseKeywords = /野球|サッカー|テニス|バスケ|バレー|ランニング|ジョギング|ウォーキング|散歩|筋トレ|ジム|ヨガ|ピラティス|ストレッチ|腹筋|腕立て|背筋|スクワット|ベンチプレス|ベンチ|デッド|デッドリフト|泳|水泳|サイクリング|自転車|踊|ダンス|階段|掃除|キロ|セット|した|やった|行った|練習|鍛え|走っ|歩い|泳い|踊っ/;
       const hasExerciseKeyword = exerciseKeywords.test(text);
       const hasPastTense = /した|やった|行った|練習した|鍛えた|走った|歩いた|泳いだ|踊った/.test(text);
       
@@ -1064,9 +1084,22 @@ class AIHealthService {
         } else if (/ランニング|ジョギング|ウォーキング|散歩|走っ|歩い/.test(text)) {
           exerciseType = "cardio";
           exerciseName = "ランニング";
-        } else if (/筋トレ|ジム|腹筋|腕立て|スクワット|ベンチプレス|鍛え/.test(text)) {
+        } else if (/筋トレ|ジム|腹筋|腕立て|背筋|スクワット|ベンチプレス|ベンチ|デッド|デッドリフト|鍛え/.test(text)) {
           exerciseType = "strength";
-          exerciseName = "筋トレ";
+          // 短縮名を正式名称に変換
+          if (/腕立て/.test(text)) {
+            exerciseName = "腕立て伏せ";
+          } else if (/腹筋/.test(text)) {
+            exerciseName = "腹筋運動";
+          } else if (/背筋/.test(text)) {
+            exerciseName = "背筋運動";
+          } else if (/ベンチ/.test(text)) {
+            exerciseName = "ベンチプレス";
+          } else if (/デッド/.test(text)) {
+            exerciseName = "デッドリフト";
+          } else {
+            exerciseName = "筋トレ";
+          }
         } else if (/ヨガ|ピラティス|ストレッチ/.test(text)) {
           exerciseType = "flexibility";
           exerciseName = text.match(/ヨガ|ピラティス|ストレッチ/)?.[0] || "ストレッチ";

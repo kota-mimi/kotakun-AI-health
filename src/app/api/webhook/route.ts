@@ -196,15 +196,22 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     const aiService = new AIHealthService();
     
     // 記録モード中かチェック
+    console.log('🔍 記録モード判定開始:', { userId, text });
     const isInRecordMode = await isRecordMode(userId);
     console.log('🔍 記録モード状態チェック:', { 
       userId, 
       isInRecordMode, 
+      text,
       timestamp: new Date().toISOString(),
       recordModeUsersSize: recordModeUsers.size,
       hasUserId: recordModeUsers.has(userId),
       serverRestartPossible: recordModeUsers.size === 0 ? '可能性あり' : 'なし'
     });
+    
+    // 記録モード中の場合、絶対にreturnすることを保証
+    if (isInRecordMode) {
+      console.log('🚨 記録モード中であることを確認！通常AI処理は絶対に実行しません！');
+    }
     
     // AIアドバイスモード中かチェック
     const isAdviceMode = await isAIAdviceMode(userId);
@@ -411,6 +418,18 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
     
     // 通常モード：AI会話で応答（高性能モデル使用）
+    // 万が一のセーフティガード：記録モード中なら絶対に実行しない
+    const doubleCheckRecordMode = await isRecordMode(userId);
+    if (doubleCheckRecordMode) {
+      console.error('🚨 致命的エラー：記録モード中なのに通常AI処理が実行されそうになりました！', { userId, text });
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
+        quickReply: getRecordModeQuickReply()
+      }]);
+      return;
+    }
+    
     console.log('🤖 通常モード - AI会話で応答');
     const aiResponse = await aiService.generateAdvancedResponse(text);
     
@@ -2925,7 +2944,7 @@ async function startRecordMode(replyToken: string, userId: string) {
 const aiAdviceModeUsers = new Map<string, number>();
 const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 
-// 記録モードの設定（タイムアウト付きセッション管理）
+// 記録モードの設定（Firestoreベース + メモリキャッシュ）
 const recordModeUsers = new Map<string, number>();
 // タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
 
@@ -2960,27 +2979,86 @@ async function isAIAdviceMode(userId: string): Promise<boolean> {
   return true;
 }
 
-// 記録モード管理関数
+// 記録モード管理関数（Firestoreベース + メモリキャッシュ）
 async function setRecordMode(userId: string, enabled: boolean) {
-  if (enabled) {
-    recordModeUsers.set(userId, Date.now());
-    console.log(`📝 記録モード開始: ${userId}`, {
-      timestamp: new Date().toISOString(),
-      recordModeUsersSize: recordModeUsers.size,
-      isNowSet: recordModeUsers.has(userId)
-    });
-  } else {
-    recordModeUsers.delete(userId);
-    console.log(`⏹️ 記録モード終了: ${userId}`, {
-      timestamp: new Date().toISOString(),
-      recordModeUsersSize: recordModeUsers.size,
-      isNowDeleted: !recordModeUsers.has(userId)
-    });
+  try {
+    const db = admin.firestore();
+    const userStateRef = db.collection('userStates').doc(userId);
+    
+    if (enabled) {
+      // Firestoreに保存
+      await userStateRef.set({
+        recordMode: true,
+        recordModeStartedAt: new Date(),
+        lastUpdated: new Date()
+      }, { merge: true });
+      
+      // メモリキャッシュにも保存
+      recordModeUsers.set(userId, Date.now());
+      console.log(`📝 記録モード開始: ${userId}`, {
+        timestamp: new Date().toISOString(),
+        recordModeUsersSize: recordModeUsers.size,
+        isNowSet: recordModeUsers.has(userId),
+        firestoreSaved: true
+      });
+    } else {
+      // Firestoreから削除
+      await userStateRef.set({
+        recordMode: false,
+        recordModeEndedAt: new Date(),
+        lastUpdated: new Date()
+      }, { merge: true });
+      
+      // メモリキャッシュからも削除
+      recordModeUsers.delete(userId);
+      console.log(`⏹️ 記録モード終了: ${userId}`, {
+        timestamp: new Date().toISOString(),
+        recordModeUsersSize: recordModeUsers.size,
+        isNowDeleted: !recordModeUsers.has(userId),
+        firestoreUpdated: true
+      });
+    }
+  } catch (error) {
+    console.error('記録モード状態管理エラー:', error);
+    // フォールバック：メモリのみ
+    if (enabled) {
+      recordModeUsers.set(userId, Date.now());
+    } else {
+      recordModeUsers.delete(userId);
+    }
   }
 }
 
 async function isRecordMode(userId: string): Promise<boolean> {
-  return recordModeUsers.has(userId);
+  try {
+    // まずメモリキャッシュをチェック
+    const hasInMemory = recordModeUsers.has(userId);
+    
+    // Firestoreからも確認（サーバー再起動対応）
+    const db = admin.firestore();
+    const userStateDoc = await db.collection('userStates').doc(userId).get();
+    const firestoreState = userStateDoc.exists ? userStateDoc.data()?.recordMode : false;
+    
+    console.log('🔍 記録モード状態確認:', { 
+      userId, 
+      hasInMemory, 
+      firestoreState,
+      finalResult: hasInMemory || firestoreState
+    });
+    
+    // どちらかがtrueなら記録モード中
+    if (firestoreState && !hasInMemory) {
+      // Firestoreにはあるがメモリにない場合、メモリにも復元
+      recordModeUsers.set(userId, Date.now());
+      console.log('🔄 記録モード状態をメモリに復元:', userId);
+    }
+    
+    return hasInMemory || firestoreState;
+  } catch (error) {
+    console.error('記録モード状態確認エラー:', error);
+    // エラー時はメモリキャッシュのみ使用
+    return recordModeUsers.has(userId);
+  }
 }// 複数食事時間の記録処理
 async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], replyToken: string) {
   try {
