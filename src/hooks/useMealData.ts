@@ -23,6 +23,15 @@ interface Meal {
   image?: string;
   images?: string[];
   foodItems?: FoodItem[];
+  // 複数食事対応
+  isMultipleMeals?: boolean;
+  meals?: {
+    name: string;
+    calories: number;
+    protein: number;
+    fat: number;
+    carbs: number;
+  }[];
 }
 
 interface MealData {
@@ -105,9 +114,96 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.mealData) {
+            // 🔍 複数食事データのログ出力
+            console.log('🔍 API Response mealData:', JSON.stringify(data.mealData, null, 2));
+            
+            // 複数食事が含まれているかチェック
+            const allMeals = [...(data.mealData.breakfast || []), ...(data.mealData.lunch || []), ...(data.mealData.dinner || []), ...(data.mealData.snack || [])];
+            const multipleMeals = allMeals.filter(meal => meal.isMultipleMeals);
+            console.log('🔍 Found multiple meals:', multipleMeals.length, multipleMeals);
+            
             // キャッシュに保存（5分間有効）
             apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
+          }
+        } else {
+          // 開発環境でAPIエラーの場合、テストデータを使用
+          console.log('❌ API Failed, using test data in development');
+          if (process.env.NODE_ENV === 'development') {
+            const testMealData = {
+              breakfast: [
+                {
+                  id: 'test-multi-breakfast-1',
+                  name: '朝 カツ丼 昼 ラーメン',
+                  calories: 1350,
+                  protein: 50,
+                  fat: 43,
+                  carbs: 150,
+                  time: '08:00',
+                  image: '',
+                  images: [],
+                  foodItems: [],
+                  isMultipleMeals: true,
+                  meals: [
+                    {
+                      name: 'カツ丼',
+                      calories: 800,
+                      protein: 30,
+                      fat: 25,
+                      carbs: 90
+                    },
+                    {
+                      name: 'ラーメン',
+                      calories: 550,
+                      protein: 20,
+                      fat: 18,
+                      carbs: 60
+                    }
+                  ]
+                }
+              ],
+              lunch: [],
+              dinner: [
+                {
+                  id: 'test-multi-dinner-1',
+                  name: '朝 カツ丼 夜 焼肉',
+                  calories: 1500,
+                  protein: 80,
+                  fat: 60,
+                  carbs: 120,
+                  time: '19:00',
+                  image: '',
+                  images: [],
+                  foodItems: [],
+                  isMultipleMeals: true,
+                  meals: [
+                    {
+                      name: 'カツ丼',
+                      calories: 800,
+                      protein: 30,
+                      fat: 25,
+                      carbs: 90
+                    },
+                    {
+                      name: '焼肉',
+                      calories: 700,
+                      protein: 50,
+                      fat: 35,
+                      carbs: 30
+                    }
+                  ]
+                }
+              ],
+              snack: []
+            };
+            console.log('🧪 開発環境：食事テストデータを使用', testMealData);
+            
+            // 複数食事が含まれているかチェック
+            const allTestMeals = [...testMealData.breakfast, ...testMealData.lunch, ...testMealData.dinner, ...testMealData.snack];
+            const multipleTestMeals = allTestMeals.filter(meal => meal.isMultipleMeals);
+            console.log('🧪 Test data multiple meals:', multipleTestMeals.length, multipleTestMeals);
+            
+            setFirestoreMealData(testMealData);
           }
         }
       } catch (error) {
@@ -221,19 +317,49 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   // 複数食事追加処理
-  const handleAddMultipleMeals = (meals: Omit<Meal, 'id'>[]) => {
-    const newMeals = meals.map(meal => ({
-      id: generateId(),
-      ...meal
-    }));
+  const handleAddMultipleMeals = async (meals: Omit<Meal, 'id'>[]) => {
+    const lineUserId = liffUser?.userId;
+    if (!lineUserId) return;
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
+      console.warn('⚠️ Invalid selectedDate in addMultipleMeals:', selectedDate);
+      return;
+    }
+    const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
 
-    const currentData = getCurrentDateData();
-    updateDateData({
-      mealData: {
-        ...currentData.mealData,
-        [currentMealType]: [...currentData.mealData[currentMealType], ...newMeals]
+    // 各食事をFirestoreに保存
+    for (const meal of meals) {
+      const newMeal = {
+        id: generateId(),
+        ...meal,
+        createdAt: new Date(),
+        mealType: currentMealType
+      };
+
+      try {
+        const response = await fetch('/api/meals', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr,
+            mealType: currentMealType,
+            mealData: newMeal
+          }),
+        });
+
+        if (response.ok) {
+          // Firestoreデータを更新
+          setFirestoreMealData(prev => ({
+            ...prev,
+            [currentMealType]: [...prev[currentMealType], newMeal]
+          }));
+        } else {
+          console.error('複数食事保存に失敗しました:', meal.name);
+        }
+      } catch (error) {
+        console.error('複数食事保存エラー:', error, meal.name);
       }
-    });
+    }
   };
 
   // 食事編集処理
