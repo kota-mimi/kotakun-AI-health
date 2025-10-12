@@ -3330,9 +3330,13 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
         mealData[mealTime] = mealAnalysis.meals.map(meal => ({
           ...meal,
           name: meal.displayName || meal.name, // displayNameを優先
-          mealType: mealTime,
+          type: mealTime, // ✅ アプリが期待するフィールド名  
+          time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
+          images: [],
+          foodItems: [mealAnalysis.displayName || foodText],
+          timestamp: new Date(),
+          createdAt: new Date(),
           id: generateId(),
-          recordedAt: new Date(),
           lineUserId: userId
         }));
       } else {
@@ -3346,9 +3350,13 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
           protein: mealAnalysis.protein || 0,
           fat: mealAnalysis.fat || 0,
           carbs: mealAnalysis.carbs || 0,
-          mealType: mealTime,
+          type: mealTime, // ✅ アプリが期待するフィールド名  
+          time: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }),
+          images: [],
+          foodItems: [mealAnalysis.displayName || foodText],
+          timestamp: new Date(),
+          createdAt: new Date(),
           id: generateId(),
-          recordedAt: new Date(),
           lineUserId: userId
         }];
       }
