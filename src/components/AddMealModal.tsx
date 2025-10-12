@@ -37,7 +37,6 @@ interface AddMealModalProps {
   onClose: () => void;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   onAddMeal: (meal: Omit<MealItem, 'id'>) => void;
-  onAddMultipleMeals?: (meals: Omit<MealItem, 'id'>[]) => void;
   allMealsData?: any;
 }
 
@@ -48,7 +47,7 @@ const mealTypeLabels = {
   snack: '間食'
 };
 
-export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultipleMeals, allMealsData }: AddMealModalProps) {
+export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsData }: AddMealModalProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -331,22 +330,31 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       minute: '2-digit' 
     });
 
-    // 複数食事の場合は別々の食事として送信
+    // 複数食事の場合も単品食事と同じ構造で送信
     if (foodItems.length > 1) {
-      const separateMeals = foodItems.map(item => ({
-        name: item.name,
-        calories: item.calories,
-        protein: item.protein,
-        fat: item.fat,
-        carbs: item.carbs,
+      const totalCalories = foodItems.reduce((sum, item) => sum + item.calories, 0);
+      const totalProtein = foodItems.reduce((sum, item) => sum + item.protein, 0);
+      const totalFat = foodItems.reduce((sum, item) => sum + item.fat, 0);
+      const totalCarbs = foodItems.reduce((sum, item) => sum + item.carbs, 0);
+      
+      onAddMeal({
+        name: mealName,
+        calories: totalCalories,
+        protein: totalProtein,
+        fat: totalFat,
+        carbs: totalCarbs,
         time: currentTime,
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
-        foodItems: [item]
-      }));
-      
-      if (onAddMultipleMeals) {
-        onAddMultipleMeals(separateMeals);
-      }
+        isMultipleMeals: true,
+        meals: foodItems.map(item => ({
+          name: item.name,
+          calories: item.calories,
+          protein: item.protein,
+          fat: item.fat,
+          carbs: item.carbs
+        })),
+        foodItems: foodItems
+      });
     } else {
       // 単一食事または手動入力の場合
       const totalCalories = foodItems.length > 0 

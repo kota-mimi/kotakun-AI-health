@@ -339,7 +339,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
         onClose={() => mealManager.setIsAddMealModalOpen(false)}
         mealType={mealManager.currentMealType}
         onAddMeal={mealManager.handleAddMealSubmit}
-        onAddMultipleMeals={mealManager.handleAddMultipleMeals}
         allMealsData={mealManager.mealData}
       />
 
