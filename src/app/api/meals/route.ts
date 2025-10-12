@@ -289,11 +289,32 @@ export async function DELETE(request: NextRequest) {
 
     const adminDb = admin.firestore();
     
-    // 複数食事の個別削除かチェック（仮想IDの場合）
-    if (mealId.includes('_') && individualMealIndex !== undefined) {
-      // 仮想IDから元のIDを取得 (例: meal_xxx_0 -> meal_xxx)
-      const originalMealId = mealId.split('_').slice(0, -1).join('_');
-      console.log('🚨 Individual meal deletion:', { originalMealId, individualMealIndex });
+    console.log('🔍 PRODUCTION DEBUG: Firebase Admin check:', {
+      hasAdminDb: !!adminDb,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+      hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
+      environment: process.env.NODE_ENV
+    });
+    
+    // 複数食事の個別削除かチェック（仮想IDまたはindividualMealIndexの場合）
+    let originalMealId = mealId;
+    let finalIndividualMealIndex = individualMealIndex;
+    
+    // 仮想IDから元のIDを抽出
+    if (mealId.includes('_')) {
+      const parts = mealId.split('_');
+      const lastPart = parts[parts.length - 1];
+      if (!isNaN(Number(lastPart)) && parts.length >= 2 && lastPart.match(/^\d+$/)) {
+        originalMealId = parts.slice(0, -1).join('_');
+        finalIndividualMealIndex = Number(lastPart);
+        console.log('🚨 Virtual ID parsed for deletion:', { mealId, originalMealId, individualMealIndex: finalIndividualMealIndex });
+      }
+    }
+    
+    // 複数食事の個別削除処理
+    if (finalIndividualMealIndex !== undefined) {
+      console.log('🚨 Individual meal deletion:', { originalMealId, individualMealIndex: finalIndividualMealIndex });
       
       // 既存の日次記録を取得（Admin SDK）
       const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
@@ -332,7 +353,7 @@ export async function DELETE(request: NextRequest) {
       }
 
       // 個別食事を削除
-      const updatedIndividualMeals = targetMeal.meals.filter((_: any, index: number) => index !== individualMealIndex);
+      const updatedIndividualMeals = targetMeal.meals.filter((_: any, index: number) => index !== finalIndividualMealIndex);
       
       if (updatedIndividualMeals.length === 0) {
         // 全て削除された場合は食事全体を削除
@@ -360,6 +381,7 @@ export async function DELETE(request: NextRequest) {
           meals: updatedMeals,
           updatedAt: new Date()
         });
+        console.log('🔍 PRODUCTION DEBUG: Individual meal update successful');
       }
     } else {
       // 通常の削除（Admin SDK）
@@ -369,11 +391,12 @@ export async function DELETE(request: NextRequest) {
       if (recordDoc.exists) {
         const existingRecord = recordDoc.data();
         if (existingRecord && existingRecord.meals) {
-          const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== mealId);
+          const updatedMeals = existingRecord.meals.filter((meal: any) => meal.id !== originalMealId);
           await recordRef.update({ 
             meals: updatedMeals,
             updatedAt: new Date()
           });
+          console.log('🚨 Normal meal deletion completed:', { originalMealId, remainingMeals: updatedMeals.length });
         }
       }
     }
@@ -382,9 +405,15 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
 
   } catch (error: any) {
-    console.error('🚨 DELETE ERROR:', error);
+    console.error('🚨 PRODUCTION DELETE ERROR:', error);
+    console.error('🚨 Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      stack: error.stack?.split('\n').slice(0, 3)
+    });
     return NextResponse.json(
-      { error: error.message || '食事記録の削除に失敗しました' },
+      { error: error.message || '食事記録の削除に失敗しました', details: error.code || 'unknown' },
       { status: 500 }
     );
   }
