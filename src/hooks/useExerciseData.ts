@@ -101,7 +101,44 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
         
         if (response.ok) {
           const result = await response.json();
-          const exerciseData = result.data || [];
+          let exerciseData = result.data || [];
+          
+          // 開発環境でデータが空の場合、テストデータを追加
+          if (exerciseData.length === 0 && process.env.NODE_ENV === 'development') {
+            exerciseData = [
+              {
+                id: 'test-1',
+                name: '腕立て伏せ',
+                displayName: '腕立て伏せ 10回',
+                type: 'strength',
+                duration: 0,
+                calories: 140,
+                reps: 10,
+                setsCount: null,
+                weight: 0,
+                weightSets: [],
+                time: '21:10',
+                timestamp: new Date().toISOString(),
+                notes: 'テストデータ'
+              },
+              {
+                id: 'test-2',
+                name: 'ベンチプレス',
+                displayName: 'ベンチプレス 120kg 10回 3セット',
+                type: 'strength',
+                duration: 0,
+                calories: 280,
+                reps: 10,
+                setsCount: 3,
+                weight: 120,
+                weightSets: [{ weight: 120, reps: 10, sets: 3 }],
+                time: '20:30',
+                timestamp: new Date(Date.now() - 60000).toISOString(),
+                notes: 'テストデータ'
+              }
+            ];
+            console.log('🧪 開発環境：テストデータを追加');
+          }
           
           // デバッグ：取得したデータをログ出力
           console.log('🏃 APIから取得した運動データ:', exerciseData.map(ex => ({
