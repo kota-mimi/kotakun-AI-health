@@ -339,10 +339,15 @@ export function ExercisePage({
                           <div className="text-xs text-slate-500">距離</div>
                         </div>
                       )}
-                      {exercise.sets && (
+                      {(exercise.setsCount || exercise.reps || exercise.weight) && (
                         <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">{exercise.sets.length}set</div>
-                          <div className="text-xs text-slate-500">セット</div>
+                          <div className="text-sm font-medium text-health-primary">
+                            {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg` : ''}
+                            {exercise.weight && exercise.reps ? ' × ' : ''}
+                            {exercise.reps && exercise.reps > 0 ? `${exercise.reps}回` : ''}
+                            {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
+                          </div>
+                          <div className="text-xs text-slate-500">詳細</div>
                         </div>
                       )}
                       <Badge 
@@ -354,7 +359,7 @@ export function ExercisePage({
                     </div>
                   </div>
 
-                  {exercise.sets && (
+                  {exercise.sets && Array.isArray(exercise.sets) && (
                     <div className="mt-2 pt-2 border-t border-white/40">
                       <div className="flex flex-wrap gap-1">
                         {exercise.sets.slice(0, 3).map((set, index) => (
