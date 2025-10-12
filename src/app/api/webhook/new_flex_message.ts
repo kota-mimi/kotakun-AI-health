@@ -928,6 +928,16 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
   
   // 単一運動の場合
   const exercise = exerciseData.exercise || exerciseData;
+  console.log('🏃‍♂️ Flexメッセージ作成 - exercise data:', JSON.stringify(exercise, null, 2));
+  
+  // displayNameから回数を抽出してrepsに設定（フォールバック）
+  if (!exercise.reps && exercise.displayName) {
+    const repsMatch = exercise.displayName.match(/(\d+)回/);
+    if (repsMatch) {
+      exercise.reps = parseInt(repsMatch[1]);
+      console.log('🔄 displayNameから回数を抽出:', exercise.reps);
+    }
+  }
   
   const contents = [
     // 運動記録ヘッダー
@@ -1052,7 +1062,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
   }
 
   // 単純な回数表示（weightSetsがない場合）
-  if (exercise.reps && exercise.reps > 0 && !exercise.weightSets) {
+  if (exercise.reps && exercise.reps > 0 && (!exercise.weightSets || exercise.weightSets.length === 0)) {
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -1162,13 +1172,26 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
   // カロリー表示
   if (exercise.calories || exercise.caloriesBurned) {
     contents.push({
-      type: 'text',
-      text: `消費カロリー ${exercise.calories || exercise.caloriesBurned || 0}kcal`,
-      size: 'xl',
-      weight: 'bold',
-      color: '#4a90e2',
-      align: 'end',
-      margin: 'md'
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '消費カロリー',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.calories || exercise.caloriesBurned || 0}kcal`,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
     });
   }
 
@@ -1356,9 +1379,9 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
           },
           {
             type: 'text',
-            text: `消費カロリー ${exercise.calories || exercise.caloriesBurned}kcal`,
+            text: `${exercise.calories || exercise.caloriesBurned}kcal`,
             size: 'sm',
-            color: '#4a90e2',
+            color: '#333333',
             weight: 'bold',
             flex: 0
           }
@@ -1406,9 +1429,9 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
         {
           type: 'text',
           text: `消費カロリー ${totalCalories}kcal`,
-          size: 'xl',
+          size: 'sm',
           weight: 'bold',
-          color: '#4a90e2',
+          color: '#333333',
           flex: 0
         }
       ]
