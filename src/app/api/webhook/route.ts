@@ -3388,11 +3388,11 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
 async function saveMultipleMealsByType(userId: string, mealType: string, meals: any[]) {
   try {
     console.log(`🍽️ ${mealType} 保存開始:`, { userId, meals: meals.length });
-    const hashedUserId = hashUserId(userId);
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const recordRef = admin.firestore().collection('health_records').doc(`${hashedUserId}_${today}`);
+    // アプリと同じusersコレクションに保存
+    const recordRef = admin.firestore().collection('users').doc(userId).collection('dailyRecords').doc(today);
     
-    console.log(`🍽️ ${mealType} Firestore参照:`, `${hashedUserId}_${today}`);
+    console.log(`🍽️ ${mealType} Firestore参照:`, `users/${userId}/dailyRecords/${today}`);
     
     const recordDoc = await recordRef.get();
     const existingData = recordDoc.exists ? recordDoc.data() : {};
