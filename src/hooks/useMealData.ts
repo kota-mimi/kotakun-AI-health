@@ -531,6 +531,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
             const data = await fetchResponse.json();
             if (data.success && data.mealData) {
               setFirestoreMealData(data.mealData);
+              // 確実に反映させるため強制リフレッシュ
+              setTimeout(() => {
+                window.location.reload();
+              }, 500);
             }
           }
         } else {
