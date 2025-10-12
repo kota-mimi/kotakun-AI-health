@@ -342,35 +342,45 @@ export function ExercisePage({
                         <div className="font-medium text-slate-800 truncate">{exercise.name}</div>
                         <div className="flex items-center space-x-3 text-xs text-slate-500">
                           <span>{exercise.time}</span>
+                          {/* 動的に情報を表示 */}
                           {exercise.duration && exercise.duration > 0 && (
                             <>
                               <span>•</span>
                               <span>{exercise.duration}分</span>
                             </>
                           )}
-                          <span>•</span>
-                          <span>消費カロリー {exercise.calories}kcal</span>
+                          {exercise.calories && exercise.calories > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>消費カロリー {exercise.calories}kcal</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2 text-right flex-shrink-0">
-                      {/* シンプルな表示ロジック */}
-                      {(exercise.reps > 0 || exercise.weight > 0 || exercise.duration > 0 || exercise.distance > 0) && (
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">
-                            {exercise.distance > 0 && `${exercise.distance}km`}
-                            {exercise.weight > 0 && `${exercise.weight}kg`}
-                            {exercise.weight > 0 && exercise.reps > 0 && ' × '}
-                            {exercise.reps > 0 && `${exercise.reps}回`}
-                            {exercise.setsCount > 1 && ` × ${exercise.setsCount}セット`}
-                            {exercise.duration > 0 && !exercise.reps && `${exercise.duration}分`}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {exercise.reps > 0 ? '回数' : exercise.duration > 0 ? '時間' : exercise.distance > 0 ? '距離' : '詳細'}
-                          </div>
-                        </div>
-                      )}
+                      {/* 柔軟な表示：何かしらの数値があれば表示 */}
+                      {(() => {
+                        const parts = [];
+                        if (exercise.distance && exercise.distance > 0) parts.push(`${exercise.distance}km`);
+                        if (exercise.weight && exercise.weight > 0) parts.push(`${exercise.weight}kg`);
+                        if (exercise.reps && exercise.reps > 0) parts.push(`${exercise.reps}回`);
+                        if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
+                        if (exercise.duration && exercise.duration > 0 && !exercise.reps) parts.push(`${exercise.duration}分`);
+                        
+                        if (parts.length > 0) {
+                          return (
+                            <div className="text-right">
+                              <div className="text-sm font-medium text-health-primary">
+                                {parts.join(' × ')}
+                              </div>
+                              <div className="text-xs text-slate-500">詳細</div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                       <Badge 
                         variant="secondary" 
                         className="text-xs bg-white/60 text-slate-600 border-white/60"
