@@ -1458,7 +1458,16 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
 
 async function handleAIExerciseRecord(userId: string, exerciseData: any, replyToken: string) {
   try {
-    console.log('🏃‍♂️ AI運動記録開始:', { userId, exerciseData });
+    console.log('🏃‍♂️ AI運動記録開始:', { 
+      userId, 
+      exerciseData: {
+        exerciseName: exerciseData.exerciseName,
+        reps: exerciseData.reps,
+        weight: exerciseData.weight,
+        sets: exerciseData.sets,
+        weightSets: exerciseData.weightSets
+      }
+    });
     
     const { exerciseName, exerciseType, duration, intensity } = exerciseData;
     

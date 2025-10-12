@@ -358,17 +358,30 @@ export function ExercisePage({
                           <div className="text-xs text-slate-500">距離</div>
                         </div>
                       )}
-                      {(exercise.setsCount || exercise.reps || exercise.weight) && (
+                      {/* 回数が記録されている場合は回数を優先表示 */}
+                      {exercise.reps && exercise.reps > 0 ? (
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-health-primary">
+                            {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg × ` : ''}
+                            {exercise.reps}回
+                            {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
+                          </div>
+                          <div className="text-xs text-slate-500">回数</div>
+                        </div>
+                      ) : exercise.duration && exercise.duration > 0 ? (
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-health-primary">{exercise.duration}分</div>
+                          <div className="text-xs text-slate-500">時間</div>
+                        </div>
+                      ) : (exercise.setsCount || exercise.weight) ? (
                         <div className="text-right">
                           <div className="text-sm font-medium text-health-primary">
                             {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg` : ''}
-                            {exercise.weight && exercise.weight > 0 && exercise.reps && exercise.reps > 0 ? ' × ' : ''}
-                            {exercise.reps && exercise.reps > 0 ? `${exercise.reps}回` : ''}
                             {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
                           </div>
                           <div className="text-xs text-slate-500">詳細</div>
                         </div>
-                      )}
+                      ) : null}
                       <Badge 
                         variant="secondary" 
                         className="text-xs bg-white/60 text-slate-600 border-white/60"
