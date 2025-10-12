@@ -102,15 +102,18 @@ export function ExercisePage({
 
   // デバッグ用：運動データをログ出力
   useEffect(() => {
-    if (exerciseData.length > 0) {
-      console.log('🏋️ ExercisePage 運動データ:', exerciseData.map(ex => ({
+    console.log('🏋️ ExercisePage 運動データ受信:', {
+      dataLength: exerciseData.length,
+      data: exerciseData.map(ex => ({
+        id: ex.id,
         name: ex.name,
         reps: ex.reps,
         weight: ex.weight,
         setsCount: ex.setsCount,
-        weightSets: ex.weightSets
-      })));
-    }
+        duration: ex.duration,
+        type: ex.type
+      }))
+    });
   }, [exerciseData]);
 
 
@@ -339,7 +342,7 @@ export function ExercisePage({
                         <div className="font-medium text-slate-800 truncate">{exercise.name}</div>
                         <div className="flex items-center space-x-3 text-xs text-slate-500">
                           <span>{exercise.time}</span>
-                          {exercise.duration > 0 && (
+                          {exercise.duration && exercise.duration > 0 && (
                             <>
                               <span>•</span>
                               <span>{exercise.duration}分</span>
@@ -352,36 +355,22 @@ export function ExercisePage({
                     </div>
                     
                     <div className="flex items-center space-x-2 text-right flex-shrink-0">
-                      {exercise.distance && (
+                      {/* シンプルな表示ロジック */}
+                      {(exercise.reps > 0 || exercise.weight > 0 || exercise.duration > 0 || exercise.distance > 0) && (
                         <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">{exercise.distance}km</div>
-                          <div className="text-xs text-slate-500">距離</div>
+                          <div className="text-sm font-medium text-health-primary">
+                            {exercise.distance > 0 && `${exercise.distance}km`}
+                            {exercise.weight > 0 && `${exercise.weight}kg`}
+                            {exercise.weight > 0 && exercise.reps > 0 && ' × '}
+                            {exercise.reps > 0 && `${exercise.reps}回`}
+                            {exercise.setsCount > 1 && ` × ${exercise.setsCount}セット`}
+                            {exercise.duration > 0 && !exercise.reps && `${exercise.duration}分`}
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {exercise.reps > 0 ? '回数' : exercise.duration > 0 ? '時間' : exercise.distance > 0 ? '距離' : '詳細'}
+                          </div>
                         </div>
                       )}
-                      {/* 回数が記録されている場合は回数を優先表示 */}
-                      {exercise.reps && exercise.reps > 0 ? (
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">
-                            {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg × ` : ''}
-                            {exercise.reps}回
-                            {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
-                          </div>
-                          <div className="text-xs text-slate-500">回数</div>
-                        </div>
-                      ) : exercise.duration && exercise.duration > 0 ? (
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">{exercise.duration}分</div>
-                          <div className="text-xs text-slate-500">時間</div>
-                        </div>
-                      ) : (exercise.setsCount || exercise.weight) ? (
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-health-primary">
-                            {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg` : ''}
-                            {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
-                          </div>
-                          <div className="text-xs text-slate-500">詳細</div>
-                        </div>
-                      ) : null}
                       <Badge 
                         variant="secondary" 
                         className="text-xs bg-white/60 text-slate-600 border-white/60"
