@@ -547,6 +547,18 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         text: 'また記録してね！'
       }]);
       break;
+    case 'exercise_running_30':
+      // ランニング30分の記録処理
+      await handleSimpleExerciseRecord(userId, '有酸素運動', 'ランニング', 30, replyToken);
+      break;
+    case 'exercise_strength_45':
+      // 筋トレ45分の記録処理
+      await handleSimpleExerciseRecord(userId, '筋力トレーニング', '筋トレ', 45, replyToken);
+      break;
+    case 'exercise_walking_20':
+      // ウォーキング20分の記録処理
+      await handleSimpleExerciseRecord(userId, '有酸素運動', 'ウォーキング', 20, replyToken);
+      break;
     case 'exit_ai_advice':
       await setAIAdviceMode(userId, false);
       await replyMessage(replyToken, [{
@@ -2109,6 +2121,61 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
   }
 }
 
+// シンプルな運動記録処理
+async function handleSimpleExerciseRecord(userId: string, type: string, exerciseName: string, duration: number, replyToken: string) {
+  try {
+    const userWeight = await getUserWeight(userId) || 70;
+    const mets = EXERCISE_METS[exerciseName] || 5.0;
+    const caloriesBurned = Math.round((mets * userWeight * duration) / 60);
+    
+    const exerciseRecord = {
+      id: generateId(),
+      name: exerciseName,
+      type: type === '有酸素運動' ? 'cardio' : 'strength',
+      duration: duration,
+      calories: caloriesBurned,
+      intensity: 'medium',
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      })
+    };
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const updatedExercises = [...existingExercises, exerciseRecord];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: `🏃‍♂️ ${exerciseName} ${duration}分を記録しました！\n\n🔥 推定消費カロリー: ${caloriesBurned}kcal\n\nお疲れさまでした！💪`
+    }]);
+    
+  } catch (error) {
+    console.error('シンプル運動記録エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
 // 運動詳細の確認
 async function askForExerciseDetails(replyToken: string, originalText: string) {
   await replyMessage(replyToken, [{
@@ -2116,9 +2183,10 @@ async function askForExerciseDetails(replyToken: string, originalText: string) {
     text: `運動を記録しますか？\n具体的な運動名と時間を教えてください。\n\n例：「ランニング30分」「ベンチプレス 50kg 10回 3セット」`,
     quickReply: {
       items: [
-        { type: 'action', action: { type: 'text', label: 'ランニング30分', text: 'ランニング30分' } },
-        { type: 'action', action: { type: 'text', label: '筋トレ45分', text: '筋トレ45分' } },
-        { type: 'action', action: { type: 'text', label: 'ウォーキング20分', text: 'ウォーキング20分' } }
+        { type: 'action', action: { type: 'postback', label: 'ランニング30分', data: 'action=exercise_running_30' }},
+        { type: 'action', action: { type: 'postback', label: '筋トレ45分', data: 'action=exercise_strength_45' }},
+        { type: 'action', action: { type: 'postback', label: 'ウォーキング20分', data: 'action=exercise_walking_20' }},
+        { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
       ]
     }
   }]);
