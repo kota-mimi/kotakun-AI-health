@@ -299,7 +299,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     // 明確な記録意図がある場合のみ記録処理を実行
     // 通常モードでは非常に明確な記録意図のみ処理（簡単な「記録して」は無視）
-    const hasExplicitRecordIntent = /体重記録|食べた記録|運動記録|記録しておいて|記録お願い/.test(text);
+    const hasExplicitRecordIntent = /体重記録|食べた記録|運動記録|記録しておいて|記録お願い|した|やった|行った/.test(text);
     
     if (hasExplicitRecordIntent) {
       console.log('🎯 明確な記録意図を検出、記録処理を実行');
@@ -315,6 +315,28 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
       if (exerciseResult) {
         return;
+      }
+      
+      // AI運動記録の判定（通常モード）
+      console.log('🏃‍♂️ 通常モード - AI運動記録判定開始:', text);
+      try {
+        const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
+        console.log('🏃‍♂️ 通常モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
+        if (exerciseJudgment.isExerciseRecord) {
+          console.log('✅ 通常モード - AI運動記録として認識、処理開始');
+          if (exerciseJudgment.isMultipleExercises) {
+            console.log('🔄 通常モード - 複数運動記録処理');
+            await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+          } else {
+            console.log('🔄 通常モード - 単一運動記録処理');
+            await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+          }
+          return;
+        } else {
+          console.log('❌ 通常モード - AI運動記録として認識されませんでした');
+        }
+      } catch (error) {
+        console.error('❌ 通常モード - AI運動記録判定エラー:', error);
       }
       
       // 食事記録の判定
