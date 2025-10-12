@@ -79,12 +79,20 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       // キャッシュキー生成
       const cacheKey = createCacheKey('exercises', lineUserId, currentDate);
       
-      // キャッシュチェック
+      // キャッシュチェック（ただし5秒以内のデータは強制的に再取得）
       const cachedData = apiCache.get(cacheKey);
-      if (cachedData) {
+      const lastFetch = localStorage.getItem(`lastExerciseFetch_${lineUserId}_${currentDate}`);
+      const now = Date.now();
+      const shouldRefresh = !lastFetch || (now - parseInt(lastFetch)) < 5000; // 5秒以内は再取得
+      
+      if (cachedData && !shouldRefresh) {
         console.log('🎯 運動データをキャッシュから取得:', currentDate);
         setFirestoreExerciseData(cachedData);
         return;
+      }
+      
+      if (shouldRefresh) {
+        console.log('🔄 最近更新があったため強制的にAPIから取得:', currentDate);
       }
       
       try {
@@ -107,6 +115,9 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, exerciseData, 5 * 60 * 1000);
           setFirestoreExerciseData(exerciseData);
+          
+          // 最終取得時刻を記録
+          localStorage.setItem(`lastExerciseFetch_${lineUserId}_${currentDate}`, now.toString());
         }
       } catch (error) {
         console.error('🏃 useExerciseData fetch error:', error);

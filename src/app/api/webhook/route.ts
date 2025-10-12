@@ -1373,10 +1373,24 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       updatedAt: new Date()
     }, { merge: true });
     
-    // キャッシュを削除してアプリ側の表示を更新
-    const cacheKey = createCacheKey('exercises', userId, today);
-    apiCache.delete(cacheKey);
-    console.log('🗑️ 複数運動記録キャッシュを削除:', cacheKey);
+    // キャッシュを削除してアプリ側の表示を更新（複数のキーパターンで確実に削除）
+    const cacheKeys = [
+      createCacheKey('exercises', userId, today),
+      `exercises_${userId}_${today}`,
+      `exercises-${userId}-${today}`
+    ];
+    cacheKeys.forEach(key => {
+      apiCache.delete(key);
+      console.log('🗑️ 複数運動記録キャッシュを削除:', key);
+    });
+    
+    // 全キャッシュをクリア（確実にするため）
+    try {
+      apiCache.clear();
+      console.log('🗑️ 複数運動記録：全キャッシュをクリア');
+    } catch (error) {
+      console.log('⚠️ 複数運動記録：キャッシュクリア中にエラー:', error);
+    }
     
     // 各運動を個別のFlexメッセージで送信
     const messages = [];
@@ -1537,10 +1551,24 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
       updatedAt: new Date()
     }, { merge: true });
     
-    // キャッシュを削除してアプリ側の表示を更新
-    const cacheKey = createCacheKey('exercises', userId, today);
-    apiCache.delete(cacheKey);
-    console.log('🗑️ 運動記録キャッシュを削除:', cacheKey);
+    // キャッシュを削除してアプリ側の表示を更新（複数のキーパターンで確実に削除）
+    const cacheKeys = [
+      createCacheKey('exercises', userId, today),
+      `exercises_${userId}_${today}`,
+      `exercises-${userId}-${today}`
+    ];
+    cacheKeys.forEach(key => {
+      apiCache.delete(key);
+      console.log('🗑️ 運動記録キャッシュを削除:', key);
+    });
+    
+    // 全キャッシュをクリア（確実にするため）
+    try {
+      apiCache.clear();
+      console.log('🗑️ 全キャッシュをクリア');
+    } catch (error) {
+      console.log('⚠️ キャッシュクリア中にエラー:', error);
+    }
     
     // 成功メッセージ（セット追加の場合は更新されたカロリーを表示）
     const timeText = duration && duration > 0 ? `${duration}分` : '時間なし';
@@ -2391,10 +2419,24 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
       updatedAt: new Date()
     }, { merge: true });
     
-    // キャッシュを削除してアプリ側の表示を更新
-    const cacheKey = createCacheKey('exercises', userId, today);
-    apiCache.delete(cacheKey);
-    console.log('🗑️ 記録モード運動記録キャッシュを削除:', cacheKey);
+    // キャッシュを削除してアプリ側の表示を更新（複数のキーパターンで確実に削除）
+    const cacheKeys = [
+      createCacheKey('exercises', userId, today),
+      `exercises_${userId}_${today}`,
+      `exercises-${userId}-${today}`
+    ];
+    cacheKeys.forEach(key => {
+      apiCache.delete(key);
+      console.log('🗑️ 記録モード運動記録キャッシュを削除:', key);
+    });
+    
+    // 全キャッシュをクリア（確実にするため）
+    try {
+      apiCache.clear();
+      console.log('🗑️ 記録モード：全キャッシュをクリア');
+    } catch (error) {
+      console.log('⚠️ 記録モード：キャッシュクリア中にエラー:', error);
+    }
     
     // Flexメッセージで記録完了を通知（食事記録と同じスタイル）
     const flexMessage = createExerciseFlexMessage(finalExerciseRecord, originalText);

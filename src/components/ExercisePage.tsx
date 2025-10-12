@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -99,6 +99,19 @@ export function ExercisePage({
   const [showAddSet, setShowAddSet] = useState<string | null>(null);
   const [newSetWeight, setNewSetWeight] = useState('');
   const [newSetReps, setNewSetReps] = useState('');
+
+  // デバッグ用：運動データをログ出力
+  useEffect(() => {
+    if (exerciseData.length > 0) {
+      console.log('🏋️ ExercisePage 運動データ:', exerciseData.map(ex => ({
+        name: ex.name,
+        reps: ex.reps,
+        weight: ex.weight,
+        setsCount: ex.setsCount,
+        weightSets: ex.weightSets
+      })));
+    }
+  }, [exerciseData]);
 
 
 
@@ -367,7 +380,6 @@ export function ExercisePage({
 
                   {(exercise.weightSets && Array.isArray(exercise.weightSets) && exercise.weightSets.length > 0) ? (
                     <div className="mt-2 pt-2 border-t border-white/40">
-                      {console.log('🏋️ WeightSets表示:', exercise.name, exercise.weightSets)}
                       <div className="flex flex-wrap gap-1">
                         {exercise.weightSets.slice(0, 3).map((set, index) => {
                           const parts = [];
