@@ -8,6 +8,38 @@ import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
+// 記録モード統一クイックリプライ
+function getRecordModeQuickReply() {
+  return {
+    items: [
+      {
+        type: 'action',
+        action: {
+          type: 'postback',
+          label: 'テキストで記録',
+          data: 'action=open_keyboard',
+          inputOption: 'openKeyboard'
+        }
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'camera',
+          label: 'カメラで記録'
+        }
+      },
+      {
+        type: 'action',
+        action: {
+          type: 'postback',
+          label: '通常モードに戻る',
+          data: 'action=exit_record_mode'
+        }
+      }
+    ]
+  };
+}
+
 // 🔒 UserIDをハッシュ化する関数
 function hashUserId(userId: string): string {
   return crypto.createHash('sha256').update(userId + process.env.LINE_CHANNEL_SECRET).digest('hex').substring(0, 16);
@@ -297,19 +329,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中は記録処理のみ受付、AI会話は行わない
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '記録モード中です。食事・運動・体重の記録のみ受け付けています。\n\n記録例：\n• 「ご飯100g」\n• 「ランニング30分」 \n• 「体重65kg」\n\n通常モードに戻りたい場合は下のボタンを押してください。',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '通常モードに戻る',
-                data: 'action=exit_record_mode'
-              }
-            }
-          ]
-        }
+        text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
+        quickReply: getRecordModeQuickReply()
       }]);
       // 記録モードは継続（終了しない）
       return;
@@ -849,34 +870,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // pushMessageでFlexメッセージ送信（クイックリプライ付き）
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'camera',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
-        ]
-      }
+      quickReply: getRecordModeQuickReply()
     };
     await pushMessage(userId, [messageWithQuickReply]);
     
@@ -892,7 +886,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     await stopLoadingAnimation(userId);
     await pushMessage(userId, [{
       type: 'text',
-      text: '保存中にエラーが発生しました。もう一度お試しください。'
+      text: '保存中にエラーが発生しました。もう一度お試しください。',
+      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -1354,7 +1349,8 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
     console.error('❌ 複数AI運動記録エラー:', error);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '複数運動記録でエラーが発生しました。もう一度お試しください。'
+      text: '複数運動記録でエラーが発生しました。もう一度お試しください。',
+      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -2204,34 +2200,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'camera',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
-        ]
-      }
+      quickReply: getRecordModeQuickReply()
     };
     
     await pushMessage(userId, [messageWithQuickReply]);
@@ -2244,7 +2213,8 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     await stopLoadingAnimation(userId);
     await pushMessage(userId, [{
       type: 'text',
-      text: '運動記録でエラーが発生しました。もう一度お試しください。'
+      text: '運動記録でエラーが発生しました。もう一度お試しください。',
+      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -2329,34 +2299,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
     
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'camera',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
-        ]
-      }
+      quickReply: getRecordModeQuickReply()
     };
     
     await replyMessage(replyToken, [messageWithQuickReply]);
@@ -2369,7 +2312,8 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
     await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '複数運動記録でエラーが発生しました。もう一度お試しください。'
+      text: '複数運動記録でエラーが発生しました。もう一度お試しください。',
+      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -3091,34 +3035,7 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     // クイックリプライ付きでFlexメッセージ送信
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'camera',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
-        ]
-      }
+      quickReply: getRecordModeQuickReply()
     };
     
     await stopLoadingAnimation(userId);
@@ -3131,7 +3048,8 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '複数食事の記録でエラーが発生しました。もう一度お試しください。'
+      text: '複数食事の記録でエラーが発生しました。もう一度お試しください。',
+      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
