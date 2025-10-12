@@ -549,14 +549,17 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await saveMealRecord(userId, mealType, replyToken);
       break;
     case 'record_menu':
+      const startTime = Date.now();
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
       // 記録モードを開始（複数回押しても安全）
       await setRecordMode(userId, true);
+      const modeSetTime = Date.now();
       console.log('✅ 記録モード設定完了:', { 
         userId, 
         isNowInRecordMode: await isRecordMode(userId),
-        recordModeUsersSize: recordModeUsers.size 
+        recordModeUsersSize: recordModeUsers.size,
+        timeElapsed: `${modeSetTime - startTime}ms`
       });
       
       // AIアドバイスモード中なら自動終了
@@ -569,8 +572,14 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       try {
         // 記録モード開始のFlexメッセージ
         console.log('📝 記録モードFlexメッセージ送信開始:', userId);
+        const flexStartTime = Date.now();
         await startRecordMode(replyToken, userId);
-        console.log('✅ 記録モードFlexメッセージ送信完了:', userId);
+        const flexEndTime = Date.now();
+        console.log('✅ 記録モードFlexメッセージ送信完了:', { 
+          userId,
+          flexProcessTime: `${flexEndTime - flexStartTime}ms`,
+          totalTime: `${flexEndTime - startTime}ms`
+        });
       } catch (error) {
         console.error('❌ 記録モードFlexメッセージ送信エラー:', error);
         // フォールバック: シンプルなテキストメッセージ
@@ -2829,6 +2838,7 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
 
 // 記録モード開始
 async function startRecordMode(replyToken: string, userId: string) {
+  const flexBuildStart = Date.now();
   const recordMessage = {
     type: 'flex',
     altText: '記録モード',
@@ -2900,7 +2910,15 @@ async function startRecordMode(replyToken: string, userId: string) {
     }
   };
   
+  const flexBuildEnd = Date.now();
+  console.log('🏗️ Flexメッセージ構築時間:', `${flexBuildEnd - flexBuildStart}ms`);
+  
+  const apiCallStart = Date.now();
   await replyMessage(replyToken, [recordMessage]);
+  const apiCallEnd = Date.now();
+  
+  console.log('📡 LINE API呼び出し時間:', `${apiCallEnd - apiCallStart}ms`);
+  console.log('📊 記録モード開始総時間:', `${apiCallEnd - flexBuildStart}ms`);
 }
 
 // AIアドバイスモードの設定（タイムアウト付きセッション管理）
