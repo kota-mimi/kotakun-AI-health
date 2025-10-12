@@ -953,7 +953,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
       contents: [
         {
           type: 'text',
-          text: originalText || exercise.name || '運動',
+          text: exercise.displayName || exercise.name || '運動',
           size: 'xl',
           weight: 'bold',
           color: '#333333',
@@ -974,7 +974,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
   // 運動詳細を追加
   const details = [];
   
-  if (exercise.duration) {
+  if (exercise.duration && exercise.duration > 0) {
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -999,7 +999,34 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     });
   }
 
-  if (exercise.sets && exercise.reps) {
+  // weightSetsがある場合（複数重量パターン）
+  if (exercise.weightSets && exercise.weightSets.length > 0) {
+    exercise.weightSets.forEach((weightSet, index) => {
+      details.push({
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'sm',
+        contents: [
+          {
+            type: 'text',
+            text: `セット${index + 1}`,
+            size: 'sm',
+            color: '#666666',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${weightSet.weight}kg × ${weightSet.reps}回`,
+            size: 'sm',
+            color: '#333333',
+            weight: 'bold',
+            flex: 0
+          }
+        ]
+      });
+    });
+  } else if (exercise.sets && exercise.sets > 0 && exercise.reps && exercise.reps > 0) {
+    // 通常のセット・回数表示
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -1024,7 +1051,8 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     });
   }
 
-  if (exercise.weight) {
+  if (exercise.weight && exercise.weight > 0 && !exercise.weightSets) {
+    // weightSetsがない場合のみ異体重量表示
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -1074,6 +1102,8 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     });
   }
 
+  // 強度は表示しない（ユーザー要望により非表示）
+  /*
   if (exercise.intensity) {
     details.push({
       type: 'box',
@@ -1098,6 +1128,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
       ]
     });
   }
+  */
 
   // 詳細を追加
   contents.push(...details);
@@ -1175,7 +1206,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
     const exerciseContents = [
       {
         type: 'text',
-        text: exercise.name || '運動',
+        text: exercise.displayName || exercise.name || '運動',
         size: 'lg',
         weight: 'bold',
         color: '#333333',
@@ -1185,7 +1216,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
 
     const details = [];
     
-    if (exercise.duration) {
+    if (exercise.duration && exercise.duration > 0) {
       details.push({
         type: 'box',
         layout: 'horizontal',
@@ -1209,7 +1240,33 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
       });
     }
 
-    if (exercise.sets && exercise.reps) {
+    // weightSetsがある場合（複数重量パターン）
+    if (exercise.weightSets && exercise.weightSets.length > 0) {
+      exercise.weightSets.forEach((weightSet, index) => {
+        details.push({
+          type: 'box',
+          layout: 'horizontal',
+          margin: 'xs',
+          contents: [
+            {
+              type: 'text',
+              text: `セット${index + 1}`,
+              size: 'sm',
+              color: '#666666',
+              flex: 1
+            },
+            {
+              type: 'text',
+              text: `${weightSet.weight}kg × ${weightSet.reps}回`,
+              size: 'sm',
+              color: '#333333',
+              flex: 0
+            }
+          ]
+        });
+      });
+    } else if (exercise.sets && exercise.sets > 0 && exercise.reps && exercise.reps > 0) {
+      // 通常のセット・回数表示
       details.push({
         type: 'box',
         layout: 'horizontal',
@@ -1233,7 +1290,8 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
       });
     }
 
-    if (exercise.weight) {
+    if (exercise.weight && exercise.weight > 0 && !exercise.weightSets) {
+      // weightSetsがない場合のみ異体重量表示
       details.push({
         type: 'box',
         layout: 'horizontal',

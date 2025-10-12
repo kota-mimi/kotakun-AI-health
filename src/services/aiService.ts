@@ -965,6 +965,7 @@ class AIHealthService {
   "isMultipleExercises": false,
   "exerciseType": string,
   "exerciseName": string,
+  "displayName": string,
   "duration": number,
   "intensity": string,
   "hasSpecificDetails": boolean,
@@ -972,6 +973,8 @@ class AIHealthService {
   "reps": number,
   "weight": number,
   "distance": number,
+  "timeOfDay": string,
+  "weightSets": [{"weight": number, "reps": number, "sets": number}],
   "confidence": number
 }
 
@@ -983,6 +986,7 @@ class AIHealthService {
     {
       "exerciseType": string,
       "exerciseName": string,
+      "displayName": string,
       "duration": number,
       "intensity": string,
       "hasSpecificDetails": boolean,
@@ -990,7 +994,8 @@ class AIHealthService {
       "reps": number,
       "weight": number,
       "distance": number,
-      "timeOfDay": string
+      "timeOfDay": string,
+      "weightSets": [{"weight": number, "reps": number, "sets": number}]
     }
   ],
   "confidence": number
@@ -1013,16 +1018,16 @@ class AIHealthService {
 **重要：記録モード中はより敏感に判定し、運動の可能性があるものは積極的に記録として扱う**
 
 例：
-- 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", duration: 0, intensity: null
-- 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", duration: 0, intensity: "light"
-- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋", reps: 100, hasSpecificDetails: true
-- 「今日朝に野球して、夕方にジムに行ってベンチプレス100kg 10回と120kg 15回した」→ 
+- 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", displayName: "野球", duration: 0, intensity: null
+- 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", displayName: "ランニング", duration: 0, intensity: "light", timeOfDay: "朝"
+- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
+- 「ベンチプレス 100kg 10回 1セット 120kg 10回 1セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス", weightSets: [{"weight": 100, "reps": 10, "sets": 1}, {"weight": 120, "reps": 10, "sets": 1}], hasSpecificDetails: true
+- 「今日野球して、ジムに行って筋トレした」→ 
   isMultipleExercises: true, exercises: [
-    {exerciseType: "sports", exerciseName: "野球", timeOfDay: "朝"},
-    {exerciseType: "strength", exerciseName: "ベンチプレス", weight: 100, reps: 10, timeOfDay: "夕方"},
-    {exerciseType: "strength", exerciseName: "ベンチプレス", weight: 120, reps: 15, timeOfDay: "夕方"}
+    {exerciseType: "sports", exerciseName: "野球", displayName: "野球"},
+    {exerciseType: "strength", exerciseName: "筋トレ", displayName: "筋トレ"}
   ]
-- 「朝15分くらい歩いた！多分3キロくらい」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ウォーキング", duration: 15, distance: 3, timeOfDay: "朝"
+- 「朝15分くらい歩いた！多分3キロくらい」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ウォーキング", displayName: "ウォーキング 3km 15分", duration: 15, distance: 3, timeOfDay: "朝"
 
 判定しない例：
 - 「野球のルール教えて」→ isExerciseRecord: false（質問）

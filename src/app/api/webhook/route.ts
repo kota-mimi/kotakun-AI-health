@@ -2145,7 +2145,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     // 食事記録と同じようにローディング開始
     await startLoadingAnimation(userId, 10);
 
-    const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance } = exerciseData;
+    const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, displayName, weightSets } = exerciseData;
     
     // カロリー計算
     const userWeight = await getUserWeight(userId) || 70;
@@ -2157,6 +2157,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     const exerciseRecord = {
       id: generateId(),
       name: exerciseName,
+      displayName: displayName || exerciseName,
       type: exerciseType,
       duration: duration || 0,
       calories: caloriesBurned,
@@ -2165,6 +2166,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
       reps: reps || 0,
       weight: weight || 0,
       distance: distance || 0,
+      weightSets: weightSets || [],
       notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - 記録モード`,
       timestamp: new Date(),
       time: new Date().toLocaleTimeString('ja-JP', { 
@@ -2266,7 +2268,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
     
     // 各運動を処理
     for (const exercise of exercises) {
-      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay } = exercise;
+      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay, displayName, weightSets } = exercise;
       
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
@@ -2278,6 +2280,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       const exerciseRecord = {
         id: generateId(),
         name: exerciseName,
+        displayName: displayName || exerciseName,
         type: exerciseType,
         duration: duration || 0,
         calories: caloriesBurned,
@@ -2287,6 +2290,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
         weight: weight || 0,
         distance: distance || 0,
         timeOfDay: timeOfDay || '',
+        weightSets: weightSets || [],
         notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - 記録モード（複数運動）`,
         timestamp: new Date(),
         time: new Date().toLocaleTimeString('ja-JP', { 
