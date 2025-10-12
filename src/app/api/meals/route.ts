@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
+import crypto from 'crypto';
+
+// LINE botと同じハッシュ関数
+function hashUserId(userId: string): string {
+  return crypto.createHash('sha256').update(userId + process.env.LINE_CHANNEL_SECRET).digest('hex').substring(0, 16);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +21,9 @@ export async function POST(request: NextRequest) {
     const adminDb = admin.firestore();
     const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD (日本時間)
 
-    // 指定日の食事データを取得（Admin SDK使用）
-    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
+    // LINE botと同じhealth_recordsコレクションから取得
+    const hashedUserId = hashUserId(lineUserId);
+    const recordRef = adminDb.collection('health_records').doc(`${hashedUserId}_${targetDate}`);
     const recordDoc = await recordRef.get();
     const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
     
@@ -114,8 +121,9 @@ export async function PUT(request: NextRequest) {
       createdAt: mealData.createdAt || new Date()
     };
 
-    // Admin SDKで食事データを追加
-    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    // LINE botと同じhealth_recordsコレクションに追加
+    const hashedUserId = hashUserId(lineUserId);
+    const recordRef = adminDb.collection('health_records').doc(`${hashedUserId}_${date}`);
     const recordDoc = await recordRef.get();
     const existingData = recordDoc.exists ? recordDoc.data() : {};
     const existingMeals = existingData.meals || [];
@@ -157,8 +165,9 @@ export async function PATCH(request: NextRequest) {
 
     const adminDb = admin.firestore();
     
-    // 既存の日次記録を取得（Admin SDK）
-    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    // LINE botと同じhealth_recordsコレクションから取得
+    const hashedUserId = hashUserId(lineUserId);
+    const recordRef = adminDb.collection('health_records').doc(`${hashedUserId}_${date}`);
     const recordDoc = await recordRef.get();
     
     if (!recordDoc.exists) {
@@ -295,8 +304,9 @@ export async function DELETE(request: NextRequest) {
       const originalMealId = mealId.split('_').slice(0, -1).join('_');
       console.log('🚨 Individual meal deletion:', { originalMealId, individualMealIndex });
       
-      // 既存の日次記録を取得（Admin SDK）
-      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      // LINE botと同じhealth_recordsコレクションから取得
+      const hashedUserId = hashUserId(lineUserId);
+      const recordRef = adminDb.collection('health_records').doc(`${hashedUserId}_${date}`);
       const recordDoc = await recordRef.get();
       
       if (!recordDoc.exists) {
@@ -362,8 +372,9 @@ export async function DELETE(request: NextRequest) {
         });
       }
     } else {
-      // 通常の削除（Admin SDK）
-      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      // 通常の削除（health_recordsコレクション）
+      const hashedUserId = hashUserId(lineUserId);
+      const recordRef = adminDb.collection('health_records').doc(`${hashedUserId}_${date}`);
       const recordDoc = await recordRef.get();
       
       if (recordDoc.exists) {
