@@ -1324,7 +1324,8 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
           exerciseName, 
           newSet, 
           totalSets: updatedSetsCount,
-          totalCalories: updatedCalories 
+          totalCalories: updatedCalories,
+          updatedWeightSets: updatedWeightSets
         });
         
         // addedExercisesには更新された運動を追加（Flex表示用）
@@ -1519,7 +1520,8 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
         exerciseName, 
         newSet, 
         totalSets: updatedSetsCount,
-        totalCalories: updatedCalories 
+        totalCalories: updatedCalories,
+        updatedWeightSets: updatedWeightSets
       });
     } else {
       // 新しい種目として追加
@@ -2372,7 +2374,8 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
         exerciseName, 
         newSet, 
         totalSets: updatedSetsCount,
-        totalCalories: updatedCalories 
+        totalCalories: updatedCalories,
+        updatedWeightSets: updatedWeightSets
       });
     } else {
       // 新しい種目として追加

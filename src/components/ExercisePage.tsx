@@ -367,15 +367,23 @@ export function ExercisePage({
 
                   {(exercise.weightSets && Array.isArray(exercise.weightSets) && exercise.weightSets.length > 0) ? (
                     <div className="mt-2 pt-2 border-t border-white/40">
+                      {console.log('🏋️ WeightSets表示:', exercise.name, exercise.weightSets)}
                       <div className="flex flex-wrap gap-1">
-                        {exercise.weightSets.slice(0, 3).map((set, index) => (
-                          <span 
-                            key={index}
-                            className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
-                          >
-                            {set.weight > 0 ? `${set.weight}kg` : ''}{set.weight > 0 && set.reps > 0 ? ' × ' : ''}{set.reps > 0 ? `${set.reps}回` : ''}{set.sets && set.sets > 1 ? ` × ${set.sets}セット` : ''}
-                          </span>
-                        ))}
+                        {exercise.weightSets.slice(0, 3).map((set, index) => {
+                          const parts = [];
+                          if (set.weight > 0) parts.push(`${set.weight}kg`);
+                          if (set.reps > 0) parts.push(`${set.reps}回`);
+                          if (set.sets && set.sets > 1) parts.push(`${set.sets}セット`);
+                          
+                          return (
+                            <span 
+                              key={index}
+                              className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
+                            >
+                              セット{index + 1}: {parts.join(' × ') || '記録'}
+                            </span>
+                          );
+                        })}
                         {exercise.weightSets.length > 3 && (
                           <span className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-500">
                             +{exercise.weightSets.length - 3}more
