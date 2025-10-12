@@ -2162,7 +2162,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
       duration: duration || 0,
       calories: caloriesBurned,
       intensity: intensity || getIntensity(mets),
-      sets: sets || 0,
+      sets: weightSets && weightSets.length > 0 ? weightSets : (sets && sets > 0 ? sets : 0),
       reps: reps || 0,
       weight: weight || 0,
       distance: distance || 0,
@@ -2285,7 +2285,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
         duration: duration || 0,
         calories: caloriesBurned,
         intensity: intensity || getIntensity(mets),
-        sets: sets || 0,
+        sets: weightSets && weightSets.length > 0 ? weightSets : (sets && sets > 0 ? sets : 0),
         reps: reps || 0,
         weight: weight || 0,
         distance: distance || 0,
@@ -2354,7 +2354,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       }
     };
     
-    await pushMessage(userId, [messageWithQuickReply]);
+    await replyMessage(replyToken, [messageWithQuickReply]);
     await stopLoadingAnimation(userId);
     
     console.log('✅ 記録モード複数運動記録完了:', addedExercises);
@@ -2362,7 +2362,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
   } catch (error) {
     console.error('❌ 記録モード複数運動記録エラー:', error);
     await stopLoadingAnimation(userId);
-    await pushMessage(userId, [{
+    await replyMessage(replyToken, [{
       type: 'text',
       text: '複数運動記録でエラーが発生しました。もう一度お試しください。'
     }]);

@@ -320,8 +320,12 @@ export function ExercisePage({
                         <div className="font-medium text-slate-800 truncate">{exercise.name}</div>
                         <div className="flex items-center space-x-3 text-xs text-slate-500">
                           <span>{exercise.time}</span>
-                          <span>•</span>
-                          <span>{exercise.duration}分</span>
+                          {exercise.duration > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>{exercise.duration}分</span>
+                            </>
+                          )}
                           <span>•</span>
                           <span>{exercise.calories}kcal</span>
                         </div>
