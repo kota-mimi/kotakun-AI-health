@@ -5,7 +5,7 @@ import AIHealthService from '@/services/aiService';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
-import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage } from './new_flex_message';
+import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
 
 // 🔒 UserIDをハッシュ化する関数
@@ -215,33 +215,26 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         return;
       }
       
-      // 運動記録の判定
-      const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
-      if (exerciseResult) {
-        // 運動記録後もクイックリプライで記録モード継続
-        return;
-      }
-      
-      // 記録モード中の自由な運動記録（AI分析）
+      // 記録モード中は運動関連の言葉を全て直接記録（クイックリプライなし）
       console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', text);
       try {
         const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
         console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
         if (exerciseJudgment.isExerciseRecord) {
-          console.log('✅ AI運動記録として認識、処理開始');
+          console.log('✅ 記録モード - 運動として認識、直接記録開始');
           if (exerciseJudgment.isMultipleExercises) {
-            console.log('🔄 複数運動記録処理');
-            await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+            console.log('🔄 記録モード - 複数運動記録処理');
+            await handleRecordModeMultipleExercise(userId, exerciseJudgment, replyToken, text);
           } else {
-            console.log('🔄 単一運動記録処理');
-            await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
+            console.log('🔄 記録モード - 単一運動記録処理');
+            await handleRecordModeSingleExercise(userId, exerciseJudgment, replyToken, text);
           }
           return;
         } else {
-          console.log('❌ AI運動記録として認識されませんでした');
+          console.log('❌ 記録モード - 運動記録として認識されませんでした');
         }
       } catch (error) {
-        console.error('❌ AI運動記録判定エラー:', error);
+        console.error('❌ 記録モード - AI運動記録判定エラー:', error);
       }
       
       // 食事記録の判定
@@ -2118,6 +2111,231 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
   } catch (error) {
     console.error('❌ 詳細運動記録エラー:', error);
     throw error;
+  }
+}
+
+// 記録モード専用：単一運動記録（Flexメッセージで返事）
+async function handleRecordModeSingleExercise(userId: string, exerciseData: any, replyToken: string, originalText: string) {
+  try {
+    console.log('🏃‍♂️ 記録モード単一運動記録開始:', { userId, exerciseData, originalText });
+
+    const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance } = exerciseData;
+    
+    // カロリー計算
+    const userWeight = await getUserWeight(userId) || 70;
+    const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
+    const calculationDuration = duration || 30;
+    const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+    
+    // 運動データ作成
+    const exerciseRecord = {
+      id: generateId(),
+      name: exerciseName,
+      type: exerciseType,
+      duration: duration || 0,
+      calories: caloriesBurned,
+      intensity: intensity || getIntensity(mets),
+      sets: sets || 0,
+      reps: reps || 0,
+      weight: weight || 0,
+      distance: distance || 0,
+      notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - 記録モード`,
+      timestamp: new Date(),
+      time: new Date().toLocaleTimeString('ja-JP', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'Asia/Tokyo'
+      })
+    };
+    
+    // Firestoreに保存
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const updatedExercises = [...existingExercises, exerciseRecord];
+    
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // Flexメッセージで記録完了を通知（食事記録と同じスタイル）
+    const flexMessage = createExerciseFlexMessage(exerciseRecord, originalText);
+    
+    const messageWithQuickReply = {
+      ...flexMessage,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'camera',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
+    };
+    
+    await pushMessage(userId, [messageWithQuickReply]);
+    await stopLoadingAnimation(userId);
+    
+    console.log('✅ 記録モード単一運動記録完了:', exerciseRecord);
+    
+  } catch (error) {
+    console.error('❌ 記録モード単一運動記録エラー:', error);
+    await stopLoadingAnimation(userId);
+    await pushMessage(userId, [{
+      type: 'text',
+      text: '運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
+}
+
+// 記録モード専用：複数運動記録（Flexメッセージで返事）
+async function handleRecordModeMultipleExercise(userId: string, exerciseData: any, replyToken: string, originalText: string) {
+  try {
+    console.log('🏃‍♂️ 記録モード複数運動記録開始:', { userId, exerciseData, originalText });
+    
+    const { exercises } = exerciseData;
+    const userWeight = await getUserWeight(userId) || 70;
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    
+    // Firestoreから既存記録を取得
+    const db = admin.firestore();
+    const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
+    const recordDoc = await recordRef.get();
+    const existingData = recordDoc.exists ? recordDoc.data() : {};
+    const existingExercises = existingData.exercises || [];
+    
+    const addedExercises = [];
+    let totalCalories = 0;
+    
+    // 各運動を処理
+    for (const exercise of exercises) {
+      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay } = exercise;
+      
+      // カロリー計算
+      const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
+      const calculationDuration = duration || 30;
+      const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+      totalCalories += caloriesBurned;
+      
+      // 運動データ作成
+      const exerciseRecord = {
+        id: generateId(),
+        name: exerciseName,
+        type: exerciseType,
+        duration: duration || 0,
+        calories: caloriesBurned,
+        intensity: intensity || getIntensity(mets),
+        sets: sets || 0,
+        reps: reps || 0,
+        weight: weight || 0,
+        distance: distance || 0,
+        timeOfDay: timeOfDay || '',
+        notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - 記録モード（複数運動）`,
+        timestamp: new Date(),
+        time: new Date().toLocaleTimeString('ja-JP', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          timeZone: 'Asia/Tokyo'
+        })
+      };
+      
+      addedExercises.push(exerciseRecord);
+    }
+    
+    // Firestoreに保存
+    const updatedExercises = [...existingExercises, ...addedExercises];
+    await recordRef.set({
+      ...existingData,
+      exercises: updatedExercises,
+      date: today,
+      lineUserId: userId,
+      updatedAt: new Date()
+    }, { merge: true });
+    
+    // TODO: 複数運動用のFlexメッセージ作成（まずは単純なテキストで）
+    const exerciseList = addedExercises.map(ex => {
+      const timeText = ex.duration && ex.duration > 0 ? `${ex.duration}分` : '時間なし';
+      const weightText = ex.weight && ex.weight > 0 ? ` ${ex.weight}kg` : '';
+      const repsText = ex.reps && ex.reps > 0 ? ` ${ex.reps}回` : '';
+      const distanceText = ex.distance && ex.distance > 0 ? ` ${ex.distance}km` : '';
+      const timeOfDayText = ex.timeOfDay ? `【${ex.timeOfDay}】` : '';
+      
+      return `${timeOfDayText}${ex.name}${weightText}${repsText}${distanceText} (${timeText}, ${ex.calories}kcal)`;
+    }).join('\n');
+    
+    const messageWithQuickReply = {
+      type: 'text',
+      text: `🏃‍♂️ 複数の運動を記録しました！\n\n${exerciseList}\n\n🔥 合計消費カロリー: ${totalCalories}kcal\n\nお疲れさまでした！💪`,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'camera',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
+    };
+    
+    await pushMessage(userId, [messageWithQuickReply]);
+    await stopLoadingAnimation(userId);
+    
+    console.log('✅ 記録モード複数運動記録完了:', addedExercises);
+    
+  } catch (error) {
+    console.error('❌ 記録モード複数運動記録エラー:', error);
+    await stopLoadingAnimation(userId);
+    await pushMessage(userId, [{
+      type: 'text',
+      text: '複数運動記録でエラーが発生しました。もう一度お試しください。'
+    }]);
   }
 }
 

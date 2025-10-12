@@ -917,6 +917,440 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
   };
 }
 
+// 運動記録用のFlexメッセージ
+export function createExerciseFlexMessage(exerciseData: any, originalText?: string) {
+  const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
+  
+  // 複数運動の場合
+  if (exerciseData.isMultipleExercises) {
+    return createMultipleExercisesFlexMessage(exerciseData, originalText);
+  }
+  
+  // 単一運動の場合
+  const exercise = exerciseData.exercise || exerciseData;
+  
+  const contents = [
+    // 運動記録ヘッダー
+    {
+      type: 'text',
+      text: '運動記録',
+      size: 'md',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'none'
+    },
+    // 区切り線
+    {
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    },
+    // 運動名と時刻
+    {
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: originalText || exercise.name || '運動',
+          size: 'xl',
+          weight: 'bold',
+          color: '#333333',
+          flex: 1,
+          wrap: true
+        },
+        {
+          type: 'text',
+          text: currentTime,
+          size: 'md',
+          color: '#999999',
+          flex: 0
+        }
+      ]
+    }
+  ];
+
+  // 運動詳細を追加
+  const details = [];
+  
+  if (exercise.duration) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '時間',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.duration}分`,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  if (exercise.sets && exercise.reps) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: 'セット',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.sets}セット × ${exercise.reps}回`,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  if (exercise.weight) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '重量',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.weight}kg`,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  if (exercise.distance) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '距離',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.distance}km`,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  if (exercise.intensity) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '強度',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: exercise.intensity,
+          size: 'sm',
+          color: '#333333',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  // 詳細を追加
+  contents.push(...details);
+
+  // カロリー表示
+  if (exercise.calories || exercise.caloriesBurned) {
+    contents.push({
+      type: 'text',
+      text: `${exercise.calories || exercise.caloriesBurned || 0}kcal`,
+      size: 'xl',
+      weight: 'bold',
+      color: '#4a90e2',
+      align: 'end',
+      margin: 'md'
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: '運動記録完了',
+    contents: {
+      type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: contents
+      }
+    }
+  };
+}
+
+// 複数運動用のFlexメッセージ
+function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: string) {
+  const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
+  
+  const contents = [
+    // 運動記録ヘッダー
+    {
+      type: 'text',
+      text: '運動記録',
+      size: 'md',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'none'
+    },
+    // 区切り線
+    {
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    },
+    // 時刻表示
+    {
+      type: 'text',
+      text: currentTime,
+      size: 'sm',
+      color: '#999999',
+      align: 'end',
+      margin: 'md'
+    }
+  ];
+
+  let totalCalories = 0;
+
+  // 各運動の詳細
+  exerciseData.exercises.forEach((exercise: any) => {
+    totalCalories += exercise.calories || exercise.caloriesBurned || 0;
+    
+    const exerciseContents = [
+      {
+        type: 'text',
+        text: exercise.name || '運動',
+        size: 'lg',
+        weight: 'bold',
+        color: '#333333',
+        margin: 'md'
+      }
+    ];
+
+    const details = [];
+    
+    if (exercise.duration) {
+      details.push({
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: '時間',
+            size: 'sm',
+            color: '#666666',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${exercise.duration}分`,
+            size: 'sm',
+            color: '#333333',
+            flex: 0
+          }
+        ]
+      });
+    }
+
+    if (exercise.sets && exercise.reps) {
+      details.push({
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: 'セット',
+            size: 'sm',
+            color: '#666666',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${exercise.sets}セット × ${exercise.reps}回`,
+            size: 'sm',
+            color: '#333333',
+            flex: 0
+          }
+        ]
+      });
+    }
+
+    if (exercise.weight) {
+      details.push({
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: '重量',
+            size: 'sm',
+            color: '#666666',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${exercise.weight}kg`,
+            size: 'sm',
+            color: '#333333',
+            flex: 0
+          }
+        ]
+      });
+    }
+
+    if (exercise.calories || exercise.caloriesBurned) {
+      details.push({
+        type: 'box',
+        layout: 'horizontal',
+        margin: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: 'カロリー',
+            size: 'sm',
+            color: '#666666',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${exercise.calories || exercise.caloriesBurned}kcal`,
+            size: 'sm',
+            color: '#4a90e2',
+            weight: 'bold',
+            flex: 0
+          }
+        ]
+      });
+    }
+
+    // 運動ボックス
+    contents.push({
+      type: 'box',
+      layout: 'vertical',
+      margin: 'md',
+      paddingAll: '12px',
+      borderWidth: '1px',
+      borderColor: '#e0e0e0',
+      cornerRadius: '8px',
+      contents: [
+        ...exerciseContents,
+        ...details
+      ]
+    });
+  });
+
+  // 合計カロリー
+  if (totalCalories > 0) {
+    contents.push({
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    });
+    
+    contents.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: '合計',
+          size: 'lg',
+          weight: 'bold',
+          color: '#333333',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${totalCalories}kcal`,
+          size: 'xl',
+          weight: 'bold',
+          color: '#4a90e2',
+          flex: 0
+        }
+      ]
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: '運動記録完了',
+    contents: {
+      type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: contents
+      }
+    }
+  };
+}
+
 // 体重記録用のFlexメッセージ
 export function createWeightFlexMessage(weight: number, bodyFat?: number) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
