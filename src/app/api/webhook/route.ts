@@ -165,6 +165,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     // 記録モード中かチェック
     const isInRecordMode = await isRecordMode(userId);
+    console.log('🔍 記録モード状態チェック:', { 
+      userId, 
+      isInRecordMode, 
+      timestamp: new Date().toISOString(),
+      recordModeUsersSize: recordModeUsers.size,
+      hasUserId: recordModeUsers.has(userId),
+      serverRestartPossible: recordModeUsers.size === 0 ? '可能性あり' : 'なし'
+    });
+    
     // AIアドバイスモード中かチェック
     const isAdviceMode = await isAIAdviceMode(userId);
     
@@ -216,7 +225,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       }
       
       // 記録モード中は運動関連の言葉を全て直接記録（クイックリプライなし）
-      console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', text);
+      console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', { 
+        userId,
+        text, 
+        isRecordModeConfirmed: await isRecordMode(userId),
+        timestamp: new Date().toISOString() 
+      });
       try {
         const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
         console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
@@ -280,6 +294,14 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       
       // 記録モード中だが、記録として認識されなかった場合
       await stopLoadingAnimation(userId);
+      
+      // 記録モードの状態を確認・維持
+      const isStillInRecordMode = await isRecordMode(userId);
+      if (!isStillInRecordMode) {
+        console.log('⚠️ 記録モード状態が失われていました。再設定します:', userId);
+        await setRecordMode(userId, true);
+      }
+      
       await replyMessage(replyToken, [{
         type: 'text',
         text: '申し訳ありません。記録として認識できませんでした。\n\nもう一度、食事・運動・体重の内容を送ってください。\n\n例：「ご飯100g」「ランニング30分」「体重65kg」\n\n記録を終了したい場合は「終了」と送ってください。'
@@ -503,9 +525,13 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'record_menu':
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
-      // 記録モードを開始
+      // 記録モードを開始（複数回押しても安全）
       await setRecordMode(userId, true);
-      console.log('✅ 記録モード設定完了:', { userId, isNowInRecordMode: await isRecordMode(userId) });
+      console.log('✅ 記録モード設定完了:', { 
+        userId, 
+        isNowInRecordMode: await isRecordMode(userId),
+        recordModeUsersSize: recordModeUsers.size 
+      });
       
       // AIアドバイスモード中なら自動終了
       const wasInAdviceMode = await isAIAdviceMode(userId);
@@ -2967,10 +2993,18 @@ async function isAIAdviceMode(userId: string): Promise<boolean> {
 async function setRecordMode(userId: string, enabled: boolean) {
   if (enabled) {
     recordModeUsers.set(userId, Date.now());
-    console.log(`📝 記録モード開始: ${userId}`);
+    console.log(`📝 記録モード開始: ${userId}`, {
+      timestamp: new Date().toISOString(),
+      recordModeUsersSize: recordModeUsers.size,
+      isNowSet: recordModeUsers.has(userId)
+    });
   } else {
     recordModeUsers.delete(userId);
-    console.log(`⏹️ 記録モード終了: ${userId}`);
+    console.log(`⏹️ 記録モード終了: ${userId}`, {
+      timestamp: new Date().toISOString(),
+      recordModeUsersSize: recordModeUsers.size,
+      isNowDeleted: !recordModeUsers.has(userId)
+    });
   }
 }
 
