@@ -2116,9 +2116,9 @@ async function askForExerciseDetails(replyToken: string, originalText: string) {
     text: `運動を記録しますか？\n具体的な運動名と時間を教えてください。\n\n例：「ランニング30分」「ベンチプレス 50kg 10回 3セット」`,
     quickReply: {
       items: [
-        { type: 'action', action: { type: 'text', label: 'ランニング30分' } },
-        { type: 'action', action: { type: 'text', label: '筋トレ45分' } },
-        { type: 'action', action: { type: 'text', label: 'ウォーキング20分' } }
+        { type: 'action', action: { type: 'text', label: 'ランニング30分', text: 'ランニング30分' } },
+        { type: 'action', action: { type: 'text', label: '筋トレ45分', text: '筋トレ45分' } },
+        { type: 'action', action: { type: 'text', label: 'ウォーキング20分', text: 'ウォーキング20分' } }
       ]
     }
   }]);
