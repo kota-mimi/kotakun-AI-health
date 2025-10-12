@@ -327,7 +327,7 @@ export function ExercisePage({
                             </>
                           )}
                           <span>•</span>
-                          <span>{exercise.calories}kcal</span>
+                          <span>消費カロリー {exercise.calories}kcal</span>
                         </div>
                       </div>
                     </div>
