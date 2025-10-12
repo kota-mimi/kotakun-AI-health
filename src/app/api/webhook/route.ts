@@ -1325,51 +1325,57 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       updatedAt: new Date()
     }, { merge: true });
     
-    // 成功メッセージ
-    const exerciseList = addedExercises.map(ex => {
-      const timeText = ex.duration && ex.duration > 0 ? `${ex.duration}分` : '時間なし';
-      const weightText = ex.weight && ex.weight > 0 ? ` ${ex.weight}kg` : '';
-      const repsText = ex.reps && ex.reps > 0 ? ` ${ex.reps}回` : '';
-      const distanceText = ex.distance && ex.distance > 0 ? ` ${ex.distance}km` : '';
-      const timeOfDayText = ex.timeOfDay ? `【${ex.timeOfDay}】` : '';
+    // 各運動を個別のFlexメッセージで送信
+    const messages = [];
+    
+    for (let i = 0; i < addedExercises.length; i++) {
+      const exercise = addedExercises[i];
+      const singleExerciseData = {
+        isMultipleExercises: false,
+        exercise: exercise
+      };
       
-      return `${timeOfDayText}${ex.name}${weightText}${repsText}${distanceText} (${timeText}, ${ex.calories}kcal)`;
-    }).join('\n');
-    
-    const responseText = `🏃‍♂️ 複数の運動を記録しました！\n\n${exerciseList}\n\n🔥 合計消費カロリー: ${totalCalories}kcal\n\nお疲れさまでした！💪`;
-    
-    await replyMessage(replyToken, [{
-      type: 'text',
-      text: responseText,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'テキストで記録',
-              text: 'テキストで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'カメラで記録',
-              text: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: '通常モード',
-              text: '通常モード'
-            }
+      const flexMessage = createExerciseFlexMessage(singleExerciseData);
+      
+      // 最初のメッセージにのみクイックリプライを追加（通常モード用）
+      if (i === 0) {
+        messages.push({
+          ...flexMessage,
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'text',
+                  label: 'テキストで記録',
+                  text: 'テキストで記録'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'text',
+                  label: 'カメラで記録',
+                  text: 'カメラで記録'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'text',
+                  label: '通常モード',
+                  text: '通常モード'
+                }
+              }
+            ]
           }
-        ]
+        });
+      } else {
+        messages.push(flexMessage);
       }
-    }]);
+    }
+    
+    await replyMessage(replyToken, messages);
     
     console.log('✅ 複数AI運動記録完了:', addedExercises);
     
@@ -2316,21 +2322,30 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       updatedAt: new Date()
     }, { merge: true });
     
-    // 複数運動用のFlexメッセージを作成
-    const multipleExerciseData = {
-      isMultipleExercises: true,
-      exercises: addedExercises,
-      totalCalories: totalCalories
-    };
+    // 各運動を個別のFlexメッセージで送信
+    const messages = [];
     
-    const flexMessage = createExerciseFlexMessage(multipleExerciseData, originalText);
+    for (let i = 0; i < addedExercises.length; i++) {
+      const exercise = addedExercises[i];
+      const singleExerciseData = {
+        isMultipleExercises: false,
+        exercise: exercise
+      };
+      
+      const flexMessage = createExerciseFlexMessage(singleExerciseData, originalText);
+      
+      // 最後のメッセージにのみクイックリプライを追加
+      if (i === addedExercises.length - 1) {
+        messages.push({
+          ...flexMessage,
+          quickReply: getRecordModeQuickReply()
+        });
+      } else {
+        messages.push(flexMessage);
+      }
+    }
     
-    const messageWithQuickReply = {
-      ...flexMessage,
-      quickReply: getRecordModeQuickReply()
-    };
-    
-    await replyMessage(replyToken, [messageWithQuickReply]);
+    await replyMessage(replyToken, messages);
     await stopLoadingAnimation(userId);
     
     console.log('✅ 記録モード複数運動記録完了:', addedExercises);

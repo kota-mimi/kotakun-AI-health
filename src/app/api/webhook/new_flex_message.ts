@@ -1026,7 +1026,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
           },
           {
             type: 'text',
-            text: `${weightSet.weight}kg × ${weightSet.reps}回`,
+            text: `${weightSet.weight}kg × ${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
             size: 'sm',
             color: '#333333',
             weight: 'bold',
@@ -1036,7 +1036,14 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
       });
     });
   } else if (exercise.sets && exercise.sets > 0 && exercise.reps && exercise.reps > 0) {
-    // 通常のセット・回数表示
+    // 通常のセット・回数表示（重量も含める）
+    let displayText = '';
+    if (exercise.weight && exercise.weight > 0) {
+      displayText = `${exercise.weight}kg × ${exercise.reps}回 × ${exercise.sets}セット`;
+    } else {
+      displayText = `${exercise.reps}回 × ${exercise.sets}セット`;
+    }
+    
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -1051,7 +1058,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
         },
         {
           type: 'text',
-          text: `${exercise.sets}セット × ${exercise.reps}回`,
+          text: displayText,
           size: 'sm',
           color: '#333333',
           weight: 'bold',
@@ -1061,8 +1068,8 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     });
   }
 
-  // 単純な回数表示（weightSetsがない場合）
-  if (exercise.reps && exercise.reps > 0 && (!exercise.weightSets || exercise.weightSets.length === 0)) {
+  // 単純な回数表示（weightSetsもsetsもない場合）
+  if (exercise.reps && exercise.reps > 0 && (!exercise.weightSets || exercise.weightSets.length === 0) && (!exercise.sets || exercise.sets <= 1)) {
     details.push({
       type: 'box',
       layout: 'horizontal',
@@ -1187,7 +1194,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
           type: 'text',
           text: `${exercise.calories || exercise.caloriesBurned || 0}kcal`,
           size: 'sm',
-          color: '#333333',
+          color: '#4a90e2',
           weight: 'bold',
           flex: 0
         }
@@ -1306,7 +1313,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
             },
             {
               type: 'text',
-              text: `${weightSet.weight}kg × ${weightSet.reps}回`,
+              text: `${weightSet.weight}kg × ${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
               size: 'sm',
               color: '#333333',
               flex: 0
@@ -1364,30 +1371,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
       });
     }
 
-    if (exercise.calories || exercise.caloriesBurned) {
-      details.push({
-        type: 'box',
-        layout: 'horizontal',
-        margin: 'xs',
-        contents: [
-          {
-            type: 'text',
-            text: 'カロリー',
-            size: 'sm',
-            color: '#666666',
-            flex: 1
-          },
-          {
-            type: 'text',
-            text: `${exercise.calories || exercise.caloriesBurned}kcal`,
-            size: 'sm',
-            color: '#333333',
-            weight: 'bold',
-            flex: 0
-          }
-        ]
-      });
-    }
+    // 複数運動時は個別カロリー表示を削除（合計のみ表示）
 
     // 運動ボックス
     contents.push({
@@ -1431,7 +1415,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
           text: `消費カロリー ${totalCalories}kcal`,
           size: 'sm',
           weight: 'bold',
-          color: '#333333',
+          color: '#4a90e2',
           flex: 0
         }
       ]
