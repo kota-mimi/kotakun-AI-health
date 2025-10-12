@@ -7,10 +7,15 @@ import { apiCache, createCacheKey } from '@/lib/cache';
 interface Exercise {
   id: string;
   name: string;
+  displayName?: string;
   type: 'cardio' | 'strength' | 'flexibility' | 'sports';
   duration: number;
   calories: number;
   sets?: { weight: number; reps: number; }[];
+  setsCount?: number;
+  reps?: number;
+  weight?: number;
+  weightSets?: { weight: number; reps: number; sets?: number; }[];
   distance?: number;
   time: string;
   notes?: string;

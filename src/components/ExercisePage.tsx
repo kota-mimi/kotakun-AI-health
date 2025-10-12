@@ -43,13 +43,19 @@ interface ExercisePageProps {
 interface Exercise {
   id: string;
   name: string;
+  displayName?: string;
   type: 'cardio' | 'strength' | 'flexibility' | 'sports';
   duration: number;
   calories: number;
   sets?: { weight: number; reps: number; }[];
+  setsCount?: number;
+  reps?: number;
+  weight?: number;
+  weightSets?: { weight: number; reps: number; sets?: number; }[];
   distance?: number;
   time: string;
   notes?: string;
+  timestamp?: Date | string;
 }
 
 interface WorkoutPlan {
@@ -359,7 +365,25 @@ export function ExercisePage({
                     </div>
                   </div>
 
-                  {exercise.sets && Array.isArray(exercise.sets) && (
+                  {(exercise.weightSets && Array.isArray(exercise.weightSets) && exercise.weightSets.length > 0) ? (
+                    <div className="mt-2 pt-2 border-t border-white/40">
+                      <div className="flex flex-wrap gap-1">
+                        {exercise.weightSets.slice(0, 3).map((set, index) => (
+                          <span 
+                            key={index}
+                            className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
+                          >
+                            {set.weight > 0 ? `${set.weight}kg` : ''}{set.weight > 0 && set.reps > 0 ? ' × ' : ''}{set.reps > 0 ? `${set.reps}回` : ''}{set.sets && set.sets > 1 ? ` × ${set.sets}セット` : ''}
+                          </span>
+                        ))}
+                        {exercise.weightSets.length > 3 && (
+                          <span className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-500">
+                            +{exercise.weightSets.length - 3}more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : exercise.sets && Array.isArray(exercise.sets) && (
                     <div className="mt-2 pt-2 border-t border-white/40">
                       <div className="flex flex-wrap gap-1">
                         {exercise.sets.slice(0, 3).map((set, index) => (
@@ -367,7 +391,7 @@ export function ExercisePage({
                             key={index}
                             className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
                           >
-                            {set.weight}kg × {set.reps}
+                            {set.weight}kg × {set.reps}回
                           </span>
                         ))}
                         {exercise.sets.length > 3 && (

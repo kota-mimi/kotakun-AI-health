@@ -1282,7 +1282,7 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
     
     // 各運動を処理
     for (const exercise of exercises) {
-      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay } = exercise;
+      const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance, timeOfDay, displayName, weightSets } = exercise;
       
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
@@ -1290,36 +1290,79 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
       totalCalories += caloriesBurned;
       
-      // 運動データ作成
-      const exerciseRecord = {
-        id: generateId(),
-        name: exerciseName,
-        displayName: displayName || exerciseName,
-        type: exerciseType,
-        duration: duration || 0,
-        calories: caloriesBurned,
-        intensity: intensity || getIntensity(mets),
-        sets: weightSets && weightSets.length > 0 ? weightSets : (sets && sets > 0 ? sets : null),
-        reps: reps || 0,
-        weight: weight || 0,
-        distance: distance || 0,
-        timeOfDay: timeOfDay || '',
-        weightSets: weightSets || [],
-        setsCount: sets || (weightSets && weightSets.length > 0 ? weightSets.reduce((sum, ws) => sum + (ws.sets || 1), 0) : null),
-        notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - AI認識（複数運動）`,
-        timestamp: new Date(),
-        time: new Date().toLocaleTimeString('ja-JP', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          timeZone: 'Asia/Tokyo'
-        })
-      };
+      // 同じ種目の既存記録をチェック
+      const existingExerciseIndex = existingExercises.findIndex((ex: any) => 
+        ex.name === exerciseName || ex.displayName === exerciseName
+      );
       
-      addedExercises.push(exerciseRecord);
+      if (existingExerciseIndex !== -1) {
+        // 既存の種目に新しいセットとして追加
+        const existingExercise = existingExercises[existingExerciseIndex];
+        const newSet = {
+          weight: weight || 0,
+          reps: reps || 0,
+          sets: sets || 1
+        };
+        
+        // weightSetsに追加
+        const updatedWeightSets = [...(existingExercise.weightSets || []), newSet];
+        
+        // セット数とカロリーを更新
+        const updatedSetsCount = (existingExercise.setsCount || 0) + (sets || 1);
+        const updatedCalories = existingExercise.calories + caloriesBurned;
+        
+        existingExercises[existingExerciseIndex] = {
+          ...existingExercise,
+          weightSets: updatedWeightSets,
+          setsCount: updatedSetsCount,
+          calories: updatedCalories,
+          updatedAt: new Date()
+        };
+        
+        console.log('✅ 複数運動処理：既存の種目にセットを追加:', { 
+          exerciseName, 
+          newSet, 
+          totalSets: updatedSetsCount,
+          totalCalories: updatedCalories 
+        });
+        
+        // addedExercisesには更新された運動を追加（Flex表示用）
+        addedExercises.push(existingExercises[existingExerciseIndex]);
+      } else {
+        // 新しい種目として追加
+        const exerciseRecord = {
+          id: generateId(),
+          name: exerciseName,
+          displayName: displayName || exerciseName,
+          type: exerciseType,
+          duration: duration || 0,
+          calories: caloriesBurned,
+          intensity: intensity || getIntensity(mets),
+          sets: weightSets && weightSets.length > 0 ? weightSets : (sets && sets > 0 ? sets : null),
+          reps: reps || 0,
+          weight: weight || 0,
+          distance: distance || 0,
+          timeOfDay: timeOfDay || '',
+          weightSets: weightSets || [],
+          setsCount: sets || (weightSets && weightSets.length > 0 ? weightSets.reduce((sum, ws) => sum + (ws.sets || 1), 0) : null),
+          notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - AI認識（複数運動）`,
+          timestamp: new Date(),
+          time: new Date().toLocaleTimeString('ja-JP', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Asia/Tokyo'
+          })
+        };
+        
+        existingExercises.push(exerciseRecord);
+        addedExercises.push(exerciseRecord);
+        
+        console.log('✅ 複数運動処理：新しい種目として追加:', exerciseName);
+      }
     }
     
     // Firestoreに保存
-    const updatedExercises = [...existingExercises, ...addedExercises];
+    const updatedExercises = existingExercises;
     await recordRef.set({
       ...existingData,
       exercises: updatedExercises,
@@ -1429,7 +1472,48 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     const existingData = recordDoc.exists ? recordDoc.data() : {};
     const existingExercises = existingData.exercises || [];
     
-    const updatedExercises = [...existingExercises, exerciseRecord];
+    // 同じ種目の既存記録をチェック
+    const existingExerciseIndex = existingExercises.findIndex((ex: any) => 
+      ex.name === exerciseName || ex.displayName === exerciseName
+    );
+    
+    let updatedExercises;
+    if (existingExerciseIndex !== -1) {
+      // 既存の種目に新しいセットとして追加
+      const existingExercise = existingExercises[existingExerciseIndex];
+      const newSet = {
+        weight: exerciseData.weight || 0,
+        reps: exerciseData.reps || 0,
+        sets: exerciseData.sets || 1
+      };
+      
+      // weightSetsに追加
+      const updatedWeightSets = [...(existingExercise.weightSets || []), newSet];
+      
+      // セット数とカロリーを更新
+      const updatedSetsCount = (existingExercise.setsCount || 0) + (exerciseData.sets || 1);
+      const updatedCalories = existingExercise.calories + caloriesBurned;
+      
+      existingExercises[existingExerciseIndex] = {
+        ...existingExercise,
+        weightSets: updatedWeightSets,
+        setsCount: updatedSetsCount,
+        calories: updatedCalories,
+        updatedAt: new Date()
+      };
+      
+      updatedExercises = existingExercises;
+      console.log('✅ 既存の種目にセットを追加:', { 
+        exerciseName, 
+        newSet, 
+        totalSets: updatedSetsCount,
+        totalCalories: updatedCalories 
+      });
+    } else {
+      // 新しい種目として追加
+      updatedExercises = [...existingExercises, exerciseRecord];
+      console.log('✅ 新しい種目として追加:', exerciseName);
+    }
     
     await recordRef.set({
       ...existingData,
@@ -1439,9 +1523,12 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
       updatedAt: new Date()
     }, { merge: true });
     
-    // 成功メッセージ
+    // 成功メッセージ（セット追加の場合は更新されたカロリーを表示）
     const timeText = duration && duration > 0 ? `${duration}分` : '時間なし';
-    const responseText = `🏃‍♂️ ${exerciseName}を記録しました！\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${caloriesBurned}kcal\n\nお疲れさまでした！💪`;
+    const displayCalories = existingExerciseIndex !== -1 ? 
+      existingExercises[existingExerciseIndex].calories : caloriesBurned;
+    const actionText = existingExerciseIndex !== -1 ? 'セットを追加しました！' : 'を記録しました！';
+    const responseText = `🏃‍♂️ ${exerciseName}${actionText}\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${displayCalories}kcal\n\nお疲れさまでした！💪`;
     
     await replyMessage(replyToken, [{
       type: 'text',
@@ -2223,7 +2310,52 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     const existingData = recordDoc.exists ? recordDoc.data() : {};
     const existingExercises = existingData.exercises || [];
     
-    const updatedExercises = [...existingExercises, exerciseRecord];
+    // 同じ種目の既存記録をチェック
+    const existingExerciseIndex = existingExercises.findIndex((ex: any) => 
+      ex.name === exerciseName || ex.displayName === exerciseName
+    );
+    
+    let updatedExercises;
+    let finalExerciseRecord = exerciseRecord;
+    
+    if (existingExerciseIndex !== -1) {
+      // 既存の種目に新しいセットとして追加
+      const existingExercise = existingExercises[existingExerciseIndex];
+      const newSet = {
+        weight: weight || 0,
+        reps: reps || 0,
+        sets: sets || 1
+      };
+      
+      // weightSetsに追加
+      const updatedWeightSets = [...(existingExercise.weightSets || []), newSet];
+      
+      // セット数とカロリーを更新
+      const updatedSetsCount = (existingExercise.setsCount || 0) + (sets || 1);
+      const updatedCalories = existingExercise.calories + caloriesBurned;
+      
+      finalExerciseRecord = {
+        ...existingExercise,
+        weightSets: updatedWeightSets,
+        setsCount: updatedSetsCount,
+        calories: updatedCalories,
+        updatedAt: new Date()
+      };
+      
+      existingExercises[existingExerciseIndex] = finalExerciseRecord;
+      updatedExercises = existingExercises;
+      
+      console.log('✅ 記録モード：既存の種目にセットを追加:', { 
+        exerciseName, 
+        newSet, 
+        totalSets: updatedSetsCount,
+        totalCalories: updatedCalories 
+      });
+    } else {
+      // 新しい種目として追加
+      updatedExercises = [...existingExercises, exerciseRecord];
+      console.log('✅ 記録モード：新しい種目として追加:', exerciseName);
+    }
     
     await recordRef.set({
       ...existingData,
@@ -2234,7 +2366,7 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     }, { merge: true });
     
     // Flexメッセージで記録完了を通知（食事記録と同じスタイル）
-    const flexMessage = createExerciseFlexMessage(exerciseRecord, originalText);
+    const flexMessage = createExerciseFlexMessage(finalExerciseRecord, originalText);
     
     const messageWithQuickReply = {
       ...flexMessage,
