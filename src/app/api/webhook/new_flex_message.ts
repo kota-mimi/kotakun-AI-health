@@ -1026,7 +1026,7 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
           },
           {
             type: 'text',
-            text: `${weightSet.weight}kg × ${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
+            text: `${weightSet.weight && weightSet.weight > 0 ? `${weightSet.weight}kg × ` : ''}${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
             size: 'sm',
             color: '#333333',
             weight: 'bold',
@@ -1313,7 +1313,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
             },
             {
               type: 'text',
-              text: `${weightSet.weight}kg × ${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
+              text: `${weightSet.weight && weightSet.weight > 0 ? `${weightSet.weight}kg × ` : ''}${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
               size: 'sm',
               color: '#333333',
               flex: 0

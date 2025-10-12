@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { generateId } from '@/lib/utils';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 // 記録モード統一クイックリプライ
 function getRecordModeQuickReply() {
@@ -1371,6 +1372,11 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       updatedAt: new Date()
     }, { merge: true });
     
+    // キャッシュを削除してアプリ側の表示を更新
+    const cacheKey = createCacheKey('exercises', userId, today);
+    apiCache.delete(cacheKey);
+    console.log('🗑️ 複数運動記録キャッシュを削除:', cacheKey);
+    
     // 各運動を個別のFlexメッセージで送信
     const messages = [];
     
@@ -1451,10 +1457,16 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     const exerciseRecord = {
       id: generateId(),
       name: exerciseName,
+      displayName: exerciseData.displayName || exerciseName,
       type: exerciseType,
       duration: duration || 0, // 時間が指定されていない場合は0
       calories: caloriesBurned,
       intensity: intensity || getIntensity(mets),
+      reps: exerciseData.reps || 0,
+      weight: exerciseData.weight || 0,
+      sets: exerciseData.sets || null,
+      setsCount: exerciseData.sets || null,
+      weightSets: exerciseData.weightSets || [],
       notes: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })} - AI認識`,
       timestamp: new Date(),
       time: new Date().toLocaleTimeString('ja-JP', { 
@@ -1522,6 +1534,11 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
       lineUserId: userId,
       updatedAt: new Date()
     }, { merge: true });
+    
+    // キャッシュを削除してアプリ側の表示を更新
+    const cacheKey = createCacheKey('exercises', userId, today);
+    apiCache.delete(cacheKey);
+    console.log('🗑️ 運動記録キャッシュを削除:', cacheKey);
     
     // 成功メッセージ（セット追加の場合は更新されたカロリーを表示）
     const timeText = duration && duration > 0 ? `${duration}分` : '時間なし';
@@ -2364,6 +2381,11 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
       lineUserId: userId,
       updatedAt: new Date()
     }, { merge: true });
+    
+    // キャッシュを削除してアプリ側の表示を更新
+    const cacheKey = createCacheKey('exercises', userId, today);
+    apiCache.delete(cacheKey);
+    console.log('🗑️ 記録モード運動記録キャッシュを削除:', cacheKey);
     
     // Flexメッセージで記録完了を通知（食事記録と同じスタイル）
     const flexMessage = createExerciseFlexMessage(finalExerciseRecord, originalText);

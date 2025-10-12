@@ -1038,6 +1038,7 @@ class AIHealthService {
 - 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋運動", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
 - 「腕立て10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
 - 「腕立て 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
+- 「腕立て 10回 3セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回 3セット", reps: 10, sets: 3, hasSpecificDetails: true, weightSets: [{"weight": 0, "reps": 10, "sets": 3}]
 - 「ベンチ 120キロ 10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
 - 「ベンチ 120 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
 - 「ベンチ120kg 10回 2セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回 2セット", weight: 120, reps: 10, sets: 2, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 2}]
