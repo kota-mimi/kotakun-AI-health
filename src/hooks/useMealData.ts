@@ -379,7 +379,13 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       console.warn('⚠️ Invalid selectedDate in updateMeal:', selectedDate);
       return;
     }
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    // 日本時間ベースの日付文字列を取得（重要：UTCではなく日本時間）
+    const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
+    console.log('🔧 PRODUCTION DEBUG: Update date conversion:', { 
+      selectedDate: selectedDate.toString(),
+      utcDate: selectedDate.toISOString().split('T')[0],
+      japanDate: dateStr
+    });
     
     // 複数食事の個別更新かチェック
     let originalMealId = updatedMeal.id;
@@ -476,7 +482,13 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       console.warn('⚠️ Invalid selectedDate in deleteMeal:', selectedDate);
       return;
     }
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    // 日本時間ベースの日付文字列を取得（重要：UTCではなく日本時間）
+    const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
+    console.log('🔍 PRODUCTION DEBUG: Date conversion:', { 
+      selectedDate: selectedDate.toString(),
+      utcDate: selectedDate.toISOString().split('T')[0],
+      japanDate: dateStr
+    });
     
     // 複数食事の個別削除かチェック（仮想IDの場合）
     let originalMealId = mealId;
