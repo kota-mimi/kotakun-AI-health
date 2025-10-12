@@ -495,68 +495,101 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       }
     }
     
-    // Firestoreデータに該当する食事があるかチェック（元のIDで確認）
-    console.log('🔍 Checking Firestore meals:', { 
-      currentMealType, 
-      originalMealId, 
-      firestoreMeals: firestoreMealData[currentMealType].map(m => m.id) 
-    });
-    const isFirestoreMeal = true; // 条件チェックを削除して常にAPI呼び出し
-    
-    if (isFirestoreMeal) {
-      try {
-        console.log('🚨 Deleting Firestore meal:', { mealId, originalMealId, individualMealIndex });
-        const response = await fetch('/api/meals', {
-          method: 'DELETE',
+    // 本番環境：常にFirestoreを信頼できる情報源とする
+    try {
+      console.log('🚨 Production: Deleting meal from Firestore:', { mealId, originalMealId, individualMealIndex });
+      
+      // 楽観的UI更新：即座にUIから削除
+      const currentData = getCurrentDateData();
+      const optimisticUpdate = () => {
+        if (individualMealIndex !== undefined) {
+          // 複数食事の個別削除
+          handleDeleteIndividualMeal(originalMealId, individualMealIndex);
+        } else {
+          // 通常の削除 - ローカルとFirestoreデータ両方から削除
+          updateDateData({
+            mealData: {
+              ...currentData.mealData,
+              [currentMealType]: currentData.mealData[currentMealType].filter((meal: any) => meal.id !== mealId)
+            }
+          });
+          setFirestoreMealData(prev => ({
+            ...prev,
+            [currentMealType]: prev[currentMealType].filter(meal => meal.id !== mealId)
+          }));
+        }
+      };
+      
+      optimisticUpdate();
+      
+      // Firestoreから削除
+      const response = await fetch('/api/meals', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          mealType: currentMealType,
+          mealId,
+          individualMealIndex
+        }),
+      });
+
+      if (response.ok) {
+        console.log('🚨 Production: Firestore delete successful, fetching latest data');
+        // 削除成功：Firestoreから最新データを取得して同期
+        const fetchResponse = await fetch('/api/meals', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lineUserId,
-            date: dateStr,
-            mealType: currentMealType,
-            mealId,
-            individualMealIndex
-          }),
+          body: JSON.stringify({ lineUserId, date: dateStr }),
         });
 
-        if (response.ok) {
-          console.log('🚨 Firestore delete successful, refreshing data');
-          // 削除成功時はデータを再取得
-          const fetchResponse = await fetch('/api/meals', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lineUserId, date: dateStr }),
-          });
-
-          if (fetchResponse.ok) {
-            const data = await fetchResponse.json();
-            if (data.success && data.mealData) {
-              setFirestoreMealData(data.mealData);
-              // 確実に反映させるため強制リフレッシュ
-              setTimeout(() => {
-                window.location.reload();
-              }, 500);
-            }
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.mealData) {
+            setFirestoreMealData(data.mealData);
+            console.log('🚨 Production: Data synchronized with Firestore');
           }
-        } else {
-          console.error('🚨 Firestore delete failed:', response.status);
-          throw new Error('Firestore delete failed');
         }
-        return;
-      } catch (error) {
-        console.error('食事削除エラー:', error);
-        // エラー時はローカルデータの削除にフォールバック
+      } else {
+        console.error('🚨 Production: Firestore delete failed, rolling back:', response.status);
+        // 削除失敗：ロールバック - 最新データを再取得してUI復元
+        const fetchResponse = await fetch('/api/meals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lineUserId, date: dateStr }),
+        });
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.mealData) {
+            setFirestoreMealData(data.mealData);
+            console.log('🚨 Production: Rollback completed');
+          }
+        }
+        throw new Error('Firestore delete failed');
+      }
+    } catch (error) {
+      console.error('🚨 Production: Meal deletion error, ensuring data consistency:', error);
+      // エラー時：Firestoreから最新データを取得してデータ整合性を保証
+      try {
+        const fetchResponse = await fetch('/api/meals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lineUserId, date: dateStr }),
+        });
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.mealData) {
+            setFirestoreMealData(data.mealData);
+            console.log('🚨 Production: Data consistency restored');
+          }
+        }
+      } catch (syncError) {
+        console.error('🚨 Production: Failed to restore data consistency:', syncError);
       }
     }
-    
-    // ローカルデータから削除
-    console.log('🚨 Deleting local meal data');
-    const currentData = getCurrentDateData();
-    updateDateData({
-      mealData: {
-        ...currentData.mealData,
-        [currentMealType]: currentData.mealData[currentMealType].filter((meal: any) => meal.id !== mealId)
-      }
-    });
   };
 
   const handleDeleteIndividualMeal = (originalMealId: string, individualMealIndex: number) => {

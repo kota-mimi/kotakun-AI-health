@@ -279,90 +279,164 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     handleAddExercise(newExercise);
   };
 
-  // 運動記録を削除する関数
+  // 運動記録を削除する関数（本番環境向け）
   const handleDeleteExercise = async (exerciseId: string) => {
     try {
-      // まずローカルデータから削除を試行
-      const currentData = getCurrentDateData();
-      const localExercise = currentData.exerciseData.find((ex: Exercise) => ex.id === exerciseId);
+      console.log('🚨 Production: Deleting exercise from Firestore:', exerciseId);
       
-      if (localExercise) {
-        // ローカルデータの場合
+      // 楽観的UI更新：即座にUIから削除
+      const currentData = getCurrentDateData();
+      const optimisticUpdate = () => {
+        // ローカルデータから削除
         updateDateData({
           exerciseData: currentData.exerciseData.filter((exercise: Exercise) => exercise.id !== exerciseId)
         });
-        console.log('ローカル運動データ削除:', exerciseId);
-      } else {
-        // Firestoreデータの場合、APIで削除
-        const dateStr = selectedDate.toISOString().split('T')[0];
-        const response = await fetch('/api/exercises', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            lineUserId,
-            date: dateStr,
-            exerciseId
-          })
-        });
+        // Firestoreデータからも削除
+        setFirestoreExerciseData(prev => prev.filter(ex => ex.id !== exerciseId));
+      };
+      
+      optimisticUpdate();
+      
+      // Firestoreから削除
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const response = await fetch('/api/exercises', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          exerciseId
+        })
+      });
+      
+      if (response.ok) {
+        console.log('🚨 Production: Firestore exercise delete successful, fetching latest data');
+        // 削除成功：Firestoreから最新データを取得して同期
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         
-        if (response.ok) {
-          console.log('Firestore運動データ削除成功:', exerciseId);
-          // Firestoreデータを再取得して更新
-          setFirestoreExerciseData(prev => prev.filter(ex => ex.id !== exerciseId));
-        } else {
-          console.error('Firestore運動データ削除失敗:', response.status);
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise data synchronized with Firestore');
+          }
         }
+      } else {
+        console.error('🚨 Production: Firestore exercise delete failed, rolling back:', response.status);
+        // 削除失敗：ロールバック - 最新データを再取得してUI復元
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise rollback completed');
+          }
+        }
+        throw new Error('Firestore exercise delete failed');
       }
     } catch (error) {
-      console.error('運動データ削除エラー:', error);
+      console.error('🚨 Production: Exercise deletion error, ensuring data consistency:', error);
+      // エラー時：Firestoreから最新データを取得してデータ整合性を保証
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise data consistency restored');
+          }
+        }
+      } catch (syncError) {
+        console.error('🚨 Production: Failed to restore exercise data consistency:', syncError);
+      }
     }
   };
 
-  // 運動記録を更新する関数
+  // 運動記録を更新する関数（本番環境向け）
   const handleUpdateExercise = async (exerciseId: string, updates: Partial<Exercise>) => {
     try {
-      // まずローカルデータから更新を試行
-      const currentData = getCurrentDateData();
-      const localExercise = currentData.exerciseData.find((ex: Exercise) => ex.id === exerciseId);
+      console.log('🚨 Production: Updating exercise in Firestore:', exerciseId);
       
-      if (localExercise) {
-        // ローカルデータの場合
+      // 楽観的UI更新：即座にUIを更新
+      const currentData = getCurrentDateData();
+      const optimisticUpdate = () => {
+        // ローカルデータを更新
         updateDateData({
           exerciseData: currentData.exerciseData.map((exercise: Exercise) => 
             exercise.id === exerciseId ? { ...exercise, ...updates } : exercise
           )
         });
-        console.log('ローカル運動データ更新:', exerciseId);
-      } else {
-        // Firestoreデータの場合、APIで更新
-        const dateStr = selectedDate.toISOString().split('T')[0];
-        const response = await fetch('/api/exercises', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            lineUserId,
-            date: dateStr,
-            exerciseId,
-            updates
-          })
-        });
+        // Firestoreデータも更新
+        setFirestoreExerciseData(prev => 
+          prev.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex)
+        );
+      };
+      
+      optimisticUpdate();
+      
+      // Firestoreで更新
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const response = await fetch('/api/exercises', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          exerciseId,
+          updates
+        })
+      });
+      
+      if (response.ok) {
+        console.log('🚨 Production: Firestore exercise update successful, fetching latest data');
+        // 更新成功：Firestoreから最新データを取得して同期
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         
-        if (response.ok) {
-          console.log('Firestore運動データ更新成功:', exerciseId);
-          // Firestoreデータを更新
-          setFirestoreExerciseData(prev => 
-            prev.map(ex => ex.id === exerciseId ? { ...ex, ...updates } : ex)
-          );
-        } else {
-          console.error('Firestore運動データ更新失敗:', response.status);
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise update data synchronized with Firestore');
+          }
         }
+      } else {
+        console.error('🚨 Production: Firestore exercise update failed, rolling back:', response.status);
+        // 更新失敗：ロールバック - 最新データを再取得してUI復元
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise update rollback completed');
+          }
+        }
+        throw new Error('Firestore exercise update failed');
       }
     } catch (error) {
-      console.error('運動データ更新エラー:', error);
+      console.error('🚨 Production: Exercise update error, ensuring data consistency:', error);
+      // エラー時：Firestoreから最新データを取得してデータ整合性を保証
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+            console.log('🚨 Production: Exercise update data consistency restored');
+          }
+        }
+      } catch (syncError) {
+        console.error('🚨 Production: Failed to restore exercise update data consistency:', syncError);
+      }
     }
   };
 

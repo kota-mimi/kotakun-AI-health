@@ -75,7 +75,11 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     }
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🚨 PRODUCTION DEBUG: Update button clicked');
+    
     if (!meal || !mealName || !calories) return;
 
     const updatedMeal: MealItem = {
@@ -91,17 +95,22 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       individualMealIndex: meal.individualMealIndex
     };
 
+    console.log('🚨 PRODUCTION DEBUG: Calling onUpdateMeal with:', updatedMeal);
     onUpdateMeal(updatedMeal);
     onClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🚨 PRODUCTION DEBUG: Delete button clicked');
+    
     if (meal && window.confirm('この食事記録を削除しますか？')) {
       // 複数食事の個別削除の場合、元のIDを使用
       const deleteId = meal.originalMealId && meal.individualMealIndex !== undefined 
         ? `${meal.originalMealId}_${meal.individualMealIndex}`
         : meal.id;
-      console.log('🚨 EditModal delete:', { originalId: meal.id, deleteId, originalMealId: meal.originalMealId, individualMealIndex: meal.individualMealIndex });
+      console.log('🚨 PRODUCTION DEBUG: Calling onDeleteMeal with:', { originalId: meal.id, deleteId, originalMealId: meal.originalMealId, individualMealIndex: meal.individualMealIndex });
       onDeleteMeal(deleteId);
       onClose();
     }
