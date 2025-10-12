@@ -2118,6 +2118,9 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
 async function handleRecordModeSingleExercise(userId: string, exerciseData: any, replyToken: string, originalText: string) {
   try {
     console.log('🏃‍♂️ 記録モード単一運動記録開始:', { userId, exerciseData, originalText });
+    
+    // 食事記録と同じようにローディング開始
+    await startLoadingAnimation(userId, 10);
 
     const { exerciseName, exerciseType, duration, intensity, sets, reps, weight, distance } = exerciseData;
     
@@ -2221,6 +2224,9 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
   try {
     console.log('🏃‍♂️ 記録モード複数運動記録開始:', { userId, exerciseData, originalText });
     
+    // 食事記録と同じようにローディング開始
+    await startLoadingAnimation(userId, 10);
+    
     const { exercises } = exerciseData;
     const userWeight = await getUserWeight(userId) || 70;
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
@@ -2280,20 +2286,17 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       updatedAt: new Date()
     }, { merge: true });
     
-    // TODO: 複数運動用のFlexメッセージ作成（まずは単純なテキストで）
-    const exerciseList = addedExercises.map(ex => {
-      const timeText = ex.duration && ex.duration > 0 ? `${ex.duration}分` : '時間なし';
-      const weightText = ex.weight && ex.weight > 0 ? ` ${ex.weight}kg` : '';
-      const repsText = ex.reps && ex.reps > 0 ? ` ${ex.reps}回` : '';
-      const distanceText = ex.distance && ex.distance > 0 ? ` ${ex.distance}km` : '';
-      const timeOfDayText = ex.timeOfDay ? `【${ex.timeOfDay}】` : '';
-      
-      return `${timeOfDayText}${ex.name}${weightText}${repsText}${distanceText} (${timeText}, ${ex.calories}kcal)`;
-    }).join('\n');
+    // 複数運動用のFlexメッセージを作成
+    const multipleExerciseData = {
+      isMultipleExercises: true,
+      exercises: addedExercises,
+      totalCalories: totalCalories
+    };
+    
+    const flexMessage = createExerciseFlexMessage(multipleExerciseData, originalText);
     
     const messageWithQuickReply = {
-      type: 'text',
-      text: `🏃‍♂️ 複数の運動を記録しました！\n\n${exerciseList}\n\n🔥 合計消費カロリー: ${totalCalories}kcal\n\nお疲れさまでした！💪`,
+      ...flexMessage,
       quickReply: {
         items: [
           {
