@@ -3293,20 +3293,7 @@ async function isRecordMode(userId: string): Promise<boolean> {
     // エラー時はメモリキャッシュのみ使用
     return recordModeUsers.has(userId);
   }
-}
-
-// 食事時間の表示名を取得するヘルパー関数
-function getMealTimeDisplayName(mealTime: string): string {
-  switch (mealTime) {
-    case 'breakfast': return '朝';
-    case 'lunch': return '昼';
-    case 'dinner': return '夜';
-    case 'snack': return '間食';
-    default: return mealTime;
-  }
-}
-
-// 複数食事時間の記録処理
+}// 複数食事時間の記録処理
 async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], replyToken: string) {
   try {
     console.log('🍽️ 複数食事時間記録開始:', { userId, mealTimes });
@@ -3329,109 +3316,47 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     const aiService = new AIHealthService();
     const mealData = {};
     
-    // 🆕 複数食事時間を1つのisMultipleMeals構造として保存する新しい処理
-    if (mealTimes.length > 1) {
-      console.log('🆕 複数食事時間を統合してisMultipleMeals構造で保存します');
+    // 各食事時間ごとに分析・記録
+    for (const mealTimeInfo of mealTimes) {
+      const { mealTime, foodText } = mealTimeInfo;
       
-      // すべての食事を分析
-      const allMealAnalyses = [];
-      for (const mealTimeInfo of mealTimes) {
-        const { mealTime, foodText } = mealTimeInfo;
-        console.log(`🍽️ 食事時間 ${mealTime} の分析開始: ${foodText}`);
-        
-        const mealAnalysis = await aiService.analyzeMealFromText(foodText);
-        allMealAnalyses.push({
-          mealTime,
-          foodText,
-          analysis: mealAnalysis
-        });
+      console.log(`🍽️ 食事時間 ${mealTime} の分析開始: ${foodText}`);
+      
+      // 食事内容を分析
+      const mealAnalysis = await aiService.analyzeMealFromText(foodText);
+      
+      if (mealAnalysis.isMultipleMeals) {
+        // 複数食事の場合
+        mealData[mealTime] = mealAnalysis.meals.map(meal => ({
+          ...meal,
+          name: meal.displayName || meal.name, // displayNameを優先
+          mealType: mealTime,
+          id: generateId(),
+          recordedAt: new Date(),
+          lineUserId: userId
+        }));
+      } else {
+        // 単一食事の場合
+        mealData[mealTime] = [{
+          name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || foodText,
+          displayName: mealAnalysis.displayName || foodText,
+          baseFood: mealAnalysis.baseFood || foodText,
+          portion: mealAnalysis.portion || '',
+          calories: mealAnalysis.calories || 0,
+          protein: mealAnalysis.protein || 0,
+          fat: mealAnalysis.fat || 0,
+          carbs: mealAnalysis.carbs || 0,
+          mealType: mealTime,
+          id: generateId(),
+          recordedAt: new Date(),
+          lineUserId: userId
+        }];
       }
-      
-      // 統合された複数食事として最初の食事時間に保存
-      const primaryMealTime = mealTimes[0].mealTime;
-      const allFoodNames = allMealAnalyses.map(item => 
-        `${getMealTimeDisplayName(item.mealTime)} ${item.analysis.displayName || item.foodText}`
-      ).join(' ');
-      
-      const totalCalories = allMealAnalyses.reduce((sum, item) => sum + (item.analysis.calories || 0), 0);
-      const totalProtein = allMealAnalyses.reduce((sum, item) => sum + (item.analysis.protein || 0), 0);
-      const totalFat = allMealAnalyses.reduce((sum, item) => sum + (item.analysis.fat || 0), 0);
-      const totalCarbs = allMealAnalyses.reduce((sum, item) => sum + (item.analysis.carbs || 0), 0);
-      
-      // isMultipleMeals構造で保存
-      const unifiedMeal = [{
-        name: allFoodNames,
-        displayName: allFoodNames,
-        baseFood: allFoodNames,
-        portion: '',
-        calories: totalCalories,
-        protein: totalProtein,
-        fat: totalFat,
-        carbs: totalCarbs,
-        mealType: primaryMealTime,
-        id: generateId(),
-        recordedAt: new Date(),
-        lineUserId: userId,
-        isMultipleMeals: true,
-        meals: allMealAnalyses.map(item => ({
-          name: item.analysis.displayName || item.foodText,
-          calories: item.analysis.calories || 0,
-          protein: item.analysis.protein || 0,
-          fat: item.analysis.fat || 0,
-          carbs: item.analysis.carbs || 0
-        }))
-      }];
-      
-      mealData[primaryMealTime] = unifiedMeal;
       
       // Firestoreに保存
-      console.log(`🆕 統合複数食事として ${primaryMealTime} に保存:`, JSON.stringify(unifiedMeal, null, 2));
-      await saveMultipleMealsByType(userId, primaryMealTime, unifiedMeal);
-      console.log(`🆕 統合複数食事保存完了`);
-      
-    } else {
-      // 🔄 既存処理：単一食事時間の場合（既存の動作を維持）
-      for (const mealTimeInfo of mealTimes) {
-        const { mealTime, foodText } = mealTimeInfo;
-        
-        console.log(`🍽️ 食事時間 ${mealTime} の分析開始: ${foodText}`);
-        
-        // 食事内容を分析
-        const mealAnalysis = await aiService.analyzeMealFromText(foodText);
-        
-        if (mealAnalysis.isMultipleMeals) {
-          // 複数食事の場合
-          mealData[mealTime] = mealAnalysis.meals.map(meal => ({
-            ...meal,
-            name: meal.displayName || meal.name, // displayNameを優先
-            mealType: mealTime,
-            id: generateId(),
-            recordedAt: new Date(),
-            lineUserId: userId
-          }));
-        } else {
-          // 単一食事の場合
-          mealData[mealTime] = [{
-            name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || foodText,
-            displayName: mealAnalysis.displayName || foodText,
-            baseFood: mealAnalysis.baseFood || foodText,
-            portion: mealAnalysis.portion || '',
-            calories: mealAnalysis.calories || 0,
-            protein: mealAnalysis.protein || 0,
-            fat: mealAnalysis.fat || 0,
-            carbs: mealAnalysis.carbs || 0,
-            mealType: mealTime,
-            id: generateId(),
-            recordedAt: new Date(),
-            lineUserId: userId
-          }];
-        }
-        
-        // Firestoreに保存
-        console.log(`🍽️ ${mealTime} 保存データ:`, JSON.stringify(mealData[mealTime], null, 2));
-        await saveMultipleMealsByType(userId, mealTime, mealData[mealTime]);
-        console.log(`🍽️ ${mealTime} 保存完了`);
-      }
+      console.log(`🍽️ ${mealTime} 保存データ:`, JSON.stringify(mealData[mealTime], null, 2));
+      await saveMultipleMealsByType(userId, mealTime, mealData[mealTime]);
+      console.log(`🍽️ ${mealTime} 保存完了`);
     }
     
     // 複数食事時間用のFlexメッセージを作成・送信
