@@ -95,6 +95,15 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const result = await response.json();
           const exerciseData = result.data || [];
           
+          // デバッグ：取得したデータをログ出力
+          console.log('🏃 APIから取得した運動データ:', exerciseData.map(ex => ({
+            name: ex.name,
+            reps: ex.reps,
+            weight: ex.weight,
+            setsCount: ex.setsCount,
+            weightSets: ex.weightSets
+          })));
+          
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, exerciseData, 5 * 60 * 1000);
           setFirestoreExerciseData(exerciseData);

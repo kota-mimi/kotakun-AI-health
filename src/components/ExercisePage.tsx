@@ -349,7 +349,7 @@ export function ExercisePage({
                         <div className="text-right">
                           <div className="text-sm font-medium text-health-primary">
                             {exercise.weight && exercise.weight > 0 ? `${exercise.weight}kg` : ''}
-                            {exercise.weight && exercise.reps ? ' × ' : ''}
+                            {exercise.weight && exercise.weight > 0 && exercise.reps && exercise.reps > 0 ? ' × ' : ''}
                             {exercise.reps && exercise.reps > 0 ? `${exercise.reps}回` : ''}
                             {exercise.setsCount && exercise.setsCount > 1 ? ` × ${exercise.setsCount}セット` : ''}
                           </div>

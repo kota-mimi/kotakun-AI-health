@@ -1580,7 +1580,13 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
       }
     }]);
     
-    console.log('✅ AI運動記録完了:', exerciseRecord);
+    console.log('✅ AI運動記録完了:', {
+      name: exerciseRecord.name,
+      reps: exerciseRecord.reps,
+      weight: exerciseRecord.weight,
+      setsCount: exerciseRecord.setsCount,
+      weightSets: exerciseRecord.weightSets
+    });
     
   } catch (error) {
     console.error('❌ AI運動記録エラー:', error);
