@@ -279,6 +279,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       time: new Date().toTimeString().slice(0, 5),
       calories: exercise.calories || 0,
       timestamp: new Date(), // timestampを追加
+      notes: `APP記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`, // アプリ記録として識別
       ...exercise
     };
     
@@ -286,6 +287,12 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     updateDateData({
       exerciseData: [...(currentData.exerciseData || []), newExercise]
     });
+    
+    // 追加後に強制的にデータを再取得してソートを確実に実行
+    setTimeout(() => {
+      console.log('🔄 運動追加後の強制リフレッシュ');
+      window.location.reload();
+    }, 100);
   };
 
   // 簡単な運動記録を追加する関数（新しいモーダル用）
