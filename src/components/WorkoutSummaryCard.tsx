@@ -148,10 +148,14 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   }
   
-  // 緊急フェッチデータの場合はここでソートが必要
+  // 緊急フェッチデータの場合はここで確実にソートが必要
   if (actualExerciseData === emergencyExerciseData && actualExerciseData.length > 0) {
-    console.log('🚨 緊急フェッチデータを使用中 - ソートを実行');
-    actualExerciseData = [...actualExerciseData].sort((a, b) => {
+    console.log('🚨 緊急フェッチデータを使用中 - 安定ソートを実行');
+    
+    // インデックス付きで安定ソート
+    const indexedData = actualExerciseData.map((exercise, index) => ({ exercise, originalIndex: index }));
+    
+    const sortedData = indexedData.sort((a, b) => {
       const getTime = (ex: Exercise) => {
         if (ex.timestamp) {
           if (typeof ex.timestamp === 'string') return new Date(ex.timestamp).getTime();
@@ -162,8 +166,27 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
         }
         return new Date(`${selectedDate.toISOString().split('T')[0]} ${ex.time}:00`).getTime();
       };
-      return getTime(a) - getTime(b); // 古い順
+      
+      const timeA = getTime(a.exercise);
+      const timeB = getTime(b.exercise);
+      const comparison = timeA - timeB;
+      
+      console.log(`🔄 WSC EMERGENCY SORT: ${a.exercise.name}(${timeA}) vs ${b.exercise.name}(${timeB}) = ${comparison}`);
+      
+      // 時間が近い場合は記録源で判定
+      if (Math.abs(comparison) < 1000) {
+        const sourceA = a.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
+        const sourceB = b.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
+        if (sourceA !== sourceB) {
+          return sourceA === 'LINE' ? -1 : 1; // LINEを先に
+        }
+        return a.originalIndex - b.originalIndex;
+      }
+      
+      return comparison; // 古い順
     });
+    
+    actualExerciseData = sortedData.map(item => item.exercise);
   }
   
   console.log('💪 WSC RECEIVED DATA ORDER:', actualExerciseData.map((ex, index) => ({

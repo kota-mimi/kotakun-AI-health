@@ -194,7 +194,10 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
   })));
   
-  const exerciseData = allExerciseData.sort((a, b) => {
+  // 安定ソートを実装: インデックス付きでソートして元の順序を考慮
+  const indexedData = allExerciseData.map((exercise, index) => ({ exercise, originalIndex: index }));
+  
+  const sortedIndexedData = indexedData.sort((a, b) => {
     // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
     const getTimestamp = (exercise: Exercise) => {
       if (exercise.timestamp) {
@@ -203,17 +206,14 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
         // FirestoreのTimestampオブジェクトかチェック
         if (exercise.timestamp && typeof exercise.timestamp === 'object' && 'toDate' in exercise.timestamp) {
           timestamp = (exercise.timestamp as any).toDate().getTime();
-          console.log(`🕒 ${exercise.name} - Firestore timestamp: ${exercise.timestamp} -> ${timestamp}`);
         } 
         // 通常のDateオブジェクト
         else if (exercise.timestamp instanceof Date) {
           timestamp = exercise.timestamp.getTime();
-          console.log(`🕒 ${exercise.name} - Date timestamp: ${exercise.timestamp.toISOString()} -> ${timestamp}`);
         }
         // 文字列の場合
         else {
           timestamp = new Date(exercise.timestamp).getTime();
-          console.log(`🕒 ${exercise.name} - String timestamp: ${exercise.timestamp} -> ${timestamp}`);
         }
         
         return timestamp;
@@ -222,33 +222,38 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       const today = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
       const dateTimeString = `${today} ${exercise.time}:00`; // 秒を追加して完全な時間形式にする
       const fallbackTime = new Date(dateTimeString).getTime();
-      console.log(`🕒 ${exercise.name} - time fallback: ${dateTimeString} -> ${fallbackTime} (${new Date(fallbackTime).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })})`);
       return fallbackTime;
     };
     
-    const timeA = getTimestamp(a);
-    const timeB = getTimestamp(b);
+    const timeA = getTimestamp(a.exercise);
+    const timeB = getTimestamp(b.exercise);
     
     const comparison = timeA - timeB;
-    const sourceA = a.notes?.includes('LINE') ? 'LINE' : 'APP';
-    const sourceB = b.notes?.includes('LINE') ? 'LINE' : 'APP';
+    const sourceA = a.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
+    const sourceB = b.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
     
-    console.log(`🔄 HOOK SORT DETAILED:`, {
-      exerciseA: { name: a.name, time: a.time, timestamp: a.timestamp, calculatedTime: timeA, source: sourceA },
-      exerciseB: { name: b.name, time: b.time, timestamp: b.timestamp, calculatedTime: timeB, source: sourceB },
+    console.log(`🔄 STABLE SORT:`, {
+      exerciseA: { name: a.exercise.name, time: a.exercise.time, calculatedTime: timeA, source: sourceA, originalIndex: a.originalIndex },
+      exerciseB: { name: b.exercise.name, time: b.exercise.time, calculatedTime: timeB, source: sourceB, originalIndex: b.originalIndex },
       comparison,
-      result: comparison < 0 ? 'A comes first' : comparison > 0 ? 'B comes first' : 'equal'
+      result: comparison < 0 ? 'A comes first' : comparison > 0 ? 'B comes first' : 'equal (will use originalIndex)'
     });
     
-    // 時間が完全に同じ場合は、記録源に関係なく名前で安定ソート
-    if (comparison === 0) {
-      console.log(`⚖️ 時間が同じなので名前でソート: ${a.name} vs ${b.name}`);
-      return a.name.localeCompare(b.name);
+    // 時間が同じ場合は、記録された順番で安定ソート（LINEの方が新しいとして後に配置）
+    if (Math.abs(comparison) < 1000) { // 1秒以内は同じ時間として扱う
+      console.log(`⚖️ 時間が近いので記録源で判定: ${sourceA} vs ${sourceB}`);
+      // LINEの方を後に配置する（アプリが先、LINEが後の記録順序を時間順に変換）
+      if (sourceA !== sourceB) {
+        return sourceA === 'LINE' ? -1 : 1; // LINEを先に、APPを後に
+      }
+      return a.originalIndex - b.originalIndex; // 同じ記録源なら元の順序
     }
     
     // 古い順（昇順）でソート - 記録源に関係なく時間順
     return comparison;
   });
+  
+  const exerciseData = sortedIndexedData.map(item => item.exercise);
   
   // 本番環境でも詳細ログを出力して問題を特定
   console.log('🏋️ EXERCISE DATA INTEGRATION (PRODUCTION DEBUG):', {
