@@ -497,17 +497,17 @@ export function MyProfilePage({
                 {/* カロリーセクション - BMRがあれば横並び */}
                 {bmrData ? (
                   <div className="flex space-x-1.5">
-                    <div className="flex-1 text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="flex-1 text-center p-2 bg-blue-50 rounded border border-blue-100">
                       <div className="text-xs text-blue-600">摂取カロリー</div>
                       <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
                     </div>
-                    <div className="flex-1 text-center p-2 bg-green-50 rounded-lg border border-green-100">
-                      <div className="text-xs text-green-600">基礎代謝</div>
-                      <div className="font-bold text-green-900 text-sm">{Math.round(bmrData)}kcal</div>
+                    <div className="flex-1 text-center p-2 bg-teal-50 rounded border border-teal-100">
+                      <div className="text-xs text-teal-600">基礎代謝</div>
+                      <div className="font-bold text-teal-900 text-sm">{Math.round(bmrData)}kcal</div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="text-center p-2 bg-blue-50 rounded border border-blue-100">
                     <div className="text-xs text-blue-600">摂取カロリー</div>
                     <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
                   </div>
