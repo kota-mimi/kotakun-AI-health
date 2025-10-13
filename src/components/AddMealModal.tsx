@@ -125,14 +125,14 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
     }
   }, [isOpen]);
 
-  // 手動入力用の画像アップロード（API経由）
+  // 手動入力用の画像アップロード（API経由・AI分析なし）
   const handleManualImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && liffUser?.userId) {
       setIsAnalyzing(true);
       
       try {
-        console.log('🔧 Starting manual image upload via API');
+        console.log('🔧 Starting manual image upload via API (no AI analysis)');
         
         const formData = new FormData();
         formData.append('file', file);
@@ -150,8 +150,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         const data = await response.json();
         
         if (data.success && data.imageUrl) {
+          // 手動モードでは画像追加のみ、AI分析は実行しない
           setUploadedImages(prev => [...prev, data.imageUrl]);
-          console.log('✅ Manual image upload successful');
+          console.log('✅ Manual image upload successful (no AI analysis)');
         } else {
           throw new Error('Invalid response');
         }
@@ -159,6 +160,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         console.error('❌ Manual image upload failed:', error);
       } finally {
         setIsAnalyzing(false);
+        // input要素をクリア
+        if (event.target) {
+          event.target.value = '';
+        }
       }
     }
   };
@@ -814,7 +819,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
             <div className="space-y-3">
               {/* 手動入力用の画像追加 */}
               <div className="space-y-3">
-                <Label>写真を追加</Label>
+                <Label>写真を追加（参考用・AI分析なし）</Label>
                 
                 {uploadedImages.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
