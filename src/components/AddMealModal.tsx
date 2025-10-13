@@ -10,6 +10,7 @@ import { Camera, Upload, Plus, X, Loader2, Sparkles, Trash2, Clock, Edit2, Searc
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { generateId } from '@/lib/utils';
 import { compressImage } from '@/lib/imageUtils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FoodItem {
   id: string;
@@ -48,6 +49,7 @@ const mealTypeLabels = {
 };
 
 export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsData }: AddMealModalProps) {
+  const { liffUser } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -101,6 +103,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
   const [newFoodFat, setNewFoodFat] = useState('');
   const [newFoodCarbs, setNewFoodCarbs] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const manualCameraInputRef = useRef<HTMLInputElement>(null);
+  const manualAlbumInputRef = useRef<HTMLInputElement>(null);
 
   // Reset states when modal opens
   useEffect(() => {
@@ -120,6 +124,44 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
       setFoodItems([]);
     }
   }, [isOpen]);
+
+  // 手動入力用の画像アップロード（API経由）
+  const handleManualImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && liffUser?.userId) {
+      setIsAnalyzing(true);
+      
+      try {
+        console.log('🔧 Starting manual image upload via API');
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', liffUser.userId);
+
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.imageUrl) {
+          setUploadedImages(prev => [...prev, data.imageUrl]);
+          console.log('✅ Manual image upload successful');
+        } else {
+          throw new Error('Invalid response');
+        }
+      } catch (error) {
+        console.error('❌ Manual image upload failed:', error);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -770,6 +812,73 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
           {/* 手動入力フォーム（条件付き表示） */}
           {showManualInput && (
             <div className="space-y-3">
+              {/* 手動入力用の画像追加 */}
+              <div className="space-y-3">
+                <Label>写真を追加</Label>
+                
+                {uploadedImages.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {uploadedImages.map((image, index) => (
+                      <Card key={index} className="relative">
+                        <ImageWithFallback
+                          src={image}
+                          alt={`アップロード画像 ${index + 1}`}
+                          className="w-full h-20 object-cover rounded-lg"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
+                          className="absolute top-1 right-1 p-1 bg-black/50 hover:bg-black/70 text-white rounded-full"
+                        >
+                          <X size={12} />
+                        </Button>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => manualCameraInputRef.current?.click()}
+                      className="h-16 flex flex-col items-center justify-center space-y-1"
+                      style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
+                      disabled={isAnalyzing}
+                    >
+                      <Camera size={16} style={{color: '#4682B4'}} />
+                      <span className="text-xs" style={{color: '#4682B4'}}>カメラ</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => manualAlbumInputRef.current?.click()}
+                      className="h-16 flex flex-col items-center justify-center space-y-1"
+                      style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
+                      disabled={isAnalyzing}
+                    >
+                      <Upload size={16} style={{color: '#4682B4'}} />
+                      <span className="text-xs" style={{color: '#4682B4'}}>アルバム</span>
+                    </Button>
+                  </div>
+                )}
+                
+                {/* 手動入力用の隠しinput要素 */}
+                <input
+                  ref={manualCameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleManualImageUpload}
+                  className="hidden"
+                />
+                <input
+                  ref={manualAlbumInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleManualImageUpload}
+                  className="hidden"
+                />
+              </div>
+              
               {/* AI解析結果がない場合のみ食事名入力を表示 */}
               {foodItems.length === 0 && (
                 <div>
