@@ -446,7 +446,7 @@ export function MyProfilePage({
 
 
   return (
-    <div key={refreshKey} className="min-h-screen bg-gray-50 space-y-8 pb-4">
+    <div key={refreshKey} className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
         <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/90 border border-white/60 rounded-2xl shadow-lg p-3">
