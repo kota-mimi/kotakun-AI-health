@@ -148,7 +148,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   }
   
-  // 時系列順（古い順）にソート
+  // 時系列順（古い順）にソート - 記録源に関係なく時間順
   actualExerciseData = [...actualExerciseData].sort((a, b) => {
     const getTimestamp = (exercise: Exercise) => {
       if (exercise.timestamp) {
@@ -162,7 +162,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
         // 通常のDateオブジェクト
         else if (exercise.timestamp instanceof Date) {
           timestamp = exercise.timestamp.getTime();
-          console.log(`💪 WSC ${exercise.name} - Date timestamp: ${exercise.timestamp} -> ${timestamp}`);
+          console.log(`💪 WSC ${exercise.name} - Date timestamp: ${exercise.timestamp.toISOString()} -> ${timestamp}`);
         }
         // 文字列の場合
         else {
@@ -172,7 +172,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
         
         return timestamp;
       }
-      // timeから今日の日付でDateオブジェクトを作成
+      // timestampがない場合はtimeフィールドから今日の日付で作成
       const today = new Date().toISOString().split('T')[0];
       const fallbackTime = new Date(`${today} ${exercise.time}`).getTime();
       console.log(`💪 WSC ${exercise.name} - time fallback: ${today} ${exercise.time} -> ${fallbackTime}`);
@@ -182,9 +182,15 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     const timeA = getTimestamp(a);
     const timeB = getTimestamp(b);
     
-    console.log(`💪 WSC SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeA - timeB}`);
+    // より詳細なログでデバッグ
+    console.log(`💪 WSC SORT COMPARISON:`, {
+      exerciseA: { name: a.name, timestamp: a.timestamp, time: a.time, calculatedTime: timeA },
+      exerciseB: { name: b.name, timestamp: b.timestamp, time: b.time, calculatedTime: timeB },
+      comparison: timeA - timeB,
+      result: timeA < timeB ? 'A comes first' : timeA > timeB ? 'B comes first' : 'equal'
+    });
     
-    // 古い順（昇順）でソート
+    // 古い順（昇順）でソート - 小さい時間値が先に来る
     return timeA - timeB;
   });
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);

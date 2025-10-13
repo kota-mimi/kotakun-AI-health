@@ -184,7 +184,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const currentDateData = getCurrentDateData();
   const localExerciseData = currentDateData.exerciseData || [];
 
-  // ローカルストレージとFirestoreのデータを統合し、時系列順（新しい順）にソート
+  // ローカルストレージとFirestoreのデータを統合し、時系列順（古い順）にソート - 記録源に関係なく
   const exerciseData = [...localExerciseData, ...firestoreExerciseData].sort((a, b) => {
     // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
     const getTimestamp = (exercise: Exercise) => {
@@ -199,7 +199,7 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
         // 通常のDateオブジェクト
         else if (exercise.timestamp instanceof Date) {
           timestamp = exercise.timestamp.getTime();
-          console.log(`🕒 ${exercise.name} - Date timestamp: ${exercise.timestamp} -> ${timestamp}`);
+          console.log(`🕒 ${exercise.name} - Date timestamp: ${exercise.timestamp.toISOString()} -> ${timestamp}`);
         }
         // 文字列の場合
         else {
@@ -219,10 +219,10 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     const timeA = getTimestamp(a);
     const timeB = getTimestamp(b);
     
-    console.log(`🔄 SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeB - timeA}`);
+    console.log(`🔄 HOOK SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeA - timeB} (source: ${a.notes?.includes('LINE') ? 'LINE' : 'APP'})`);
     
-    // 新しい順（降順）でソート
-    return timeB - timeA;
+    // 古い順（昇順）でソート - 記録源に関係なく時間順
+    return timeA - timeB;
   });
   
   console.log('🏋️ EXERCISE DATA INTEGRATION:', {
