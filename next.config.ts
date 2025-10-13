@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['sharp'],
+  serverExternalPackages: ['sharp'],
+  images: {
+    formats: ['image/webp'],
   },
   async headers() {
     return [

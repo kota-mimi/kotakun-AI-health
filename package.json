@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "SKIP_ENV_VALIDATION=true next build --turbopack",
+    "build": "SKIP_ENV_VALIDATION=true next build",
     "start": "next start",
-    "lint": "echo 'ESLint disabled for deployment'"
+    "lint": "echo 'ESLint disabled for deployment'",
+    "postinstall": "npm ls sharp || npm install --platform=linux --arch=x64 sharp"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

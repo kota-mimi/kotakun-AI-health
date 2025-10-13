@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "src/app/api/webhook/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "SHARP_IGNORE_GLOBAL_LIBVIPS": "1"
+  }
+}
