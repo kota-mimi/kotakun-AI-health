@@ -675,11 +675,9 @@ export function MyProfilePage({
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">低い（デスクワーク中心）</SelectItem>
-                <SelectItem value="slightly_low">やや低い（軽い運動週1-2回）</SelectItem>
-                <SelectItem value="normal">普通（中程度の運動週3-4回）</SelectItem>
-                <SelectItem value="high">高い（激しい運動週5-6回）</SelectItem>
-                <SelectItem value="very_high">非常に高い（毎日激しい運動）</SelectItem>
+                <SelectItem value="sedentary">ほとんど運動しない</SelectItem>
+                <SelectItem value="light">軽い運動をする</SelectItem>
+                <SelectItem value="moderate">定期的に運動する</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -692,10 +690,9 @@ export function MyProfilePage({
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="weight_loss">減量</SelectItem>
-                <SelectItem value="weight_gain">増量</SelectItem>
-                <SelectItem value="muscle_gain">筋肉増強</SelectItem>
-                <SelectItem value="fitness_improve">体重維持</SelectItem>
+                <SelectItem value="weight_loss">ダイエット</SelectItem>
+                <SelectItem value="muscle_gain">筋肉量アップ</SelectItem>
+                <SelectItem value="maintenance">健康維持</SelectItem>
               </SelectContent>
             </Select>
           </div>
