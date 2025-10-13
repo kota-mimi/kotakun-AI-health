@@ -542,7 +542,7 @@ export function MyProfilePage({
               variant="outline"
               size="sm"
               onClick={handleOpenEditModal}
-              className="w-full text-green-600 border-green-200 hover:bg-green-50 h-8"
+              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
             >
               プロフィール編集
             </Button>
@@ -704,7 +704,7 @@ export function MyProfilePage({
                 キャンセル
               </Button>
             </DialogClose>
-            <Button onClick={handleSaveProfile} className="flex-1 bg-green-600 hover:bg-green-700" size="sm">
+            <Button onClick={handleSaveProfile} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm">
               保存
             </Button>
           </div>
