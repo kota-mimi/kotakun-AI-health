@@ -204,27 +204,57 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     }))
   });
 
-  // 運動記録を追加する関数
-  const handleAddExercise = (exercise: Omit<Exercise, 'id' | 'time'>) => {
+  // 運動記録を追加する関数（Firestoreに保存）
+  const handleAddExercise = async (exercise: Omit<Exercise, 'id' | 'time'>) => {
     const newExercise = {
       id: generateId(),
       time: new Date().toTimeString().slice(0, 5),
       calories: exercise.calories || 0,
-      timestamp: new Date(), // timestampを追加
-      notes: `APP記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`, // アプリ記録として識別
+      timestamp: new Date().toISOString(),
+      notes: `APP記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`,
       ...exercise
     };
     
-    const currentData = getCurrentDateData();
-    updateDateData({
-      exerciseData: [...(currentData.exerciseData || []), newExercise]
-    });
-    
-    // 追加後に強制的にデータを再取得してソートを確実に実行
-    setTimeout(() => {
-      console.log('🔄 運動追加後の強制リフレッシュ');
-      window.location.reload();
-    }, 100);
+    try {
+      console.log('🚨 アプリから運動記録をFirestoreに保存:', newExercise);
+      
+      // 楽観的UI更新：即座にUIに追加
+      setFirestoreExerciseData(prev => [...prev, newExercise]);
+      
+      // Firestoreに保存
+      const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const response = await fetch('/api/exercises', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          exercise: newExercise
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ アプリからの運動記録保存成功');
+        // 最新データを取得して同期
+        const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          if (data.success && data.data) {
+            setFirestoreExerciseData(data.data);
+          }
+        }
+      } else {
+        console.error('❌ アプリからの運動記録保存失敗');
+        // 失敗時はロールバック
+        setFirestoreExerciseData(prev => prev.filter(ex => ex.id !== newExercise.id));
+      }
+    } catch (error) {
+      console.error('❌ 運動記録保存エラー:', error);
+      // エラー時もロールバック
+      setFirestoreExerciseData(prev => prev.filter(ex => ex.id !== newExercise.id));
+    }
   };
 
   // 簡単な運動記録を追加する関数（新しいモーダル用）

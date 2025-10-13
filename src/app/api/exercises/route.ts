@@ -1,6 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
 
+// 運動記録を追加
+export async function POST(request: NextRequest) {
+  try {
+    const { lineUserId, date, exercise } = await request.json();
+
+    console.log('🏃 運動データ追加API:', { lineUserId, date, exercise });
+
+    if (!lineUserId || !date || !exercise) {
+      return NextResponse.json(
+        { error: '必要なパラメータが不足しています' },
+        { status: 400 }
+      );
+    }
+
+    const adminDb = admin.firestore();
+    
+    // 日次記録を取得または作成
+    const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+    const recordDoc = await recordRef.get();
+    
+    if (recordDoc.exists) {
+      // 既存記録に追加
+      const existingData = recordDoc.data();
+      const exercises = existingData?.exercises || [];
+      
+      await recordRef.update({
+        exercises: [...exercises, exercise],
+        updatedAt: new Date()
+      });
+    } else {
+      // 新規記録作成
+      await recordRef.set({
+        date,
+        exercises: [exercise],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+
+    console.log('✅ 運動データ追加完了:', exercise.id);
+
+    return NextResponse.json({ 
+      success: true, 
+      exerciseId: exercise.id 
+    });
+
+  } catch (error) {
+    console.error('❌ 運動データ追加エラー:', error);
+    return NextResponse.json(
+      { error: '運動データの追加に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
