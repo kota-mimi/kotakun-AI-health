@@ -99,7 +99,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
 
   const currentMonth = currentDate.toLocaleDateString('ja-JP', { 
     year: 'numeric', 
-    month: 'long' 
+    month: 'long',
+    day: 'numeric'
   });
 
   return (
