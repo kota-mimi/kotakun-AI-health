@@ -52,6 +52,8 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const albumInputRef = useRef<HTMLInputElement>(null);
 
   // 編集対象の食事データを初期値として設定
   useEffect(() => {
@@ -228,9 +230,10 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     console.log('🗑️ Clearing image - original image will be deleted on save');
     setUploadedImage(null);
     setUploadedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    // 全てのfile inputをクリア
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+    if (albumInputRef.current) albumInputRef.current.value = '';
   };
 
   if (!meal) return null;
@@ -288,7 +291,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => cameraInputRef.current?.click()}
                   className="h-20 flex flex-col items-center justify-center space-y-1"
                   style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
                 >
@@ -297,7 +300,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => albumInputRef.current?.click()}
                   className="h-20 flex flex-col items-center justify-center space-y-1"
                   style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
                 >
@@ -307,6 +310,26 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
               </div>
             )}
             
+            {/* カメラ専用（直接カメラ起動） */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            
+            {/* アルバム専用（写真ライブラリから選択） */}
+            <input
+              ref={albumInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            
+            {/* 既存画像変更用（汎用） */}
             <input
               ref={fileInputRef}
               type="file"
