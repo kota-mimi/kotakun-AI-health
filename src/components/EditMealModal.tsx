@@ -7,6 +7,9 @@ import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
 import { Camera, Upload, Save, X, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MealItem {
   id: string;
@@ -39,8 +42,10 @@ const mealTypeLabels = {
 };
 
 export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, onDeleteMeal }: EditMealModalProps) {
+  const { liffUser } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [mealName, setMealName] = useState('');
   const [calories, setCalories] = useState('');
   const [protein, setProtein] = useState('');
@@ -67,6 +72,9 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // ファイルを保存（後でFirebaseにアップロード用）
+      setUploadedFile(file);
+      
       // 画像をプレビュー用にセット
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -76,12 +84,49 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     }
   };
 
-  const handleUpdate = (e: React.MouseEvent) => {
+  const uploadImageToFirebase = async (file: File): Promise<string | null> => {
+    try {
+      if (!liffUser?.userId) {
+        console.error('ユーザーIDが取得できません');
+        return null;
+      }
+
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const imageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const storageRef = ref(storage, `meals/${liffUser.userId}/${today}/${imageId}.jpg`);
+      
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      console.log('✅ Firebase Storage upload successful:', downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error('❌ Firebase Storage upload failed:', error);
+      return null;
+    }
+  };
+
+  const handleUpdate = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('🚨 PRODUCTION DEBUG: Update button clicked');
     
     if (!meal || !mealName || !calories) return;
+
+    let finalImageUrl = uploadedImage;
+    
+    // 新しい画像ファイルがある場合はFirebaseにアップロード
+    if (uploadedFile) {
+      console.log('🔧 Uploading new image to Firebase Storage...');
+      setIsAnalyzing(true);
+      finalImageUrl = await uploadImageToFirebase(uploadedFile);
+      setIsAnalyzing(false);
+      
+      if (!finalImageUrl) {
+        console.error('画像のアップロードに失敗しました');
+        return;
+      }
+    }
 
     const updatedMeal: MealItem = {
       ...meal,
@@ -91,8 +136,8 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       fat: parseFloat(fat) || 0,
       carbs: parseFloat(carbs) || 0,
       time: time,
-      image: uploadedImage || undefined,
-      images: uploadedImage ? [uploadedImage] : [],
+      image: finalImageUrl || undefined,
+      images: finalImageUrl ? [finalImageUrl] : [],
       originalMealId: meal.originalMealId,
       individualMealIndex: meal.individualMealIndex
     };
@@ -120,6 +165,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
 
   const handleClearImage = () => {
     setUploadedImage(null);
+    setUploadedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -294,12 +340,12 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             </Button>
             <Button
               onClick={handleUpdate}
-              disabled={!mealName || !calories}
+              disabled={!mealName || !calories || isAnalyzing}
               className="flex-1"
               style={{backgroundColor: '#4682B4'}}
             >
               <Save size={16} className="mr-1" />
-              更新
+              {isAnalyzing ? 'アップロード中...' : '更新'}
             </Button>
           </div>
         </div>
