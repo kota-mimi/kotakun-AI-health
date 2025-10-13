@@ -17,6 +17,7 @@ interface MealItem {
   carbs: number;
   time: string;
   image?: string;
+  images?: string[];
   originalMealId?: string;
   individualMealIndex?: number;
 }
@@ -91,6 +92,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       carbs: parseFloat(carbs) || 0,
       time: time,
       image: uploadedImage || undefined,
+      images: uploadedImage ? [uploadedImage] : [],
       originalMealId: meal.originalMealId,
       individualMealIndex: meal.individualMealIndex
     };
