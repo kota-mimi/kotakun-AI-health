@@ -327,7 +327,7 @@ export function MyProfilePage({
       if (liffUser?.userId) {
         try {
           console.log('🔥 プロフィール履歴保存開始:', {
-            userId: `firebase_${liffUser.userId}`,
+            userId: liffUser.userId,
             profileData: {
               name: editForm.name,
               age: editForm.age,
@@ -340,7 +340,7 @@ export function MyProfilePage({
             }
           });
           
-          await saveProfileHistory(`firebase_${liffUser.userId}`, {
+          await saveProfileHistory(liffUser.userId, {
             name: editForm.name,
             age: editForm.age,
             gender: editForm.gender,
@@ -384,7 +384,7 @@ export function MyProfilePage({
         window.dispatchEvent(new CustomEvent('profileHistoryUpdated', {
           detail: { 
             type: 'profile_save',
-            userId: `firebase_${liffUser.userId}`,
+            userId: liffUser.userId,
             newCalories: newCalorieTarget,
             newMacros: newMacros,
             timestamp: new Date().toISOString()

@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { calculateCalorieTarget, calculateMacroTargets, calculateBMR, calculateTDEE } from '@/utils/calculations';
 import type { HealthGoal } from '@/types';
 
@@ -88,28 +88,18 @@ export async function saveProfileHistory(userId: string, profileData: Omit<Profi
     
     console.log('📊 履歴エントリ作成:', historyEntry);
     
+    // プロフィール履歴をサブコレクションに保存（食事記録と同じパターン）
+    const profileHistoryRef = doc(db, 'users', userId, 'profileHistory', changeDate);
+    
+    console.log('📊 プロフィール履歴サブコレクションに保存:', `users/${userId}/profileHistory/${changeDate}`);
+    
+    await setDoc(profileHistoryRef, historyEntry);
+    
+    // メインユーザードキュメントの最終更新日も更新
     const userDocRef = doc(db, 'users', userId);
-    
-    // 既存データを確認
-    const userDoc = await getDoc(userDocRef);
-    
-    if (userDoc.exists()) {
-      console.log('📊 既存ユーザー - 履歴追加');
-      // 既存ユーザーの場合、履歴に追加
-      await updateDoc(userDocRef, {
-        profileHistory: arrayUnion(historyEntry),
-        lastProfileUpdate: new Date().toISOString()
-      });
-    } else {
-      console.log('📊 新規ユーザー - 新規作成');
-      // 新規ユーザーの場合、新規作成
-      await setDoc(userDocRef, {
-        userId,
-        profileHistory: [historyEntry],
-        lastProfileUpdate: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      });
-    }
+    await updateDoc(userDocRef, {
+      lastProfileUpdate: new Date().toISOString()
+    });
     
     console.log('✅ プロフィール履歴保存完了:', historyEntry);
   } catch (error) {
@@ -127,26 +117,23 @@ export async function saveProfileHistory(userId: string, profileData: Omit<Profi
 // 指定日付に有効なプロフィールデータを取得
 export async function getProfileForDate(userId: string, targetDate: string): Promise<ProfileHistoryEntry | null> {
   try {
-    const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
+    // サブコレクションからプロフィール履歴を取得
+    const profileHistoryRef = collection(db, 'users', userId, 'profileHistory');
+    const q = query(
+      profileHistoryRef,
+      where('changeDate', '<=', targetDate),
+      orderBy('changeDate', 'desc')
+    );
     
-    if (!userDoc.exists()) {
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
       return null;
     }
     
-    const data = userDoc.data();
-    const profileHistory: ProfileHistoryEntry[] = data.profileHistory || [];
-    
-    if (profileHistory.length === 0) {
-      return null;
-    }
-    
-    // 指定日付以前で最も新しいプロフィールを取得
-    const validProfiles = profileHistory
-      .filter(profile => profile.changeDate <= targetDate)
-      .sort((a, b) => b.changeDate.localeCompare(a.changeDate));
-    
-    return validProfiles[0] || null;
+    // 最も新しいプロフィールを返す
+    const doc = querySnapshot.docs[0];
+    return doc.data() as ProfileHistoryEntry;
   } catch (error) {
     console.error('❌ プロフィール取得エラー:', error);
     return null;
@@ -156,22 +143,22 @@ export async function getProfileForDate(userId: string, targetDate: string): Pro
 // 最新のプロフィールデータを取得
 export async function getLatestProfile(userId: string): Promise<ProfileHistoryEntry | null> {
   try {
-    const userDocRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
+    // サブコレクションから最新のプロフィール履歴を取得
+    const profileHistoryRef = collection(db, 'users', userId, 'profileHistory');
+    const q = query(
+      profileHistoryRef,
+      orderBy('changeDate', 'desc')
+    );
     
-    if (!userDoc.exists()) {
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
       return null;
     }
     
-    const data = userDoc.data();
-    const profileHistory: ProfileHistoryEntry[] = data.profileHistory || [];
-    
-    if (profileHistory.length === 0) {
-      return null;
-    }
-    
-    // 最新のプロフィールを取得
-    return profileHistory.sort((a, b) => b.changeDate.localeCompare(a.changeDate))[0];
+    // 最も新しいプロフィールを返す
+    const doc = querySnapshot.docs[0];
+    return doc.data() as ProfileHistoryEntry;
   } catch (error) {
     console.error('❌ 最新プロフィール取得エラー:', error);
     return null;

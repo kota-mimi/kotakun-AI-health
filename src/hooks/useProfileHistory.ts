@@ -24,7 +24,7 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       setError(null);
       
       const dateString = targetDate.toISOString().split('T')[0];
-      const userId = `firebase_${liffUser.userId}`;
+      const userId = liffUser.userId;
       
       const profile = await getProfileForDate(userId, dateString);
       setProfileData(profile);
@@ -85,7 +85,7 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       setLoading(true);
       setError(null);
       
-      const userId = `firebase_${liffUser.userId}`;
+      const userId = liffUser.userId;
       const profile = await getLatestProfile(userId);
       setProfileData(profile);
       
