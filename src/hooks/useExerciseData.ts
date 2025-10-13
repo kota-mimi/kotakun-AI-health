@@ -74,7 +74,13 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
         console.warn('⚠️ Invalid selectedDate in fetchExerciseData:', selectedDate);
         return;
       }
-      const currentDate = selectedDate.toISOString().split('T')[0];
+      // 日本時間ベースの日付でAPI取得（重要：UTCではなく日本時間）
+      const currentDate = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
+      console.log('🔍 PRODUCTION DEBUG: Exercise fetch date conversion:', { 
+        selectedDate: selectedDate.toString(),
+        utcDate: selectedDate.toISOString().split('T')[0],
+        japanDate: currentDate
+      });
       
       // キャッシュキー生成
       const cacheKey = createCacheKey('exercises', lineUserId, currentDate);
@@ -170,7 +176,8 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       console.warn('⚠️ Invalid selectedDate in useExerciseData getCurrentDateData:', selectedDate);
       return { exerciseData: [] };
     }
-    const dateKey = selectedDate.toISOString().split('T')[0];
+    // ローカルデータキー取得も日本時間ベース
+    const dateKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
     return dateBasedData[dateKey] || { exerciseData: [] };
   };
 
@@ -202,8 +209,8 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
         
         return timestamp;
       }
-      // timeから今日の日付でDateオブジェクトを作成
-      const today = selectedDate.toISOString().split('T')[0];
+      // timeから今日の日付でDateオブジェクトを作成（日本時間ベース）
+      const today = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
       const fallbackTime = new Date(`${today} ${exercise.time}`).getTime();
       console.log(`🕒 ${exercise.name} - time fallback: ${today} ${exercise.time} -> ${fallbackTime}`);
       return fallbackTime;
