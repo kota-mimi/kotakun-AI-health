@@ -1,5 +1,25 @@
 import { useState, useEffect } from 'react';
-import { getProfileForDate, getLatestProfile, type ProfileHistoryEntry } from '@/lib/profileHistory';
+import FirestoreService from '@/services/firestoreService';
+
+export interface ProfileHistoryEntry {
+  changeDate: string;
+  name: string;
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  height: number;
+  weight: number;
+  targetWeight: number;
+  activityLevel: string;
+  primaryGoal: string;
+  targetCalories: number;
+  bmr: number;
+  tdee: number;
+  macros: {
+    protein: number;
+    fat: number;
+    carbs: number;
+  };
+}
 import { useAuth } from './useAuth';
 
 interface UseProfileHistoryReturn {
@@ -24,14 +44,14 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       setError(null);
       
       const dateString = targetDate.toISOString().split('T')[0];
-      const userId = liffUser.userId;
+      const firestoreService = new FirestoreService();
       
-      const profile = await getProfileForDate(userId, dateString);
+      const profile = await firestoreService.getProfileHistory(liffUser.userId, dateString);
       setProfileData(profile);
       
       console.log('📊 プロフィール履歴取得:', {
         targetDate: dateString,
-        userId,
+        userId: liffUser.userId,
         hasProfile: !!profile,
         profileDate: profile?.changeDate
       });
@@ -85,12 +105,13 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       setLoading(true);
       setError(null);
       
-      const userId = liffUser.userId;
-      const profile = await getLatestProfile(userId);
+      const firestoreService = new FirestoreService();
+      const profiles = await firestoreService.getProfileHistory(liffUser.userId);
+      const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
       setProfileData(profile);
       
       console.log('📊 最新プロフィール取得:', {
-        userId,
+        userId: liffUser.userId,
         hasProfile: !!profile,
         profileDate: profile?.changeDate
       });

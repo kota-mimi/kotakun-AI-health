@@ -12,7 +12,7 @@ import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
-import { saveProfileHistory } from '@/lib/profileHistory';
+import FirestoreService from '@/services/firestoreService';
 import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
 import type { HealthGoal } from '@/types';
 import { WeightChart } from './WeightChart';
@@ -340,7 +340,8 @@ export function MyProfilePage({
             }
           });
           
-          await saveProfileHistory(liffUser.userId, {
+          const firestoreService = new FirestoreService();
+          await firestoreService.saveProfileHistory(liffUser.userId, {
             name: editForm.name,
             age: editForm.age,
             gender: editForm.gender,
@@ -348,7 +349,12 @@ export function MyProfilePage({
             weight: editForm.currentWeight,
             targetWeight: editForm.targetWeight,
             activityLevel: editForm.activityLevel,
-            primaryGoal: editForm.primaryGoal
+            primaryGoal: editForm.primaryGoal,
+            // 計算された値も保存
+            targetCalories: newCalorieTarget,
+            bmr: newBMR,
+            tdee: newTDEE,
+            macros: newMacros
           });
           console.log('✅ プロフィール履歴保存完了');
           

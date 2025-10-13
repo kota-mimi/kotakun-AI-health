@@ -347,6 +347,62 @@ export class FirestoreService {
     }
   }
 
+  // プロフィール履歴の保存
+  async saveProfileHistory(lineUserId: string, profileData: any) {
+    try {
+      const changeDate = new Date().toISOString().split('T')[0];
+      const profileHistoryRef = doc(db, 'users', lineUserId, 'profileHistory', changeDate);
+      
+      await setDoc(profileHistoryRef, {
+        ...profileData,
+        changeDate,
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      });
+      
+      // メインユーザードキュメントの最終更新日も更新
+      const userDocRef = doc(db, 'users', lineUserId);
+      await updateDoc(userDocRef, {
+        lastProfileUpdate: serverTimestamp()
+      });
+
+      console.log('プロフィール履歴保存完了:', { lineUserId, changeDate });
+      return true;
+    } catch (error) {
+      console.error('プロフィール履歴保存エラー:', error);
+      throw error;
+    }
+  }
+
+  // プロフィール履歴の取得
+  async getProfileHistory(lineUserId: string, targetDate?: string): Promise<any> {
+    try {
+      if (targetDate) {
+        // 指定日付の履歴を取得
+        const profileHistoryRef = doc(db, 'users', lineUserId, 'profileHistory', targetDate);
+        const profileDoc = await getDoc(profileHistoryRef);
+        
+        if (profileDoc.exists()) {
+          return profileDoc.data();
+        }
+      }
+      
+      // 全ての履歴を取得
+      const profileHistoryRef = collection(db, 'users', lineUserId, 'profileHistory');
+      const querySnapshot = await getDocs(profileHistoryRef);
+      
+      const profiles = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      return profiles.sort((a, b) => b.changeDate.localeCompare(a.changeDate));
+    } catch (error) {
+      console.error('プロフィール履歴取得エラー:', error);
+      throw error;
+    }
+  }
+
   // ローカルストレージからの移行（一度だけ実行）
   async migrateFromLocalStorage(lineUserId: string) {
     try {
