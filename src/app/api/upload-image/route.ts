@@ -22,9 +22,14 @@ export async function POST(request: NextRequest) {
       userId: userId
     });
 
-    // Firebase Admin SDKでアップロード（LINEのWebhookと同じ権限）
+    // Firebase Admin SDKでアップロード（LINEのWebhookと全く同じ設定）
     const storage = admin.storage();
-    const bucket = storage.bucket();
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 
+      || process.env.FIREBASE_STORAGE_BUCKET 
+      || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // LINEのWebhookと同じフォールバック
+    const bucket = storage.bucket(bucketName);
+    
+    console.log('🔧 Using bucket name:', bucketName);
     
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     const fileName = `meals/${userId}/${today}/meal_${generateId()}.jpg`;
