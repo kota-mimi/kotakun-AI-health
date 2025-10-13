@@ -503,7 +503,7 @@ export function MyProfilePage({
                       <div className="text-xs text-blue-600">摂取カロリー</div>
                       <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
                     </div>
-                    <div className="flex-1 text-center p-2 bg-orange-50/80 rounded border border-orange-100/50">
+                    <div className="flex-1 text-center p-2 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded border border-orange-200/50">
                       <div className="text-xs text-orange-600">基礎代謝</div>
                       <div className="font-bold text-orange-900 text-sm">{Math.round(bmrData)}kcal</div>
                     </div>
