@@ -931,11 +931,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
                       <Input
                         id="protein"
                         type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                        inputMode="decimal"
+                        step="0.1"
                         value={protein}
                         onChange={(e) => setProtein(e.target.value)}
-                        placeholder="28"
+                        placeholder="28.5"
                         disabled={isAnalyzing}
                       />
                     </div>
@@ -947,11 +947,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
                       <Input
                         id="fat"
                         type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                        inputMode="decimal"
+                        step="0.1"
                         value={fat}
                         onChange={(e) => setFat(e.target.value)}
-                        placeholder="18"
+                        placeholder="18.5"
                         disabled={isAnalyzing}
                       />
                     </div>
@@ -960,11 +960,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
                       <Input
                         id="carbs"
                         type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                        inputMode="decimal"
+                        step="0.1"
                         value={carbs}
                         onChange={(e) => setCarbs(e.target.value)}
-                        placeholder="45"
+                        placeholder="45.5"
                         disabled={isAnalyzing}
                       />
                     </div>
