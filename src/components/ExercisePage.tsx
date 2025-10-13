@@ -372,7 +372,7 @@ export function ExercisePage({
                         if (parts.length > 0) {
                           return (
                             <div className="text-right">
-                              <div className="text-sm font-medium text-health-primary">
+                              <div className="text-sm font-medium text-orange-600">
                                 {parts.join(' × ')}
                               </div>
                               <div className="text-xs text-slate-500">詳細</div>
