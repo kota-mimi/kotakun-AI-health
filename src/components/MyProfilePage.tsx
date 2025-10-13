@@ -81,7 +81,7 @@ export function MyProfilePage({
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-orange-50/90 rounded-xl shadow-sm border border-orange-200 p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
             <div className="flex-1">
@@ -131,15 +131,17 @@ export function MyProfilePage({
   const finalFat = mealManager?.calorieData?.pfc?.fatTarget;
   const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget;
   
-  // BMR（基礎代謝）データを取得
-  const bmrData = counselingResult?.aiAnalysis?.nutritionPlan?.bmr || 
-                  counselingResult?.answers?.bmr ||
-                  (counselingResult?.answers ? calculateBMR({
-                    weight: counselingResult.answers.weight || 0,
-                    height: counselingResult.answers.height || 0,
-                    age: counselingResult.answers.age || 0,
-                    gender: counselingResult.answers.gender || 'male'
-                  }) : null);
+  // BMR（基礎代謝）データを取得 - ホームのCalorieCardと同じ計算方法を使用
+  const bmrData = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
+    ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 0.7) // 摂取カロリーの70%を基礎代謝とする
+    : (counselingResult?.aiAnalysis?.nutritionPlan?.bmr || 
+       counselingResult?.answers?.bmr ||
+       (counselingResult?.answers ? calculateBMR({
+         weight: counselingResult.answers.weight || 0,
+         height: counselingResult.answers.height || 0,
+         age: counselingResult.answers.age || 0,
+         gender: counselingResult.answers.gender || 'male'
+       }) : null));
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
@@ -420,7 +422,7 @@ export function MyProfilePage({
                 <Button
                   key={index}
                   variant="ghost"
-                  className="w-full justify-start p-0 h-auto hover:bg-slate-50/70 rounded-none"
+                  className="w-full justify-start p-0 h-auto hover:bg-orange-100/70 rounded-none"
                   onClick={item.action}
                 >
                   <div className="flex items-center space-x-4 py-4 px-4 w-full">
@@ -473,15 +475,15 @@ export function MyProfilePage({
 
           {/* 健康指標 - コンパクト横並び */}
           <div className="flex space-x-2">
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
               <div className="text-xs text-slate-500">体重</div>
               <div className="font-bold text-slate-900 text-sm">{currentWeight ? `${currentWeight}kg` : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
               <div className="text-xs text-slate-500">BMI</div>
               <div className="font-bold text-slate-900 text-sm">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
               <div className="text-xs text-slate-500">目標</div>
               <div className="font-bold text-slate-900 text-sm">{targetWeight ? `${targetWeight}kg` : '-'}</div>
             </div>
