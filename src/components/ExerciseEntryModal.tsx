@@ -360,7 +360,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       case 'distance':
         config = {
           min: 0,
-          max: 50,
+          max: 200,
           value: distance,
           step: 0.5,
           unit: 'km',
@@ -370,7 +370,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       case 'weight':
         config = {
           min: 0,
-          max: 200,
+          max: 500,
           value: setIndex !== undefined ? sets[setIndex].weight : 0,
           step: 2.5,
           unit: 'kg',
@@ -795,7 +795,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
                             value={set.weight || ''}
                             onChange={(e) => {
                               const value = parseFloat(e.target.value) || 0;
-                              updateSet(index, 'weight', Math.max(0, Math.min(200, value)));
+                              updateSet(index, 'weight', Math.max(0, Math.min(500, value)));
                             }}
                             className="w-full py-3 px-3 text-center text-lg font-semibold bg-white rounded-lg border border-slate-200 focus:border-blue-400"
                             placeholder="0"

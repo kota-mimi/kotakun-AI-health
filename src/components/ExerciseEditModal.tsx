@@ -178,7 +178,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
       case 'distance':
         config = {
           min: 0,
-          max: 50,
+          max: 200,
           value: distance,
           step: 0.5,
           unit: 'km',
@@ -188,7 +188,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
       case 'weight':
         config = {
           min: 0,
-          max: 200,
+          max: 500,
           value: setIndex !== undefined ? sets[setIndex]?.weight || 0 : 0,
           step: 0.5,
           unit: 'kg',
@@ -327,7 +327,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
                             value={set.weight || ''}
                             onChange={(e) => {
                               const value = parseFloat(e.target.value) || 0;
-                              updateSet(index, 'weight', Math.max(0, Math.min(200, value)));
+                              updateSet(index, 'weight', Math.max(0, Math.min(500, value)));
                             }}
                             className="text-center text-xs h-7 flex-1"
                             style={{ fontSize: '16px' }}
@@ -375,7 +375,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
                         value={weight || ''}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value) || 0;
-                          setWeight(Math.max(0, Math.min(200, value)));
+                          setWeight(Math.max(0, Math.min(500, value)));
                         }}
                         className="text-center text-xs h-8 mt-1"
                         style={{ fontSize: '16px' }}
