@@ -185,7 +185,16 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const localExerciseData = currentDateData.exerciseData || [];
 
   // ローカルストレージとFirestoreのデータを統合し、時系列順（古い順）にソート - 記録源に関係なく
-  const exerciseData = [...localExerciseData, ...firestoreExerciseData].sort((a, b) => {
+  // タイムスタンプ付きで統合してから確実にソート
+  const allExerciseData = [...localExerciseData, ...firestoreExerciseData];
+  console.log('🔍 PRE-SORT DATA:', allExerciseData.map((ex, index) => ({
+    index,
+    name: ex.name,
+    time: ex.time,
+    source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
+  })));
+  
+  const exerciseData = allExerciseData.sort((a, b) => {
     // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
     const getTimestamp = (exercise: Exercise) => {
       if (exercise.timestamp) {
@@ -211,18 +220,34 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       }
       // timeから今日の日付でDateオブジェクトを作成（日本時間ベース）
       const today = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-      const fallbackTime = new Date(`${today} ${exercise.time}`).getTime();
-      console.log(`🕒 ${exercise.name} - time fallback: ${today} ${exercise.time} -> ${fallbackTime}`);
+      const dateTimeString = `${today} ${exercise.time}:00`; // 秒を追加して完全な時間形式にする
+      const fallbackTime = new Date(dateTimeString).getTime();
+      console.log(`🕒 ${exercise.name} - time fallback: ${dateTimeString} -> ${fallbackTime} (${new Date(fallbackTime).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })})`);
       return fallbackTime;
     };
     
     const timeA = getTimestamp(a);
     const timeB = getTimestamp(b);
     
-    console.log(`🔄 HOOK SORT: ${a.name}(${timeA}) vs ${b.name}(${timeB}) = ${timeA - timeB} (source: ${a.notes?.includes('LINE') ? 'LINE' : 'APP'})`);
+    const comparison = timeA - timeB;
+    const sourceA = a.notes?.includes('LINE') ? 'LINE' : 'APP';
+    const sourceB = b.notes?.includes('LINE') ? 'LINE' : 'APP';
+    
+    console.log(`🔄 HOOK SORT DETAILED:`, {
+      exerciseA: { name: a.name, time: a.time, timestamp: a.timestamp, calculatedTime: timeA, source: sourceA },
+      exerciseB: { name: b.name, time: b.time, timestamp: b.timestamp, calculatedTime: timeB, source: sourceB },
+      comparison,
+      result: comparison < 0 ? 'A comes first' : comparison > 0 ? 'B comes first' : 'equal'
+    });
+    
+    // 時間が完全に同じ場合は、記録源に関係なく名前で安定ソート
+    if (comparison === 0) {
+      console.log(`⚖️ 時間が同じなので名前でソート: ${a.name} vs ${b.name}`);
+      return a.name.localeCompare(b.name);
+    }
     
     // 古い順（昇順）でソート - 記録源に関係なく時間順
-    return timeA - timeB;
+    return comparison;
   });
   
   console.log('🏋️ EXERCISE DATA INTEGRATION:', {
@@ -230,8 +255,13 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     firestoreCount: firestoreExerciseData.length,
     totalCount: exerciseData.length,
     selectedDate: selectedDate.toISOString().split('T')[0],
-    firestoreData: firestoreExerciseData,
-    localData: localExerciseData
+    finalSortedOrder: exerciseData.map((ex, index) => ({
+      index,
+      name: ex.name,
+      time: ex.time,
+      timestamp: ex.timestamp,
+      source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
+    }))
   });
 
   // 運動記録を追加する関数

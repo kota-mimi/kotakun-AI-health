@@ -148,51 +148,14 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   }
   
-  // 時系列順（古い順）にソート - 記録源に関係なく時間順
-  actualExerciseData = [...actualExerciseData].sort((a, b) => {
-    const getTimestamp = (exercise: Exercise) => {
-      if (exercise.timestamp) {
-        let timestamp: number;
-        
-        // FirestoreのTimestampオブジェクトかチェック
-        if (exercise.timestamp && typeof exercise.timestamp === 'object' && 'toDate' in exercise.timestamp) {
-          timestamp = (exercise.timestamp as any).toDate().getTime();
-          console.log(`💪 WSC ${exercise.name} - Firestore timestamp: ${exercise.timestamp} -> ${timestamp}`);
-        } 
-        // 通常のDateオブジェクト
-        else if (exercise.timestamp instanceof Date) {
-          timestamp = exercise.timestamp.getTime();
-          console.log(`💪 WSC ${exercise.name} - Date timestamp: ${exercise.timestamp.toISOString()} -> ${timestamp}`);
-        }
-        // 文字列の場合
-        else {
-          timestamp = new Date(exercise.timestamp).getTime();
-          console.log(`💪 WSC ${exercise.name} - String timestamp: ${exercise.timestamp} -> ${timestamp}`);
-        }
-        
-        return timestamp;
-      }
-      // timestampがない場合はtimeフィールドから今日の日付で作成
-      const today = new Date().toISOString().split('T')[0];
-      const fallbackTime = new Date(`${today} ${exercise.time}`).getTime();
-      console.log(`💪 WSC ${exercise.name} - time fallback: ${today} ${exercise.time} -> ${fallbackTime}`);
-      return fallbackTime;
-    };
-    
-    const timeA = getTimestamp(a);
-    const timeB = getTimestamp(b);
-    
-    // より詳細なログでデバッグ
-    console.log(`💪 WSC SORT COMPARISON:`, {
-      exerciseA: { name: a.name, timestamp: a.timestamp, time: a.time, calculatedTime: timeA },
-      exerciseB: { name: b.name, timestamp: b.timestamp, time: b.time, calculatedTime: timeB },
-      comparison: timeA - timeB,
-      result: timeA < timeB ? 'A comes first' : timeA > timeB ? 'B comes first' : 'equal'
-    });
-    
-    // 古い順（昇順）でソート - 小さい時間値が先に来る
-    return timeA - timeB;
-  });
+  // useExerciseDataで既にソート済みなので、ここでは再ソートしない
+  console.log('💪 WSC RECEIVED DATA ORDER:', actualExerciseData.map((ex, index) => ({
+    index,
+    name: ex.name,
+    time: ex.time,
+    timestamp: ex.timestamp,
+    source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
+  })));
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
   const totalDuration = actualExerciseData.reduce((sum, ex) => sum + (ex.duration > 0 ? ex.duration : 0), 0);
   const hasWorkout = actualExerciseData.length > 0;
@@ -301,8 +264,8 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           <span className="text-xs text-slate-500">{exercise.time}</span>
                         </div>
                         <div className="text-right">
-                          {/* 回数のみの記録の場合は回数を表示、時間がある場合は時間を表示 */}
-                          {exercise.reps && exercise.reps > 0 && exercise.duration === 0 ? (
+                          {/* 重量とセット数がある場合は表示しない（下の詳細で表示）、回数のみの場合のみ回数表示 */}
+                          {exercise.reps && exercise.reps > 0 && exercise.duration === 0 && (!exercise.weight || exercise.weight === 0) && (!exercise.setsCount || exercise.setsCount <= 1) && (!exercise.weightSets || exercise.weightSets.length === 0) && (!exercise.sets || exercise.sets.length === 0) ? (
                             <div className="font-bold text-slate-800">{exercise.reps}<span className="text-xs text-slate-600 ml-1">回</span></div>
                           ) : exercise.duration && exercise.duration > 0 ? (
                             <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
@@ -315,24 +278,9 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                         </div>
                       </div>
                       
-                      {/* 運動詳細情報 - 柔軟な表示 */}
+                      {/* 運動詳細情報 - 重量・回数・セット数優先表示 */}
                       {(() => {
-                        const parts = [];
-                        const showRepsInHeader = exercise.reps && exercise.reps > 0 && exercise.duration === 0;
-                        
-                        if (exercise.distance && exercise.distance > 0) parts.push(`${exercise.distance}km`);
-                        if (exercise.weight && exercise.weight > 0) parts.push(`${exercise.weight}kg`);
-                        // 右上に回数表示されている場合は詳細では表示しない
-                        if (exercise.reps && exercise.reps > 0 && !showRepsInHeader) parts.push(`${exercise.reps}回`);
-                        if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
-                        if (exercise.duration && exercise.duration > 0 && !exercise.reps && !exercise.weight) parts.push(`${exercise.duration}分`);
-                        
-                        // 回数のみの記録で詳細に何も表示されない場合の対応
-                        if (showRepsInHeader && parts.length === 0) {
-                          parts.push('自重運動');
-                        }
-                        
-                        // WeightSets表示
+                        // WeightSets表示（最優先）
                         if (exercise.weightSets && exercise.weightSets.length > 0) {
                           return (
                             <div className="mt-2 text-xs space-y-1">
@@ -358,7 +306,33 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           );
                         }
                         
-                        // シンプルな詳細表示
+                        // 基本的な重量・回数・セット数がある場合
+                        if ((exercise.weight && exercise.weight > 0) || (exercise.reps && exercise.reps > 0) || (exercise.setsCount && exercise.setsCount > 1)) {
+                          const parts = [];
+                          if (exercise.weight && exercise.weight > 0) parts.push(`${exercise.weight}kg`);
+                          if (exercise.reps && exercise.reps > 0) parts.push(`${exercise.reps}回`);
+                          if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
+                          
+                          return (
+                            <div className="mt-2 text-xs">
+                              <span className="text-orange-600 font-medium">
+                                {parts.join(' × ')}
+                              </span>
+                            </div>
+                          );
+                        }
+                        
+                        // その他の詳細情報（距離、時間など）
+                        const parts = [];
+                        if (exercise.distance && exercise.distance > 0) parts.push(`${exercise.distance}km`);
+                        if (exercise.duration && exercise.duration > 0 && (!exercise.reps || exercise.reps === 0) && (!exercise.weight || exercise.weight === 0)) parts.push(`${exercise.duration}分`);
+                        
+                        // 回数のみの記録で重量・セット数がない場合は「自重運動」
+                        const isRepsOnly = exercise.reps && exercise.reps > 0 && exercise.duration === 0 && (!exercise.weight || exercise.weight === 0) && (!exercise.setsCount || exercise.setsCount <= 1);
+                        if (isRepsOnly && parts.length === 0) {
+                          parts.push('自重運動');
+                        }
+                        
                         if (parts.length > 0) {
                           return (
                             <div className="mt-2 text-xs">
