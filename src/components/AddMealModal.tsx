@@ -53,6 +53,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isManualUploading, setIsManualUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [manualImages, setManualImages] = useState<string[]>([]);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
   const [showAnalysisResult, setShowAnalysisResult] = useState(false);
@@ -115,6 +116,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
       setShowAnalysisResult(false);
       setShowPastRecords(false);
       setUploadedImages([]);
+      setManualImages([]);
       setTextInput('');
       setSearchTerm('');
       setMealName('');
@@ -152,7 +154,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         
         if (data.success && data.imageUrl) {
           // 手動モードでは画像追加のみ、AI分析は実行しない
-          setUploadedImages(prev => [...prev, data.imageUrl]);
+          setManualImages(prev => [...prev, data.imageUrl]);
           console.log('✅ Manual image upload successful (no AI analysis)');
         } else {
           throw new Error('Invalid response');
@@ -392,7 +394,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         fat: totalFat,
         carbs: totalCarbs,
         time: currentTime,
-        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
         isMultipleMeals: true,
         meals: foodItems.map(item => ({
           name: item.name,
@@ -428,7 +430,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         fat: totalFat,
         carbs: totalCarbs,
         time: currentTime,
-        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
         foodItems: foodItems.length > 0 ? foodItems : undefined
       });
     }
@@ -441,6 +443,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
     setCarbs('');
     setNotes('');
     setUploadedImages([]);
+    setManualImages([]);
     setFoodItems([]);
     setNewFoodName('');
     setNewFoodCalories('');
@@ -459,6 +462,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
 
   const clearAllImages = () => {
     setUploadedImages([]);
+    setManualImages([]);
     setMealName('');
     setCalories('');
     setProtein('');
@@ -492,6 +496,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
     setSearchTerm('');
     setMealName('');
     setFoodItems([]);
+    setUploadedImages([]);
+    setManualImages([]);
   };
 
   const handleSelectPastMeal = (pastMeal: any) => {
@@ -822,9 +828,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
               <div className="space-y-3">
                 <Label>写真を追加</Label>
                 
-                {uploadedImages.length > 0 ? (
+                {manualImages.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {uploadedImages.map((image, index) => (
+                    {manualImages.map((image, index) => (
                       <Card key={index} className="relative">
                         <ImageWithFallback
                           src={image}
@@ -834,7 +840,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
+                          onClick={() => setManualImages(prev => prev.filter((_, i) => i !== index))}
                           className="absolute top-1 right-1 p-1 bg-black/50 hover:bg-black/70 text-white rounded-full"
                         >
                           <X size={12} />
