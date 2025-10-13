@@ -819,7 +819,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
             <div className="space-y-3">
               {/* 手動入力用の画像追加 */}
               <div className="space-y-3">
-                <Label>写真を追加（参考用・AI分析なし）</Label>
+                <Label>写真を追加</Label>
                 
                 {uploadedImages.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
