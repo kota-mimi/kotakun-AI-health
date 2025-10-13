@@ -321,6 +321,11 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                         if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
                         if (exercise.duration && exercise.duration > 0 && !exercise.reps && !exercise.weight) parts.push(`${exercise.duration}分`);
                         
+                        // 回数のみの記録で詳細に何も表示されない場合の対応
+                        if (showRepsInHeader && parts.length === 0) {
+                          parts.push('自重運動');
+                        }
+                        
                         // WeightSets表示
                         if (exercise.weightSets && exercise.weightSets.length > 0) {
                           return (
