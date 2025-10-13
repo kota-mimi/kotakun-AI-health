@@ -439,11 +439,11 @@ export function MyProfilePage({
     <div key={refreshKey} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/90 border border-white/60 rounded-2xl shadow-lg p-4">
-          <div className="flex items-center justify-between mb-3">
+        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/90 border border-white/60 rounded-2xl shadow-lg p-3">
+          <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-slate-900 mb-1">{userProfile.name}</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-0.5">{userProfile.name}</h2>
               <div className="flex items-center space-x-2 text-sm text-slate-600">
                 {age && <><span>{age}歳</span><span>•</span></>}
                 {gender && <><span>{gender}</span><span>•</span></>}
@@ -463,61 +463,61 @@ export function MyProfilePage({
 
           {/* 健康指標 - コンパクト横並び */}
           <div className="flex space-x-2">
-            <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500 mb-0.5">体重</div>
-              <div className="font-bold text-slate-900">{currentWeight ? `${currentWeight}kg` : '-'}</div>
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+              <div className="text-xs text-slate-500">体重</div>
+              <div className="font-bold text-slate-900 text-sm">{currentWeight ? `${currentWeight}kg` : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500 mb-0.5">BMI</div>
-              <div className="font-bold text-slate-900">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+              <div className="text-xs text-slate-500">BMI</div>
+              <div className="font-bold text-slate-900 text-sm">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2.5 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500 mb-0.5">目標</div>
-              <div className="font-bold text-slate-900">{targetWeight ? `${targetWeight}kg` : '-'}</div>
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+              <div className="text-xs text-slate-500">目標</div>
+              <div className="font-bold text-slate-900 text-sm">{targetWeight ? `${targetWeight}kg` : '-'}</div>
             </div>
           </div>
 
           {/* 1日の目安 - カロリー・PFC */}
-          <div className="mt-3 space-y-2">
+          <div className="mt-2 space-y-1.5">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
             {/* データがある時のみ表示 */}
             {finalCalories && finalProtein && finalFat && finalCarbs ? (
               <>
                 {/* カロリー */}
-                <div className="text-center p-2.5 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="text-xs text-blue-600 mb-0.5">摂取カロリー</div>
-                  <div className="font-bold text-blue-900">{finalCalories}kcal</div>
+                <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="text-xs text-blue-600">摂取カロリー</div>
+                  <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
                 </div>
                 
                 {/* PFC */}
                 <div className="flex space-x-1.5">
-                  <div className="flex-1 text-center p-2 bg-red-50 rounded border border-red-100">
-                    <div className="text-xs text-red-600 mb-0.5">タンパク質</div>
+                  <div className="flex-1 text-center p-1.5 bg-red-50 rounded border border-red-100">
+                    <div className="text-xs text-red-600">タンパク質</div>
                     <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
                   </div>
-                  <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100">
-                    <div className="text-xs text-yellow-600 mb-0.5">脂質</div>
+                  <div className="flex-1 text-center p-1.5 bg-yellow-50 rounded border border-yellow-100">
+                    <div className="text-xs text-yellow-600">脂質</div>
                     <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
                   </div>
-                  <div className="flex-1 text-center p-2 bg-green-50 rounded border border-green-100">
-                    <div className="text-xs text-green-600 mb-0.5">炭水化物</div>
+                  <div className="flex-1 text-center p-1.5 bg-green-50 rounded border border-green-100">
+                    <div className="text-xs text-green-600">炭水化物</div>
                     <div className="font-bold text-green-900 text-sm">{finalCarbs}g</div>
                   </div>
                 </div>
               </>
             ) : (
-              <div className="text-center p-4 text-slate-500">読み込み中...</div>
+              <div className="text-center p-2 text-slate-500 text-sm">読み込み中...</div>
             )}
           </div>
           
           {/* アクションボタン */}
-          <div className="mt-4 pt-3 border-t border-slate-200">
+          <div className="mt-3 pt-2 border-t border-slate-200">
             <Button
               variant="outline"
               size="sm"
               onClick={handleOpenEditModal}
-              className="w-full text-green-600 border-green-200 hover:bg-green-50"
+              className="w-full text-green-600 border-green-200 hover:bg-green-50 h-8"
             >
               プロフィール編集
             </Button>
