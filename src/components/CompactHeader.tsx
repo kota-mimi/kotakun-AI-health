@@ -107,6 +107,9 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     <div className="backdrop-blur-xl bg-white/95 border-b border-slate-200/50 shadow-sm">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
+        {/* 左スペーサー */}
+        <div className="w-8"></div>
+
         {/* 月表示（中央） */}
         <div className="flex-1 text-center">
           {customContent || <h1 className="text-lg font-semibold text-slate-900">{currentMonth}</h1>}
