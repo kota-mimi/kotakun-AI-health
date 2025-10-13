@@ -23,10 +23,19 @@ export function calculateBMR(profile: UserProfile): number {
   }
 }
 
-export function calculateTDEE(profile: UserProfile): number {
-  const bmr = calculateBMR(profile);
-  const activityMultiplier = getActivityMultiplier(profile.activityLevel);
-  return bmr * activityMultiplier;
+export function calculateTDEE(profile: UserProfile): number;
+export function calculateTDEE(bmr: number, activityLevel: string): number;
+export function calculateTDEE(profileOrBmr: UserProfile | number, activityLevel?: string): number {
+  if (typeof profileOrBmr === 'number') {
+    // BMRと活動レベルが個別に渡された場合
+    const activityMultiplier = getActivityMultiplier(activityLevel as UserProfile['activityLevel']);
+    return profileOrBmr * activityMultiplier;
+  } else {
+    // プロフィール全体が渡された場合
+    const bmr = calculateBMR(profileOrBmr);
+    const activityMultiplier = getActivityMultiplier(profileOrBmr.activityLevel);
+    return bmr * activityMultiplier;
+  }
 }
 
 function getActivityMultiplier(activityLevel: UserProfile['activityLevel']): number {
@@ -61,7 +70,7 @@ export function calculateCalorieTarget(profile: UserProfile, goals: HealthGoal[]
 export function calculateMacroTargets(calorieTarget: number) {
   return {
     protein: Math.round((calorieTarget * NUTRITION_TARGETS.PROTEIN_RATIO) / 4),
-    carbohydrates: Math.round((calorieTarget * NUTRITION_TARGETS.CARB_RATIO) / 4),
+    carbs: Math.round((calorieTarget * NUTRITION_TARGETS.CARB_RATIO) / 4),
     fat: Math.round((calorieTarget * NUTRITION_TARGETS.FAT_RATIO) / 9),
     fiber: Math.round((calorieTarget / 1000) * NUTRITION_TARGETS.FIBER_PER_1000CAL),
   };

@@ -47,6 +47,22 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
     fetchProfileData();
   }, [targetDate, liffUser?.userId]);
 
+  // プロフィール履歴更新イベントをリスニング（日付ベース用）
+  useEffect(() => {
+    const handleProfileHistoryUpdate = () => {
+      console.log('📊 プロフィール履歴更新イベント受信 - 日付ベースプロフィール再取得');
+      fetchProfileData();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('profileHistoryUpdated', handleProfileHistoryUpdate);
+      
+      return () => {
+        window.removeEventListener('profileHistoryUpdated', handleProfileHistoryUpdate);
+      };
+    }
+  }, [fetchProfileData]);
+
   return {
     profileData,
     loading,
@@ -95,11 +111,18 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       fetchLatestProfile();
     };
 
+    const handleProfileHistoryUpdate = () => {
+      console.log('📊 プロフィール履歴更新イベント受信 - 最新プロフィール再取得');
+      fetchLatestProfile();
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('counselingDataUpdated', handleProfileUpdate);
+      window.addEventListener('profileHistoryUpdated', handleProfileHistoryUpdate);
       
       return () => {
         window.removeEventListener('counselingDataUpdated', handleProfileUpdate);
+        window.removeEventListener('profileHistoryUpdated', handleProfileHistoryUpdate);
       };
     }
   }, [liffUser?.userId]);

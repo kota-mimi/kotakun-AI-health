@@ -351,13 +351,19 @@ export function MyProfilePage({
             primaryGoal: editForm.primaryGoal
           });
           console.log('✅ プロフィール履歴保存完了');
+          
+          // 成功アラート（デバッグ用）
+          alert(`プロフィール保存成功！\n\n新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n\n※この表示は開発用です`);
+          
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
             error: error.message,
             name: error.name,
             stack: error.stack
           });
-          // エラーが発生してもアプリは続行する
+          
+          // 本番環境でもエラーが見えるように一時的にアラート表示
+          alert(`プロフィール履歴保存エラー: ${error.message}\n\nエラー名: ${error.name}\n\n※この表示は開発用です`);
         }
       }
 
@@ -369,10 +375,23 @@ export function MyProfilePage({
           detail: { 
             type: 'profile_update',
             newCalories: newCalorieTarget,
-            newMacros: newMacros
+            newMacros: newMacros,
+            timestamp: new Date().toISOString()
           }
         }));
-        console.log('🔥 カスタムイベント発行 - 他コンポーネントに通知完了');
+        
+        // プロフィール履歴更新専用イベント（新規追加）
+        window.dispatchEvent(new CustomEvent('profileHistoryUpdated', {
+          detail: { 
+            type: 'profile_save',
+            userId: `firebase_${liffUser.userId}`,
+            newCalories: newCalorieTarget,
+            newMacros: newMacros,
+            timestamp: new Date().toISOString()
+          }
+        }));
+        
+        console.log('🔥 カスタムイベント発行 - counselingDataUpdated & profileHistoryUpdated');
       }
       
       // 2. 現在のコンポーネントのデータも更新

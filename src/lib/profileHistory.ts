@@ -29,16 +29,53 @@ export async function saveProfileHistory(userId: string, profileData: Omit<Profi
   try {
     const changeDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     
+    console.log('📊 プロフィール履歴保存開始:', {
+      userId,
+      profileData,
+      changeDate
+    });
+    
+    // プロフィールをUserProfile型に変換
+    const profile: UserProfile = {
+      name: profileData.name,
+      age: profileData.age,
+      gender: profileData.gender,
+      height: profileData.height,
+      weight: profileData.weight,
+      targetWeight: profileData.targetWeight,
+      activityLevel: profileData.activityLevel as UserProfile['activityLevel'],
+      goals: [{
+        type: profileData.primaryGoal as HealthGoal['type'],
+        targetValue: profileData.targetWeight
+      }],
+      sleepDuration: '8h_plus', // デフォルト値
+      sleepQuality: 'normal',
+      exerciseHabit: 'yes',
+      exerciseFrequency: 'weekly_3_4',
+      mealFrequency: '3',
+      snackFrequency: 'sometimes',
+      alcoholFrequency: 'none'
+    };
+    
+    console.log('📊 プロフィール変換完了:', profile);
+    
     // カロリーと栄養計算
     const goals: HealthGoal[] = [{
       type: profileData.primaryGoal as HealthGoal['type'],
       targetValue: profileData.targetWeight
     }];
     
-    const targetCalories = calculateCalorieTarget(profileData, goals);
+    const targetCalories = calculateCalorieTarget(profile, goals);
     const macros = calculateMacroTargets(targetCalories);
-    const bmr = calculateBMR(profileData);
-    const tdee = calculateTDEE(bmr, profileData.activityLevel as any);
+    const bmr = calculateBMR(profile);
+    const tdee = calculateTDEE(bmr, profileData.activityLevel);
+    
+    console.log('📊 計算結果:', {
+      targetCalories,
+      macros,
+      bmr,
+      tdee
+    });
     
     const historyEntry: ProfileHistoryEntry = {
       ...profileData,
@@ -49,18 +86,22 @@ export async function saveProfileHistory(userId: string, profileData: Omit<Profi
       macros
     };
     
+    console.log('📊 履歴エントリ作成:', historyEntry);
+    
     const userDocRef = doc(db, 'users', userId);
     
     // 既存データを確認
     const userDoc = await getDoc(userDocRef);
     
     if (userDoc.exists()) {
+      console.log('📊 既存ユーザー - 履歴追加');
       // 既存ユーザーの場合、履歴に追加
       await updateDoc(userDocRef, {
         profileHistory: arrayUnion(historyEntry),
         lastProfileUpdate: new Date().toISOString()
       });
     } else {
+      console.log('📊 新規ユーザー - 新規作成');
       // 新規ユーザーの場合、新規作成
       await setDoc(userDocRef, {
         userId,
@@ -72,7 +113,13 @@ export async function saveProfileHistory(userId: string, profileData: Omit<Profi
     
     console.log('✅ プロフィール履歴保存完了:', historyEntry);
   } catch (error) {
-    console.error('❌ プロフィール履歴保存エラー:', error);
+    console.error('❌ プロフィール履歴保存エラー詳細:', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      errorStack: error instanceof Error ? error.stack : 'No stack trace',
+      userId
+    });
     throw error;
   }
 }
