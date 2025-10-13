@@ -184,82 +184,8 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const currentDateData = getCurrentDateData();
   const localExerciseData = currentDateData.exerciseData || [];
 
-  // 🚨 CRITICAL FIX: データを統合する前に両方のデータセットをタイムスタンプでソートして混合
-  // ローカルとFirestoreデータを分離してソート実行前に統合
-  const allSourceData = [
-    ...localExerciseData.map(ex => ({ ...ex, dataSource: 'LOCAL' })), 
-    ...firestoreExerciseData.map(ex => ({ ...ex, dataSource: 'FIRESTORE' }))
-  ];
-  
-  console.log('🔍 RAW UNSORTED DATA:', allSourceData.map((ex, index) => ({
-    index,
-    name: ex.name,
-    time: ex.time,
-    timestamp: ex.timestamp,
-    dataSource: ex.dataSource,
-    source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
-  })));
-  
-  // 安定ソートを実装: インデックス付きでソートして元の順序を考慮
-  const indexedData = allSourceData.map((exercise, index) => ({ exercise, originalIndex: index }));
-  
-  const sortedIndexedData = indexedData.sort((a, b) => {
-    // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
-    const getTimestamp = (exercise: Exercise) => {
-      if (exercise.timestamp) {
-        let timestamp: number;
-        
-        // FirestoreのTimestampオブジェクトかチェック
-        if (exercise.timestamp && typeof exercise.timestamp === 'object' && 'toDate' in exercise.timestamp) {
-          timestamp = (exercise.timestamp as any).toDate().getTime();
-        } 
-        // 通常のDateオブジェクト
-        else if (exercise.timestamp instanceof Date) {
-          timestamp = exercise.timestamp.getTime();
-        }
-        // 文字列の場合
-        else {
-          timestamp = new Date(exercise.timestamp).getTime();
-        }
-        
-        return timestamp;
-      }
-      // timeから今日の日付でDateオブジェクトを作成（日本時間ベース）
-      const today = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-      const dateTimeString = `${today} ${exercise.time}:00`; // 秒を追加して完全な時間形式にする
-      const fallbackTime = new Date(dateTimeString).getTime();
-      return fallbackTime;
-    };
-    
-    const timeA = getTimestamp(a.exercise);
-    const timeB = getTimestamp(b.exercise);
-    
-    const comparison = timeA - timeB;
-    const sourceA = a.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
-    const sourceB = b.exercise.notes?.includes('LINE') ? 'LINE' : 'APP';
-    
-    console.log(`🔄 STABLE SORT:`, {
-      exerciseA: { name: a.exercise.name, time: a.exercise.time, calculatedTime: timeA, source: sourceA, originalIndex: a.originalIndex },
-      exerciseB: { name: b.exercise.name, time: b.exercise.time, calculatedTime: timeB, source: sourceB, originalIndex: b.originalIndex },
-      comparison,
-      result: comparison < 0 ? 'A comes first' : comparison > 0 ? 'B comes first' : 'equal (will use originalIndex)'
-    });
-    
-    // 時間が同じ場合は、記録された順番で安定ソート（LINEの方が新しいとして後に配置）
-    if (Math.abs(comparison) < 1000) { // 1秒以内は同じ時間として扱う
-      console.log(`⚖️ 時間が近いので記録源で判定: ${sourceA} vs ${sourceB}`);
-      // LINEの方を後に配置する（アプリが先、LINEが後の記録順序を時間順に変換）
-      if (sourceA !== sourceB) {
-        return sourceA === 'LINE' ? -1 : 1; // LINEを先に、APPを後に
-      }
-      return a.originalIndex - b.originalIndex; // 同じ記録源なら元の順序
-    }
-    
-    // 古い順（昇順）でソート - 記録源に関係なく時間順
-    return comparison;
-  });
-  
-  const exerciseData = sortedIndexedData.map(item => item.exercise);
+  // 🚨 CRITICAL FIX: 食事データと同じパターンでFirestoreデータのみ使用（統合を無効化）
+  const exerciseData = firestoreExerciseData;
   
   // 本番環境でも詳細ログを出力して問題を特定
   console.log('🏋️ EXERCISE DATA INTEGRATION (PRODUCTION DEBUG):', {
