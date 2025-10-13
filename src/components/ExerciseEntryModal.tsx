@@ -348,7 +348,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       case 'reps':
         config = {
           min: 0,
-          max: 50,
+          max: 1000,
           value: setIndex !== undefined ? sets[setIndex].reps : 0,
           step: 1,
           unit: '回',
@@ -785,7 +785,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
                             value={set.reps || ''}
                             onChange={(e) => {
                               const value = parseInt(e.target.value) || 0;
-                              updateSet(index, 'reps', Math.max(0, Math.min(50, value)));
+                              updateSet(index, 'reps', Math.max(0, Math.min(1000, value)));
                             }}
                             className="w-full py-3 px-3 text-center text-lg font-semibold bg-white rounded-lg border border-slate-200 focus:border-blue-400"
                             placeholder="0"

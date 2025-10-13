@@ -198,7 +198,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
       case 'reps':
         config = {
           min: 1,
-          max: 100,
+          max: 1000,
           value: setIndex !== undefined ? sets[setIndex]?.reps || 0 : 0,
           step: 1,
           unit: '回',
@@ -341,7 +341,7 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
                             value={set.reps || ''}
                             onChange={(e) => {
                               const value = parseFloat(e.target.value) || 0;
-                              updateSet(index, 'reps', Math.max(0, Math.min(100, value)));
+                              updateSet(index, 'reps', Math.max(0, Math.min(1000, value)));
                             }}
                             className="text-center text-xs h-7 flex-1"
                             style={{ fontSize: '16px' }}
