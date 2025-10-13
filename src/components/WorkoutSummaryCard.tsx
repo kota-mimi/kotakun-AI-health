@@ -106,47 +106,8 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     }
   }, [exerciseData, selectedDate]);
   
-  // 開発環境では強制的にテストデータを使用
-  let actualExerciseData;
-  if (process.env.NODE_ENV === 'development') {
-    actualExerciseData = [
-      {
-        id: 'dev-test-1',
-        name: '腕立て伏せ',
-        displayName: '腕立て伏せ 10回',
-        type: 'strength' as const,
-        duration: 0,
-        time: '21:10',
-        calories: 140,
-        reps: 10,
-        setsCount: null,
-        weight: 0,
-        weightSets: [],
-        timestamp: new Date().toISOString(),
-        notes: 'テストデータ'
-      },
-      {
-        id: 'dev-test-2', 
-        name: 'ベンチプレス',
-        displayName: 'ベンチプレス 120kg 10回 3セット',
-        type: 'strength' as const,
-        duration: 0,
-        time: '20:30',
-        calories: 280,
-        reps: 10,
-        setsCount: 3,
-        weight: 120,
-        weightSets: [{ weight: 120, reps: 10, sets: 3 }],
-        sets: [{ weight: 120, reps: 10 }],
-        timestamp: new Date(Date.now() - 60000).toISOString(),
-        notes: 'テストデータ'
-      }
-    ];
-    console.log('🧪 開発環境：強制テストデータを使用', actualExerciseData);
-  } else {
-    // プロップスが空の場合は緊急データを使用し、時系列順にソート  
-    actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
-  }
+  // プロップスが空の場合は緊急データを使用
+  let actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   
   // 緊急フェッチデータの場合はここで確実にソートが必要
   if (actualExerciseData === emergencyExerciseData && actualExerciseData.length > 0) {

@@ -184,18 +184,24 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const currentDateData = getCurrentDateData();
   const localExerciseData = currentDateData.exerciseData || [];
 
-  // ローカルストレージとFirestoreのデータを統合し、時系列順（古い順）にソート - 記録源に関係なく
-  // タイムスタンプ付きで統合してから確実にソート
-  const allExerciseData = [...localExerciseData, ...firestoreExerciseData];
-  console.log('🔍 PRE-SORT DATA:', allExerciseData.map((ex, index) => ({
+  // 🚨 CRITICAL FIX: データを統合する前に両方のデータセットをタイムスタンプでソートして混合
+  // ローカルとFirestoreデータを分離してソート実行前に統合
+  const allSourceData = [
+    ...localExerciseData.map(ex => ({ ...ex, dataSource: 'LOCAL' })), 
+    ...firestoreExerciseData.map(ex => ({ ...ex, dataSource: 'FIRESTORE' }))
+  ];
+  
+  console.log('🔍 RAW UNSORTED DATA:', allSourceData.map((ex, index) => ({
     index,
     name: ex.name,
     time: ex.time,
+    timestamp: ex.timestamp,
+    dataSource: ex.dataSource,
     source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
   })));
   
   // 安定ソートを実装: インデックス付きでソートして元の順序を考慮
-  const indexedData = allExerciseData.map((exercise, index) => ({ exercise, originalIndex: index }));
+  const indexedData = allSourceData.map((exercise, index) => ({ exercise, originalIndex: index }));
   
   const sortedIndexedData = indexedData.sort((a, b) => {
     // timestampが存在する場合はそれを使用、ない場合はtimeを基準にする
