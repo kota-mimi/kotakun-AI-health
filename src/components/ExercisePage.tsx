@@ -124,7 +124,7 @@ export function ExercisePage({
   // 今日の運動サマリー計算
   const calculateTodaySummary = () => {
     const totalCalories = exerciseData.reduce((sum, exercise) => sum + exercise.calories, 0);
-    const totalDuration = exerciseData.reduce((sum, exercise) => sum + exercise.duration, 0);
+    const totalDuration = exerciseData.reduce((sum, exercise) => sum + (exercise.duration > 0 ? exercise.duration : 0), 0);
 
     return {
       totalCalories,

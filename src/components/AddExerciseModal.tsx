@@ -70,7 +70,7 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
     const exercise = {
       name: formData.name,
       type: exerciseType,
-      duration: parseInt(formData.duration),
+      duration: parseInt(formData.duration) || 0,
       calories: parseInt(formData.calories),
       time: formData.time,
       ...(exerciseType === 'strength' && {
@@ -202,14 +202,13 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
             {/* 基本情報 */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="duration" className="text-sm font-medium text-slate-700">時間（分）</Label>
+                <Label htmlFor="duration" className="text-sm font-medium text-slate-700">時間（分）<span className="text-slate-500 text-xs ml-1">任意</span></Label>
                 <Input
                   id="duration"
                   type="number"
                   value={formData.duration}
                   onChange={(e) => handleInputChange('duration', e.target.value)}
-                  placeholder="30"
-                  required
+                  placeholder="時間を入力（任意）"
                   className="mt-1"
                 />
               </div>
@@ -352,7 +351,7 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
                 type="submit"
                 className="flex-1 text-white"
                 style={{backgroundColor: '#4682B4'}}
-                disabled={!formData.name || !formData.duration || !formData.time || !formData.calories}
+                disabled={!formData.name || !formData.time || !formData.calories}
               >
                 <Plus size={16} className="mr-2" />
                 追加

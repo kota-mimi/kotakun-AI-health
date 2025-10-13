@@ -188,7 +188,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     return timeA - timeB;
   });
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
-  const totalDuration = actualExerciseData.reduce((sum, ex) => sum + ex.duration, 0);
+  const totalDuration = actualExerciseData.reduce((sum, ex) => sum + (ex.duration > 0 ? ex.duration : 0), 0);
   const hasWorkout = actualExerciseData.length > 0;
 
   const handleDeleteClick = (e: React.MouseEvent, exercise: Exercise) => {
@@ -295,11 +295,13 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           <span className="text-xs text-slate-500">{exercise.time}</span>
                         </div>
                         <div className="text-right">
-                          {/* 回数のみの記録の場合は回数を表示、それ以外は時間を表示 */}
+                          {/* 回数のみの記録の場合は回数を表示、時間がある場合は時間を表示 */}
                           {exercise.reps && exercise.reps > 0 && exercise.duration === 0 ? (
                             <div className="font-bold text-slate-800">{exercise.reps}<span className="text-xs text-slate-600 ml-1">回</span></div>
-                          ) : (
+                          ) : exercise.duration && exercise.duration > 0 ? (
                             <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
+                          ) : (
+                            <div className="font-bold text-slate-800">-</div>
                           )}
                           {exercise.calories && (
                             <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
