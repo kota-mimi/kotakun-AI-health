@@ -11,7 +11,7 @@ import { useCounselingData } from '@/hooks/useCounselingData';
 import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
-import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE } from '@/utils/calculations';
+import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
 import type { HealthGoal } from '@/types';
 import { WeightChart } from './WeightChart';
 import { 
@@ -130,6 +130,16 @@ export function MyProfilePage({
   const finalProtein = mealManager?.calorieData?.pfc?.proteinTarget;
   const finalFat = mealManager?.calorieData?.pfc?.fatTarget;
   const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget;
+  
+  // BMR（基礎代謝）データを取得
+  const bmrData = counselingResult?.aiAnalysis?.nutritionPlan?.bmr || 
+                  counselingResult?.answers?.bmr ||
+                  (counselingResult?.answers ? calculateBMR({
+                    weight: counselingResult.answers.weight || 0,
+                    height: counselingResult.answers.height || 0,
+                    age: counselingResult.answers.age || 0,
+                    gender: counselingResult.answers.gender || 'male'
+                  }) : null);
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
@@ -478,17 +488,30 @@ export function MyProfilePage({
           </div>
 
           {/* 1日の目安 - カロリー・PFC */}
-          <div className="mt-2 space-y-1.5">
+          <div className="mt-3 space-y-2">
             <div className="text-xs font-medium text-slate-600">1日の目安</div>
             
             {/* データがある時のみ表示 */}
             {finalCalories && finalProtein && finalFat && finalCarbs ? (
               <>
-                {/* カロリー */}
-                <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="text-xs text-blue-600">摂取カロリー</div>
-                  <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
-                </div>
+                {/* カロリーセクション - BMRがあれば横並び */}
+                {bmrData ? (
+                  <div className="flex space-x-1.5">
+                    <div className="flex-1 text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="text-xs text-blue-600">摂取カロリー</div>
+                      <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
+                    </div>
+                    <div className="flex-1 text-center p-2 bg-green-50 rounded-lg border border-green-100">
+                      <div className="text-xs text-green-600">基礎代謝</div>
+                      <div className="font-bold text-green-900 text-sm">{Math.round(bmrData)}kcal</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="text-xs text-blue-600">摂取カロリー</div>
+                    <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
+                  </div>
+                )}
                 
                 {/* PFC */}
                 <div className="flex space-x-1.5">
