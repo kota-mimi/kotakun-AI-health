@@ -326,6 +326,20 @@ export function MyProfilePage({
       // プロフィール履歴をFirebaseに保存
       if (liffUser?.userId) {
         try {
+          console.log('🔥 プロフィール履歴保存開始:', {
+            userId: `firebase_${liffUser.userId}`,
+            profileData: {
+              name: editForm.name,
+              age: editForm.age,
+              gender: editForm.gender,
+              height: editForm.height,
+              weight: editForm.currentWeight,
+              targetWeight: editForm.targetWeight,
+              activityLevel: editForm.activityLevel,
+              primaryGoal: editForm.primaryGoal
+            }
+          });
+          
           await saveProfileHistory(`firebase_${liffUser.userId}`, {
             name: editForm.name,
             age: editForm.age,
@@ -338,7 +352,12 @@ export function MyProfilePage({
           });
           console.log('✅ プロフィール履歴保存完了');
         } catch (error) {
-          console.error('❌ プロフィール履歴保存エラー:', error);
+          console.error('❌ プロフィール履歴保存エラー詳細:', {
+            error: error.message,
+            name: error.name,
+            stack: error.stack
+          });
+          // エラーが発生してもアプリは続行する
         }
       }
 

@@ -114,8 +114,20 @@ export function useLatestProfile(): UseProfileHistoryReturn {
 
 // プロフィールデータから現在の日付に対応する目標値を取得するユーティリティ
 export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, counselingFallback?: any) {
+  console.log('🎯 目標値取得:', {
+    hasProfileData: !!profileData,
+    profileDate: profileData?.changeDate,
+    hasCounselingFallback: !!counselingFallback,
+    counselingStructure: counselingFallback ? {
+      hasAiAnalysis: !!counselingFallback.aiAnalysis,
+      hasNutritionPlan: !!counselingFallback.aiAnalysis?.nutritionPlan,
+      dailyCalories: counselingFallback.aiAnalysis?.nutritionPlan?.dailyCalories
+    } : null
+  });
+
   if (profileData) {
     // プロフィール履歴から取得
+    console.log('✅ プロフィール履歴から目標値取得:', profileData);
     return {
       targetCalories: profileData.targetCalories,
       bmr: profileData.bmr,
@@ -127,7 +139,7 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
 
   if (counselingFallback?.aiAnalysis?.nutritionPlan) {
     // カウンセリング結果からフォールバック
-    return {
+    const fallbackValues = {
       targetCalories: counselingFallback.aiAnalysis.nutritionPlan.dailyCalories || 2000,
       bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr || 1200,
       tdee: counselingFallback.aiAnalysis.nutritionPlan.tdee || 1800,
@@ -138,10 +150,12 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
       },
       fromHistory: false
     };
+    console.log('📋 カウンセリング結果から目標値取得:', fallbackValues);
+    return fallbackValues;
   }
 
   // デフォルト値
-  return {
+  const defaultValues = {
     targetCalories: 2000,
     bmr: 1200,
     tdee: 1800,
@@ -152,4 +166,6 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
     },
     fromHistory: false
   };
+  console.log('⚠️ デフォルト値を使用:', defaultValues);
+  return defaultValues;
 }
