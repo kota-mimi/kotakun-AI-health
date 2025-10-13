@@ -51,6 +51,7 @@ const mealTypeLabels = {
 export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsData }: AddMealModalProps) {
   const { liffUser } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isManualUploading, setIsManualUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
@@ -129,7 +130,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
   const handleManualImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && liffUser?.userId) {
-      setIsAnalyzing(true);
+      setIsManualUploading(true);
       
       try {
         console.log('🔧 Starting manual image upload via API (no AI analysis)');
@@ -159,7 +160,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
       } catch (error) {
         console.error('❌ Manual image upload failed:', error);
       } finally {
-        setIsAnalyzing(false);
+        setIsManualUploading(false);
         // input要素をクリア
         if (event.target) {
           event.target.value = '';
@@ -848,20 +849,24 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
                       onClick={() => manualCameraInputRef.current?.click()}
                       className="h-16 flex flex-col items-center justify-center space-y-1"
                       style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
-                      disabled={isAnalyzing}
+                      disabled={isManualUploading}
                     >
                       <Camera size={16} style={{color: '#4682B4'}} />
-                      <span className="text-xs" style={{color: '#4682B4'}}>カメラ</span>
+                      <span className="text-xs" style={{color: '#4682B4'}}>
+                        {isManualUploading ? 'アップロード中...' : 'カメラ'}
+                      </span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => manualAlbumInputRef.current?.click()}
                       className="h-16 flex flex-col items-center justify-center space-y-1"
                       style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
-                      disabled={isAnalyzing}
+                      disabled={isManualUploading}
                     >
                       <Upload size={16} style={{color: '#4682B4'}} />
-                      <span className="text-xs" style={{color: '#4682B4'}}>アルバム</span>
+                      <span className="text-xs" style={{color: '#4682B4'}}>
+                        {isManualUploading ? 'アップロード中...' : 'アルバム'}
+                      </span>
                     </Button>
                   </div>
                 )}
