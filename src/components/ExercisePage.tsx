@@ -303,13 +303,13 @@ export function ExercisePage({
             <div className="text-center p-3 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-600 mb-1">消費カロリー</div>
               <div className="font-bold text-slate-800">
-                {summary.totalCalories}<span className="text-sm">kcal</span>
+                {summary.totalCalories > 0 ? summary.totalCalories : '-'}<span className="text-sm">{summary.totalCalories > 0 ? 'kcal' : ''}</span>
               </div>
             </div>
             <div className="text-center p-3 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-600 mb-1">運動時間</div>
               <div className="font-bold text-slate-800">
-                {summary.totalDuration}<span className="text-sm">分</span>
+                {summary.totalDuration > 0 ? summary.totalDuration : '-'}<span className="text-sm">{summary.totalDuration > 0 ? '分' : ''}</span>
               </div>
             </div>
             <div className="text-center p-3 bg-white/60 rounded-lg">

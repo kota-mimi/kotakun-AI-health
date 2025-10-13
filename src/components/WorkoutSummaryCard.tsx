@@ -254,11 +254,11 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                   background: 'linear-gradient(to bottom right, #fefaf8, #fef0e6)'
                 }}
               >
-                <div className="text-lg font-bold text-orange-700">{totalCalories}</div>
+                <div className="text-lg font-bold text-orange-700">{totalCalories > 0 ? totalCalories : '-'}</div>
                 <div className="text-xs text-orange-600">消費カロリー</div>
               </div>
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 text-center">
-                <div className="text-lg font-bold text-blue-700">{totalDuration}</div>
+                <div className="text-lg font-bold text-blue-700">{totalDuration > 0 ? totalDuration : '-'}</div>
                 <div className="text-xs text-blue-600">運動時間（分）</div>
               </div>
             </div>
@@ -312,9 +312,12 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                       {/* 運動詳細情報 - 柔軟な表示 */}
                       {(() => {
                         const parts = [];
+                        const showRepsInHeader = exercise.reps && exercise.reps > 0 && exercise.duration === 0;
+                        
                         if (exercise.distance && exercise.distance > 0) parts.push(`${exercise.distance}km`);
                         if (exercise.weight && exercise.weight > 0) parts.push(`${exercise.weight}kg`);
-                        if (exercise.reps && exercise.reps > 0) parts.push(`${exercise.reps}回`);
+                        // 右上に回数表示されている場合は詳細では表示しない
+                        if (exercise.reps && exercise.reps > 0 && !showRepsInHeader) parts.push(`${exercise.reps}回`);
                         if (exercise.setsCount && exercise.setsCount > 1) parts.push(`${exercise.setsCount}セット`);
                         if (exercise.duration && exercise.duration > 0 && !exercise.reps && !exercise.weight) parts.push(`${exercise.duration}分`);
                         

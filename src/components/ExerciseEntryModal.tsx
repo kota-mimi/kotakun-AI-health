@@ -8,7 +8,7 @@ import { NumberPickerModal } from './NumberPickerModal';
 interface ExerciseEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { type: string; duration: number; calories: number }) => void;
+  onSubmit: (data: { type: string; duration: number; calories: number; reps?: number; weight?: number; setsCount?: number }) => void;
   userWeight: number;
 }
 
@@ -50,7 +50,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType | null>(null);
   const [selectedStrengthExercise, setSelectedStrengthExercise] = useState<StrengthExercise | null>(null);
   const [customExerciseName, setCustomExerciseName] = useState('');
-  const [duration, setDuration] = useState(30);
+  const [duration, setDuration] = useState(0);
   const [distance, setDistance] = useState(0);
   const [sets, setSets] = useState<ExerciseSet[]>([{ weight: 0, reps: 0 }]);
   const [isStrengthDropdownOpen, setIsStrengthDropdownOpen] = useState(false);
@@ -190,15 +190,35 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
         return sum;
       }, 0);
       
-      // 基本カロリー（METs値ベース）- 「その他」は常に5.0、定番種目は個別METs
-      const hours = durationMin / 60;
-      const metsValue = strengthExercise ? strengthExercise.mets : 5.0; // デフォルト5.0
-      const basicalCalories = Math.round(metsValue * weightKg * hours * 1.05);
+      const totalReps = exerciseSets.reduce((sum, set) => sum + (set.reps > 0 ? set.reps : 0), 0);
       
-      // ボリューム補正（重量×回数が多いほど消費カロリーを増加）
-      const volumeBonus = Math.round(totalVolume * 0.02); // 1kg×1rep = 0.02kcal
+      // 時間ベースと回数ベースの計算を使い分け
+      if (durationMin > 0) {
+        // 時間ベース計算
+        const hours = durationMin / 60;
+        const metsValue = strengthExercise ? strengthExercise.mets : 5.0;
+        const basicalCalories = Math.round(metsValue * weightKg * hours * 1.05);
+        const volumeBonus = Math.round(totalVolume * 0.02);
+        return basicalCalories + volumeBonus;
+      } else if (totalReps > 0) {
+        // 回数ベース計算（時間が0分の場合）
+        let baseCaloriesPerRep = 2;
+        if (strengthExercise) {
+          if (strengthExercise.name.includes('腕立て') || strengthExercise.name.includes('プッシュアップ')) {
+            baseCaloriesPerRep = 2.5;
+          } else if (strengthExercise.name.includes('腹筋')) {
+            baseCaloriesPerRep = 1.5;
+          } else if (strengthExercise.name.includes('スクワット')) {
+            baseCaloriesPerRep = 3.0;
+          } else if (strengthExercise.name.includes('プレス') || strengthExercise.name.includes('ベンチ')) {
+            baseCaloriesPerRep = 4.0;
+          }
+        }
+        const weightMultiplier = totalVolume > 0 ? 1 + (totalVolume / 1000) : 1;
+        return Math.round(baseCaloriesPerRep * totalReps * weightMultiplier);
+      }
       
-      return basicalCalories + volumeBonus;
+      return 50; // デフォルト値
     }
     
     // ランニング・ウォーキングで距離が入力されている場合は距離ベース計算
@@ -229,7 +249,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedExercise || !duration || duration <= 0) {
+    if (!selectedExercise) {
       alert('運動の種類と時間を入力してください');
       return;
     }
@@ -273,8 +293,20 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
     }
 
     // 筋トレの場合はセット情報を追加
-    if (exerciseType === 'strength' && sets.some(set => set.weight > 0 && set.reps > 0)) {
-      exerciseData.sets = sets.filter(set => set.weight > 0 && set.reps > 0);
+    if (exerciseType === 'strength') {
+      const validSets = sets.filter(set => set.weight > 0 && set.reps > 0);
+      if (validSets.length > 0) {
+        exerciseData.sets = validSets;
+      } else {
+        // 回数のみの記録の場合
+        const totalReps = sets.reduce((sum, set) => sum + (set.reps > 0 ? set.reps : 0), 0);
+        const totalWeight = sets.reduce((sum, set) => sum + (set.weight > 0 ? set.weight : 0), 0);
+        if (totalReps > 0) {
+          exerciseData.reps = totalReps;
+          if (totalWeight > 0) exerciseData.weight = totalWeight;
+          exerciseData.setsCount = sets.filter(set => set.reps > 0).length;
+        }
+      }
     }
 
     onSubmit(exerciseData);
@@ -284,7 +316,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
     setSelectedStrengthExercise(null);
     setCustomExerciseName('');
     setCustomOtherExerciseName('');
-    setDuration(30);
+    setDuration(0);
     setDistance(0);
     setSets([{ weight: 0, reps: 0 }]);
     setIsStrengthDropdownOpen(false);
