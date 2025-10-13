@@ -7,8 +7,6 @@ import { Textarea } from './ui/textarea';
 import { Card } from './ui/card';
 import { Camera, Upload, Save, X, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MealItem {
@@ -88,36 +86,43 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const uploadImageToFirebase = async (file: File): Promise<string | null> => {
     try {
       if (!liffUser?.userId) {
-        console.error('ユーザーIDが取得できません');
+        console.error('❌ ユーザーIDが取得できません');
         return null;
       }
 
-      console.log('🔧 Starting Firebase upload:', {
+      console.log('🔧 Starting API-based image upload:', {
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type,
         userId: liffUser.userId
       });
 
-      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-      const imageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const storageRef = ref(storage, `meals/${liffUser.userId}/${today}/${imageId}.jpg`);
-      
-      console.log('🔧 Uploading to path:', `meals/${liffUser.userId}/${today}/${imageId}.jpg`);
-      
-      const snapshot = await uploadBytes(storageRef, file, {
-        contentType: file.type || 'image/jpeg'
+      // サーバーサイドのAPIエンドポイント経由でアップロード
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userId', liffUser.userId);
+
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Upload API failed: ${errorData.error} - ${errorData.details}`);
+      }
+
+      const data = await response.json();
       
-      console.log('🔧 Upload completed, getting download URL...');
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      console.log('✅ Firebase Storage upload successful:', downloadURL);
-      return downloadURL;
+      if (!data.success || !data.imageUrl) {
+        throw new Error('API returned invalid response');
+      }
+
+      console.log('✅ API-based image upload successful:', data.imageUrl);
+      return data.imageUrl;
     } catch (error: any) {
-      console.error('❌ Firebase Storage upload failed:', {
+      console.error('❌ API-based image upload failed:', {
         error: error.message,
-        code: error.code,
         name: error.name,
         stack: error.stack?.split('\n').slice(0, 3)
       });
