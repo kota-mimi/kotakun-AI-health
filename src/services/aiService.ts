@@ -708,8 +708,7 @@ class AIHealthService {
   "totalCalories": 合計カロリー（整数）,
   "totalProtein": 合計タンパク質（小数点第1位まで）,
   "totalCarbs": 合計炭水化物（小数点第1位まで）,
-  "totalFat": 合計脂質（小数点第1位まで）,
-  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+  "totalFat": 合計脂質（小数点第1位まで）
 }
 
 単一の食事の場合：
@@ -722,8 +721,7 @@ class AIHealthService {
   "calories": 推定カロリー数値（整数）,
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
-  "fat": 脂質のグラム数（小数点第1位まで）,
-  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+  "fat": 脂質のグラム数（小数点第1位まで）
 }
 
 注意：
@@ -735,7 +733,6 @@ class AIHealthService {
 - **displayNameにはユーザーが入力した文字をそのまま記録（勝手に分量を追加しない）**
 - **nameには基本的な食品名のみ（「(3個)」「(1人前)」などの分量表記は追加しない）**
 - baseFoodは基本的な食品名、portionは分量部分を分離
-- アドバイスは栄養バランスや改善点を含める
 
 分量指定の例：
 - 「ご飯100g」→ displayName: "ご飯100g", baseFood: "ご飯", portion: "100g"
@@ -759,8 +756,7 @@ class AIHealthService {
         calories: 400,
         protein: 20.0,
         carbs: 50.0,
-        fat: 15.0,
-        advice: "バランスの良い食事を心がけましょう"
+        fat: 15.0
       };
     }
   }
@@ -802,8 +798,7 @@ class AIHealthService {
   "totalCalories": 合計カロリー（整数）,
   "totalProtein": 合計タンパク質（小数点第1位まで）,
   "totalCarbs": 合計炭水化物（小数点第1位まで）,
-  "totalFat": 合計脂質（小数点第1位まで）,
-  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+  "totalFat": 合計脂質（小数点第1位まで）
 }
 
 単一の料理の場合：
@@ -814,8 +809,7 @@ class AIHealthService {
   "calories": 推定カロリー数値（整数）,
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
-  "fat": 脂質のグラム数（小数点第1位まで）,
-  "advice": "この食事に対する栄養士からの簡潔なアドバイス（50文字以内）"
+  "fat": 脂質のグラム数（小数点第1位まで）
 }
 
 注意：
@@ -858,8 +852,7 @@ class AIHealthService {
         calories: 400,
         protein: 20.0,
         carbs: 50.0,
-        fat: 15.0,
-        advice: "バランスの良い食事を心がけましょう"
+        fat: 15.0
       };
     }
   }
