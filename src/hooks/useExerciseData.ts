@@ -250,11 +250,14 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     return comparison;
   });
   
-  console.log('🏋️ EXERCISE DATA INTEGRATION:', {
+  // 本番環境でも詳細ログを出力して問題を特定
+  console.log('🏋️ EXERCISE DATA INTEGRATION (PRODUCTION DEBUG):', {
     localCount: localExerciseData.length,
     firestoreCount: firestoreExerciseData.length,
     totalCount: exerciseData.length,
     selectedDate: selectedDate.toISOString().split('T')[0],
+    localData: localExerciseData.map(ex => ({ name: ex.name, time: ex.time, timestamp: ex.timestamp, notes: ex.notes })),
+    firestoreData: firestoreExerciseData.map(ex => ({ name: ex.name, time: ex.time, timestamp: ex.timestamp, notes: ex.notes })),
     finalSortedOrder: exerciseData.map((ex, index) => ({
       index,
       name: ex.name,
