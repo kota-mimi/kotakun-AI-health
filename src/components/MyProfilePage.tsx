@@ -9,8 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '.
 import { useAuth } from '@/hooks/useAuth';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useMealData } from '@/hooks/useMealData';
+import { useWeightData } from '@/hooks/useWeightData';
+import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE } from '@/utils/calculations';
 import type { HealthGoal } from '@/types';
+import { WeightChart } from './WeightChart';
 import { 
   User,
   Scale,
@@ -55,12 +58,22 @@ export function MyProfilePage({
   const { isLiffReady, isLoggedIn, liffUser, hasCompletedCounseling } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
   
+  // 日付ベースのデータマネージャーを取得
+  const dateBasedDataManager = useDateBasedData();
+  
   // ホームと同じカロリーデータを取得
   const mealManager = useMealData(
     new Date(), 
-    {}, 
+    dateBasedDataManager?.dateBasedData || {}, 
     () => {},
     counselingResult
+  );
+  
+  // 体重データを取得
+  const weightManager = useWeightData(
+    new Date(),
+    dateBasedDataManager?.dateBasedData || {},
+    () => {}
   );
   
   // 最も安全：LIFF認証完了まで待機のみ
@@ -512,6 +525,19 @@ export function MyProfilePage({
         </Card>
       </div>
 
+      {/* 体重グラフ */}
+      <div className="px-4">
+        {weightManager?.realWeightData && (
+          <WeightChart 
+            data={weightManager.realWeightData}
+            period="month"
+            height={200}
+            targetWeight={counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
+            currentWeight={weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
+            counselingResult={counselingResult}
+          />
+        )}
+      </div>
 
       {/* アカウント・プラン */}
       {renderSection('アカウント・プラン', accountMenuItems)}

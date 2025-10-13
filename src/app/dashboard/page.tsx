@@ -218,19 +218,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
               )}
             </div>
 
-            {/* 体重グラフ */}
-            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {weightManager?.realWeightData && (
-                <WeightChart 
-                  data={weightManager.realWeightData}
-                  period="month"
-                  height={175}
-                  targetWeight={counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
-                  currentWeight={weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
-                  counselingResult={counselingResult}
-                />
-              )}
-            </div>
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
