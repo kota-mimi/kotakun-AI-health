@@ -160,7 +160,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
           
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
-            setMealName(analysis.meals.map((meal: any) => meal.name).join('、'));
+            setMealName(analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、'));
             const foodItemsData = analysis.meals.map((meal: any) => ({
               id: generateId(),
               name: meal.name,
@@ -174,7 +174,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
             setTimeout(calculateTotals, 100);
           } else {
             // 単一食事の場合
-            setMealName(analysis.foodItems?.[0] || '食事');
+            setMealName(analysis.displayName || analysis.foodItems?.[0] || '食事');
             setFoodItems([{
               id: generateId(),
               name: analysis.foodItems?.[0] || '食事',
@@ -242,7 +242,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         
         if (analysis.isMultipleMeals && analysis.meals) {
           // 複数食事の場合
-          setMealName(analysis.meals.map((meal: any) => meal.name).join('、'));
+          setMealName(analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、'));
           const foodItemsData = analysis.meals.map((meal: any) => ({
             id: generateId(),
             name: meal.name,
@@ -254,7 +254,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
           setFoodItems(foodItemsData);
         } else {
           // 単一食事の場合
-          setMealName(analysis.foodItems?.[0] || textInput);
+          setMealName(analysis.displayName || analysis.foodItems?.[0] || textInput);
           setFoodItems([{
             id: generateId(),
             name: analysis.foodItems?.[0] || textInput,
