@@ -503,7 +503,7 @@ export function MyProfilePage({
                       <div className="text-xs text-blue-600">摂取カロリー</div>
                       <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
                     </div>
-                    <div className="flex-1 text-center p-2 bg-yellow-50 rounded border border-yellow-100" style={{backgroundColor: '#fefce8', borderColor: '#fef3c7'}}>
+                    <div className="flex-1 text-center p-2 bg-orange-50 rounded border border-orange-100" style={{backgroundColor: '#fff7ed', borderColor: '#fed7aa'}}>
                       <div className="text-xs text-orange-600">基礎代謝</div>
                       <div className="font-bold text-orange-900 text-sm">{Math.round(bmrData)}kcal</div>
                     </div>
@@ -521,7 +521,7 @@ export function MyProfilePage({
                     <div className="text-xs text-red-600">タンパク質</div>
                     <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
                   </div>
-                  <div className="flex-1 text-center p-1.5 bg-yellow-50 rounded border border-yellow-100">
+                  <div className="flex-1 text-center p-1.5 bg-yellow-50 rounded border border-yellow-100" style={{backgroundColor: '#fefce8', borderColor: '#fef3c7'}}>
                     <div className="text-xs text-yellow-600">脂質</div>
                     <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
                   </div>
