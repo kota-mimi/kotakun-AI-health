@@ -2,7 +2,12 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
-if (!getApps().length) {
+// Firebase Admin初期化関数
+function initializeFirebaseAdmin() {
+  if (getApps().length) {
+    return; // 既に初期化済み
+  }
+
   try {
     console.log('🔧 Firebase Admin初期化開始...');
     
@@ -55,6 +60,9 @@ if (!getApps().length) {
     throw error; // 本番環境ではエラーを再スロー
   }
 }
+
+// 初期化を実行
+initializeFirebaseAdmin();
 
 // Firestoreインスタンスを格納する変数
 let firestoreInstance: any = null;
