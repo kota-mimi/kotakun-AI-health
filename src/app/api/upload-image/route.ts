@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { admin } from '@/lib/firebase-admin';
 import { generateId } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
@@ -23,20 +22,29 @@ export async function POST(request: NextRequest) {
       userId: userId
     });
 
-    // LINEと同じ方式でアップロード
+    // Firebase Admin SDKでアップロード（LINEのWebhookと同じ権限）
+    const storage = admin.storage();
+    const bucket = storage.bucket();
+    
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const storageRef = ref(storage, `meals/${userId}/${today}/meal_${generateId()}.jpg`);
+    const fileName = `meals/${userId}/${today}/meal_${generateId()}.jpg`;
+    const adminFile = bucket.file(fileName);
     
     const fileBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(fileBuffer);
     
-    const snapshot = await uploadBytes(storageRef, uint8Array, {
-      contentType: file.type || 'image/jpeg'
+    await adminFile.save(uint8Array, {
+      metadata: {
+        contentType: file.type || 'image/jpeg'
+      }
     });
     
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    // パブリックアクセス可能にする
+    await adminFile.makePublic();
     
-    console.log('✅ API: Image upload successful:', downloadURL);
+    const downloadURL = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    
+    console.log('✅ API: Image upload successful with Admin SDK:', downloadURL);
     
     return NextResponse.json({
       success: true,
