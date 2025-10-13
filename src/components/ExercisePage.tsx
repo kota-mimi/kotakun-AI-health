@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { CompactHeader } from './CompactHeader';
 import { AddExerciseModal } from './AddExerciseModal';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
+import { ExerciseEditModal } from './ExerciseEditModal';
 
 import { 
   ArrowLeft,
@@ -94,6 +95,7 @@ export function ExercisePage({
 }: ExercisePageProps) {
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [isExerciseDetailModalOpen, setIsExerciseDetailModalOpen] = useState(false);
+  const [isExerciseEditModalOpen, setIsExerciseEditModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [activeView, setActiveView] = useState<'plans' | 'records'>('plans');
   const [showAddSet, setShowAddSet] = useState<string | null>(null);
@@ -141,8 +143,21 @@ export function ExercisePage({
   // 運動詳細モーダルから編集
   const handleEditFromDetail = () => {
     setIsExerciseDetailModalOpen(false);
-    // 編集機能は後で実装
-    console.log('編集機能は未実装');
+    setIsExerciseEditModalOpen(true);
+  };
+
+  // 運動編集処理
+  const handleUpdateExercise = (exerciseId: string, updates: Partial<Exercise>) => {
+    if (onUpdateExercise) {
+      onUpdateExercise(exerciseId, updates);
+    }
+  };
+
+  // 運動削除処理
+  const handleDeleteExercise = (exerciseId: string) => {
+    if (onDeleteExercise) {
+      onDeleteExercise(exerciseId);
+    }
   };
 
   // 運動詳細モーダルから複製
@@ -486,6 +501,18 @@ export function ExercisePage({
         exercise={selectedExercise}
         onEdit={handleEditFromDetail}
         onCopy={handleCopyFromDetail}
+      />
+
+      {/* 運動編集モーダル */}
+      <ExerciseEditModal
+        isOpen={isExerciseEditModalOpen}
+        onClose={() => {
+          setIsExerciseEditModalOpen(false);
+          setSelectedExercise(null);
+        }}
+        exercise={selectedExercise}
+        onUpdate={handleUpdateExercise}
+        onDelete={handleDeleteExercise}
       />
     </div>
   );

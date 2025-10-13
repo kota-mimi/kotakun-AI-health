@@ -18,6 +18,9 @@ interface Exercise {
   time: string;
   distance?: number;
   sets?: ExerciseSet[];
+  reps?: number;
+  weight?: number;
+  setsCount?: number;
   calories?: number;
 }
 
@@ -34,6 +37,9 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
   const [duration, setDuration] = useState(30);
   const [distance, setDistance] = useState(0);
   const [sets, setSets] = useState<ExerciseSet[]>([{ weight: 0, reps: 0 }]);
+  const [reps, setReps] = useState(0);
+  const [weight, setWeight] = useState(0);
+  const [setsCount, setSetsCount] = useState(1);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pickerConfig, setPickerConfig] = useState({ min: 0, max: 100, value: 0, step: 1, unit: '', title: '' });
   const [pickerType, setPickerType] = useState<'duration' | 'distance' | 'weight' | 'reps'>('duration');
@@ -44,6 +50,9 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
       setDuration(exercise.duration);
       setDistance(exercise.distance || 0);
       setSets(exercise.sets || [{ weight: 0, reps: 0 }]);
+      setReps(exercise.reps || 0);
+      setWeight(exercise.weight || 0);
+      setSetsCount(exercise.setsCount || 1);
     }
   }, [exercise]);
 
@@ -86,7 +95,15 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
     }
 
     if (exercise.type === 'strength') {
-      updates.sets = sets.filter(set => set.weight > 0 && set.reps > 0);
+      if (exercise.sets && exercise.sets.length > 0) {
+        // 詳細セット情報がある場合
+        updates.sets = sets.filter(set => set.weight > 0 && set.reps > 0);
+      } else {
+        // 簡単な回数のみの記録の場合
+        updates.reps = reps;
+        updates.weight = weight;
+        updates.setsCount = setsCount;
+      }
     }
 
     onUpdate(exercise.id, updates);
@@ -256,63 +273,126 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
 
           {/* セット情報（筋トレの場合） */}
           {exercise.type === 'strength' && (
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-700 text-xs">セット情報</Label>
-                <button
-                  type="button"
-                  onClick={addSet}
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  + 追加
-                </button>
-              </div>
-              
-              <div className="space-y-1">
-                {sets.map((set, index) => (
-                  <div key={index} className="bg-slate-50 rounded p-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600 w-8">#{index + 1}</span>
+            <div className="space-y-3">
+              {/* 詳細セット情報がある場合 */}
+              {exercise.sets && exercise.sets.length > 0 ? (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-700 text-xs">詳細セット情報</Label>
+                    <button
+                      type="button"
+                      onClick={addSet}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      + 追加
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    {sets.map((set, index) => (
+                      <div key={index} className="bg-slate-50 rounded p-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-600 w-8">#{index + 1}</span>
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={set.weight || ''}
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              updateSet(index, 'weight', Math.max(0, Math.min(200, value)));
+                            }}
+                            className="text-center text-xs h-7 flex-1"
+                            style={{ fontSize: '16px' }}
+                          />
+                          <span className="text-xs text-slate-500">kg</span>
+                          <span className="text-xs text-slate-400">×</span>
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={set.reps || ''}
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              updateSet(index, 'reps', Math.max(0, Math.min(100, value)));
+                            }}
+                            className="text-center text-xs h-7 flex-1"
+                            style={{ fontSize: '16px' }}
+                          />
+                          <span className="text-xs text-slate-500">回</span>
+                          {sets.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeSet(index)}
+                              className="text-red-500 hover:text-red-600 p-1"
+                            >
+                              <Minus size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* 簡単な回数のみの記録の場合 */
+                <div className="space-y-2">
+                  <Label className="text-slate-700 text-xs">運動記録</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-slate-600 text-xs">重量</Label>
                       <Input
                         type="number"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={set.weight || ''}
+                        value={weight || ''}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value) || 0;
-                          updateSet(index, 'weight', Math.max(0, Math.min(200, value)));
+                          setWeight(Math.max(0, Math.min(200, value)));
                         }}
-                        className="text-center text-xs h-7 flex-1"
+                        className="text-center text-xs h-8 mt-1"
                         style={{ fontSize: '16px' }}
+                        placeholder="0"
                       />
-                      <span className="text-xs text-slate-500">kg</span>
-                      <span className="text-xs text-slate-400">×</span>
+                      <div className="text-xs text-slate-500 text-center mt-1">kg</div>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-xs">回数</Label>
                       <Input
                         type="number"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={set.reps || ''}
+                        value={reps || ''}
                         onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          updateSet(index, 'reps', Math.max(0, Math.min(100, value)));
+                          const value = parseInt(e.target.value) || 0;
+                          setReps(Math.max(0, Math.min(1000, value)));
                         }}
-                        className="text-center text-xs h-7 flex-1"
+                        className="text-center text-xs h-8 mt-1"
                         style={{ fontSize: '16px' }}
+                        placeholder="0"
                       />
-                      <span className="text-xs text-slate-500">回</span>
-                      {sets.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSet(index)}
-                          className="text-red-500 hover:text-red-600 p-1"
-                        >
-                          <Minus size={12} />
-                        </button>
-                      )}
+                      <div className="text-xs text-slate-500 text-center mt-1">回</div>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-xs">セット数</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={setsCount || ''}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          setSetsCount(Math.max(0, Math.min(20, value)));
+                        }}
+                        className="text-center text-xs h-8 mt-1"
+                        style={{ fontSize: '16px' }}
+                        placeholder="1"
+                      />
+                      <div className="text-xs text-slate-500 text-center mt-1">セット</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
 

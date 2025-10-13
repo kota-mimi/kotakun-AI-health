@@ -10,6 +10,9 @@ interface Exercise {
   duration: number;
   calories: number;
   sets?: { weight: number; reps: number; }[];
+  reps?: number;
+  weight?: number;
+  setsCount?: number;
   distance?: number;
   time: string;
   notes?: string;
@@ -154,44 +157,72 @@ export function ExerciseDetailModal({
             </Card>
           )}
 
-          {/* 筋トレの詳細（セット） */}
-          {exercise.type === 'strength' && exercise.sets && exercise.sets.length > 0 && (
+          {/* 筋トレの詳細 */}
+          {exercise.type === 'strength' && (
             <Card className="p-4">
               <div className="flex items-center space-x-2 mb-3">
                 <Zap size={16} style={{color: '#F59E0B'}} />
-                <span className="text-sm font-medium text-slate-700">セット詳細</span>
+                <span className="text-sm font-medium text-slate-700">
+                  {exercise.sets && exercise.sets.length > 0 ? 'セット詳細' : '運動詳細'}
+                </span>
               </div>
-              <div className="space-y-2">
-                {exercise.sets.map((set, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-slate-700">セット {index + 1}</span>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-center">
-                        <div className="text-xs text-slate-600">重量</div>
-                        <div className="text-sm font-bold text-slate-800">{set.weight}kg</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-slate-600">回数</div>
-                        <div className="text-sm font-bold text-slate-800">{set.reps}回</div>
+              
+              {/* 詳細セット情報がある場合 */}
+              {exercise.sets && exercise.sets.length > 0 ? (
+                <div className="space-y-2">
+                  {exercise.sets.map((set, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-slate-700">セット {index + 1}</span>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="text-xs text-slate-600">重量</div>
+                          <div className="text-sm font-bold text-slate-800">{set.weight}kg</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-slate-600">回数</div>
+                          <div className="text-sm font-bold text-slate-800">{set.reps}回</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-xs text-slate-600">総セット数</div>
-                      <div className="text-lg font-bold text-slate-800">{exercise.sets.length}set</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-600">最大重量</div>
-                      <div className="text-lg font-bold text-slate-800">
-                        {Math.max(...exercise.sets.map(s => s.weight))}kg
+                  ))}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <div className="text-xs text-slate-600">総セット数</div>
+                        <div className="text-lg font-bold text-slate-800">{exercise.sets.length}set</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-600">最大重量</div>
+                        <div className="text-lg font-bold text-slate-800">
+                          {Math.max(...exercise.sets.map(s => s.weight))}kg
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* 簡単な回数のみの記録の場合 */
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  {exercise.weight && exercise.weight > 0 && (
+                    <div>
+                      <div className="text-xs text-slate-600">重量</div>
+                      <div className="text-xl font-bold text-slate-800">{exercise.weight}kg</div>
+                    </div>
+                  )}
+                  {exercise.reps && exercise.reps > 0 && (
+                    <div>
+                      <div className="text-xs text-slate-600">回数</div>
+                      <div className="text-xl font-bold text-slate-800">{exercise.reps}回</div>
+                    </div>
+                  )}
+                  {exercise.setsCount && exercise.setsCount > 1 && (
+                    <div>
+                      <div className="text-xs text-slate-600">セット数</div>
+                      <div className="text-xl font-bold text-slate-800">{exercise.setsCount}セット</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           )}
 
