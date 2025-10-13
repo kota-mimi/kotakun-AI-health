@@ -412,7 +412,7 @@ export function MyProfilePage({
       
       {/* メニューカード - iOS風 */}
       <div className="mx-4">
-        <Card className="backdrop-blur-xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-sm overflow-hidden">
+        <Card className="backdrop-blur-xl bg-orange-50/95 border border-orange-200/50 rounded-2xl shadow-sm overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               const Icon = item.icon;
@@ -449,7 +449,7 @@ export function MyProfilePage({
     <div key={refreshKey} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/90 border border-white/60 rounded-2xl shadow-lg p-3">
+        <Card className="backdrop-blur-xl bg-gradient-to-br from-orange-50/95 to-orange-100/90 border border-orange-200/60 rounded-2xl shadow-lg p-3">
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
