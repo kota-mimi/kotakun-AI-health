@@ -81,7 +81,7 @@ export function MyProfilePage({
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
-        <div className="bg-orange-50/90 rounded-xl shadow-sm border border-orange-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
             <div className="flex-1">
@@ -414,7 +414,7 @@ export function MyProfilePage({
       
       {/* メニューカード - iOS風 */}
       <div className="mx-4">
-        <Card className="bg-orange-50/95 border border-orange-200/50 rounded-2xl shadow-sm overflow-hidden">
+        <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               const Icon = item.icon;
@@ -422,7 +422,7 @@ export function MyProfilePage({
                 <Button
                   key={index}
                   variant="ghost"
-                  className="w-full justify-start p-0 h-auto hover:bg-orange-100/70 rounded-none"
+                  className="w-full justify-start p-0 h-auto hover:bg-slate-50 rounded-none"
                   onClick={item.action}
                 >
                   <div className="flex items-center space-x-4 py-4 px-4 w-full">
@@ -448,10 +448,10 @@ export function MyProfilePage({
 
 
   return (
-    <div key={refreshKey} className="space-y-8 pb-4 min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+    <div key={refreshKey} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className="bg-gradient-to-br from-orange-50/95 to-orange-100/90 border border-orange-200/60 rounded-2xl shadow-lg p-3">
+        <Card className="bg-white border border-slate-200 rounded-xl shadow-sm p-3">
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
@@ -475,15 +475,15 @@ export function MyProfilePage({
 
           {/* 健康指標 - コンパクト横並び */}
           <div className="flex space-x-2">
-            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">体重</div>
               <div className="font-bold text-slate-900 text-sm">{currentWeight ? `${currentWeight}kg` : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">BMI</div>
               <div className="font-bold text-slate-900 text-sm">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
             </div>
-            <div className="flex-1 text-center p-2 bg-orange-50/80 rounded-lg">
+            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">目標</div>
               <div className="font-bold text-slate-900 text-sm">{targetWeight ? `${targetWeight}kg` : '-'}</div>
             </div>

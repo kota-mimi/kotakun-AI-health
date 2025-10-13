@@ -146,7 +146,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       {navigation.activeTab === 'profile' && (
         <>
           {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showPaymentSettings && !navigation.showUserGuide && !navigation.showContact ? (
-            <div className="relative py-4 pb-20 space-y-4 bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
                 onNavigateToData={() => {}} // 削除：データページはもうない
