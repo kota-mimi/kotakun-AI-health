@@ -148,7 +148,24 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = (exerciseData && exerciseData.length > 0) ? exerciseData : emergencyExerciseData;
   }
   
-  // useExerciseDataで既にソート済みなので、ここでは再ソートしない
+  // 緊急フェッチデータの場合はここでソートが必要
+  if (actualExerciseData === emergencyExerciseData && actualExerciseData.length > 0) {
+    console.log('🚨 緊急フェッチデータを使用中 - ソートを実行');
+    actualExerciseData = [...actualExerciseData].sort((a, b) => {
+      const getTime = (ex: Exercise) => {
+        if (ex.timestamp) {
+          if (typeof ex.timestamp === 'string') return new Date(ex.timestamp).getTime();
+          if (ex.timestamp instanceof Date) return ex.timestamp.getTime();
+          if (typeof ex.timestamp === 'object' && 'toDate' in ex.timestamp) {
+            return (ex.timestamp as any).toDate().getTime();
+          }
+        }
+        return new Date(`${selectedDate.toISOString().split('T')[0]} ${ex.time}:00`).getTime();
+      };
+      return getTime(a) - getTime(b); // 古い順
+    });
+  }
+  
   console.log('💪 WSC RECEIVED DATA ORDER:', actualExerciseData.map((ex, index) => ({
     index,
     name: ex.name,
