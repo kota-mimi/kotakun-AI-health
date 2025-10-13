@@ -8,7 +8,7 @@ import { Card } from './ui/card';
 import { Camera, Upload, Save, X, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MealItem {
@@ -65,6 +65,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       setCarbs(meal.carbs?.toString() || '');
       setTime(meal.time);
       setUploadedImage(meal.image || null);
+      setUploadedFile(null); // ファイルもリセット
       setNotes('');
     }
   }, [meal, isOpen]);
@@ -91,17 +92,35 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
         return null;
       }
 
+      console.log('🔧 Starting Firebase upload:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        userId: liffUser.userId
+      });
+
       const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const imageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const storageRef = ref(storage, `meals/${liffUser.userId}/${today}/${imageId}.jpg`);
       
-      const snapshot = await uploadBytes(storageRef, file);
+      console.log('🔧 Uploading to path:', `meals/${liffUser.userId}/${today}/${imageId}.jpg`);
+      
+      const snapshot = await uploadBytes(storageRef, file, {
+        contentType: file.type || 'image/jpeg'
+      });
+      
+      console.log('🔧 Upload completed, getting download URL...');
       const downloadURL = await getDownloadURL(snapshot.ref);
       
       console.log('✅ Firebase Storage upload successful:', downloadURL);
       return downloadURL;
-    } catch (error) {
-      console.error('❌ Firebase Storage upload failed:', error);
+    } catch (error: any) {
+      console.error('❌ Firebase Storage upload failed:', {
+        error: error.message,
+        code: error.code,
+        name: error.name,
+        stack: error.stack?.split('\n').slice(0, 3)
+      });
       return null;
     }
   };
@@ -119,6 +138,19 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     if (uploadedFile) {
       console.log('🔧 Uploading new image to Firebase Storage...');
       setIsAnalyzing(true);
+      
+      // 既存の画像がある場合は削除を試行（エラーは無視）
+      if (meal.image && meal.image.includes('firebasestorage.googleapis.com')) {
+        try {
+          const oldImageRef = ref(storage, meal.image);
+          await deleteObject(oldImageRef);
+          console.log('🗑️ Old image deleted successfully');
+        } catch (error) {
+          console.log('🗑️ Old image deletion failed (may not exist):', error);
+          // エラーを無視して続行
+        }
+      }
+      
       finalImageUrl = await uploadImageToFirebase(uploadedFile);
       setIsAnalyzing(false);
       
@@ -127,6 +159,30 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
         return;
       }
     }
+    
+    // 画像が削除された場合（元々あったが今はnull）の処理
+    if (meal.image && !finalImageUrl && !uploadedFile) {
+      console.log('🗑️ Image being deleted, removing from Firebase Storage...');
+      if (meal.image.includes('firebasestorage.googleapis.com')) {
+        try {
+          const oldImageRef = ref(storage, meal.image);
+          await deleteObject(oldImageRef);
+          console.log('🗑️ Image deleted from Firebase Storage successfully');
+        } catch (error) {
+          console.log('🗑️ Image deletion failed (may not exist):', error);
+          // エラーを無視して続行
+        }
+      }
+    }
+    
+    // デバッグ用ログ
+    console.log('🔧 Image update debug:', {
+      originalImage: meal.image,
+      uploadedImage: uploadedImage,
+      uploadedFile: !!uploadedFile,
+      finalImageUrl: finalImageUrl,
+      isImageDeleted: meal.image && !finalImageUrl && !uploadedFile
+    });
 
     const updatedMeal: MealItem = {
       ...meal,
@@ -164,6 +220,7 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   };
 
   const handleClearImage = () => {
+    console.log('🗑️ Clearing image - original image will be deleted on save');
     setUploadedImage(null);
     setUploadedFile(null);
     if (fileInputRef.current) {
