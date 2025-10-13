@@ -75,9 +75,36 @@ export function ExerciseEditModal({ isOpen, onClose, onUpdate, onDelete, exercis
                     exercise.name === 'ウォーキング' ? 3.5 : 6.0;
         return Math.round(mets * userWeight * (duration / 60) * 1.05);
       } else if (exercise.type === 'strength') {
-        // 筋トレ：METs値 × 体重(kg) × 時間(時) × 1.05
-        const mets = 6.0; // 筋力トレーニングの平均METs値
-        return Math.round(mets * userWeight * (duration / 60) * 1.05);
+        // 筋トレの場合
+        if (duration > 0) {
+          // 時間ベースの計算：METs値 × 体重(kg) × 時間(時) × 1.05
+          const mets = 6.0; // 筋力トレーニングの平均METs値
+          return Math.round(mets * userWeight * (duration / 60) * 1.05);
+        } else if (reps > 0) {
+          // 回数ベースの計算：筋トレの場合は回数に基づいた推定
+          let baseCaloriesPerRep = 2; // 基本の1回あたりのカロリー
+          
+          // 運動の種類に応じた係数
+          if (exercise.name.includes('腕立て') || exercise.name.includes('プッシュアップ')) {
+            baseCaloriesPerRep = 2.5;
+          } else if (exercise.name.includes('腹筋')) {
+            baseCaloriesPerRep = 1.5;
+          } else if (exercise.name.includes('スクワット')) {
+            baseCaloriesPerRep = 3.0;
+          } else if (exercise.name.includes('プレス') || exercise.name.includes('ベンチ')) {
+            baseCaloriesPerRep = 4.0;
+          }
+          
+          // 重量による係数（重いほど消費カロリー増）
+          const weightMultiplier = weight > 0 ? 1 + (weight / 100) : 1;
+          
+          // セット数による係数
+          const setMultiplier = setsCount > 1 ? setsCount : 1;
+          
+          return Math.round(baseCaloriesPerRep * reps * weightMultiplier * setMultiplier);
+        } else {
+          return 50; // デフォルト値
+        }
       } else {
         // その他の運動
         const mets = 4.0;

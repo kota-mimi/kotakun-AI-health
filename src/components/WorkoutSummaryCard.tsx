@@ -341,7 +341,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                         if (parts.length > 0) {
                           return (
                             <div className="mt-2 text-xs">
-                              <span className="text-blue-600 font-medium">
+                              <span className="text-orange-600 font-medium">
                                 {parts.join(' × ')}
                               </span>
                             </div>
