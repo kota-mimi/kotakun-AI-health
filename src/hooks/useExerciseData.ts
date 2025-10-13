@@ -297,8 +297,13 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       
       optimisticUpdate();
       
-      // Firestoreから削除
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      // Firestoreから削除（日本時間ベース）
+      const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
+      console.log('🔍 PRODUCTION DEBUG: Exercise delete date conversion:', { 
+        selectedDate: selectedDate.toString(),
+        utcDate: selectedDate.toISOString().split('T')[0],
+        japanDate: dateStr
+      });
       const response = await fetch('/api/exercises', {
         method: 'DELETE',
         headers: {
@@ -379,8 +384,13 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       
       optimisticUpdate();
       
-      // Firestoreで更新
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      // Firestoreで更新（日本時間ベース）
+      const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
+      console.log('🔍 PRODUCTION DEBUG: Exercise update date conversion:', { 
+        selectedDate: selectedDate.toString(),
+        utcDate: selectedDate.toISOString().split('T')[0],
+        japanDate: dateStr
+      });
       const response = await fetch('/api/exercises', {
         method: 'PUT',
         headers: {
