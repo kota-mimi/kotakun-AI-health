@@ -3,6 +3,7 @@ import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { useProfileHistory, getTargetValuesForDate } from '@/hooks/useProfileHistory';
 
 interface PFCData {
   protein: number;
@@ -32,12 +33,16 @@ interface CalorieCardProps {
   pfc: PFCData;
   counselingResult?: CounselingResult | null;
   exerciseData?: Array<{ calories: number; duration: number; type: string }>;
+  selectedDate: Date;
 }
 
-export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [] }: CalorieCardProps) {
+export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [], selectedDate }: CalorieCardProps) {
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
   const [isMounted, setIsMounted] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // 日付に基づくプロフィールデータを取得
+  const { profileData } = useProfileHistory(selectedDate);
   
   useEffect(() => {
     setIsMounted(true);
@@ -47,11 +52,13 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const displayTotalCalories = isMounted ? totalCalories : 0;
   const displayPfc = isMounted ? pfc : { protein: 0, fat: 0, carbs: 0, proteinTarget: 0, fatTarget: 0, carbsTarget: 0 };
   
-  // カウンセリング結果があればそれを優先、なければ既存データを使用
-  const finalTargetCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || targetCalories;
-  const finalProteinTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || displayPfc.proteinTarget;
-  const finalFatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || displayPfc.fatTarget;
-  const finalCarbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || displayPfc.carbsTarget;
+  // 日付に基づいて目標値を取得（プロフィール履歴を優先、なければカウンセリング結果、最後にpropsから）
+  const targetValues = getTargetValuesForDate(profileData, counselingResult);
+  
+  const finalTargetCalories = targetValues.targetCalories;
+  const finalProteinTarget = targetValues.macros.protein;
+  const finalFatTarget = targetValues.macros.fat;
+  const finalCarbsTarget = targetValues.macros.carbs;
   
   // 本番環境ログ
   console.log('🥗 CalorieCard DETAILED:', {
@@ -77,10 +84,11 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const fatProgress = finalFatTarget > 0 ? Math.round((displayPfc.fat / finalFatTarget) * 100 * 10) / 10 : 0;
   const carbsProgress = finalCarbsTarget > 0 ? Math.round((displayPfc.carbs / finalCarbsTarget) * 100 * 10) / 10 : 0;
 
-  // 消費カロリーデータ（カウンセリング結果に基づく動的計算）
-  const basalMetabolismBase = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
-    ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 0.7) // 摂取カロリーの70%を基礎代謝とする
-    : 0;
+  // 消費カロリーデータ（日付ベースのプロフィールデータを優先）
+  const basalMetabolismBase = targetValues.bmr || 
+    (counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
+      ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 0.7) // フォールバック: 摂取カロリーの70%を基礎代謝とする
+      : 0);
   
   // 運動による消費カロリー（実際の運動データから計算）
   const exerciseCalories = exerciseData.reduce((sum, exercise) => sum + (exercise.calories || 0), 0);

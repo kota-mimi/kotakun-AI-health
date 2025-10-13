@@ -228,6 +228,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   pfc={mealManager.calorieData?.pfc || { protein: 0, fat: 0, carbs: 0, proteinTarget: 120, fatTarget: 60, carbsTarget: 250 }}
                   counselingResult={counselingResult}
                   exerciseData={exerciseManager?.exerciseData || []}
+                  selectedDate={navigation.selectedDate}
                 />
               )}
             </div>

@@ -12,6 +12,8 @@ import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
+import { saveProfileHistory } from '@/lib/profileHistory';
+import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
 import type { HealthGoal } from '@/types';
 import { WeightChart } from './WeightChart';
 import { 
@@ -76,6 +78,9 @@ export function MyProfilePage({
     () => {}
   );
   
+  // 最新のプロフィールデータを取得
+  const { profileData: latestProfile } = useLatestProfile();
+  
   // 最も安全：LIFF認証完了まで待機のみ
   if (!isLiffReady || !isLoggedIn) {
     return (
@@ -126,22 +131,14 @@ export function MyProfilePage({
   const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
   
   // 固定値を完全削除 - データがある時のみ表示
-  const finalCalories = mealManager?.calorieData?.targetCalories;
-  const finalProtein = mealManager?.calorieData?.pfc?.proteinTarget;
-  const finalFat = mealManager?.calorieData?.pfc?.fatTarget;
-  const finalCarbs = mealManager?.calorieData?.pfc?.carbsTarget;
+  // 最新のプロフィールデータに基づく目標値を取得
+  const targetValues = getTargetValuesForDate(latestProfile, counselingResult);
   
-  // BMR（基礎代謝）データを取得 - ホームのCalorieCardと同じ計算方法を使用
-  const bmrData = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
-    ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 0.7) // 摂取カロリーの70%を基礎代謝とする
-    : (counselingResult?.aiAnalysis?.nutritionPlan?.bmr || 
-       counselingResult?.answers?.bmr ||
-       (counselingResult?.answers ? calculateBMR({
-         weight: counselingResult.answers.weight || 0,
-         height: counselingResult.answers.height || 0,
-         age: counselingResult.answers.age || 0,
-         gender: counselingResult.answers.gender || 'male'
-       }) : null));
+  const finalCalories = targetValues.targetCalories;
+  const finalProtein = targetValues.macros.protein;
+  const finalFat = targetValues.macros.fat;
+  const finalCarbs = targetValues.macros.carbs;
+  const bmrData = targetValues.bmr;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
@@ -326,6 +323,25 @@ export function MyProfilePage({
       // モーダルを閉じる
       setIsEditModalOpen(false);
       
+      // プロフィール履歴をFirebaseに保存
+      if (liffUser?.userId) {
+        try {
+          await saveProfileHistory(`firebase_${liffUser.userId}`, {
+            name: editForm.name,
+            age: editForm.age,
+            gender: editForm.gender,
+            height: editForm.height,
+            weight: editForm.currentWeight,
+            targetWeight: editForm.targetWeight,
+            activityLevel: editForm.activityLevel,
+            primaryGoal: editForm.primaryGoal
+          });
+          console.log('✅ プロフィール履歴保存完了');
+        } catch (error) {
+          console.error('❌ プロフィール履歴保存エラー:', error);
+        }
+      }
+
       console.log('🔥 プロフィール更新完了 - リアルタイム反映開始');
       
       // 1. カスタムイベントを発行して他のコンポーネントに即座に通知
