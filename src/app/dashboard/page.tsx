@@ -140,7 +140,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-gradient-to-br from-orange-50 to-amber-50">
       
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
