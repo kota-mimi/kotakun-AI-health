@@ -174,9 +174,22 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
     } : null
   });
 
-  // 🚨 優先順位変更: 最新のaiAnalysisがあればそれを優先（リアルタイム更新対応）
+  // ✅ 正しい優先順位: 日付ベースのプロフィール履歴を最優先
+  if (profileData) {
+    // プロフィール履歴から取得（日付ベース - 最優先）
+    console.log('✅ プロフィール履歴から目標値取得（日付ベース）:', profileData);
+    return {
+      targetCalories: profileData.targetCalories,
+      bmr: profileData.bmr,
+      tdee: profileData.tdee,
+      macros: profileData.macros,
+      fromHistory: true
+    };
+  }
+
+  // 📅 プロフィール履歴がない場合のフォールバック: 最新のaiAnalysis
   if (counselingFallback?.aiAnalysis?.nutritionPlan?.bmr && counselingFallback?.aiAnalysis?.nutritionPlan?.tdee) {
-    const freshValues = {
+    const fallbackValues = {
       targetCalories: counselingFallback.aiAnalysis.nutritionPlan.dailyCalories,
       bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr,
       tdee: counselingFallback.aiAnalysis.nutritionPlan.tdee,
@@ -187,20 +200,8 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
       },
       fromHistory: false
     };
-    console.log('🔥 最新aiAnalysisから目標値取得（優先）:', freshValues);
-    return freshValues;
-  }
-
-  if (profileData) {
-    // プロフィール履歴から取得（aiAnalysisがない場合のフォールバック）
-    console.log('✅ プロフィール履歴から目標値取得（フォールバック）:', profileData);
-    return {
-      targetCalories: profileData.targetCalories,
-      bmr: profileData.bmr,
-      tdee: profileData.tdee,
-      macros: profileData.macros,
-      fromHistory: true
-    };
+    console.log('📋 最新aiAnalysisから目標値取得（フォールバック）:', fallbackValues);
+    return fallbackValues;
   }
 
   // カウンセリング結果から計算済みの値を取得、または動的計算

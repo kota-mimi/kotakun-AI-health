@@ -383,8 +383,31 @@ export class FirestoreService {
         const profileDoc = await getDoc(profileHistoryRef);
         
         if (profileDoc.exists()) {
+          console.log('📅 指定日付のプロフィール取得:', targetDate, profileDoc.data());
           return profileDoc.data();
         }
+        
+        // 指定日付にない場合、その日付以前の最新プロフィールを取得
+        const allProfilesRef = collection(db, 'users', lineUserId, 'profileHistory');
+        const querySnapshot = await getDocs(allProfilesRef);
+        
+        const profiles = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          changeDate: doc.id, // docのIDが日付
+          ...doc.data(),
+        }));
+        
+        // 指定日付以前の履歴のみをフィルタして最新を取得
+        const validProfiles = profiles.filter(profile => profile.changeDate <= targetDate);
+        
+        if (validProfiles.length > 0) {
+          const latestValidProfile = validProfiles.sort((a, b) => b.changeDate.localeCompare(a.changeDate))[0];
+          console.log('📅 指定日付以前の最新プロフィール取得:', targetDate, '→', latestValidProfile.changeDate);
+          return latestValidProfile;
+        }
+        
+        console.log('📅 指定日付以前のプロフィールなし:', targetDate);
+        return null;
       }
       
       // 全ての履歴を取得
