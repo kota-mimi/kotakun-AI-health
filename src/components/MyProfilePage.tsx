@@ -850,7 +850,7 @@ export function MyProfilePage({
                 <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent style={{minWidth: '450px', width: '450px'}} className="p-2">
+                <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
                   <SelectItem value="male" className="text-base py-3 px-4">男性</SelectItem>
                   <SelectItem value="female" className="text-base py-3 px-4">女性</SelectItem>
                   <SelectItem value="other" className="text-base py-3 px-4">その他</SelectItem>
@@ -913,7 +913,7 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
-              <SelectContent style={{minWidth: '450px', width: '450px'}} className="p-2">
+              <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
                 <SelectItem value="sedentary" className="text-base py-3 px-4">ほとんど運動しない</SelectItem>
                 <SelectItem value="light" className="text-base py-3 px-4">軽い運動をする</SelectItem>
                 <SelectItem value="moderate" className="text-base py-3 px-4">定期的に運動する</SelectItem>
