@@ -445,6 +445,91 @@ export function MyProfilePage({
             profileHistoryResult
           });
 
+          // LocalStorageとFirestoreのカウンセリングデータも更新（同期保持）
+          const updatedCounselingData = {
+            answers: {
+              ...counselingResult?.answers,
+              name: editForm.name,
+              age: editForm.age,
+              gender: editForm.gender,
+              height: editForm.height,
+              weight: editForm.currentWeight,
+              targetWeight: editForm.targetWeight,
+              activityLevel: editForm.activityLevel,
+              primaryGoal: editForm.primaryGoal
+            },
+            aiAnalysis: {
+              ...counselingResult?.aiAnalysis,
+              nutritionPlan: {
+                ...counselingResult?.aiAnalysis?.nutritionPlan,
+                dailyCalories: newCalorieTarget,
+                bmr: newBMR,
+                tdee: newTDEE,
+                macros: newMacros
+              }
+            }
+          };
+          
+          // LocalStorage更新（カウンセリングと同じキーを使用）
+          localStorage.setItem('counselingAnswers', JSON.stringify(updatedCounselingData.answers));
+          localStorage.setItem('counselingResult', JSON.stringify({
+            id: `profile_update_${Date.now()}`,
+            answers: updatedCounselingData.answers,
+            results: {
+              bmr: Math.round(newBMR),
+              tdee: Math.round(newTDEE),
+              targetCalories: Math.round(newCalorieTarget),
+              targetWeight: editForm.targetWeight,
+              pfc: newMacros
+            },
+            aiAnalysis: updatedCounselingData.aiAnalysis,
+            createdAt: new Date().toISOString()
+          }));
+          localStorage.setItem('hasCompletedCounseling', 'true');
+          console.log('✅ LocalStorage更新完了（カウンセリング形式）');
+          
+          // カウンセリング結果APIでFirestoreも更新
+          try {
+            const counselingResponse = await fetch('/api/counseling/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                lineUserId: liffUser.userId,
+                counselingResult: updatedCounselingData
+              })
+            });
+            
+            if (counselingResponse.ok) {
+              console.log('✅ カウンセリングデータFirestore更新完了');
+            }
+          } catch (counselingError) {
+            console.error('⚠️ カウンセリングデータ更新エラー（続行）:', counselingError);
+          }
+
+          // Firestore書き込み完了後にイベントを発行
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
+              detail: { 
+                type: 'profile_update',
+                newCalories: newCalorieTarget,
+                newMacros: newMacros,
+                timestamp: new Date().toISOString()
+              }
+            }));
+            
+            window.dispatchEvent(new CustomEvent('profileHistoryUpdated', {
+              detail: { 
+                type: 'profile_save',
+                userId: liffUser.userId,
+                newCalories: newCalorieTarget,
+                newMacros: newMacros,
+                timestamp: new Date().toISOString()
+              }
+            }));
+            
+            console.log('🔥 全データ更新完了後にイベント発行');
+          }
+
           // 成功アラート（変更内容を含む）
           alert(`プロフィール保存成功！\n\n📝 変更内容:\n- 名前: ${editForm.name}\n- 年齢: ${editForm.age}歳\n- 性別: ${editForm.gender === 'male' ? '男性' : editForm.gender === 'female' ? '女性' : 'その他'}\n- 身長: ${editForm.height}cm\n- 体重: ${editForm.currentWeight}kg\n- 目標体重: ${editForm.targetWeight}kg\n- 活動レベル: ${editForm.activityLevel}\n- 目的: ${editForm.primaryGoal}\n\n🎯 新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal\n\n※この表示は開発用です`);
           
@@ -462,36 +547,21 @@ export function MyProfilePage({
 
       console.log('🔥 プロフィール更新完了 - リアルタイム反映開始');
       
-      // 1. カスタムイベントを発行して他のコンポーネントに即座に通知
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
-          detail: { 
-            type: 'profile_update',
-            newCalories: newCalorieTarget,
-            newMacros: newMacros,
-            timestamp: new Date().toISOString()
-          }
-        }));
-        
-        // プロフィール履歴更新専用イベント（新規追加）
-        window.dispatchEvent(new CustomEvent('profileHistoryUpdated', {
-          detail: { 
-            type: 'profile_save',
-            userId: liffUser.userId,
-            newCalories: newCalorieTarget,
-            newMacros: newMacros,
-            timestamp: new Date().toISOString()
-          }
-        }));
-        
-        console.log('🔥 カスタムイベント発行 - counselingDataUpdated & profileHistoryUpdated');
-      }
+      // データ更新完了後、少し遅延してからフックのリフレッシュ実行
+      setTimeout(async () => {
+        console.log('🔄 フック データリフレッシュ開始');
+        try {
+          await Promise.all([
+            refetch(),
+            refetchLatestProfile()
+          ]);
+          console.log('✅ フック データリフレッシュ完了');
+        } catch (refreshError) {
+          console.error('⚠️ フックリフレッシュエラー:', refreshError);
+        }
+      }, 500); // 500ms遅延でFirestore反映を確実に待つ
       
-      // 2. 現在のコンポーネントのデータも更新
-      await refetch();
-      await refetchLatestProfile();
-      
-      // 3. 強制リフレッシュでコンポーネント再描画
+      // 強制リフレッシュでコンポーネント再描画
       setRefreshKey(prev => prev + 1);
       
       console.log('🔥 プロフィール表示を強制リフレッシュ完了');
