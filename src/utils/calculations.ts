@@ -40,6 +40,12 @@ export function calculateTDEE(profileOrBmr: UserProfile | number, activityLevel?
 
 function getActivityMultiplier(activityLevel: UserProfile['activityLevel']): number {
   const multipliers = {
+    sedentary: 1.2,     // ほとんど運動しない
+    light: 1.375,       // 軽い運動をする
+    moderate: 1.55,     // 定期的に運動する
+    active: 1.725,      // 活発な運動
+    very_active: 1.9,   // 非常に活発
+    // 旧値のサポート（下位互換性）
     low: 1.2,
     slightly_low: 1.375,
     normal: 1.55,

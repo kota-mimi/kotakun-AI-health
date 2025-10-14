@@ -847,7 +847,7 @@ export function MyProfilePage({
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">性別</label>
               <Select value={editForm.gender} onValueChange={(value) => handleEditFormChange('gender', value)}>
-                <SelectTrigger className="pr-14">
+                <SelectTrigger className="[&>svg]:hidden">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
@@ -910,7 +910,7 @@ export function MyProfilePage({
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">運動量レベル</label>
             <Select value={editForm.activityLevel} onValueChange={(value) => handleEditFormChange('activityLevel', value)}>
-              <SelectTrigger className="pr-14">
+              <SelectTrigger className="[&>svg]:hidden">
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
               <SelectContent position="popper" side="bottom" align="center" className="min-w-[250px] p-2">
@@ -925,7 +925,7 @@ export function MyProfilePage({
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">目的</label>
             <Select value={editForm.primaryGoal} onValueChange={(value) => handleEditFormChange('primaryGoal', value)}>
-              <SelectTrigger className="pr-14">
+              <SelectTrigger className="[&>svg]:hidden">
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
               <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">

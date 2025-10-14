@@ -14,7 +14,7 @@ export interface UserProfile {
   weight: number; // kg
   targetWeight?: number; // kg
   targetDate?: string; // date string
-  activityLevel: 'low' | 'slightly_low' | 'normal' | 'high' | 'very_high';
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | 'low' | 'slightly_low' | 'normal' | 'high' | 'very_high';
   goals: HealthGoal[];
   targetAreas?: string; // 気になる部位
   sleepDuration: 'under_3h' | '4_5h' | '6_7h' | '8h_plus';
