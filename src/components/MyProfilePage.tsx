@@ -431,8 +431,8 @@ export function MyProfilePage({
             profileHistoryResult
           });
 
-          // 成功アラート（デバッグ用）
-          alert(`プロフィール保存成功！\n\n新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal\n\n※この表示は開発用です`);
+          // 成功アラート（変更内容を含む）
+          alert(`プロフィール保存成功！\n\n📝 変更内容:\n- 名前: ${editForm.name}\n- 年齢: ${editForm.age}歳\n- 性別: ${editForm.gender === 'male' ? '男性' : editForm.gender === 'female' ? '女性' : 'その他'}\n- 身長: ${editForm.height}cm\n- 体重: ${editForm.currentWeight}kg\n- 目標体重: ${editForm.targetWeight}kg\n- 活動レベル: ${editForm.activityLevel}\n- 目的: ${editForm.primaryGoal}\n\n🎯 新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal\n\n※この表示は開発用です`);
           
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
