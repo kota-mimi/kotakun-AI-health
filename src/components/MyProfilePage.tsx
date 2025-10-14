@@ -12,7 +12,6 @@ import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
-import FirestoreService from '@/services/firestoreService';
 import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
 import type { HealthGoal } from '@/types';
 import { WeightChart } from './WeightChart';
@@ -340,23 +339,40 @@ export function MyProfilePage({
             }
           });
           
-          const firestoreService = new FirestoreService();
-          await firestoreService.saveProfileHistory(liffUser.userId, {
-            name: editForm.name,
-            age: editForm.age,
-            gender: editForm.gender,
-            height: editForm.height,
-            weight: editForm.currentWeight,
-            targetWeight: editForm.targetWeight,
-            activityLevel: editForm.activityLevel,
-            primaryGoal: editForm.primaryGoal,
-            // 計算された値も保存
-            targetCalories: newCalorieTarget,
-            bmr: newBMR,
-            tdee: newTDEE,
-            macros: newMacros
+          // プロフィール履歴をAPIで保存
+          const profileHistoryResponse = await fetch('/api/profile/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              lineUserId: liffUser.userId,
+              profileData: {
+                name: editForm.name,
+                age: editForm.age,
+                gender: editForm.gender,
+                height: editForm.height,
+                weight: editForm.currentWeight,
+                targetWeight: editForm.targetWeight,
+                activityLevel: editForm.activityLevel,
+                primaryGoal: editForm.primaryGoal,
+                // 計算された値も保存
+                targetCalories: newCalorieTarget,
+                bmr: newBMR,
+                tdee: newTDEE,
+                macros: newMacros,
+                changeDate: new Date().toISOString().split('T')[0]
+              }
+            })
           });
-          console.log('✅ プロフィール履歴保存完了');
+          
+          if (!profileHistoryResponse.ok) {
+            const errorData = await profileHistoryResponse.json();
+            throw new Error(`プロフィール履歴保存失敗: ${errorData.error}`);
+          }
+          
+          const profileHistoryResult = await profileHistoryResponse.json();
+          console.log('✅ プロフィール履歴API保存完了:', profileHistoryResult);
           
           // 成功アラート（デバッグ用）
           alert(`プロフィール保存成功！\n\n新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n\n※この表示は開発用です`);
