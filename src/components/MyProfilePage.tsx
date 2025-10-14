@@ -850,10 +850,10 @@ export function MyProfilePage({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent position="popper" side="bottom" align="center">
-                  <SelectItem value="male">男性</SelectItem>
-                  <SelectItem value="female">女性</SelectItem>
-                  <SelectItem value="other">その他</SelectItem>
+                <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
+                  <SelectItem value="male" className="text-base py-3 px-4">男性</SelectItem>
+                  <SelectItem value="female" className="text-base py-3 px-4">女性</SelectItem>
+                  <SelectItem value="other" className="text-base py-3 px-4">その他</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -913,10 +913,10 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
-              <SelectContent position="popper" side="bottom" align="center">
-                <SelectItem value="sedentary">ほとんど運動しない</SelectItem>
-                <SelectItem value="light">軽い運動をする</SelectItem>
-                <SelectItem value="moderate">定期的に運動する</SelectItem>
+              <SelectContent position="popper" side="bottom" align="center" className="min-w-[250px] p-2">
+                <SelectItem value="sedentary" className="text-base py-3 px-4">ほとんど運動しない</SelectItem>
+                <SelectItem value="light" className="text-base py-3 px-4">軽い運動をする</SelectItem>
+                <SelectItem value="moderate" className="text-base py-3 px-4">定期的に運動する</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -928,10 +928,10 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
-              <SelectContent position="popper" side="bottom" align="center">
-                <SelectItem value="weight_loss">ダイエット</SelectItem>
-                <SelectItem value="muscle_gain">筋肉量アップ</SelectItem>
-                <SelectItem value="maintenance">健康維持</SelectItem>
+              <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
+                <SelectItem value="weight_loss" className="text-base py-3 px-4">ダイエット</SelectItem>
+                <SelectItem value="muscle_gain" className="text-base py-3 px-4">筋肉量アップ</SelectItem>
+                <SelectItem value="maintenance" className="text-base py-3 px-4">健康維持</SelectItem>
               </SelectContent>
             </Select>
           </div>
