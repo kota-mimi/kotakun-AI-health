@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -78,7 +78,7 @@ export function MyProfilePage({
   );
   
   // 最新のプロフィールデータを取得
-  const { profileData: latestProfile } = useLatestProfile();
+  const { profileData: latestProfile, refetch: refetchLatestProfile } = useLatestProfile();
   
   // 最も安全：LIFF認証完了まで待機のみ
   if (!isLiffReady || !isLoggedIn) {
@@ -114,55 +114,69 @@ export function MyProfilePage({
     answersDetails: counselingResult?.answers
   });
   
-  // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
-  // テストデータ「利光湖太郎」を除外
-  const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
-  const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
-  const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
-  const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
-  const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
-                 counselingResult?.answers?.gender === 'female' ? '女性' : 
-                 counselingResult?.userProfile?.gender === 'male' ? '男性' : 
-                 counselingResult?.userProfile?.gender === 'female' ? '女性' : 
-                 null;
-  const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
-  const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
-  const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
-  
-  // 固定値を完全削除 - データがある時のみ表示
-  // 最新のプロフィールデータに基づく目標値を取得
-  const targetValues = getTargetValuesForDate(latestProfile, counselingResult);
-  
-  const finalCalories = targetValues.targetCalories;
-  const finalProtein = targetValues.macros.protein;
-  const finalFat = targetValues.macros.fat;
-  const finalCarbs = targetValues.macros.carbs;
-  const bmrData = targetValues.bmr;
-  
-  // BMI計算（身長と体重がある場合のみ）
-  const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
-  
-  // ユーザープロフィールデータ（実際のデータを使用）
-  const userProfile = {
-    name: userName,
-    age: age,
-    gender: gender,
-    height: height,
-    currentWeight: currentWeight,
-    targetWeight: targetWeight,
-    targetDate: counselingResult?.answers?.targetDate || "未設定",
-    bmi: bmi,
-    joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
-  };
+  // リアクティブなプロフィールデータ計算（refreshKey、latestProfile、counselingResultの変更に反応）
+  const { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData } = useMemo(() => {
+    console.log('🔄 プロフィールデータ再計算開始 - refreshKey:', refreshKey);
+    
+    // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
+    // テストデータ「利光湖太郎」を除外
+    const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
+    const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
+    const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
+    const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
+    const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
+                   counselingResult?.answers?.gender === 'female' ? '女性' : 
+                   counselingResult?.userProfile?.gender === 'male' ? '男性' : 
+                   counselingResult?.userProfile?.gender === 'female' ? '女性' : 
+                   null;
+    const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
+    const currentWeight = counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || null;
+    const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
+    
+    // 固定値を完全削除 - データがある時のみ表示
+    // 最新のプロフィールデータに基づく目標値を取得
+    const targetValues = getTargetValuesForDate(latestProfile, counselingResult);
+    
+    const finalCalories = targetValues.targetCalories;
+    const finalProtein = targetValues.macros.protein;
+    const finalFat = targetValues.macros.fat;
+    const finalCarbs = targetValues.macros.carbs;
+    const bmrData = targetValues.bmr;
+    
+    // BMI計算（身長と体重がある場合のみ）
+    const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
+    
+    // ユーザープロフィールデータ（実際のデータを使用）
+    const userProfile = {
+      name: userName,
+      age: age,
+      gender: gender,
+      height: height,
+      currentWeight: currentWeight,
+      targetWeight: targetWeight,
+      targetDate: counselingResult?.answers?.targetDate || "未設定",
+      bmi: bmi,
+      joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
+    };
+
+    console.log('🔄 プロフィールデータ再計算完了:', {
+      name: userName,
+      calories: finalCalories,
+      protein: finalProtein,
+      bmr: bmrData
+    });
+    
+    return { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData };
+  }, [refreshKey, latestProfile, counselingResult, liffUser?.displayName]);
 
   // 編集フォームの状態（モーダル開いた時に最新値を反映）
   const [editForm, setEditForm] = useState({
-    name: userName,
-    age: age,
+    name: userProfile.name,
+    age: userProfile.age,
     gender: counselingResult?.answers?.gender || 'male',
-    height: height,
-    currentWeight: currentWeight,
-    targetWeight: targetWeight,
+    height: userProfile.height,
+    currentWeight: userProfile.currentWeight,
+    targetWeight: userProfile.targetWeight,
     activityLevel: counselingResult?.answers?.activityLevel || 'normal',
     primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
   });
@@ -170,12 +184,12 @@ export function MyProfilePage({
   // モーダルが開かれた時に最新の値で更新
   const handleOpenEditModal = () => {
     setEditForm({
-      name: userName,
-      age: age,
+      name: userProfile.name,
+      age: userProfile.age,
       gender: counselingResult?.answers?.gender || 'male',
-      height: height,
-      currentWeight: currentWeight,
-      targetWeight: targetWeight,
+      height: userProfile.height,
+      currentWeight: userProfile.currentWeight,
+      targetWeight: userProfile.targetWeight,
       activityLevel: counselingResult?.answers?.activityLevel || 'normal',
       primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
     });
@@ -475,24 +489,12 @@ export function MyProfilePage({
       
       // 2. 現在のコンポーネントのデータも更新
       await refetch();
+      await refetchLatestProfile();
       
-      // 3. プロフィール表示を即座に更新
-      setUserProfile({
-        name: editForm.name,
-        age: editForm.age,
-        gender: editForm.gender,
-        height: editForm.height,
-        weight: editForm.currentWeight,
-        bmi: editForm.currentWeight / ((editForm.height / 100) ** 2),
-        targetWeight: editForm.targetWeight,
-        activityLevel: editForm.activityLevel,
-        primaryGoal: editForm.primaryGoal,
-        // 新しい計算値も反映
-        targetCalories: newCalorieTarget,
-        bmr: Math.round(newBMR)
-      });
+      // 3. 強制リフレッシュでコンポーネント再描画
+      setRefreshKey(prev => prev + 1);
       
-      console.log('🔥 プロフィール表示を即座更新完了');
+      console.log('🔥 プロフィール表示を強制リフレッシュ完了');
       
       console.log('🔥 プロフィール保存 - リアルタイム反映完了！');
       
@@ -611,10 +613,10 @@ export function MyProfilePage({
             <div className="flex-1">
               <h2 className="text-lg font-bold text-slate-900 mb-0.5">{userProfile.name}</h2>
               <div className="flex items-center space-x-2 text-sm text-slate-600">
-                {age && <><span>{age}歳</span><span>•</span></>}
-                {gender && <><span>{gender}</span><span>•</span></>}
-                {height && <span>{height}cm</span>}
-                {!age && !gender && !height && <span>プロフィール未設定</span>}
+                {userProfile.age && <><span>{userProfile.age}歳</span><span>•</span></>}
+                {userProfile.gender && <><span>{userProfile.gender}</span><span>•</span></>}
+                {userProfile.height && <span>{userProfile.height}cm</span>}
+                {!userProfile.age && !userProfile.gender && !userProfile.height && <span>プロフィール未設定</span>}
               </div>
             </div>
             
@@ -631,15 +633,15 @@ export function MyProfilePage({
           <div className="flex space-x-2">
             <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">体重</div>
-              <div className="font-bold text-slate-900 text-sm">{currentWeight ? `${currentWeight}kg` : '-'}</div>
+              <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
             </div>
             <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">BMI</div>
-              <div className="font-bold text-slate-900 text-sm">{(currentWeight && height) ? userProfile.bmi : '-'}</div>
+              <div className="font-bold text-slate-900 text-sm">{(userProfile.currentWeight && userProfile.height) ? userProfile.bmi : '-'}</div>
             </div>
             <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
               <div className="text-xs text-slate-500">目標</div>
-              <div className="font-bold text-slate-900 text-sm">{targetWeight ? `${targetWeight}kg` : '-'}</div>
+              <div className="font-bold text-slate-900 text-sm">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
             </div>
           </div>
 
