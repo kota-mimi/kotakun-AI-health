@@ -458,6 +458,19 @@ export function MyProfilePage({
               activityLevel: editForm.activityLevel,
               primaryGoal: editForm.primaryGoal
             },
+            userProfile: {
+              name: editForm.name,
+              age: editForm.age,
+              gender: editForm.gender,
+              height: editForm.height,
+              weight: editForm.currentWeight,
+              targetWeight: editForm.targetWeight,
+              activityLevel: editForm.activityLevel,
+              goals: [{
+                type: editForm.primaryGoal,
+                targetValue: editForm.targetWeight
+              }]
+            },
             aiAnalysis: {
               ...counselingResult?.aiAnalysis,
               nutritionPlan: {
