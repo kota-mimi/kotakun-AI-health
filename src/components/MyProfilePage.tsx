@@ -847,10 +847,10 @@ export function MyProfilePage({
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">性別</label>
               <Select value={editForm.gender} onValueChange={(value) => handleEditFormChange('gender', value)}>
-                <SelectTrigger style={{minWidth: '320px', paddingRight: '80px'}} className="w-full">
+                <SelectTrigger className="">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
+                <SelectContent className="min-w-[350px] p-2">
                   <SelectItem value="male" className="text-base py-3 px-4">男性</SelectItem>
                   <SelectItem value="female" className="text-base py-3 px-4">女性</SelectItem>
                   <SelectItem value="other" className="text-base py-3 px-4">その他</SelectItem>
@@ -910,10 +910,10 @@ export function MyProfilePage({
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">運動量レベル</label>
             <Select value={editForm.activityLevel} onValueChange={(value) => handleEditFormChange('activityLevel', value)}>
-              <SelectTrigger style={{minWidth: '320px', paddingRight: '80px'}} className="w-full">
+              <SelectTrigger>
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
-              <SelectContent position="popper" side="bottom" align="center" className="min-w-[250px] p-2">
+              <SelectContent className="min-w-[350px] p-2">
                 <SelectItem value="sedentary" className="text-base py-3 px-4">ほとんど運動しない</SelectItem>
                 <SelectItem value="light" className="text-base py-3 px-4">軽い運動をする</SelectItem>
                 <SelectItem value="moderate" className="text-base py-3 px-4">定期的に運動する</SelectItem>
@@ -925,10 +925,10 @@ export function MyProfilePage({
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">目的</label>
             <Select value={editForm.primaryGoal} onValueChange={(value) => handleEditFormChange('primaryGoal', value)}>
-              <SelectTrigger style={{minWidth: '320px', paddingRight: '80px'}} className="w-full">
+              <SelectTrigger>
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
-              <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
+              <SelectContent className="min-w-[200px] p-2">
                 <SelectItem value="weight_loss" className="text-base py-3 px-4">ダイエット</SelectItem>
                 <SelectItem value="muscle_gain" className="text-base py-3 px-4">筋肉量アップ</SelectItem>
                 <SelectItem value="maintenance" className="text-base py-3 px-4">健康維持</SelectItem>
