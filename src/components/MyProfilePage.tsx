@@ -544,7 +544,7 @@ export function MyProfilePage({
           }
 
           // 成功アラート（変更内容を含む）
-          alert(`プロフィール保存成功！\n\n📝 変更内容:\n- 名前: ${editForm.name}\n- 年齢: ${editForm.age}歳\n- 性別: ${editForm.gender === 'male' ? '男性' : editForm.gender === 'female' ? '女性' : 'その他'}\n- 身長: ${editForm.height}cm\n- 体重: ${editForm.currentWeight}kg\n- 目標体重: ${editForm.targetWeight}kg\n- 活動レベル: ${editForm.activityLevel}\n- 目的: ${editForm.primaryGoal}\n\n🎯 新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal\n\n※この表示は開発用です`);
+          alert(`プロフィール保存成功！\n\n📝 変更内容:\n- 名前: ${editForm.name}\n- 年齢: ${editForm.age}歳\n- 性別: ${editForm.gender === 'male' ? '男性' : editForm.gender === 'female' ? '女性' : 'その他'}\n- 身長: ${editForm.height}cm\n- 体重: ${editForm.currentWeight}kg\n- 目標体重: ${editForm.targetWeight}kg\n- 活動レベル: ${editForm.activityLevel}\n- 目的: ${editForm.primaryGoal}\n\n🎯 新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal`);
           
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
@@ -553,8 +553,8 @@ export function MyProfilePage({
             stack: error.stack
           });
           
-          // 本番環境でもエラーが見えるように一時的にアラート表示
-          alert(`プロフィール履歴保存エラー: ${error.message}\n\nエラー名: ${error.name}\n\n※この表示は開発用です`);
+          // エラーアラート表示
+          alert(`プロフィール履歴保存エラー: ${error.message}`);
         }
       }
 
@@ -863,10 +863,10 @@ export function MyProfilePage({
               <label className="text-sm font-medium text-slate-700">身長 (cm)</label>
               <Input
                 type="number"
-                inputMode="numeric"
-                pattern="[0-9]*"
+                inputMode="decimal"
+                step="0.1"
                 value={editForm.height || ''}
-                onChange={(e) => handleEditFormChange('height', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleEditFormChange('height', parseFloat(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder="身長を入力"
                 className="text-center"
