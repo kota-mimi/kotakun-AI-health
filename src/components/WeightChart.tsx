@@ -123,8 +123,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     if (selectedPeriod === 'all') {
       filteredData = validData;
     } else {
-      // 日付順にソート（最新が最後）
-      const sortedData = validData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      // 日付順にソート（最新が最後） - ISO形式の日付を正しく解析
+      const sortedData = validData.sort((a, b) => {
+        const dateA = new Date(a.date + 'T00:00:00');
+        const dateB = new Date(b.date + 'T00:00:00');
+        return dateA.getTime() - dateB.getTime();
+      });
       
       // 期間に応じて最新のN件を取得
       let takeCount;
@@ -161,10 +165,18 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
     // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
     const processedData = downsampledData.map(item => {
-      const itemDate = new Date(item.date);
-      // 日付が無効な場合はスキップ（フィルタで除外されているはずだが念のため）
+      // ISO形式の日付（YYYY-MM-DD）を正しく解析
+      let itemDate: Date;
+      if (typeof item.date === 'string') {
+        // ISO形式の日付文字列を直接解析
+        itemDate = new Date(item.date + 'T00:00:00');
+      } else {
+        itemDate = new Date(item.date);
+      }
+      
+      // 日付が無効な場合はスキップ
       if (isNaN(itemDate.getTime())) {
-        console.warn('⚠️ Invalid date in WeightChart processedData:', item.date);
+        console.warn('⚠️ Invalid date in WeightChart processedData:', item.date, 'parsed as:', itemDate);
         return null;
       }
       
@@ -812,7 +824,25 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             
             // 日付フォーマット関数
             const formatDate = (dateStr: string) => {
-              const date = new Date(dateStr);
+              // ISO形式の日付（YYYY-MM-DD）を正しく解析
+              let date: Date;
+              if (typeof dateStr === 'string') {
+                // MM/DD形式の場合はそのまま表示（開発環境用）
+                if (dateStr.includes('/') && !dateStr.includes('-')) {
+                  return dateStr;
+                }
+                // ISO形式の日付文字列を直接解析
+                date = new Date(dateStr + 'T00:00:00');
+              } else {
+                date = new Date(dateStr);
+              }
+              
+              // 日付が無効な場合はそのまま返す
+              if (isNaN(date.getTime())) {
+                console.warn('⚠️ Invalid date in formatDate:', dateStr);
+                return dateStr;
+              }
+              
               const month = date.getMonth() + 1;
               const day = date.getDate();
               
