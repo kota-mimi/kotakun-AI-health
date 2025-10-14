@@ -192,6 +192,12 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
+    // 変数を関数の先頭で定義（スコープエラー回避）
+    let newCalorieTarget = 0;
+    let newMacros = { protein: 0, fat: 0, carbs: 0 };
+    let newBMR = 0;
+    let newTDEE = 0;
+
     try {
       console.log('🔥 プロフィール保存開始:', editForm);
       
@@ -246,8 +252,10 @@ export function MyProfilePage({
               targetValue: editForm.targetWeight
             }];
             
-            const newCalorieTarget = calculateCalorieTarget(newProfile, goals);
-            const newMacros = calculateMacroTargets(newCalorieTarget);
+            newCalorieTarget = calculateCalorieTarget(newProfile, goals);
+            newMacros = calculateMacroTargets(newCalorieTarget);
+            newBMR = calculateBMR(newProfile);
+            newTDEE = calculateTDEE(newProfile);
             
             console.log('🔥 カロリー・PFC再計算:', {
               oldCalories: analysis.nutritionPlan?.dailyCalories,
