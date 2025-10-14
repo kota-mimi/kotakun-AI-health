@@ -119,38 +119,48 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }
     
     // 実際のデータを期間でフィルタリング
-    const filteredData = validData.filter(item => {
-      // 'all' の場合は全データを返す
-      if (selectedPeriod === 'all') return true;
+    let filteredData;
+    if (selectedPeriod === 'all') {
+      filteredData = validData;
+    } else {
+      // 日付順にソート（最新が最後）
+      const sortedData = validData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       
-      const itemDate = new Date(item.date);
-      // 日付が無効な場合はスキップ
-      if (isNaN(itemDate.getTime())) {
-        console.warn('⚠️ Invalid date in WeightChart:', item.date);
-        return false;
-      }
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // 時間をリセットして日付のみで比較
-      
-      const diffDays = Math.floor((today.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+      // 期間に応じて最新のN件を取得
+      let takeCount;
       switch (selectedPeriod) {
-        case 'week': return diffDays <= 7;
-        case 'month': return diffDays <= 30;
-        case '6months': return diffDays <= 180;
-        case 'year': return diffDays <= 365;
-        default: return diffDays <= 30;
+        case 'week': takeCount = 7; break;
+        case 'month': takeCount = 30; break;
+        case '6months': takeCount = 180; break;
+        case 'year': takeCount = 365; break;
+        default: takeCount = 30; break;
       }
-    });
+      
+      // 最新のN件を取得
+      filteredData = sortedData.slice(-takeCount);
+    }
 
     // データがない場合は空配列を返す
     if (filteredData.length === 0) {
       return [];
     }
 
+    // 期間に応じてデータを間引く
+    let downsampledData = filteredData;
+    if (selectedPeriod === '6months' && filteredData.length > 60) {
+      // 半年の場合：3日に1回のデータを表示
+      downsampledData = filteredData.filter((_, index) => index % 3 === 0);
+    } else if (selectedPeriod === 'year' && filteredData.length > 80) {
+      // 1年の場合：週1回（7日に1回）のデータを表示
+      downsampledData = filteredData.filter((_, index) => index % 7 === 0);
+    } else if (selectedPeriod === 'all' && filteredData.length > 100) {
+      // 全期間の場合：データ量に応じて間引く
+      const interval = Math.ceil(filteredData.length / 100);
+      downsampledData = filteredData.filter((_, index) => index % interval === 0);
+    }
+
     // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
-    const processedData = filteredData.map(item => {
+    const processedData = downsampledData.map(item => {
       const itemDate = new Date(item.date);
       // 日付が無効な場合はスキップ（フィルタで除外されているはずだが念のため）
       if (isNaN(itemDate.getTime())) {
@@ -202,43 +212,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     const center = (min + max) / 2;
     const actualRange = max - min;
     
-    // 体重の場合は動的スケーリング
+    // 体重の場合は固定5kg範囲
     if (dataType === 'weight') {
-      // 単一データポイントの場合の処理
-      if (values.length === 1) {
-        const singleValue = values[0];
-        return {
-          min: singleValue - 2, // 単一ポイントなら±2kgの範囲で表示
-          max: singleValue + 2
-        };
-      }
-      
-      // 実際のデータの範囲に応じて適切な表示範囲を決定
-      let displayRange;
-      
-      if (actualRange <= 0.1) {
-        // 0.1kg以下の変化なら1kg幅で表示（非常に細かい変化）
-        displayRange = 1;
-      } else if (actualRange <= 1) {
-        // 1kg以下の変化なら2kg幅で表示（細かい変化を見やすく）
-        displayRange = 2;
-      } else if (actualRange <= 2) {
-        // 2kg以下の変化なら3kg幅で表示
-        displayRange = 3;
-      } else if (actualRange <= 5) {
-        // 5kg以下の変化なら従来の5kg幅
-        displayRange = 5;
-      } else if (actualRange <= 10) {
-        // 10kg以下の変化なら8kg幅（少し余裕を持たせる）
-        displayRange = Math.max(8, actualRange * 1.3);
-      } else {
-        // 大きな変化の場合は実際の範囲の1.3倍を表示（上下に余裕を持たせる）
-        displayRange = actualRange * 1.3;
-      }
-      
+      const fixedRange = 5; // 固定5kg幅
       return {
-        min: center - displayRange / 2,
-        max: center + displayRange / 2
+        min: center - fixedRange / 2,
+        max: center + fixedRange / 2
       };
     }
     
@@ -329,35 +308,30 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   
   // 滑らかなベジェ曲線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
-    if (points.length < 2) return '';
+    if (points.length < 1) return '';
+    if (points.length === 1) {
+      // 1つのポイントの場合は小さな線分として描画
+      const point = points[0];
+      return `M ${point.x - 2},${point.y} L ${point.x + 2},${point.y}`;
+    }
     
-    // 同じ値の場合は直線で描画（有効なデータポイントが2つ以上ある場合のみチェック）
-    const allSameValue = points.length >= 2 && points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    // 2つ以上のポイントがある場合
+    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
     
     let path = `M ${points[0].x},${points[0].y}`;
     
-    if (allSameValue) {
-      // 同じ値なら直線で接続
-      for (let i = 1; i < points.length; i++) {
-        path += ` L ${points[i].x},${points[i].y}`;
-      }
-      return path;
-    }
-    
-    // 値に変化がある場合は滑らかなベジェ曲線
-    for (let i = 0; i < points.length - 1; i++) {
-      const current = points[i];
-      const next = points[i + 1];
+    // 常に滑らかなベジェ曲線を使用
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
       
-      if (i === 0) {
-        const controlX = current.x + (next.x - current.x) * 0.3;
-        path += ` C ${controlX},${current.y} ${next.x - (next.x - current.x) * 0.3},${next.y} ${next.x},${next.y}`;
-      } else {
-        const prev = points[i - 1];
-        const controlX1 = current.x + (next.x - prev.x) * 0.15;
-        const controlX2 = next.x - (points[Math.min(i + 2, points.length - 1)].x - current.x) * 0.15;
-        path += ` C ${controlX1},${current.y} ${controlX2},${next.y} ${next.x},${next.y}`;
-      }
+      // 制御点を計算して滑らかな曲線を作成
+      const controlX1 = prev.x + (curr.x - prev.x) * 0.5;
+      const controlY1 = prev.y;
+      const controlX2 = curr.x - (curr.x - prev.x) * 0.5;
+      const controlY2 = curr.y;
+      
+      path += ` C ${controlX1},${controlY1} ${controlX2},${controlY2} ${curr.x},${curr.y}`;
     }
     
     return path;
@@ -414,21 +388,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const generateYAxisTicks = () => {
     const range = currentConfig.max - currentConfig.min;
     
-    // 適切な間隔を決定（より細かく調整）
-    let tickInterval;
-    if (range <= 1.5) {
-      tickInterval = 0.2; // 1.5kg以下なら0.2kg刻み（より細かく）
-    } else if (range <= 2.5) {
-      tickInterval = 0.5; // 2.5kg以下なら0.5kg刻み
-    } else if (range <= 5) {
-      tickInterval = 1; // 5kg以下なら1kg刻み
-    } else if (range <= 10) {
-      tickInterval = 2; // 10kg以下なら2kg刻み
-    } else if (range <= 20) {
-      tickInterval = 5; // 20kg以下なら5kg刻み
-    } else {
-      tickInterval = 10; // それ以上なら10kg刻み（大きな変化に対応）
-    }
+    // 固定1kg刻み
+    const tickInterval = 1;
     
     // 開始値を間隔に合わせて調整
     const startValue = Math.floor(currentConfig.min / tickInterval) * tickInterval;
@@ -725,12 +686,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           ))}
 
 
-          {/* エリアグラデーション */}
-          <path
-            d={areaPathData}
-            fill={`url(#gradient-${selectedDataType})`}
-            className="transition-all duration-700 ease-out"
-          />
 
           
           {/* メインライン */}
@@ -738,16 +693,10 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             d={smoothPathData}
             fill="none"
             stroke={currentConfig.color}
-            strokeWidth="3"
+            strokeWidth="4"
             strokeLinecap="round"
             strokeLinejoin="round"
-            filter="url(#dropshadow)"
             className="transition-all duration-700 ease-out"
-            style={{
-              strokeDasharray: '1000',
-              strokeDashoffset: '1000',
-              animation: 'drawLine 2s ease-out forwards'
-            }}
           />
           
           {/* インタラクティブエリア（見えない） */}
@@ -774,8 +723,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             />
           )}
 
-          {/* 記録開始ポイント（最初のポイント）を常に表示 */}
-          {pathPoints.length > 0 && (
+          {/* 記録開始ポイント（カウンセリングデータのみの場合のみ表示） */}
+          {pathPoints.length > 0 && !hasRealData && hasCounselingData && (
             <>
               <circle
                 cx={pathPoints[0].x}
@@ -842,20 +791,57 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             </text>
           ))}
           
-          {/* X軸ラベル */}
-          {pathPoints.filter(point => !isNaN(point.x) && !isNaN(point.y)).map((point, index) => {
-            return (
-              <text
-                key={index}
-                x={point.x}
-                y={svgHeight + 18}
-                textAnchor="middle"
-                className="text-xs fill-slate-500"
-              >
-                {point.date}
-              </text>
-            );
-          })}
+          {/* X軸ラベル - 期間に応じて適切に表示 */}
+          {(() => {
+            const filteredPoints = pathPoints.filter(point => !isNaN(point.x) && !isNaN(point.y));
+            const totalPoints = filteredPoints.length;
+            
+            // 期間に応じて表示する日付の数を決定
+            let displayInterval;
+            if (selectedPeriod === 'week') {
+              displayInterval = 1; // 毎日表示
+            } else if (selectedPeriod === 'month') {
+              displayInterval = Math.max(1, Math.floor(totalPoints / 6)); // 最大6個
+            } else if (selectedPeriod === '6months') {
+              displayInterval = Math.max(1, Math.floor(totalPoints / 8)); // 最大8個
+            } else if (selectedPeriod === 'year') {
+              displayInterval = Math.max(1, Math.floor(totalPoints / 10)); // 最大10個
+            } else {
+              displayInterval = Math.max(1, Math.floor(totalPoints / 12)); // 最大12個
+            }
+            
+            // 日付フォーマット関数
+            const formatDate = (dateStr: string) => {
+              const date = new Date(dateStr);
+              const month = date.getMonth() + 1;
+              const day = date.getDate();
+              
+              if (selectedPeriod === 'week') {
+                return `${month}/${day}`;
+              } else if (selectedPeriod === 'month') {
+                return `${month}/${day}`;
+              } else if (selectedPeriod === '6months' || selectedPeriod === 'year') {
+                return `${month}月`;
+              } else {
+                const year = date.getFullYear() % 100; // 2桁年
+                return `${year}/${month}`;
+              }
+            };
+            
+            return filteredPoints
+              .filter((_, index) => index % displayInterval === 0 || index === filteredPoints.length - 1)
+              .map((point, index) => (
+                <text
+                  key={`date-${index}`}
+                  x={point.x}
+                  y={svgHeight + 18}
+                  textAnchor="middle"
+                  className="text-xs fill-slate-500"
+                >
+                  {formatDate(point.date)}
+                </text>
+              ));
+          })()}
         </svg>
 
         {/* ポップアップ */}
