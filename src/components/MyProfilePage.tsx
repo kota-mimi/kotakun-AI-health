@@ -476,7 +476,28 @@ export function MyProfilePage({
       // 2. 現在のコンポーネントのデータも更新
       await refetch();
       
+      // 3. プロフィール表示を即座に更新
+      setUserProfile({
+        name: editForm.name,
+        age: editForm.age,
+        gender: editForm.gender,
+        height: editForm.height,
+        weight: editForm.currentWeight,
+        bmi: editForm.currentWeight / ((editForm.height / 100) ** 2),
+        targetWeight: editForm.targetWeight,
+        activityLevel: editForm.activityLevel,
+        primaryGoal: editForm.primaryGoal,
+        // 新しい計算値も反映
+        targetCalories: newCalorieTarget,
+        bmr: Math.round(newBMR)
+      });
+      
+      console.log('🔥 プロフィール表示を即座更新完了');
+      
       console.log('🔥 プロフィール保存 - リアルタイム反映完了！');
+      
+      // 4. 編集モーダルを閉じる
+      setIsEditModalOpen(false);
       
     } catch (error) {
       console.error('プロフィール保存エラー:', error);
