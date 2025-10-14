@@ -850,7 +850,7 @@ export function MyProfilePage({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" side="bottom" align="center">
                   <SelectItem value="male">男性</SelectItem>
                   <SelectItem value="female">女性</SelectItem>
                   <SelectItem value="other">その他</SelectItem>
@@ -913,7 +913,7 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" align="center">
                 <SelectItem value="sedentary">ほとんど運動しない</SelectItem>
                 <SelectItem value="light">軽い運動をする</SelectItem>
                 <SelectItem value="moderate">定期的に運動する</SelectItem>
@@ -928,7 +928,7 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" align="center">
                 <SelectItem value="weight_loss">ダイエット</SelectItem>
                 <SelectItem value="muscle_gain">筋肉量アップ</SelectItem>
                 <SelectItem value="maintenance">健康維持</SelectItem>
