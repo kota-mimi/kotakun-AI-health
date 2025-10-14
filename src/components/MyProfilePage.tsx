@@ -347,6 +347,46 @@ export function MyProfilePage({
             }
           });
           
+          // 新しいプロフィールで計算（カウンセリング結果の有無に関係なく実行）
+          const newProfile: UserProfile = {
+            name: editForm.name,
+            age: editForm.age,
+            gender: editForm.gender,
+            height: editForm.height,
+            weight: editForm.currentWeight,
+            targetWeight: editForm.targetWeight,
+            activityLevel: editForm.activityLevel as UserProfile['activityLevel'],
+            goals: [{
+              type: editForm.primaryGoal as HealthGoal['type'],
+              targetValue: editForm.targetWeight
+            }],
+            sleepDuration: '8h_plus',
+            sleepQuality: 'normal',
+            exerciseHabit: 'yes',
+            exerciseFrequency: 'weekly_3_4',
+            mealFrequency: '3',
+            snackFrequency: 'sometimes',
+            alcoholFrequency: 'none'
+          };
+
+          // 目標に基づいてカロリー計算（必ず実行）
+          const goals: HealthGoal[] = [{
+            type: editForm.primaryGoal as HealthGoal['type'],
+            targetValue: editForm.targetWeight
+          }];
+          
+          newCalorieTarget = calculateCalorieTarget(newProfile, goals);
+          newMacros = calculateMacroTargets(newCalorieTarget);
+          newBMR = calculateBMR(newProfile);
+          newTDEE = calculateTDEE(newProfile);
+
+          console.log('🔥 必須計算完了:', {
+            newCalorieTarget,
+            newMacros,
+            newBMR,
+            newTDEE
+          });
+          
           // プロフィール履歴をAPIで保存
           const profileHistoryResponse = await fetch('/api/profile/save', {
             method: 'POST',
@@ -382,8 +422,17 @@ export function MyProfilePage({
           const profileHistoryResult = await profileHistoryResponse.json();
           console.log('✅ プロフィール履歴API保存完了:', profileHistoryResult);
           
+          // デバッグ用詳細ログ
+          console.log('🔥 最終計算値確認:', {
+            newCalorieTarget,
+            newMacros,
+            newBMR,
+            newTDEE,
+            profileHistoryResult
+          });
+
           // 成功アラート（デバッグ用）
-          alert(`プロフィール保存成功！\n\n新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n\n※この表示は開発用です`);
+          alert(`プロフィール保存成功！\n\n新しい目標値:\n- カロリー: ${newCalorieTarget}kcal\n- プロテイン: ${newMacros.protein}g\n- 脂質: ${newMacros.fat}g\n- 炭水化物: ${newMacros.carbs}g\n- BMR: ${Math.round(newBMR)}kcal\n- TDEE: ${Math.round(newTDEE)}kcal\n\n※この表示は開発用です`);
           
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
