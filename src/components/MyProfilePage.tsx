@@ -847,7 +847,7 @@ export function MyProfilePage({
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">性別</label>
               <Select value={editForm.gender} onValueChange={(value) => handleEditFormChange('gender', value)}>
-                <SelectTrigger style={{'--radix-select-trigger-icon-display': 'none'} as any} className="[&>svg]:!hidden [&_svg]:!hidden">
+                <SelectTrigger className="w-full pr-20 min-w-[300px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper" side="bottom" align="center" className="min-w-[200px] p-2">
