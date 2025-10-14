@@ -167,13 +167,33 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
     counselingStructure: counselingFallback ? {
       hasAiAnalysis: !!counselingFallback.aiAnalysis,
       hasNutritionPlan: !!counselingFallback.aiAnalysis?.nutritionPlan,
-      dailyCalories: counselingFallback.aiAnalysis?.nutritionPlan?.dailyCalories
+      dailyCalories: counselingFallback.aiAnalysis?.nutritionPlan?.dailyCalories,
+      bmr: counselingFallback.aiAnalysis?.nutritionPlan?.bmr,
+      tdee: counselingFallback.aiAnalysis?.nutritionPlan?.tdee,
+      macros: counselingFallback.aiAnalysis?.nutritionPlan?.macros
     } : null
   });
 
+  // 🚨 優先順位変更: 最新のaiAnalysisがあればそれを優先（リアルタイム更新対応）
+  if (counselingFallback?.aiAnalysis?.nutritionPlan?.bmr && counselingFallback?.aiAnalysis?.nutritionPlan?.tdee) {
+    const freshValues = {
+      targetCalories: counselingFallback.aiAnalysis.nutritionPlan.dailyCalories,
+      bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr,
+      tdee: counselingFallback.aiAnalysis.nutritionPlan.tdee,
+      macros: counselingFallback.aiAnalysis.nutritionPlan.macros || {
+        protein: Math.round((counselingFallback.aiAnalysis.nutritionPlan.dailyCalories * 0.25) / 4),
+        fat: Math.round((counselingFallback.aiAnalysis.nutritionPlan.dailyCalories * 0.30) / 9),
+        carbs: Math.round((counselingFallback.aiAnalysis.nutritionPlan.dailyCalories * 0.45) / 4)
+      },
+      fromHistory: false
+    };
+    console.log('🔥 最新aiAnalysisから目標値取得（優先）:', freshValues);
+    return freshValues;
+  }
+
   if (profileData) {
-    // プロフィール履歴から取得
-    console.log('✅ プロフィール履歴から目標値取得:', profileData);
+    // プロフィール履歴から取得（aiAnalysisがない場合のフォールバック）
+    console.log('✅ プロフィール履歴から目標値取得（フォールバック）:', profileData);
     return {
       targetCalories: profileData.targetCalories,
       bmr: profileData.bmr,
