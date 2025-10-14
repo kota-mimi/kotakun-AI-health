@@ -95,11 +95,11 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   
   const dailyActivityCalories = Math.round(basalMetabolismBase * 0.15); // 基礎代謝の15%を日常活動とする
   const totalActivityCalories = exerciseCalories + dailyActivityCalories;
-  const burnedCalories = basalMetabolismBase + totalActivityCalories;
+  const burnedCalories = Math.round(basalMetabolismBase + totalActivityCalories);
   const targetBurnedCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
     ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 1.25) // 摂取目標の125%を消費目標とする
     : 0;
-  const basalMetabolism = basalMetabolismBase;
+  const basalMetabolism = Math.round(basalMetabolismBase);
   
   // 消費カロリーの進捗計算（小数点第1位まで）
   const burnProgress = targetBurnedCalories > 0 ? Math.round((burnedCalories / targetBurnedCalories) * 100 * 10) / 10 : 0;

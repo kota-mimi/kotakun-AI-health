@@ -17,9 +17,9 @@ export function calculateBMR(profile: UserProfile): number {
   const { weight, height, age, gender } = profile;
   
   if (gender === 'male') {
-    return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    return Math.round(88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age));
   } else {
-    return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    return Math.round(447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age));
   }
 }
 
@@ -29,12 +29,12 @@ export function calculateTDEE(profileOrBmr: UserProfile | number, activityLevel?
   if (typeof profileOrBmr === 'number') {
     // BMRと活動レベルが個別に渡された場合
     const activityMultiplier = getActivityMultiplier(activityLevel as UserProfile['activityLevel']);
-    return profileOrBmr * activityMultiplier;
+    return Math.round(profileOrBmr * activityMultiplier);
   } else {
     // プロフィール全体が渡された場合
     const bmr = calculateBMR(profileOrBmr);
     const activityMultiplier = getActivityMultiplier(profileOrBmr.activityLevel);
-    return bmr * activityMultiplier;
+    return Math.round(bmr * activityMultiplier);
   }
 }
 
