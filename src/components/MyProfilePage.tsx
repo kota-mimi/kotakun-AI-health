@@ -928,7 +928,7 @@ export function MyProfilePage({
               <SelectTrigger>
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
-              <SelectContent className="min-w-[200px] p-2">
+              <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
                 <SelectItem value="weight_loss" className="text-base py-3 px-4">ダイエット</SelectItem>
                 <SelectItem value="muscle_gain" className="text-base py-3 px-4">筋肉量アップ</SelectItem>
                 <SelectItem value="maintenance" className="text-base py-3 px-4">健康維持</SelectItem>
