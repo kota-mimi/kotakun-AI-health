@@ -398,12 +398,12 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         isMultipleMeals: true,
         meals: foodItems.map(item => ({
           name: item.name,
+          displayName: item.name,
           calories: item.calories,
           protein: item.protein,
           fat: item.fat,
           carbs: item.carbs
-        })),
-        foodItems: foodItems
+        }))
       });
     } else {
       // 単一食事または手動入力の場合

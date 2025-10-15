@@ -66,7 +66,7 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
           expandedMeals.push({
             ...meal,
             id: `${meal.id}_${index}`,
-            name: individualMeal.name || `食事${index + 1}`,
+            name: individualMeal.displayName || individualMeal.name || `食事${index + 1}`,
             calories: individualMeal.calories || 0,
             protein: individualMeal.protein || 0,
             fat: individualMeal.fat || 0,
