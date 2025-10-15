@@ -612,6 +612,9 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'ai_advice':
       await startAIAdviceMode(replyToken, userId);
       break;
+    case 'daily_feedback':
+      await handleDailyFeedback(replyToken, userId);
+      break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;
@@ -3426,5 +3429,57 @@ async function saveMultipleMealsByType(userId: string, mealType: string, meals: 
   } catch (error) {
     console.error(`🍽️ ${mealType} 食事保存エラー:`, error);
     throw error;
+  }
+}
+
+// 1日フィードバック処理
+async function handleDailyFeedback(replyToken: string, userId: string) {
+  try {
+    console.log('📊 1日フィードバック開始:', userId);
+    
+    // ローディングアニメーション開始
+    await startLoadingAnimation(userId);
+    
+    // 今日の日付を取得
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    
+    // 1日フィードバックAPIを呼び出し
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'https://kotakun-ai-health.vercel.app'}/api/daily-feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        date: today
+      }),
+    });
+    
+    await stopLoadingAnimation(userId);
+    
+    if (response.ok) {
+      const result = await response.json();
+      
+      // フィードバックメッセージを送信
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: result.feedback
+      }]);
+      
+      console.log('✅ 1日フィードバック送信完了:', userId);
+    } else {
+      throw new Error(`API呼び出し失敗: ${response.status}`);
+    }
+    
+  } catch (error) {
+    console.error('❌ 1日フィードバックエラー:', error);
+    
+    await stopLoadingAnimation(userId);
+    
+    // エラー時のフォールバックメッセージ
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: '申し訳ございません。1日のフィードバック生成でエラーが発生しました。\n\nしばらく時間をおいてからもう一度お試しください。🙏'
+    }]);
   }
 }

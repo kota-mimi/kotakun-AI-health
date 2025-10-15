@@ -106,7 +106,7 @@ async function createRichMenu(accessToken: string) {
         },
         action: {
           type: "postback",
-          data: "action=ai_advice"
+          data: "action=daily_feedback"
         }
       }
     ]
