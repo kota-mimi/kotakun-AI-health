@@ -609,9 +609,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         }]);
       }
       break;
-    case 'ai_advice':
-      await startAIAdviceMode(replyToken, userId);
-      break;
     case 'daily_feedback':
       await handleDailyFeedback(replyToken, userId);
       break;
