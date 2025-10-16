@@ -39,19 +39,15 @@ export function LiffProvider({ children }: LiffProviderProps) {
   useEffect(() => {
     const initializeLiff = async () => {
       try {
-        console.log('🔧 LIFF初期化開始...');
         
         // ブラウザ環境チェック
         if (typeof window === 'undefined') {
-          console.log('🔧 サーバーサイドレンダリング中、LIFF初期化をスキップ');
           return;
         }
         
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-        console.log('🔧 LIFF ID確認:', liffId ? '設定済み' : '未設定');
         
         if (!liffId) {
-          console.log('🔧 LIFF IDが未設定、ローカル開発モードで続行');
           setState(prev => ({
             ...prev,
             error: null, // エラーではなく警告として扱う

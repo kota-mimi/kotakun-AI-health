@@ -61,5 +61,4 @@ WEBHOOK_SECRET=your_random_webhook_secret
 
 1. Vercelにデプロイ
 2. 本番URLでLIFF設定を更新
-3. Webhook URLを本番環境に変更
-　
+

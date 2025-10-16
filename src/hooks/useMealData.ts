@@ -97,14 +97,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       // キャッシュチェック
       const cachedData = apiCache.get(cacheKey);
       if (cachedData) {
-        console.log('🎯 食事データをキャッシュから取得:', dateStr);
         setFirestoreMealData(cachedData);
         setIsLoading(false);
         return;
       }
       
       try {
-        console.log('🔄 食事データをAPIから取得:', dateStr);
         const response = await fetch('/api/meals', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -114,13 +112,9 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.mealData) {
-            // 🔍 複数食事データのログ出力
-            console.log('🔍 API Response mealData:', JSON.stringify(data.mealData, null, 2));
-            
             // 複数食事が含まれているかチェック
             const allMeals = [...(data.mealData.breakfast || []), ...(data.mealData.lunch || []), ...(data.mealData.dinner || []), ...(data.mealData.snack || [])];
             const multipleMeals = allMeals.filter(meal => meal.isMultipleMeals);
-            console.log('🔍 Found multiple meals:', multipleMeals.length, multipleMeals);
             
             // キャッシュに保存（5分間有効）
             apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
@@ -128,7 +122,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           }
         } else {
           // 開発環境でAPIエラーの場合、テストデータを使用
-          console.log('❌ API Failed, using test data in development');
           if (process.env.NODE_ENV === 'development') {
             const testMealData = {
               breakfast: [
@@ -196,12 +189,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
               ],
               snack: []
             };
-            console.log('🧪 開発環境：食事テストデータを使用', testMealData);
             
             // 複数食事が含まれているかチェック
             const allTestMeals = [...testMealData.breakfast, ...testMealData.lunch, ...testMealData.dinner, ...testMealData.snack];
             const multipleTestMeals = allTestMeals.filter(meal => meal.isMultipleMeals);
-            console.log('🧪 Test data multiple meals:', multipleTestMeals.length, multipleTestMeals);
             
             setFirestoreMealData(testMealData);
           }
@@ -244,14 +235,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     const fatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 60;
     const carbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 250;
 
-    // カロリー計算ログ
-    console.log('🍎 栄養目標値:', {
-      カウンセリング結果: !!counselingResult,
-      目標カロリー: targetCalories,
-      タンパク質: proteinTarget,
-      脂質: fatTarget,
-      炭水化物: carbsTarget
-    });
 
     return {
       totalCalories,
@@ -306,7 +289,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
         apiCache.delete(cacheKey);
-        console.log('🗑️ Cache cleared for meal addition');
         
         // Firestoreデータを更新
         setFirestoreMealData(prev => ({
@@ -392,7 +374,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleUpdateMeal = async (updatedMeal: Meal) => {
-    console.log('🔧 handleUpdateMeal called with:', { mealId: updatedMeal.id, userId: liffUser?.userId });
     const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in updateMeal:', selectedDate);
@@ -447,7 +428,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
         apiCache.delete(cacheKey);
-        console.log('🗑️ Cache cleared for key:', cacheKey);
         
         // 成功時はFirestoreデータを再取得
         const fetchResponse = await fetch('/api/meals', {
@@ -586,7 +566,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
         apiCache.delete(cacheKey);
-        console.log('🗑️ Cache cleared for key:', cacheKey);
         
         // 削除成功：Firestoreから最新データを取得して同期
         const fetchResponse = await fetch('/api/meals', {

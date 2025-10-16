@@ -81,10 +81,17 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       // 画像をプレビュー用にセット
       const reader = new FileReader();
       reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
+        const result = e.target?.result as string;
+        setUploadedImage(result);
+      };
+      reader.onerror = (e) => {
+        console.error('Image reading failed:', e);
       };
       reader.readAsDataURL(file);
     }
+    
+    // ファイル入力をリセット（同じファイルの再選択を可能にする）
+    event.target.value = '';
   };
 
   const uploadImageToFirebase = async (file: File): Promise<string | null> => {
@@ -94,12 +101,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
         return null;
       }
 
-      console.log('🔧 Starting API-based image upload:', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        userId: liffUser.userId
-      });
 
       // サーバーサイドのAPIエンドポイント経由でアップロード
       const formData = new FormData();
@@ -122,7 +123,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
         throw new Error('API returned invalid response');
       }
 
-      console.log('✅ API-based image upload successful:', data.imageUrl);
       return data.imageUrl;
     } catch (error: any) {
       console.error('❌ API-based image upload failed:', {
@@ -137,7 +137,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const handleUpdate = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🚨 PRODUCTION DEBUG: Update button clicked');
     
     if (!meal || !mealName || !calories) return;
 
@@ -145,7 +144,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     
     // 新しい画像ファイルがある場合はFirebaseにアップロード
     if (uploadedFile) {
-      console.log('🔧 Uploading new image to Firebase Storage...');
       setIsAnalyzing(true);
       
       // 既存の画像がある場合は削除を試行（エラーは無視）
@@ -157,10 +155,8 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             const imagePath = decodeURIComponent(urlParts.split('?')[0]);
             const oldImageRef = ref(storage, imagePath);
             await deleteObject(oldImageRef);
-            console.log('🗑️ Old image deleted successfully from path:', imagePath);
           }
         } catch (error) {
-          console.log('🗑️ Old image deletion failed (may not exist):', error);
           // エラーを無視して続行
         }
       }
@@ -176,7 +172,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
     
     // 画像が削除された場合（元々あったが今はnull）の処理
     if (meal.image && !finalImageUrl && !uploadedFile) {
-      console.log('🗑️ Image being deleted, removing from Firebase Storage...');
       if (meal.image.includes('firebasestorage.googleapis.com')) {
         try {
           // Firebase Storage URLからパスを抽出
@@ -185,23 +180,13 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             const imagePath = decodeURIComponent(urlParts.split('?')[0]);
             const oldImageRef = ref(storage, imagePath);
             await deleteObject(oldImageRef);
-            console.log('🗑️ Image deleted from Firebase Storage successfully from path:', imagePath);
           }
         } catch (error) {
-          console.log('🗑️ Image deletion failed (may not exist):', error);
           // エラーを無視して続行
         }
       }
     }
     
-    // デバッグ用ログ
-    console.log('🔧 Image update debug:', {
-      originalImage: meal.image,
-      uploadedImage: uploadedImage,
-      uploadedFile: !!uploadedFile,
-      finalImageUrl: finalImageUrl,
-      isImageDeleted: meal.image && !finalImageUrl && !uploadedFile
-    });
 
     const updatedMeal: MealItem = {
       ...meal,
@@ -217,7 +202,6 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       individualMealIndex: meal.individualMealIndex
     };
 
-    console.log('🚨 PRODUCTION DEBUG: Calling onUpdateMeal with:', updatedMeal);
     onUpdateMeal(updatedMeal);
     onClose();
   };
@@ -225,21 +209,18 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🚨 PRODUCTION DEBUG: Delete button clicked');
     
     if (meal && window.confirm('この食事記録を削除しますか？')) {
       // 複数食事の個別削除の場合、元のIDを使用
       const deleteId = meal.originalMealId && meal.individualMealIndex !== undefined 
         ? `${meal.originalMealId}_${meal.individualMealIndex}`
         : meal.id;
-      console.log('🚨 PRODUCTION DEBUG: Calling onDeleteMeal with:', { originalId: meal.id, deleteId, originalMealId: meal.originalMealId, individualMealIndex: meal.individualMealIndex });
       onDeleteMeal(deleteId);
       onClose();
     }
   };
 
   const handleClearImage = () => {
-    console.log('🗑️ Clearing image - original image will be deleted on save');
     setUploadedImage(null);
     setUploadedFile(null);
     // 全てのfile inputをクリア
@@ -281,7 +262,15 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             {uploadedImage ? (
               <Card className="relative">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const input = fileInputRef.current;
+                    if (input) {
+                      input.click();
+                    }
+                  }}
                   className="w-full h-40 block"
                 >
                   <ImageWithFallback
@@ -291,9 +280,14 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   />
                 </button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={handleClearImage}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClearImage();
+                  }}
                   className="absolute top-2 right-2 p-1 bg-black/50 hover:bg-black/70 text-white rounded-full"
                 >
                   <X size={14} />
@@ -302,8 +296,16 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <Button
+                  type="button"
                   variant="outline"
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const input = cameraInputRef.current;
+                    if (input) {
+                      input.click();
+                    }
+                  }}
                   className="h-20 flex flex-col items-center justify-center space-y-1"
                   style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
                 >
@@ -311,8 +313,16 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
                   <span className="text-xs" style={{color: '#4682B4'}}>カメラ</span>
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
-                  onClick={() => albumInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const input = albumInputRef.current;
+                    if (input) {
+                      input.click();
+                    }
+                  }}
                   className="h-20 flex flex-col items-center justify-center space-y-1"
                   style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
                 >
