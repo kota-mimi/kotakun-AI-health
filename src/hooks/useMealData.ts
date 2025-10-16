@@ -303,11 +303,21 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       });
 
       if (response.ok) {
+        // キャッシュをクリア
+        const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+        apiCache.delete(cacheKey);
+        console.log('🗑️ Cache cleared for meal addition');
+        
         // Firestoreデータを更新
         setFirestoreMealData(prev => ({
           ...prev,
           [currentMealType]: [...prev[currentMealType], newMeal]
         }));
+        
+        // ページを自動リフレッシュして表示を更新
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } else {
         console.error('食事保存に失敗しました');
       }
@@ -348,6 +358,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         });
 
         if (response.ok) {
+          // キャッシュをクリア
+          const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+          apiCache.delete(cacheKey);
+          
           // Firestoreデータを更新
           setFirestoreMealData(prev => ({
             ...prev,
@@ -360,6 +374,11 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         console.error('複数食事保存エラー:', error, meal.name);
       }
     }
+    
+    // 全ての食事追加完了後にページをリフレッシュ
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   };
 
   // 食事編集処理
@@ -424,6 +443,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
       if (response.ok) {
         console.log('🔧 API update successful, refreshing data');
+        
+        // キャッシュをクリア
+        const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+        apiCache.delete(cacheKey);
+        console.log('🗑️ Cache cleared for key:', cacheKey);
+        
         // 成功時はFirestoreデータを再取得
         const fetchResponse = await fetch('/api/meals', {
           method: 'POST',
@@ -434,7 +459,15 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         if (fetchResponse.ok) {
           const data = await fetchResponse.json();
           if (data.success && data.mealData) {
+            // 新しいデータでキャッシュを更新
+            apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
+            console.log('✅ Data refreshed and cache updated');
+            
+            // ページを自動リフレッシュして表示を更新
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
           }
         }
         
@@ -549,6 +582,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
       if (response.ok) {
         console.log('🚨 Production: Firestore delete successful, fetching latest data');
+        
+        // キャッシュをクリア
+        const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+        apiCache.delete(cacheKey);
+        console.log('🗑️ Cache cleared for key:', cacheKey);
+        
         // 削除成功：Firestoreから最新データを取得して同期
         const fetchResponse = await fetch('/api/meals', {
           method: 'POST',
@@ -559,8 +598,15 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
         if (fetchResponse.ok) {
           const data = await fetchResponse.json();
           if (data.success && data.mealData) {
+            // 新しいデータでキャッシュを更新
+            apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
             console.log('🚨 Production: Data synchronized with Firestore');
+            
+            // ページを自動リフレッシュして表示を更新
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
           }
         }
       } else {
