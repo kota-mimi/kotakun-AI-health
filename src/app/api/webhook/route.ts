@@ -939,34 +939,6 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
       timeZone: 'Asia/Tokyo'
     });
     
-    // 食事データ作成（アプリと整合性のある形式）
-    const mealData = {
-      id: generateId(),
-      name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事',
-      type: mealType, // アプリが期待するフィールド名
-      calories: mealAnalysis.calories || mealAnalysis.totalCalories || 400,
-      protein: mealAnalysis.protein || mealAnalysis.totalProtein || 20,
-      fat: mealAnalysis.fat || mealAnalysis.totalFat || 15,
-      carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 50,
-      time: currentTime,
-      image: imageUrl,
-      images: imageUrl ? [imageUrl] : [],
-      foodItems: mealAnalysis.foodItems || [mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事'],
-      timestamp: new Date(),
-      createdAt: new Date(),
-      lineUserId: userId,
-      // 分量情報を追加
-      displayName: mealAnalysis.displayName || '',
-      baseFood: mealAnalysis.baseFood || '',
-      portion: mealAnalysis.portion || '',
-      // 複数食事の場合
-      isMultipleMeals: mealAnalysis.isMultipleMeals || false,
-      meals: (mealAnalysis.meals || []).map(meal => ({
-        ...meal,
-        name: meal.displayName || meal.name // displayNameを優先
-      }))
-    };
-    
     // Firestoreに直接保存（アプリが期待する形式）
     const db = admin.firestore();
     const recordRef = db.collection('users').doc(userId).collection('dailyRecords').doc(today);
@@ -974,8 +946,61 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
     const existingData = recordDoc.exists ? recordDoc.data() : {};
     const existingMeals = existingData.meals || [];
     
+    let mealsToAdd = [];
+    
+    // 複数食事の場合はテキスト記録と同じ形式で処理
+    if (mealAnalysis.isMultipleMeals && mealAnalysis.meals && mealAnalysis.meals.length > 0) {
+      console.log('🔥 複数食事として保存:', mealAnalysis.meals.length, '個');
+      
+      // 各食事を個別のオブジェクトとして作成（テキスト記録と同じ形式）
+      mealsToAdd = mealAnalysis.meals.map((meal: any) => ({
+        id: generateId(),
+        name: meal.displayName || meal.name,
+        type: mealType,
+        time: currentTime,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        fat: meal.fat || 0,
+        carbs: meal.carbs || 0,
+        image: imageUrl,
+        images: imageUrl ? [imageUrl] : [],
+        foodItems: [meal.displayName || meal.name],
+        timestamp: new Date(),
+        createdAt: new Date(),
+        lineUserId: userId,
+        displayName: meal.displayName || meal.name,
+        baseFood: meal.baseFood || '',
+        portion: meal.portion || ''
+      }));
+    } else {
+      // 単一食事の場合
+      console.log('🔥 単一食事として保存');
+      
+      const mealData = {
+        id: generateId(),
+        name: mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事',
+        type: mealType,
+        calories: mealAnalysis.calories || mealAnalysis.totalCalories || 400,
+        protein: mealAnalysis.protein || mealAnalysis.totalProtein || 20,
+        fat: mealAnalysis.fat || mealAnalysis.totalFat || 15,
+        carbs: mealAnalysis.carbs || mealAnalysis.totalCarbs || 50,
+        time: currentTime,
+        image: imageUrl,
+        images: imageUrl ? [imageUrl] : [],
+        foodItems: mealAnalysis.foodItems || [mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || mealAnalysis.meals?.[0]?.name || '食事'],
+        timestamp: new Date(),
+        createdAt: new Date(),
+        lineUserId: userId,
+        displayName: mealAnalysis.displayName || '',
+        baseFood: mealAnalysis.baseFood || '',
+        portion: mealAnalysis.portion || ''
+      };
+      
+      mealsToAdd = [mealData];
+    }
+    
     // 新しい食事を追加
-    const updatedMeals = [...existingMeals, mealData];
+    const updatedMeals = [...existingMeals, ...mealsToAdd];
     
     await recordRef.set({
       ...existingData,
@@ -985,7 +1010,7 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
       updatedAt: new Date()
     }, { merge: true });
     
-    console.log('🔥 直接保存完了:', { mealId: mealData.id, mealType });
+    console.log('🔥 直接保存完了:', { mealsCount: mealsToAdd.length, mealType });
     
   } catch (error) {
     console.error('🔥 直接保存エラー:', error);
