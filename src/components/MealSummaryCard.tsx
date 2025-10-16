@@ -23,7 +23,7 @@ interface MealItem {
   isMultipleMeals?: boolean;
   meals?: any[];
   originalMealId?: string;
-  mealIndex?: number;
+  individualMealIndex?: number;
 }
 
 interface MealData {
@@ -82,7 +82,7 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
             foodItems: [individualMeal.name] || [],
             isMultipleMeals: false, // 個別表示なのでfalse
             originalMealId: meal.id, // 元の食事IDを保持
-            mealIndex: index // 何番目の食事かを保持
+            individualMealIndex: index // 何番目の食事かを保持
           });
         });
       } else {
