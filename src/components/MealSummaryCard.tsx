@@ -179,8 +179,8 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                         className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
                         onClick={() => {
                           // 複数食事の個別食事の場合は個別編集
-                          if (meal.originalMealId && meal.mealIndex !== undefined) {
-                            onEditIndividualMeal(meal.originalMealId, meal.mealIndex);
+                          if (meal.originalMealId && meal.individualMealIndex !== undefined) {
+                            onEditIndividualMeal(meal.originalMealId, meal.individualMealIndex);
                           } else {
                             // 単一食事の場合は通常編集
                             onEditMeal(mealType, meal.id);
