@@ -8,6 +8,8 @@ import { Card } from './ui/card';
 import { Camera, Upload, Save, X, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useAuth } from '@/hooks/useAuth';
+import { storage } from '@/lib/firebase';
+import { ref, deleteObject } from 'firebase/storage';
 
 interface MealItem {
   id: string;
@@ -149,9 +151,14 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       // 既存の画像がある場合は削除を試行（エラーは無視）
       if (meal.image && meal.image.includes('firebasestorage.googleapis.com')) {
         try {
-          const oldImageRef = ref(storage, meal.image);
-          await deleteObject(oldImageRef);
-          console.log('🗑️ Old image deleted successfully');
+          // Firebase Storage URLからパスを抽出
+          const urlParts = meal.image.split('/o/')[1];
+          if (urlParts) {
+            const imagePath = decodeURIComponent(urlParts.split('?')[0]);
+            const oldImageRef = ref(storage, imagePath);
+            await deleteObject(oldImageRef);
+            console.log('🗑️ Old image deleted successfully from path:', imagePath);
+          }
         } catch (error) {
           console.log('🗑️ Old image deletion failed (may not exist):', error);
           // エラーを無視して続行
@@ -172,9 +179,14 @@ export function EditMealModal({ isOpen, onClose, mealType, meal, onUpdateMeal, o
       console.log('🗑️ Image being deleted, removing from Firebase Storage...');
       if (meal.image.includes('firebasestorage.googleapis.com')) {
         try {
-          const oldImageRef = ref(storage, meal.image);
-          await deleteObject(oldImageRef);
-          console.log('🗑️ Image deleted from Firebase Storage successfully');
+          // Firebase Storage URLからパスを抽出
+          const urlParts = meal.image.split('/o/')[1];
+          if (urlParts) {
+            const imagePath = decodeURIComponent(urlParts.split('?')[0]);
+            const oldImageRef = ref(storage, imagePath);
+            await deleteObject(oldImageRef);
+            console.log('🗑️ Image deleted from Firebase Storage successfully from path:', imagePath);
+          }
         } catch (error) {
           console.log('🗑️ Image deletion failed (may not exist):', error);
           // エラーを無視して続行
