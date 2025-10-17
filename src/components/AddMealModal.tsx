@@ -449,7 +449,13 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   };
 
   const handleSubmit = () => {
-    if (!mealName && foodItems.length === 0) return;
+    console.log('🔍 handleSubmit called - mealName:', mealName);
+    console.log('🔍 handleSubmit called - foodItems.length:', foodItems.length);
+    
+    if (!mealName) {
+      console.log('❌ mealName is empty, returning');
+      return;
+    }
 
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
@@ -1100,7 +1106,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={(!mealName && foodItems.length === 0) || isAnalyzing}
+              disabled={!mealName || isAnalyzing}
               className="flex-1"
               style={{backgroundColor: '#4682B4'}}
             >
