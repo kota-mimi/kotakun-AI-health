@@ -267,7 +267,7 @@ export async function PATCH(request: NextRequest) {
       console.log('🔧 DEBUG: Update result:', { 
         originalCount: existingRecord.meals.length, 
         updatedCount: updatedMeals.length,
-        foundMatch: updatedMeals.some((meal: any) => meal.updatedAt && meal.updatedAt.getTime() > Date.now() - 5000)
+        foundMatch: updatedMeals.some((meal: any) => meal.updatedAt && Date.now() - new Date(meal.updatedAt).getTime() < 5000)
       });
 
       // 日次記録を更新（Admin SDK）
