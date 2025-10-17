@@ -257,17 +257,19 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleAddMealSubmit = async (meal: Omit<Meal, 'id'>) => {
+    const lineUserId = liffUser?.userId;
+    if (!lineUserId) return;
+    
     const newMeal = {
       id: generateId(),
       ...meal,
       createdAt: new Date(),
-      mealType: currentMealType
+      mealType: currentMealType,
+      lineUserId: lineUserId
     };
 
     try {
       // Firestoreに保存
-      const lineUserId = liffUser?.userId;
-      if (!lineUserId) return;
       if (!selectedDate || isNaN(selectedDate.getTime())) {
         console.warn('⚠️ Invalid selectedDate in addMeal:', selectedDate);
         return;
