@@ -5,6 +5,7 @@ import { Switch } from './ui/switch';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ArrowLeft, Bell, Clock, Utensils } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ReminderSetting {
   id: string;
@@ -19,52 +20,35 @@ interface ReminderSettingsPageProps {
 }
 
 export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
-  const [reminders, setReminders] = useState<ReminderSetting[]>([
-    {
-      id: 'breakfast',
-      name: '朝食',
-      enabled: false,
-      time: '07:00',
-      message: '朝食の時間だよ！'
-    },
-    {
-      id: 'lunch', 
-      name: '昼食',
-      enabled: false,
-      time: '12:00',
-      message: 'お昼の時間だよ！'
-    },
-    {
-      id: 'dinner',
-      name: '夕食', 
-      enabled: false,
-      time: '18:00',
-      message: '夕食の時間だよ！'
-    },
-    {
-      id: 'snack',
-      name: '間食',
-      enabled: false, 
-      time: '15:00',
-      message: '間食の時間だよ！'
-    }
-  ]);
-
+  const { liffUser } = useAuth();
+  const [reminders, setReminders] = useState<ReminderSetting[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 設定を読み込み（後でAPIから取得）
+  // 設定をAPIから読み込み
   useEffect(() => {
-    // TODO: API から設定を読み込み
-    const savedSettings = localStorage.getItem('reminderSettings');
-    if (savedSettings) {
+    const loadReminders = async () => {
+      if (!liffUser?.userId) return;
+
       try {
-        const parsed = JSON.parse(savedSettings);
-        setReminders(parsed);
+        const response = await fetch(`/api/reminders?userId=${liffUser.userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setReminders(data.reminders);
+          }
+        } else {
+          console.error('Failed to load reminder settings');
+        }
       } catch (error) {
-        console.error('Failed to parse reminder settings:', error);
+        console.error('Error loading reminder settings:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, []);
+    };
+
+    loadReminders();
+  }, [liffUser?.userId]);
 
   const handleToggle = (id: string, enabled: boolean) => {
     setReminders(prev => 
@@ -91,16 +75,37 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
   };
 
   const handleSave = async () => {
+    if (!liffUser?.userId) {
+      alert('ログインが必要です');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      // TODO: API に設定を保存
-      localStorage.setItem('reminderSettings', JSON.stringify(reminders));
-      
-      // 成功メッセージ表示（簡易版）
-      alert('リマインダー設定を保存しました');
-    } catch (error) {
+      const response = await fetch('/api/reminders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: liffUser.userId,
+          reminders
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('リマインダー設定を保存しました');
+        } else {
+          throw new Error(data.error || '保存に失敗しました');
+        }
+      } else {
+        throw new Error('保存に失敗しました');
+      }
+    } catch (error: any) {
       console.error('Failed to save reminder settings:', error);
-      alert('保存に失敗しました');
+      alert(error.message || '保存に失敗しました');
     } finally {
       setIsSaving(false);
     }
@@ -126,8 +131,17 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
       </div>
 
       <div className="p-4 pb-8 space-y-6">
-        {/* 説明カード */}
-        <Card className="p-4 bg-blue-50 border-blue-200">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-600">設定を読み込み中...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* 説明カード */}
+            <Card className="p-4 bg-blue-50 border-blue-200">
           <div className="flex items-start space-x-3">
             <Bell className="w-5 h-5 text-blue-600 mt-1" />
             <div>
@@ -218,6 +232,8 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
             <li>• LINEアカウントとの連携が必要です</li>
           </ul>
         </Card>
+          </>
+        )}
       </div>
     </div>
   );
