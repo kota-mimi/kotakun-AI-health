@@ -25,28 +25,28 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
       name: '朝食',
       enabled: false,
       time: '07:00',
-      message: '朝食の時間です！今日も健康的な一日を始めましょう'
+      message: '朝食の時間だよ！'
     },
     {
       id: 'lunch', 
       name: '昼食',
       enabled: false,
       time: '12:00',
-      message: 'お昼の時間です！バランスの良い食事を心がけましょう'
+      message: 'お昼の時間だよ！'
     },
     {
       id: 'dinner',
       name: '夕食', 
       enabled: false,
       time: '18:00',
-      message: '夕食の時間です！一日お疲れ様でした'
+      message: '夕食の時間だよ！'
     },
     {
       id: 'snack',
       name: '間食',
       enabled: false, 
       time: '15:00',
-      message: '間食の時間です！適量を心がけましょう'
+      message: '間食の時間だよ！'
     }
   ]);
 
@@ -125,7 +125,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
         </div>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 pb-8 space-y-6">
         {/* 説明カード */}
         <Card className="p-4 bg-blue-50 border-blue-200">
           <div className="flex items-start space-x-3">
@@ -191,16 +191,6 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
                     />
                   </div>
                   
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">プレビュー：</span>
-                    </p>
-                    <div className="bg-white p-2 rounded border-l-4 border-green-500">
-                      <p className="text-sm text-gray-700">
-                        {reminder.message || '通知メッセージを入力してください'}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               )}
             </Card>
@@ -220,7 +210,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
         </Card>
 
         {/* 注意事項 */}
-        <Card className="p-4 bg-yellow-50 border-yellow-200">
+        <Card className="p-4 bg-yellow-50 border-yellow-200 mb-8">
           <h4 className="font-medium text-yellow-800 mb-2">⚠️ ご注意</h4>
           <ul className="text-sm text-yellow-700 space-y-1">
             <li>• 通知はLINEのトーク画面に送信されます</li>
