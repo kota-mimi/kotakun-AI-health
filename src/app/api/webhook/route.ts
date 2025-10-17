@@ -219,7 +219,13 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     if (isAdviceMode) {
       // AIアドバイスモード中は記録機能を無効化し、高性能AIで応答
-      const aiResponse = await aiService.generateAdvancedResponse(text);
+      const aiResponse = await aiService.generateAdvancedResponse(text, userId);
+      
+      // 会話履歴を保存
+      if (aiResponse) {
+        await aiService.saveConversation(userId, text, aiResponse);
+      }
+      
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
@@ -363,7 +369,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
     
     console.log('🤖 通常モード - AI会話で応答');
-    const aiResponse = await aiService.generateAdvancedResponse(text);
+    const aiResponse = await aiService.generateAdvancedResponse(text, userId);
+    
+    // 会話履歴を保存
+    if (aiResponse) {
+      await aiService.saveConversation(userId, text, aiResponse);
+    }
     
     await stopLoadingAnimation(userId);
     await replyMessage(replyToken, [{
@@ -382,11 +393,16 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     let aiResponse;
     if (wasAdviceMode && !isAdviceMode) {
       aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
-                   await aiService.generateGeneralResponse(text);
+                   await aiService.generateGeneralResponse(text, userId);
     } else {
       aiResponse = isAdviceMode 
-        ? await aiService.generateAdvancedResponse(text)  // 高性能モデル
-        : await aiService.generateGeneralResponse(text);  // 軽量モデル
+        ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
+        : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
+    }
+    
+    // 会話履歴を保存
+    if (aiResponse) {
+      await aiService.saveConversation(userId, text, aiResponse);
     }
     
     await stopLoadingAnimation(userId);

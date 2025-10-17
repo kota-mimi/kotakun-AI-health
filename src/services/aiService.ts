@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
+import { db } from '@/lib/firebase';
+import { collection, doc, addDoc, query, orderBy, limit, getDocs, deleteDoc, where } from 'firebase/firestore';
 
 class AIHealthService {
   private genAI: GoogleGenerativeAI;
@@ -895,9 +897,22 @@ class AIHealthService {
   }
 
   // 高性能な会話レスポンスを生成（通常モード用・専門的なパーソナルトレーナー）
-  async generateAdvancedResponse(userMessage: string): Promise<string> {
+  async generateAdvancedResponse(userMessage: string, userId?: string): Promise<string> {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      // 会話履歴を取得
+      let conversationHistory = '';
+      if (userId) {
+        const history = await this.getConversationHistory(userId);
+        if (history.length > 0) {
+          conversationHistory = '\n\n【過去の会話】\n';
+          history.forEach((conv, index) => {
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   こたくん: ${conv.aiResponse}\n`;
+          });
+          conversationHistory += '\n';
+        }
+      }
       
       const prompt = `
 あなたは「こたくん」という専門的なパーソナルトレーナー兼栄養管理士です。
@@ -937,8 +952,7 @@ class AIHealthService {
 - 質問のトーンに合わせて回答の長さを調整
 - 「やあ」「〇〇さ」など余計な言葉は使わない
 - 「おすすめ」「効果的」など簡潔に断言
-- シンプルで分かりやすく、無駄のない回答
-
+- シンプルで分かりやすく、無駄のない回答${conversationHistory}
 返答:`;
 
       const result = await model.generateContent(prompt);
@@ -1152,9 +1166,22 @@ class AIHealthService {
   }
 
   // 一般会話機能（エラー時フォールバック用）
-  async generateGeneralResponse(userMessage: string): Promise<string> {
+  async generateGeneralResponse(userMessage: string, userId?: string): Promise<string> {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      // 会話履歴を取得
+      let conversationHistory = '';
+      if (userId) {
+        const history = await this.getConversationHistory(userId);
+        if (history.length > 0) {
+          conversationHistory = '\n\n【過去の会話】\n';
+          history.forEach((conv, index) => {
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   こたくん: ${conv.aiResponse}\n`;
+          });
+          conversationHistory += '\n';
+        }
+      }
       
       const prompt = `
 あなたは「こたくん」という専門的なパーソナルトレーナー兼栄養管理士です。
@@ -1194,8 +1221,7 @@ class AIHealthService {
 - 質問のトーンに合わせて回答の長さを調整
 - 「やあ」「〇〇さ」など余計な言葉は使わない
 - 「おすすめ」「効果的」など簡潔に断言
-- シンプルで分かりやすく、無駄のない回答
-
+- シンプルで分かりやすく、無駄のない回答${conversationHistory}
 返答:`;
 
       const result = await model.generateContent(prompt);
@@ -1217,6 +1243,80 @@ class AIHealthService {
     } catch (error) {
       console.error('一般会話AI エラー:', error);
       return 'お話ありがとうございます！何か健康管理でお手伝いできることがあれば、お気軽にお声がけください！';
+    }
+  }
+
+  // 会話履歴を保存
+  async saveConversation(userId: string, userMessage: string, aiResponse: string) {
+    try {
+      const conversationRef = collection(db, 'conversations');
+      await addDoc(conversationRef, {
+        userId,
+        userMessage,
+        aiResponse,
+        timestamp: new Date(),
+      });
+
+      // 古い会話を削除（直近10件だけ保持）
+      await this.cleanupOldConversations(userId);
+    } catch (error) {
+      console.error('会話履歴保存エラー:', error);
+      // エラーが発生しても会話は続行
+    }
+  }
+
+  // 会話履歴を取得
+  async getConversationHistory(userId: string): Promise<Array<{userMessage: string, aiResponse: string}>> {
+    try {
+      const conversationRef = collection(db, 'conversations');
+      const q = query(
+        conversationRef,
+        where('userId', '==', userId),
+        orderBy('timestamp', 'desc'),
+        limit(8) // 直近8回分取得
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const conversations: Array<{userMessage: string, aiResponse: string}> = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        conversations.push({
+          userMessage: data.userMessage,
+          aiResponse: data.aiResponse
+        });
+      });
+      
+      // 時系列順に並び替え（古い順）
+      return conversations.reverse();
+    } catch (error) {
+      console.error('会話履歴取得エラー:', error);
+      return [];
+    }
+  }
+
+  // 古い会話を削除
+  private async cleanupOldConversations(userId: string) {
+    try {
+      const conversationRef = collection(db, 'conversations');
+      const q = query(
+        conversationRef,
+        where('userId', '==', userId),
+        orderBy('timestamp', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const docs = querySnapshot.docs;
+      
+      // 10件以上ある場合、古いものを削除
+      if (docs.length > 10) {
+        const docsToDelete = docs.slice(10); // 11番目以降を削除対象
+        for (const docToDelete of docsToDelete) {
+          await deleteDoc(docToDelete.ref);
+        }
+      }
+    } catch (error) {
+      console.error('古い会話削除エラー:', error);
     }
   }
 }
