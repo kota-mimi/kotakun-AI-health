@@ -400,18 +400,10 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           return;
         } else {
           await stopLoadingAnimation(userId);
+          // 通常モードでは記録を提案するがクイックリプライは出さない
           await replyMessage(replyToken, [{
             type: 'text',
-            text: `${mealJudgment.foodText || text}の記録をしますか？`,
-            quickReply: {
-              items: [
-                { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
-                { type: 'action', action: { type: 'postback', label: '昼食', data: 'action=meal_lunch' }},
-                { type: 'action', action: { type: 'postback', label: '夕食', data: 'action=meal_dinner' }},
-                { type: 'action', action: { type: 'postback', label: '間食', data: 'action=meal_snack' }},
-                { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
-              ]
-            }
+            text: `「${mealJudgment.foodText || text}」を記録したい場合は、記録モードに切り替えてから再度お試しください！\n\nリッチメニューの「記録」ボタンを押して記録モードにできます。`
           }]);
           return;
         }
@@ -1429,42 +1421,8 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       
       const flexMessage = createExerciseFlexMessage(singleExerciseData);
       
-      // 最初のメッセージにのみクイックリプライを追加（通常モード用）
-      if (i === 0) {
-        messages.push({
-          ...flexMessage,
-          quickReply: {
-            items: [
-              {
-                type: 'action',
-                action: {
-                  type: 'text',
-                  label: 'テキストで記録',
-                  text: 'テキストで記録'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'text',
-                  label: 'カメラで記録',
-                  text: 'カメラで記録'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'text',
-                  label: '通常モード',
-                  text: '通常モード'
-                }
-              }
-            ]
-          }
-        });
-      } else {
-        messages.push(flexMessage);
-      }
+      // 通常モードではクイックリプライなしでFlexメッセージのみ表示
+      messages.push(flexMessage);
     }
     
     await replyMessage(replyToken, messages);
@@ -1611,38 +1569,19 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     const actionText = existingExerciseIndex !== -1 ? 'セットを追加しました！' : 'を記録しました！';
     const responseText = `🏃‍♂️ ${exerciseName}${actionText}\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${displayCalories}kcal\n\nお疲れさまでした！💪`;
     
-    await replyMessage(replyToken, [{
+    // 記録モードかどうかでクイックリプライを制御
+    const isInRecordMode = await isRecordMode(userId);
+    const message: any = {
       type: 'text',
-      text: responseText,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'テキストで記録',
-              text: 'テキストで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'カメラで記録',
-              text: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: '通常モード',
-              text: '通常モード'
-            }
-          }
-        ]
-      }
-    }]);
+      text: responseText
+    };
+    
+    // 記録モードの場合のみクイックリプライを追加
+    if (isInRecordMode) {
+      message.quickReply = getRecordModeQuickReply();
+    }
+    
+    await replyMessage(replyToken, [message]);
     
     console.log('✅ AI運動記録完了:', {
       name: exerciseRecord.name,
