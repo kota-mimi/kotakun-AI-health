@@ -182,10 +182,8 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                           if (meal.originalMealId && meal.individualMealIndex !== undefined) {
                             onEditIndividualMeal(meal.originalMealId, meal.individualMealIndex);
                           } else {
-                            // 単一食事または展開された個別食事の場合は通常編集
-                            // 仮想ID（_で区切られたID）の場合は元のIDを使用
-                            const actualMealId = meal.id.includes('_') ? meal.id.split('_').slice(0, -1).join('_') : meal.id;
-                            onEditMeal(mealType, actualMealId);
+                            // 単一食事の場合は通常編集（IDはそのまま使用）
+                            onEditMeal(mealType, meal.id);
                           }
                         }}
                       >

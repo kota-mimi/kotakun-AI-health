@@ -415,30 +415,13 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       });
 
       if (response.ok) {
-        console.log('🔧 API update successful, refreshing data');
+        console.log('🔧 API update successful, updating local state only');
         
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
         apiCache.delete(cacheKey);
         
-        // 成功時はFirestoreデータを再取得
-        const fetchResponse = await fetch('/api/meals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lineUserId, date: dateStr }),
-        });
-
-        if (fetchResponse.ok) {
-          const data = await fetchResponse.json();
-          if (data.success && data.mealData) {
-            // 新しいデータでキャッシュを更新
-            apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
-            setFirestoreMealData(data.mealData);
-            console.log('✅ Data refreshed and cache updated');
-          }
-        }
-        
-        // ローカルデータも更新
+        // ローカルデータを更新（Firestoreからの再取得は行わない）
         const currentData = getCurrentDateData();
         updateDateData({
           mealData: {
@@ -448,6 +431,14 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
             )
           }
         });
+        
+        // Firestoreデータも同期して更新
+        setFirestoreMealData(prevData => ({
+          ...prevData,
+          [currentMealType]: prevData[currentMealType].map(meal => 
+            meal.id === originalMealId ? updatedMeal : meal
+          )
+        }));
       } else {
         console.error('🔧 API update failed:', response.status);
         throw new Error('API update failed');

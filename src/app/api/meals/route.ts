@@ -234,6 +234,11 @@ export async function PATCH(request: NextRequest) {
       });
     } else {
       // 通常の更新
+      console.log('🔧 DEBUG: Normal meal update:', { 
+        mealDataId: mealData.id, 
+        existingMealIds: existingRecord.meals.map((m: any) => m.id) 
+      });
+      
       const updatedMealData = {
         id: mealData.id,
         name: mealData.name,
@@ -254,6 +259,12 @@ export async function PATCH(request: NextRequest) {
       const updatedMeals = existingRecord.meals.map((meal: any) => 
         meal.id === mealData.id ? updatedMealData : meal
       );
+      
+      console.log('🔧 DEBUG: Updated meals count:', { 
+        originalCount: existingRecord.meals.length, 
+        updatedCount: updatedMeals.length,
+        foundMatch: updatedMeals.some((meal: any) => meal.updatedAt)
+      });
 
       // 日次記録を更新（Admin SDK）
       await recordRef.update({
