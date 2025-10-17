@@ -221,10 +221,22 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         const data = await response.json();
         const analyses = data.analyses; // 複数の分析結果
         
+        console.log('🔍 複数画像分析結果:', {
+          uploadedImagesCount: uploadedImages.length,
+          analysesCount: analyses?.length,
+          uploadedImages: uploadedImages.map((img, i) => `Image${i}: ${img.substring(0, 50)}...`),
+          analyses: analyses
+        });
+        
         // 各分析結果を個別の食事項目として設定
         const allMeals: any[] = [];
         analyses.forEach((analysis: any, imageIndex: number) => {
           const currentImage = uploadedImages[imageIndex]; // 対応する画像を取得
+          
+          console.log(`🔍 処理中 Image${imageIndex}:`, {
+            currentImage: currentImage?.substring(0, 50) + '...',
+            analysis: analysis
+          });
           
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
@@ -255,8 +267,19 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           }
         });
         
+        console.log('🔍 最終的な食事項目:', allMeals.map(meal => ({
+          name: meal.name,
+          hasImage: !!meal.image,
+          imagePreview: meal.image?.substring(0, 50) + '...'
+        })));
+        
         setFoodItems(allMeals);
-        setMealName(allMeals.map(meal => meal.name).join('、'));
+        const newMealName = allMeals.map(meal => meal.name).join('、');
+        setMealName(newMealName);
+        
+        console.log('🔍 設定された食事名:', newMealName);
+        console.log('🔍 食事名が空かどうか:', !newMealName);
+        
         setTimeout(calculateTotals, 100);
       } else {
         throw new Error('API解析失敗');
@@ -275,7 +298,12 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         images: [imageUrl]
       }));
       setFoodItems(fallbackMeals);
-      setMealName(fallbackMeals.map(meal => meal.name).join('、'));
+      const fallbackMealName = fallbackMeals.map(meal => meal.name).join('、');
+      setMealName(fallbackMealName);
+      
+      console.log('🔍 フォールバック食事名:', fallbackMealName);
+      console.log('🔍 フォールバック食事名が空かどうか:', !fallbackMealName);
+      
       setTimeout(calculateTotals, 100);
     }
     
@@ -421,7 +449,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   };
 
   const handleSubmit = () => {
-    if (!mealName) return;
+    if (!mealName && foodItems.length === 0) return;
 
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
@@ -743,10 +771,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                   <div key={item.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
                     <div className="flex items-center space-x-3">
                       {/* 食事画像（画像がある場合のみ表示） */}
-                      {uploadedImages.length > 0 && (
+                      {item.image && (
                         <div className="flex-shrink-0 w-12 h-12">
                           <img
-                            src={uploadedImages[0]}
+                            src={item.image}
                             alt={item.name}
                             className="w-full h-full object-cover rounded-lg border border-slate-200"
                           />
@@ -1072,7 +1100,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!mealName || isAnalyzing}
+              disabled={(!mealName && foodItems.length === 0) || isAnalyzing}
               className="flex-1"
               style={{backgroundColor: '#4682B4'}}
             >
