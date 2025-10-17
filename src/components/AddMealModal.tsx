@@ -377,7 +377,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
 
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
-      minute: '2-digit' 
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
     });
 
     // 複数食事の場合は、LINEと同じように各食事を個別に送信

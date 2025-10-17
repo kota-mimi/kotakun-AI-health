@@ -430,6 +430,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
     return now.toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
       minute: '2-digit',
+      timeZone: 'Asia/Tokyo'
       hour12: false 
     });
   };
