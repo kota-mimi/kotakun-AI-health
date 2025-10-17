@@ -11,7 +11,7 @@ interface ReminderSetting {
   name: string;
   enabled: boolean;
   time: string;
-  icon: string;
+  message: string;
 }
 
 interface ReminderSettingsPageProps {
@@ -25,28 +25,28 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
       name: '朝食',
       enabled: false,
       time: '07:00',
-      icon: '🌅'
+      message: '朝食の時間です！今日も健康的な一日を始めましょう'
     },
     {
       id: 'lunch', 
       name: '昼食',
       enabled: false,
       time: '12:00',
-      icon: '☀️'
+      message: 'お昼の時間です！バランスの良い食事を心がけましょう'
     },
     {
       id: 'dinner',
       name: '夕食', 
       enabled: false,
       time: '18:00',
-      icon: '🌆'
+      message: '夕食の時間です！一日お疲れ様でした'
     },
     {
       id: 'snack',
       name: '間食',
       enabled: false, 
       time: '15:00',
-      icon: '🍎'
+      message: '間食の時間です！適量を心がけましょう'
     }
   ]);
 
@@ -78,6 +78,14 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
     setReminders(prev =>
       prev.map(reminder =>
         reminder.id === id ? { ...reminder, time } : reminder
+      )
+    );
+  };
+
+  const handleMessageChange = (id: string, message: string) => {
+    setReminders(prev =>
+      prev.map(reminder =>
+        reminder.id === id ? { ...reminder, message } : reminder
       )
     );
   };
@@ -125,7 +133,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
             <div>
               <h3 className="font-medium text-blue-800 mb-1">食事リマインダーについて</h3>
               <p className="text-sm text-blue-700">
-                設定した時間にLINEに通知メッセージが届きます。食事の記録忘れを防ぎ、健康的な食生活をサポートします。
+                設定した時間にLINEに通知メッセージが届きます。通知メッセージは自由にカスタマイズできます。
               </p>
             </div>
           </div>
@@ -138,7 +146,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <span className="text-lg">{reminder.icon}</span>
+                    <Utensils className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-800">{reminder.name}のリマインダー</h4>
@@ -168,14 +176,30 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
                     onChange={(e) => handleTimeChange(reminder.id, e.target.value)}
                     className="w-full"
                   />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor={`message-${reminder.id}`} className="text-sm font-medium">
+                      通知メッセージ
+                    </Label>
+                    <textarea
+                      id={`message-${reminder.id}`}
+                      value={reminder.message}
+                      onChange={(e) => handleMessageChange(reminder.id, e.target.value)}
+                      placeholder="通知メッセージを入力してください"
+                      className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                  
                   <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">通知メッセージ例：</span>
+                    <p className="text-sm text-gray-600 mb-2">
+                      <span className="font-medium">プレビュー：</span>
                     </p>
-                    <p className="text-sm text-gray-700 mt-1">
-                      {reminder.icon} {reminder.name}の時間です！<br />
-                      今日も健康的な食事を心がけましょう💪
-                    </p>
+                    <div className="bg-white p-2 rounded border-l-4 border-green-500">
+                      <p className="text-sm text-gray-700">
+                        {reminder.message || '通知メッセージを入力してください'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
