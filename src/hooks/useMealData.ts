@@ -296,10 +296,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           [currentMealType]: [...prev[currentMealType], newMeal]
         }));
         
-        // ページを自動リフレッシュして表示を更新
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       } else {
         console.error('食事保存に失敗しました');
       }
@@ -357,10 +353,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       }
     }
     
-    // 全ての食事追加完了後にページをリフレッシュ
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
   };
 
   // 食事編集処理
@@ -443,11 +435,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
             apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
             console.log('✅ Data refreshed and cache updated');
-            
-            // ページを自動リフレッシュして表示を更新
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
           }
         }
         
@@ -581,11 +568,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
             apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
             console.log('🚨 Production: Data synchronized with Firestore');
-            
-            // ページを自動リフレッシュして表示を更新
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
           }
         }
       } else {
