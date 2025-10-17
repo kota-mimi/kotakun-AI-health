@@ -391,7 +391,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
           carbs: item.carbs,
           time: currentTime,
           images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
-          foodItems: [item]
+          image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
+          foodItems: [item.name],
+          displayName: item.name,
+          baseFood: '',
+          portion: ''
         });
       });
     } else {
@@ -420,7 +424,11 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
         carbs: totalCarbs,
         time: currentTime,
         images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
-        foodItems: foodItems.length > 0 ? foodItems : undefined
+        image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
+        foodItems: foodItems.length > 0 ? foodItems.map(item => item.name) : [mealName],
+        displayName: mealName,
+        baseFood: '',
+        portion: ''
       });
     }
 

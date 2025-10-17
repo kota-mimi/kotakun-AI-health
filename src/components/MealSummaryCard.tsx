@@ -117,24 +117,6 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
     return expandedMealData[mealType].reduce((sum, item) => sum + item.calories, 0);
   };
 
-  // デバッグ用：データ構造をログ出力
-  useEffect(() => {
-    if (meals && Object.keys(meals).length > 0) {
-      const debugData = Object.entries(meals).map(([mealType, mealList]) => ({
-        mealType,
-        meals: mealList.map(meal => ({
-          id: meal.id,
-          name: meal.name,
-          isMultipleMeals: meal.isMultipleMeals,
-          meals: meal.meals ? meal.meals.length : 0,
-          lineUserId: meal.lineUserId,
-          hasDisplayName: !!meal.displayName,
-          hasBaseFood: !!meal.baseFood
-        }))
-      }));
-      console.log('🔍 DEBUG: Current meal data structure:', debugData);
-    }
-  }, [meals]);
 
   // 総カロリー計算（展開後） - ハイドレーションエラー回避
   const totalCalories = isMounted ? Object.values(expandedMealData).flat().reduce((sum, meal) => sum + meal.calories, 0) : 0;
