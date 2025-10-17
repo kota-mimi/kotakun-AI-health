@@ -855,7 +855,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           {showManualInput && (
             <div className="space-y-3">
               {/* 手動入力用の画像追加（AI解析結果表示時は非表示） */}
-              {!showAnalysisResult && (
+              {!showAnalysisResult && foodItems.length === 0 && (
                 <div className="space-y-3">
                   <Label>写真を追加</Label>
                 
