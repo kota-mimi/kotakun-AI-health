@@ -29,7 +29,8 @@ import {
   Trophy,
   ChevronRight,
   Calendar,
-  BarChart3
+  BarChart3,
+  Bell
 } from 'lucide-react';
 
 
@@ -40,6 +41,7 @@ interface MyProfilePageProps {
   onNavigateToPaymentSettings?: () => void;
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
+  onNavigateToReminderSettings?: () => void;
 }
 
 export function MyProfilePage({ 
@@ -48,7 +50,8 @@ export function MyProfilePage({
   onNavigateToPlanSettings,
   onNavigateToPaymentSettings,
   onNavigateToUserGuide,
-  onNavigateToContact
+  onNavigateToContact,
+  onNavigateToReminderSettings
 }: MyProfilePageProps) {
   // 編集モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -612,6 +615,12 @@ export function MyProfilePage({
   const analysisMenuItems = [];
 
   const accountMenuItems = [
+    {
+      icon: Bell,
+      label: 'リマインダー設定',
+      color: '#8B5CF6',
+      action: onNavigateToReminderSettings
+    },
     {
       icon: Trophy,
       label: 'プラン・サブスクリプション',

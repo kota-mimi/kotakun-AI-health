@@ -26,6 +26,7 @@ import { PlanSettingsPage } from '@/components/PlanSettingsPage';
 import { PaymentSettingsPage } from '@/components/PaymentSettingsPage';
 import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
+import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
 import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { WeightSettingsModal } from '@/components/WeightSettingsModal';
 import { DataManagementModal } from '@/components/DataManagementModal';
@@ -145,7 +146,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
         <>
-          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showPaymentSettings && !navigation.showUserGuide && !navigation.showContact ? (
+          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showPaymentSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showReminderSettings ? (
             <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
@@ -154,6 +155,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToPaymentSettings={navigation.handleNavigateToPaymentSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
+                onNavigateToReminderSettings={navigation.handleNavigateToReminderSettings}
               />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
@@ -184,6 +186,10 @@ function DashboardContent({ onError }: { onError: () => void }) {
           ) : navigation.showContact ? (
             <ContactPage 
               onBack={navigation.handleBackFromContact}
+            />
+          ) : navigation.showReminderSettings ? (
+            <ReminderSettingsPage 
+              onBack={navigation.handleBackFromReminderSettings}
             />
           ) : null}
         </>
