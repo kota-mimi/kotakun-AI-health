@@ -175,9 +175,12 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
+      setIsAnalyzing(true);
+      
+      const newImages: string[] = [];
       const fileReaders: Promise<string>[] = [];
 
-      for (let i = 0; i < Math.min(files.length, 4 - uploadedImages.length); i++) {
+      for (let i = 0; i < Math.min(files.length, 5 - uploadedImages.length); i++) {
         const file = files[i];
         const promise = compressImage(file, {
           maxWidth: 800,
@@ -190,125 +193,72 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
 
       const results = await Promise.all(fileReaders);
       setUploadedImages(prev => [...prev, ...results]);
-    }
-  };
 
-  // 複数画像分析関数を新規追加
-  const handleImageAnalysis = async () => {
-    if (uploadedImages.length === 0) return;
-    
-    setIsAnalyzing(true);
-    
-    try {
-      // 複数画像を一括でFormDataに追加
-      const formData = new FormData();
-      
-      for (let i = 0; i < uploadedImages.length; i++) {
-        const imageUrl = uploadedImages[i];
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `image_${i}.jpg`, { type: blob.type });
-        formData.append('images', file); // 'images'として複数追加
-      }
-      
-      // 複数画像分析API呼び出し
-      const response = await fetch('/api/analyze/images', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const analyses = data.analyses; // 複数の分析結果
+      // AI画像解析をAPI経由で実行
+      try {
+        const file = files[0];
+        const formData = new FormData();
+        formData.append('image', file);
         
-        console.log('🔍 複数画像分析結果:', {
-          uploadedImagesCount: uploadedImages.length,
-          analysesCount: analyses?.length,
-          uploadedImages: uploadedImages.map((img, i) => `Image${i}: ${img.substring(0, 50)}...`),
-          analyses: analyses
+        const response = await fetch('/api/analyze/image', {
+          method: 'POST',
+          body: formData,
         });
         
-        // 各分析結果を個別の食事項目として設定
-        const allMeals: any[] = [];
-        analyses.forEach((analysis: any, imageIndex: number) => {
-          const currentImage = uploadedImages[imageIndex]; // 対応する画像を取得
-          
-          console.log(`🔍 処理中 Image${imageIndex}:`, {
-            currentImage: currentImage?.substring(0, 50) + '...',
-            analysis: analysis
-          });
+        if (response.ok) {
+          const data = await response.json();
+          const analysis = data.analysis;
           
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
-            analysis.meals.forEach((meal: any) => {
-              allMeals.push({
-                id: generateId(),
-                name: meal.displayName || meal.name,
-                calories: meal.calories || 0,
-                protein: meal.protein || 0,
-                fat: meal.fat || 0,
-                carbs: meal.carbs || 0,
-                image: currentImage, // 対応する画像を設定
-                images: [currentImage]
-              });
-            });
+            setMealName(analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、'));
+            const foodItemsData = analysis.meals.map((meal: any) => ({
+              id: generateId(),
+              name: meal.name,
+              calories: meal.calories || 0,
+              protein: meal.protein || 0,
+              fat: meal.fat || 0,
+              carbs: meal.carbs || 0
+            }));
+            setFoodItems(foodItemsData);
+            // 合計値も計算して設定
+            setTimeout(calculateTotals, 100);
           } else {
             // 単一食事の場合
-            allMeals.push({
+            setMealName(analysis.displayName || analysis.foodItems?.[0] || '食事');
+            setFoodItems([{
               id: generateId(),
-              name: analysis.displayName || analysis.foodItems?.[0] || '食事',
+              name: analysis.foodItems?.[0] || '食事',
               calories: analysis.calories || 0,
               protein: analysis.protein || 0,
               fat: analysis.fat || 0,
-              carbs: analysis.carbs || 0,
-              image: currentImage, // 対応する画像を設定
-              images: [currentImage]
-            });
+              carbs: analysis.carbs || 0
+            }]);
+            // 合計値も計算して設定
+            setTimeout(calculateTotals, 100);
           }
-        });
-        
-        console.log('🔍 最終的な食事項目:', allMeals.map(meal => ({
-          name: meal.name,
-          hasImage: !!meal.image,
-          imagePreview: meal.image?.substring(0, 50) + '...'
-        })));
-        
-        setFoodItems(allMeals);
-        const newMealName = allMeals.map(meal => meal.name).join('、');
-        setMealName(newMealName);
-        
-        console.log('🔍 設定された食事名:', newMealName);
-        console.log('🔍 食事名が空かどうか:', !newMealName);
-        
+        } else {
+          throw new Error('API解析失敗');
+        }
+      } catch (error) {
+        console.error('AI画像解析エラー:', error);
+        // フォールバック - ダミーデータ
+        setMealName('食事');
+        setFoodItems([{
+          id: generateId(),
+          name: '食事',
+          calories: 400,
+          protein: 20,
+          fat: 15,
+          carbs: 50
+        }]);
+        // 合計値も計算して設定
         setTimeout(calculateTotals, 100);
-      } else {
-        throw new Error('API解析失敗');
       }
-    } catch (error) {
-      console.error('AI複数画像解析エラー:', error);
-      // フォールバック - 画像数に応じたダミーデータ
-      const fallbackMeals = uploadedImages.map((imageUrl, index) => ({
-        id: generateId(),
-        name: `食事${index + 1}`,
-        calories: 400,
-        protein: 20,
-        fat: 15,
-        carbs: 50,
-        image: imageUrl, // 対応する画像を設定
-        images: [imageUrl]
-      }));
-      setFoodItems(fallbackMeals);
-      const fallbackMealName = fallbackMeals.map(meal => meal.name).join('、');
-      setMealName(fallbackMealName);
       
-      console.log('🔍 フォールバック食事名:', fallbackMealName);
-      console.log('🔍 フォールバック食事名が空かどうか:', !fallbackMealName);
-      
-      setTimeout(calculateTotals, 100);
+      setIsAnalyzing(false);
+      setShowManualInput(true); // AI解析後は手動入力モードに切り替え
     }
-    
-    setIsAnalyzing(false);
-    setShowManualInput(true); // AI解析後は手動入力モードに切り替え
   };
 
   const calculateTotals = () => {
@@ -449,13 +399,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   };
 
   const handleSubmit = () => {
-    console.log('🔍 handleSubmit called - mealName:', mealName);
-    console.log('🔍 handleSubmit called - foodItems.length:', foodItems.length);
-    
-    if (!mealName) {
-      console.log('❌ mealName is empty, returning');
-      return;
-    }
+    if (!mealName) return;
 
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
@@ -472,8 +416,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         fat: item.fat,
         carbs: item.carbs,
         time: currentTime,
-        images: item.images || (item.image ? [item.image] : []), // 各食事の個別画像を使用
-        image: item.image || undefined, // 各食事の個別画像を使用
+        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
+        image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
         foodItems: [item.name],
         displayName: item.name,
         baseFood: '',
@@ -656,47 +600,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               </div>
             )}
 
-            {/* 複数画像分析ボタン */}
-            {uploadedImages.length > 0 && foodItems.length === 0 && !isAnalyzing && (
-              <div className="space-y-3">
-                <Button
-                  onClick={handleImageAnalysis}
-                  disabled={isAnalyzing}
-                  className="w-full h-12 flex items-center justify-center space-x-2"
-                  style={{backgroundColor: '#4682B4'}}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>分析中...</span>
-                    </>
-                  ) : (
-                    <span>{uploadedImages.length}枚の画像を分析</span>
-                  )}
-                </Button>
-                {uploadedImages.length < 4 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      if (fileInputRef.current) {
-                        fileInputRef.current.removeAttribute('capture');
-                        fileInputRef.current.click();
-                      }
-                    }}
-                    className="w-full h-10 flex items-center justify-center space-x-2"
-                    style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
-                  >
-                    <Plus size={16} style={{color: '#4682B4'}} />
-                    <span style={{color: '#4682B4'}}>画像を追加 ({uploadedImages.length}/4)</span>
-                  </Button>
-                )}
-              </div>
-            )}
-
             {/* 手動入力時の写真追加ボタン */}
             
-            {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示、複数画像アップロード時も非表示） */}
-            {uploadedImages.length === 0 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
+            {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示） */}
+            {uploadedImages.length < 5 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
               <div className="space-y-3">
                 {/* メイン記録方法 */}
                 <div className="grid grid-cols-2 gap-3">
@@ -777,10 +684,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                   <div key={item.id} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
                     <div className="flex items-center space-x-3">
                       {/* 食事画像（画像がある場合のみ表示） */}
-                      {item.image && (
+                      {uploadedImages.length > 0 && (
                         <div className="flex-shrink-0 w-12 h-12">
                           <img
-                            src={item.image}
+                            src={uploadedImages[0]}
                             alt={item.name}
                             className="w-full h-full object-cover rounded-lg border border-slate-200"
                           />
