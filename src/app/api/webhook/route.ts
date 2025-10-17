@@ -346,69 +346,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     // 通常モード：AI会話がメイン、明確な記録意図があれば記録も可能
     
-    // 明確な記録意図がある場合のみ記録処理を実行
-    // 通常モードでは非常に明確な記録意図のみ処理（簡単な「記録して」は無視）
-    const hasExplicitRecordIntent = /体重記録|食べた記録|運動記録|記録しておいて|記録お願い|した|やった|行った/.test(text);
-    
-    if (hasExplicitRecordIntent) {
-      console.log('🎯 明確な記録意図を検出、記録処理を実行');
-      
-      // 体重記録の判定
-      const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
-      if (weightJudgment.isWeightRecord) {
-        await handleWeightRecord(userId, weightJudgment, replyToken);
-        return;
-      }
-      
-      // 運動記録の判定（古いクイックリプライシステムは無効化）
-      // const exerciseResult = await handleExerciseMessage(replyToken, userId, text, user);
-      // if (exerciseResult) {
-      //   return;
-      // }
-      
-      // AI運動記録の判定（通常モード）
-      console.log('🏃‍♂️ 通常モード - AI運動記録判定開始:', text);
-      try {
-        const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
-        console.log('🏃‍♂️ 通常モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
-        if (exerciseJudgment.isExerciseRecord) {
-          console.log('✅ 通常モード - AI運動記録として認識、処理開始');
-          if (exerciseJudgment.isMultipleExercises) {
-            console.log('🔄 通常モード - 複数運動記録処理');
-            await handleMultipleAIExerciseRecord(userId, exerciseJudgment, replyToken);
-          } else {
-            console.log('🔄 通常モード - 単一運動記録処理');
-            await handleAIExerciseRecord(userId, exerciseJudgment, replyToken);
-          }
-          return;
-        } else {
-          console.log('❌ 通常モード - AI運動記録として認識されませんでした');
-        }
-      } catch (error) {
-        console.error('❌ 通常モード - AI運動記録判定エラー:', error);
-      }
-      
-      // 食事記録の判定
-      const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
-      if (mealJudgment.isFoodRecord) {
-        const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
-        await storeTempMealAnalysis(userId, mealAnalysis, null, text);
-        
-        if (mealJudgment.hasSpecificMealTime) {
-          const mealType = mealJudgment.mealTime;
-          await saveMealRecord(userId, mealType, replyToken);
-          return;
-        } else {
-          await stopLoadingAnimation(userId);
-          // 通常モードでは記録を提案するがクイックリプライは出さない
-          await replyMessage(replyToken, [{
-            type: 'text',
-            text: `「${mealJudgment.foodText || text}」を記録したい場合は、記録モードに切り替えてから再度お試しください！\n\nリッチメニューの「記録」ボタンを押して記録モードにできます。`
-          }]);
-          return;
-        }
-      }
-    }
+    // 通常モードでは記録判定を完全に無効化（純粋なAI会話のみ）
+    console.log('🤖 通常モード - 記録判定をスキップ、AI会話で応答');
     
     // 通常モード：AI会話で応答（高性能モデル使用）
     // 万が一のセーフティガード：記録モード中なら絶対に実行しない
