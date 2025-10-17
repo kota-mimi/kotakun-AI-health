@@ -82,7 +82,7 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
     return now.toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
       minute: '2-digit',
-      timeZone: 'Asia/Tokyo'
+      timeZone: 'Asia/Tokyo',
       hour12: false 
     });
   };
