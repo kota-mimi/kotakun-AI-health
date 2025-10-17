@@ -175,12 +175,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setIsAnalyzing(true);
-      
-      const newImages: string[] = [];
       const fileReaders: Promise<string>[] = [];
 
-      for (let i = 0; i < Math.min(files.length, 5 - uploadedImages.length); i++) {
+      for (let i = 0; i < Math.min(files.length, 4 - uploadedImages.length); i++) {
         const file = files[i];
         const promise = compressImage(file, {
           maxWidth: 800,
@@ -193,72 +190,89 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
 
       const results = await Promise.all(fileReaders);
       setUploadedImages(prev => [...prev, ...results]);
+    }
+  };
 
-      // AI画像解析をAPI経由で実行
-      try {
-        const file = files[0];
-        const formData = new FormData();
-        formData.append('image', file);
+  // 複数画像分析関数を新規追加
+  const handleImageAnalysis = async () => {
+    if (uploadedImages.length === 0) return;
+    
+    setIsAnalyzing(true);
+    
+    try {
+      // 複数画像を一括でFormDataに追加
+      const formData = new FormData();
+      
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const imageUrl = uploadedImages[i];
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `image_${i}.jpg`, { type: blob.type });
+        formData.append('images', file); // 'images'として複数追加
+      }
+      
+      // 複数画像分析API呼び出し
+      const response = await fetch('/api/analyze/images', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const analyses = data.analyses; // 複数の分析結果
         
-        const response = await fetch('/api/analyze/image', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const analysis = data.analysis;
-          
+        // 各分析結果を個別の食事項目として設定
+        const allMeals: any[] = [];
+        analyses.forEach((analysis: any) => {
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
-            setMealName(analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、'));
-            const foodItemsData = analysis.meals.map((meal: any) => ({
-              id: generateId(),
-              name: meal.name,
-              calories: meal.calories || 0,
-              protein: meal.protein || 0,
-              fat: meal.fat || 0,
-              carbs: meal.carbs || 0
-            }));
-            setFoodItems(foodItemsData);
-            // 合計値も計算して設定
-            setTimeout(calculateTotals, 100);
+            analysis.meals.forEach((meal: any) => {
+              allMeals.push({
+                id: generateId(),
+                name: meal.displayName || meal.name,
+                calories: meal.calories || 0,
+                protein: meal.protein || 0,
+                fat: meal.fat || 0,
+                carbs: meal.carbs || 0
+              });
+            });
           } else {
             // 単一食事の場合
-            setMealName(analysis.displayName || analysis.foodItems?.[0] || '食事');
-            setFoodItems([{
+            allMeals.push({
               id: generateId(),
-              name: analysis.foodItems?.[0] || '食事',
+              name: analysis.displayName || analysis.foodItems?.[0] || '食事',
               calories: analysis.calories || 0,
               protein: analysis.protein || 0,
               fat: analysis.fat || 0,
               carbs: analysis.carbs || 0
-            }]);
-            // 合計値も計算して設定
-            setTimeout(calculateTotals, 100);
+            });
           }
-        } else {
-          throw new Error('API解析失敗');
-        }
-      } catch (error) {
-        console.error('AI画像解析エラー:', error);
-        // フォールバック - ダミーデータ
-        setMealName('食事');
-        setFoodItems([{
-          id: generateId(),
-          name: '食事',
-          calories: 400,
-          protein: 20,
-          fat: 15,
-          carbs: 50
-        }]);
-        // 合計値も計算して設定
+        });
+        
+        setFoodItems(allMeals);
+        setMealName(allMeals.map(meal => meal.name).join('、'));
         setTimeout(calculateTotals, 100);
+      } else {
+        throw new Error('API解析失敗');
       }
-      
-      setIsAnalyzing(false);
-      setShowManualInput(true); // AI解析後は手動入力モードに切り替え
+    } catch (error) {
+      console.error('AI複数画像解析エラー:', error);
+      // フォールバック - 画像数に応じたダミーデータ
+      const fallbackMeals = uploadedImages.map((_, index) => ({
+        id: generateId(),
+        name: `食事${index + 1}`,
+        calories: 400,
+        protein: 20,
+        fat: 15,
+        carbs: 50
+      }));
+      setFoodItems(fallbackMeals);
+      setMealName(fallbackMeals.map(meal => meal.name).join('、'));
+      setTimeout(calculateTotals, 100);
     }
+    
+    setIsAnalyzing(false);
+    setShowManualInput(true); // AI解析後は手動入力モードに切り替え
   };
 
   const calculateTotals = () => {
@@ -600,10 +614,50 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               </div>
             )}
 
+            {/* 複数画像分析ボタン */}
+            {uploadedImages.length > 0 && foodItems.length === 0 && !isAnalyzing && (
+              <div className="space-y-3">
+                <Button
+                  onClick={handleImageAnalysis}
+                  disabled={isAnalyzing}
+                  className="w-full h-12 flex items-center justify-center space-x-2"
+                  style={{backgroundColor: '#4682B4'}}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>分析中...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      <span>{uploadedImages.length}枚の画像を分析</span>
+                    </>
+                  )}
+                </Button>
+                {uploadedImages.length < 4 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.removeAttribute('capture');
+                        fileInputRef.current.click();
+                      }
+                    }}
+                    className="w-full h-10 flex items-center justify-center space-x-2"
+                    style={{borderColor: 'rgba(70, 130, 180, 0.3)'}}
+                  >
+                    <Plus size={16} style={{color: '#4682B4'}} />
+                    <span style={{color: '#4682B4'}}>画像を追加 ({uploadedImages.length}/4)</span>
+                  </Button>
+                )}
+              </div>
+            )}
+
             {/* 手動入力時の写真追加ボタン */}
             
             {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示） */}
-            {uploadedImages.length < 5 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
+            {uploadedImages.length < 4 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
               <div className="space-y-3">
                 {/* メイン記録方法 */}
                 <div className="grid grid-cols-2 gap-3">
