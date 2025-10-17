@@ -24,6 +24,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
   const [reminders, setReminders] = useState<ReminderSetting[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTesting, setIsTesting] = useState(false);
 
   // 設定をAPIから読み込み
   useEffect(() => {
@@ -121,6 +122,43 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
       alert(error.message || '保存に失敗しました');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleTestNotification = async () => {
+    if (!liffUser?.userId) {
+      alert('ログインが必要です');
+      return;
+    }
+
+    setIsTesting(true);
+    try {
+      const response = await fetch('/api/scheduler/check-reminders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: liffUser.userId,
+          message: 'リマインダーのテスト通知です！設定が正常に動作しています。'
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('テスト通知を送信しました！LINEを確認してください。');
+        } else {
+          throw new Error(data.error || 'テスト通知の送信に失敗しました');
+        }
+      } else {
+        throw new Error('テスト通知の送信に失敗しました');
+      }
+    } catch (error: any) {
+      console.error('Failed to send test notification:', error);
+      alert(error.message || 'テスト通知の送信に失敗しました');
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -231,8 +269,8 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
           ))}
         </div>
 
-        {/* 保存ボタン */}
-        <Card className="p-4">
+        {/* 保存・テストボタン */}
+        <Card className="p-4 space-y-3">
           <Button
             onClick={handleSave}
             disabled={isSaving}
@@ -241,6 +279,19 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
           >
             {isSaving ? '保存中...' : '設定を保存'}
           </Button>
+          
+          <Button
+            onClick={handleTestNotification}
+            disabled={isTesting || !liffUser?.userId}
+            variant="outline"
+            className="w-full h-10 text-gray-700 font-medium border-gray-300 hover:bg-gray-50"
+          >
+            {isTesting ? 'テスト送信中...' : 'テスト通知を送信'}
+          </Button>
+          
+          <p className="text-xs text-gray-500 text-center">
+            テスト通知でLINE連携が正常に動作するか確認できます
+          </p>
         </Card>
 
         {/* 注意事項 */}
