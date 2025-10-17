@@ -325,6 +325,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       // 合計値も自動計算
       setTimeout(calculateTotals, 100);
       setShowTextInput(false); // 解析後は入力エリアを非表示
+      setShowAnalysisResult(true); // AI解析結果表示モードに切り替え
       setShowManualInput(true); // 解析結果を手動入力モードで表示
     } catch (error) {
       console.error('AIテキスト解析エラー:', error);
@@ -340,6 +341,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       }]);
       setTimeout(calculateTotals, 100);
       setShowTextInput(false);
+      setShowAnalysisResult(true); // フォールバック時もAI解析結果表示モードに切り替え
       setShowManualInput(true);
     }
     
