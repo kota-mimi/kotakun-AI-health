@@ -223,7 +223,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         
         // 各分析結果を個別の食事項目として設定
         const allMeals: any[] = [];
-        analyses.forEach((analysis: any) => {
+        analyses.forEach((analysis: any, imageIndex: number) => {
+          const currentImage = uploadedImages[imageIndex]; // 対応する画像を取得
+          
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
             analysis.meals.forEach((meal: any) => {
@@ -233,7 +235,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                 calories: meal.calories || 0,
                 protein: meal.protein || 0,
                 fat: meal.fat || 0,
-                carbs: meal.carbs || 0
+                carbs: meal.carbs || 0,
+                image: currentImage, // 対応する画像を設定
+                images: [currentImage]
               });
             });
           } else {
@@ -244,7 +248,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
               calories: analysis.calories || 0,
               protein: analysis.protein || 0,
               fat: analysis.fat || 0,
-              carbs: analysis.carbs || 0
+              carbs: analysis.carbs || 0,
+              image: currentImage, // 対応する画像を設定
+              images: [currentImage]
             });
           }
         });
@@ -258,13 +264,15 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
     } catch (error) {
       console.error('AI複数画像解析エラー:', error);
       // フォールバック - 画像数に応じたダミーデータ
-      const fallbackMeals = uploadedImages.map((_, index) => ({
+      const fallbackMeals = uploadedImages.map((imageUrl, index) => ({
         id: generateId(),
         name: `食事${index + 1}`,
         calories: 400,
         protein: 20,
         fat: 15,
-        carbs: 50
+        carbs: 50,
+        image: imageUrl, // 対応する画像を設定
+        images: [imageUrl]
       }));
       setFoodItems(fallbackMeals);
       setMealName(fallbackMeals.map(meal => meal.name).join('、'));
@@ -430,8 +438,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         fat: item.fat,
         carbs: item.carbs,
         time: currentTime,
-        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
-        image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
+        images: item.images || (item.image ? [item.image] : []), // 各食事の個別画像を使用
+        image: item.image || undefined, // 各食事の個別画像を使用
         foodItems: [item.name],
         displayName: item.name,
         baseFood: '',
@@ -629,10 +637,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                       <span>分析中...</span>
                     </>
                   ) : (
-                    <>
-                      <Sparkles size={16} />
-                      <span>{uploadedImages.length}枚の画像を分析</span>
-                    </>
+                    <span>{uploadedImages.length}枚の画像を分析</span>
                   )}
                 </Button>
                 {uploadedImages.length < 4 && (
@@ -656,8 +661,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
 
             {/* 手動入力時の写真追加ボタン */}
             
-            {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示） */}
-            {uploadedImages.length < 4 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
+            {/* 記録方法選択フレーム - 初期画面のみ表示（解析中は非表示、複数画像アップロード時も非表示） */}
+            {uploadedImages.length === 0 && !showTextInput && !showManualInput && !showAnalysisResult && !showPastRecords && !isAnalyzing && (
               <div className="space-y-3">
                 {/* メイン記録方法 */}
                 <div className="grid grid-cols-2 gap-3">
