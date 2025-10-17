@@ -532,6 +532,12 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
     setFat(pastMeal.fat.toString());
     setCarbs(pastMeal.carbs.toString());
     
+    // 画像データもコピー
+    const images = pastMeal.images || (pastMeal.image ? [pastMeal.image] : []);
+    if (images.length > 0) {
+      setManualImages(images);
+    }
+    
     // 過去記録モードを閉じて手動入力モードに切り替え
     setShowPastRecords(false);
     setShowManualInput(true);
