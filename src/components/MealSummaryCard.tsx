@@ -63,21 +63,48 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
     setIsMounted(true);
   }, []);
 
-  // 食事を時間順にソートする関数（展開しない）
-  const sortMealsByTime = (mealItems: MealItem[]) => {
-    return mealItems.sort((a, b) => {
+  // 複数食事を個別表示用に展開する関数
+  const expandMultipleMeals = (mealItems: MealItem[]) => {
+    const expandedMeals: MealItem[] = [];
+    
+    mealItems.forEach(meal => {
+      if (meal.isMultipleMeals && meal.meals && meal.meals.length > 0) {
+        // 複数食事を個別の食事として展開
+        meal.meals.forEach((individualMeal: any, index: number) => {
+          expandedMeals.push({
+            ...meal,
+            id: `${meal.id}_${index}`,
+            name: individualMeal.name || `食事${index + 1}`,
+            calories: individualMeal.calories || 0,
+            protein: individualMeal.protein || 0,
+            fat: individualMeal.fat || 0,
+            carbs: individualMeal.carbs || 0,
+            foodItems: [individualMeal.name] || [],
+            isMultipleMeals: false, // 個別表示なのでfalse
+            originalMealId: meal.id, // 元の食事IDを保持
+            individualMealIndex: index // 何番目の食事かを保持
+          });
+        });
+      } else {
+        // 単一食事はそのまま追加
+        expandedMeals.push(meal);
+      }
+    });
+    
+    // 時間順（古い順）でソート
+    return expandedMeals.sort((a, b) => {
       const timeA = a.time.padStart(5, '0'); // "9:30" -> "09:30"
       const timeB = b.time.padStart(5, '0');
       return timeA.localeCompare(timeB);
     });
   };
 
-  // 食事タイプごとに時間順ソートした食事データを作成 - ハイドレーションエラー回避
-  const sortedMealData = isMounted ? {
-    breakfast: sortMealsByTime([...meals.breakfast]),
-    lunch: sortMealsByTime([...meals.lunch]),
-    dinner: sortMealsByTime([...meals.dinner]),
-    snack: sortMealsByTime([...meals.snack])
+  // 食事タイプごとに展開した食事データを作成 - ハイドレーションエラー回避
+  const expandedMealData = isMounted ? {
+    breakfast: expandMultipleMeals(meals.breakfast),
+    lunch: expandMultipleMeals(meals.lunch),
+    dinner: expandMultipleMeals(meals.dinner),
+    snack: expandMultipleMeals(meals.snack)
   } : {
     breakfast: [],
     lunch: [],
@@ -85,27 +112,13 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
     snack: []
   };
 
-  // 各食事の合計カロリー計算（複数食事対応）
+  // 各食事の合計カロリー計算（展開後）
   const getMealCalories = (mealType: keyof MealData) => {
-    return sortedMealData[mealType].reduce((sum, item) => {
-      if (item.isMultipleMeals && item.meals) {
-        // 複数食事の場合は個別の食事のカロリーの合計
-        return sum + item.meals.reduce((mealSum: number, meal: any) => mealSum + (meal.calories || 0), 0);
-      } else {
-        // 単一食事の場合はそのままのカロリー
-        return sum + item.calories;
-      }
-    }, 0);
+    return expandedMealData[mealType].reduce((sum, item) => sum + item.calories, 0);
   };
 
-  // 総カロリー計算（複数食事対応） - ハイドレーションエラー回避
-  const totalCalories = isMounted ? Object.values(sortedMealData).flat().reduce((sum, meal) => {
-    if (meal.isMultipleMeals && meal.meals) {
-      return sum + meal.meals.reduce((mealSum: number, individualMeal: any) => mealSum + (individualMeal.calories || 0), 0);
-    } else {
-      return sum + meal.calories;
-    }
-  }, 0) : 0;
+  // 総カロリー計算（展開後） - ハイドレーションエラー回避
+  const totalCalories = isMounted ? Object.values(expandedMealData).flat().reduce((sum, meal) => sum + meal.calories, 0) : 0;
 
   // 食事タイプ順に並び替え（朝食→昼食→夕食→間食）
   const mealTypeOrder: Array<keyof MealData> = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -133,29 +146,11 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
       {isExpanded && (
         <div className="p-4 space-y-3">
         {mealTypeOrder.map((mealType) => {
-          const mealItems = sortedMealData[mealType];
+          const mealItems = expandedMealData[mealType];
           const totalCaloriesForType = getMealCalories(mealType);
-          const totalProtein = mealItems.reduce((sum, meal) => {
-            if (meal.isMultipleMeals && meal.meals) {
-              return sum + meal.meals.reduce((mealSum: number, m: any) => mealSum + (m.protein || 0), 0);
-            } else {
-              return sum + (meal.protein || 0);
-            }
-          }, 0);
-          const totalFat = mealItems.reduce((sum, meal) => {
-            if (meal.isMultipleMeals && meal.meals) {
-              return sum + meal.meals.reduce((mealSum: number, m: any) => mealSum + (m.fat || 0), 0);
-            } else {
-              return sum + (meal.fat || 0);
-            }
-          }, 0);
-          const totalCarbs = mealItems.reduce((sum, meal) => {
-            if (meal.isMultipleMeals && meal.meals) {
-              return sum + meal.meals.reduce((mealSum: number, m: any) => mealSum + (m.carbs || 0), 0);
-            } else {
-              return sum + (meal.carbs || 0);
-            }
-          }, 0);
+          const totalProtein = mealItems.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+          const totalFat = mealItems.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+          const totalCarbs = mealItems.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
 
           return (
             <div key={mealType} className="space-y-2">
@@ -183,8 +178,13 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                         key={meal.id} 
                         className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
                         onClick={() => {
-                          // 詳細表示
-                          onViewMealDetail(mealType, meal.id);
+                          // 複数食事の個別食事の場合は個別編集
+                          if (meal.originalMealId && meal.individualMealIndex !== undefined) {
+                            onEditIndividualMeal(meal.originalMealId, meal.individualMealIndex);
+                          } else {
+                            // 単一食事の場合は通常編集
+                            onEditMeal(mealType, meal.id);
+                          }
                         }}
                       >
                         <div className="flex items-center space-x-3">
@@ -205,43 +205,21 @@ export function MealSummaryCard({ meals, onAddMeal, onCameraRecord, onTextRecord
                               {meal.name}
                             </h5>
                             
-                            {/* 複数食事の場合は個別食事を表示 */}
-                            {meal.isMultipleMeals && meal.meals && meal.meals.length > 0 ? (
-                              <div className="mb-2">
-                                <div className="text-xs text-slate-500 mb-1">{meal.meals.length}品目</div>
-                                <div className="space-y-1">
-                                  {meal.meals.map((individualMeal: any, index: number) => (
-                                    <div key={index} className="text-xs text-slate-600">
-                                      • {individualMeal.name} ({individualMeal.calories}kcal)
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : null}
-                            
                             {/* PFC・カロリー */}
                             <div className="flex items-center justify-between">
                               <div className="flex space-x-1">
                                 <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#EF4444'}}>
-                                  P{meal.isMultipleMeals && meal.meals ? 
-                                    meal.meals.reduce((sum: number, m: any) => sum + (m.protein || 0), 0) : 
-                                    meal.protein || 0}
+                                  P{meal.protein || 0}
                                 </Badge>
                                 <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#F59E0B'}}>
-                                  F{meal.isMultipleMeals && meal.meals ? 
-                                    meal.meals.reduce((sum: number, m: any) => sum + (m.fat || 0), 0) : 
-                                    meal.fat || 0}
+                                  F{meal.fat || 0}
                                 </Badge>
                                 <Badge className="text-white font-medium text-xs px-1.5 py-0.5 rounded min-w-[36px] text-center" style={{backgroundColor: '#10B981'}}>
-                                  C{meal.isMultipleMeals && meal.meals ? 
-                                    meal.meals.reduce((sum: number, m: any) => sum + (m.carbs || 0), 0) : 
-                                    meal.carbs || 0}
+                                  C{meal.carbs || 0}
                                 </Badge>
                               </div>
                               <div className="text-sm font-bold text-blue-600">
-                                {meal.isMultipleMeals && meal.meals ? 
-                                  meal.meals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0) : 
-                                  meal.calories}kcal
+                                {meal.calories}kcal
                               </div>
                             </div>
                           </div>
