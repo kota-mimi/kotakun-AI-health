@@ -271,6 +271,13 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
     setProtein(totalProtein.toString());
     setFat(totalFat.toString());
     setCarbs(totalCarbs.toString());
+    
+    // 食事名も動的に更新（複数項目がある場合は結合、単一の場合はその名前）
+    if (foodItems.length > 1) {
+      setMealName(foodItems.map(item => item.name).join('、'));
+    } else if (foodItems.length === 1) {
+      setMealName(foodItems[0].name);
+    }
   };
 
   const handleTextAnalysis = async () => {
@@ -369,8 +376,28 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   };
 
   const removeFoodItem = (id: string) => {
-    setFoodItems(prev => prev.filter(item => item.id !== id));
-    setTimeout(calculateTotals, 100);
+    setFoodItems(prev => {
+      const newItems = prev.filter(item => item.id !== id);
+      // 削除後の項目で食事名を即座に更新
+      setTimeout(() => {
+        if (newItems.length > 1) {
+          setMealName(newItems.map(item => item.name).join('、'));
+        } else if (newItems.length === 1) {
+          setMealName(newItems[0].name);
+        }
+        // 栄養素の合計も再計算
+        const totalCalories = newItems.reduce((sum, item) => sum + item.calories, 0);
+        const totalProtein = newItems.reduce((sum, item) => sum + item.protein, 0);
+        const totalFat = newItems.reduce((sum, item) => sum + item.fat, 0);
+        const totalCarbs = newItems.reduce((sum, item) => sum + item.carbs, 0);
+        
+        setCalories(totalCalories.toString());
+        setProtein(totalProtein.toString());
+        setFat(totalFat.toString());
+        setCarbs(totalCarbs.toString());
+      }, 0);
+      return newItems;
+    });
   };
 
   const handleSubmit = () => {
@@ -823,9 +850,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           {/* 手動入力フォーム（条件付き表示） */}
           {showManualInput && (
             <div className="space-y-3">
-              {/* 手動入力用の画像追加 */}
-              <div className="space-y-3">
-                <Label>写真を追加</Label>
+              {/* 手動入力用の画像追加（AI解析結果表示時は非表示） */}
+              {!showAnalysisResult && (
+                <div className="space-y-3">
+                  <Label>写真を追加</Label>
                 
                 {manualImages.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2">
@@ -892,7 +920,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
                   onChange={handleManualImageUpload}
                   className="hidden"
                 />
-              </div>
+                </div>
+              )}
               
               {/* AI解析結果がない場合のみ食事名入力を表示 */}
               {foodItems.length === 0 && (
