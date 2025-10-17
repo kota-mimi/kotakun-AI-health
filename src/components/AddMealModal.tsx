@@ -211,7 +211,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
           
           if (analysis.isMultipleMeals && analysis.meals) {
             // 複数食事の場合
-            setMealName(analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、'));
+            const multipleMealName = analysis.meals.map((meal: any) => meal.displayName || meal.name).join('、');
+            setMealName(multipleMealName);
+            console.log('🔍 Multiple meals - setting mealName:', multipleMealName);
             const foodItemsData = analysis.meals.map((meal: any) => ({
               id: generateId(),
               name: meal.name,
@@ -225,7 +227,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
             setTimeout(calculateTotals, 100);
           } else {
             // 単一食事の場合
-            setMealName(analysis.displayName || analysis.foodItems?.[0] || '食事');
+            const singleMealName = analysis.displayName || analysis.foodItems?.[0] || '食事';
+            setMealName(singleMealName);
+            console.log('🔍 Single meal - setting mealName:', singleMealName);
             setFoodItems([{
               id: generateId(),
               name: analysis.foodItems?.[0] || '食事',
@@ -243,7 +247,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       } catch (error) {
         console.error('AI画像解析エラー:', error);
         // フォールバック - ダミーデータ
-        setMealName('食事');
+        const fallbackMealName = '食事';
+        setMealName(fallbackMealName);
+        console.log('🔍 Fallback - setting mealName:', fallbackMealName);
         setFoodItems([{
           id: generateId(),
           name: '食事',
@@ -399,7 +405,14 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   };
 
   const handleSubmit = () => {
-    if (!mealName) return;
+    console.log('🔍 handleSubmit called - mealName:', mealName);
+    console.log('🔍 handleSubmit called - foodItems.length:', foodItems.length);
+    console.log('🔍 handleSubmit called - foodItems:', foodItems);
+    
+    if (!mealName) {
+      console.log('❌ mealName is empty, returning');
+      return;
+    }
 
     const currentTime = new Date().toLocaleTimeString('ja-JP', { 
       hour: '2-digit', 
