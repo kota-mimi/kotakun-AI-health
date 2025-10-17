@@ -316,45 +316,42 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
 
-    // 各食事をFirestoreに保存
-    for (const meal of meals) {
-      const newMeal = {
-        id: generateId(),
-        ...meal,
-        createdAt: new Date(),
-        mealType: currentMealType
-      };
+    // 複数食事を一度にまとめて保存（LINEと同じ方式）
+    const mealsToAdd = meals.map(meal => ({
+      id: generateId(),
+      ...meal,
+      createdAt: new Date(),
+      mealType: currentMealType
+    }));
 
-      try {
-        const response = await fetch('/api/meals', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lineUserId,
-            date: dateStr,
-            mealType: currentMealType,
-            mealData: newMeal
-          }),
-        });
+    try {
+      const response = await fetch('/api/meals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineUserId,
+          date: dateStr,
+          mealType: currentMealType,
+          multipleMeals: mealsToAdd // 複数食事として送信
+        }),
+      });
 
-        if (response.ok) {
-          // キャッシュをクリア
-          const cacheKey = createCacheKey('meals', lineUserId, dateStr);
-          apiCache.delete(cacheKey);
-          
-          // Firestoreデータを更新
-          setFirestoreMealData(prev => ({
-            ...prev,
-            [currentMealType]: [...prev[currentMealType], newMeal]
-          }));
-        } else {
-          console.error('複数食事保存に失敗しました:', meal.name);
-        }
-      } catch (error) {
-        console.error('複数食事保存エラー:', error, meal.name);
+      if (response.ok) {
+        // キャッシュをクリア
+        const cacheKey = createCacheKey('meals', lineUserId, dateStr);
+        apiCache.delete(cacheKey);
+        
+        // Firestoreデータを更新
+        setFirestoreMealData(prev => ({
+          ...prev,
+          [currentMealType]: [...prev[currentMealType], ...mealsToAdd]
+        }));
+      } else {
+        console.error('複数食事保存に失敗しました');
       }
+    } catch (error) {
+      console.error('複数食事保存エラー:', error);
     }
-    
   };
 
   // 食事編集処理

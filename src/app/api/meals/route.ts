@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { lineUserId, date, mealType, mealData } = await request.json();
+    const { lineUserId, date, mealType, mealData, multipleMeals } = await request.json();
 
-    if (!lineUserId || !date || !mealType || !mealData) {
+    if (!lineUserId || !date || !mealType || (!mealData && !multipleMeals)) {
       return NextResponse.json(
         { error: '必要なパラメータが不足しています' },
         { status: 400 }
@@ -97,7 +97,45 @@ export async function PUT(request: NextRequest) {
 
     const adminDb = admin.firestore();
     
-    // 食事データをFirestore形式に変換
+    // 複数食事の一括保存（LINEと同じ方式）
+    if (multipleMeals && Array.isArray(multipleMeals)) {
+      const firestoreMealsData = multipleMeals.map(meal => ({
+        id: meal.id,
+        name: meal.name,
+        type: mealType,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        fat: meal.fat || 0,
+        carbs: meal.carbs || 0,
+        time: meal.time || '00:00',
+        images: meal.images || [],
+        image: meal.images?.[0] || meal.image || null,
+        foodItems: meal.foodItems || [],
+        timestamp: new Date(),
+        createdAt: meal.createdAt || new Date()
+      }));
+
+      // Admin SDKで複数食事データを一括追加
+      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
+      const recordDoc = await recordRef.get();
+      const existingData = recordDoc.exists ? recordDoc.data() : {};
+      const existingMeals = existingData.meals || [];
+      
+      // LINEと同じ方式：一度にまとめて追加
+      const updatedMeals = [...existingMeals, ...firestoreMealsData];
+      
+      await recordRef.set({
+        ...existingData,
+        meals: updatedMeals,
+        date,
+        lineUserId,
+        updatedAt: new Date()
+      }, { merge: true });
+
+      return NextResponse.json({ success: true });
+    }
+
+    // 単一食事の保存（既存ロジック）
     const firestoreMealData = {
       id: mealData.id,
       name: mealData.name,

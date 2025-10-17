@@ -38,6 +38,7 @@ interface AddMealModalProps {
   onClose: () => void;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   onAddMeal: (meal: Omit<MealItem, 'id'>) => void;
+  onAddMultipleMeals?: (meals: Omit<MealItem, 'id'>[]) => void;
   allMealsData?: any;
 }
 
@@ -48,7 +49,7 @@ const mealTypeLabels = {
   snack: '間食'
 };
 
-export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsData }: AddMealModalProps) {
+export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultipleMeals, allMealsData }: AddMealModalProps) {
   const { liffUser } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isManualUploading, setIsManualUploading] = useState(false);
@@ -381,24 +382,24 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
       timeZone: 'Asia/Tokyo'
     });
 
-    // 複数食事の場合は、LINEと同じように各食事を個別に送信
-    if (foodItems.length > 1) {
-      foodItems.forEach(item => {
-        onAddMeal({
-          name: item.name,
-          calories: item.calories,
-          protein: item.protein,
-          fat: item.fat,
-          carbs: item.carbs,
-          time: currentTime,
-          images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
-          image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
-          foodItems: [item.name],
-          displayName: item.name,
-          baseFood: '',
-          portion: ''
-        });
-      });
+    // 複数食事の場合は、一括送信（LINEと同じ方式）
+    if (foodItems.length > 1 && onAddMultipleMeals) {
+      const mealsToAdd = foodItems.map(item => ({
+        name: item.name,
+        calories: item.calories,
+        protein: item.protein,
+        fat: item.fat,
+        carbs: item.carbs,
+        time: currentTime,
+        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
+        image: uploadedImages.length > 0 ? uploadedImages[0] : (manualImages.length > 0 ? manualImages[0] : undefined),
+        foodItems: [item.name],
+        displayName: item.name,
+        baseFood: '',
+        portion: ''
+      }));
+      
+      onAddMultipleMeals(mealsToAdd);
     } else {
       // 単一食事または手動入力の場合
       const totalCalories = foodItems.length > 0 
