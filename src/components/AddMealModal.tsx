@@ -272,12 +272,8 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
     setFat(totalFat.toString());
     setCarbs(totalCarbs.toString());
     
-    // 食事名も動的に更新（複数項目がある場合は結合、単一の場合はその名前）
-    if (foodItems.length > 1) {
-      setMealName(foodItems.map(item => item.name).join('、'));
-    } else if (foodItems.length === 1) {
-      setMealName(foodItems[0].name);
-    }
+    // 食事名の動的更新は削除時のみ実行（初期設定時は既存の名前を保持）
+    // この関数は主に栄養素の合計計算用
   };
 
   const handleTextAnalysis = async () => {
