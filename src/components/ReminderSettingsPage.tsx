@@ -28,21 +28,34 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
   // 設定をAPIから読み込み
   useEffect(() => {
     const loadReminders = async () => {
-      if (!liffUser?.userId) return;
+      console.log('🔍 loadReminders called, liffUser:', liffUser);
+      
+      if (!liffUser?.userId) {
+        console.log('❌ No userId, setting loading to false');
+        setIsLoading(false);
+        return;
+      }
 
       try {
+        console.log('📡 Fetching reminders for userId:', liffUser.userId);
         const response = await fetch(`/api/reminders?userId=${liffUser.userId}`);
+        console.log('📡 Response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('📡 Response data:', data);
+          
           if (data.success) {
             setReminders(data.reminders);
+            console.log('✅ Reminders set:', data.reminders);
           }
         } else {
-          console.error('Failed to load reminder settings');
+          console.error('❌ Failed to load reminder settings, status:', response.status);
         }
       } catch (error) {
-        console.error('Error loading reminder settings:', error);
+        console.error('❌ Error loading reminder settings:', error);
       } finally {
+        console.log('✅ Setting loading to false');
         setIsLoading(false);
       }
     };
@@ -136,6 +149,13 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
               <p className="text-gray-600">設定を読み込み中...</p>
+            </div>
+          </div>
+        ) : reminders.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <p className="text-gray-600">リマインダー設定が見つかりません</p>
+              <p className="text-sm text-gray-500 mt-2">ログイン状態を確認してください</p>
             </div>
           </div>
         ) : (
