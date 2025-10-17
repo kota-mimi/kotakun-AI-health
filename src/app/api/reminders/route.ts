@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import admin from '@/lib/firebase-admin';
+import { admin } from '@/lib/firebase-admin';
 
 interface ReminderSetting {
   id: string;
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       .doc(userId)
       .set({
         reminders,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.FieldValue.serverTimestamp(),
         userId
       }, { merge: true });
 

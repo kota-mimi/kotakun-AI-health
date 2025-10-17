@@ -78,35 +78,35 @@ try {
 
 export const admin = {
   firestore: () => {
-    if (firestoreInstance) {
-      return firestoreInstance;
-    }
-    
     try {
-      firestoreInstance = getFirestore();
+      if (!firestoreInstance) {
+        if (getApps().length === 0) {
+          throw new Error('Firebase Admin app not initialized');
+        }
+        firestoreInstance = getFirestore();
+      }
       return firestoreInstance;
     } catch (error) {
+      console.error('❌ Firestore取得エラー:', error);
       if (process.env.NODE_ENV === 'development') {
         console.log('🔧 開発環境：Firestoreエラーを無視（ダミーオブジェクトを返却）');
         // 開発環境用のダミーオブジェクトを返却
         return {
           collection: () => ({
             doc: () => ({
-              get: () => Promise.resolve({ exists: false }),
+              get: () => Promise.resolve({ exists: false, data: () => null }),
               set: () => Promise.resolve(),
               update: () => Promise.resolve(),
               delete: () => Promise.resolve(),
               collection: () => ({
                 doc: () => ({
-                  get: () => Promise.resolve({ exists: false }),
+                  get: () => Promise.resolve({ exists: false, data: () => null }),
                   set: () => Promise.resolve(),
                 })
               })
             })
           })
         } as any;
-      } else {
-        console.error('❌ 本番環境 Firebase Admin Firestore取得エラー:', error);
       }
       throw error;
     }
