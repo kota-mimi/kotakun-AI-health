@@ -380,30 +380,19 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, allMealsDat
       minute: '2-digit' 
     });
 
-    // 複数食事の場合も単品食事と同じ構造で送信
+    // 複数食事の場合は、LINEと同じように各食事を個別に送信
     if (foodItems.length > 1) {
-      const totalCalories = foodItems.reduce((sum, item) => sum + item.calories, 0);
-      const totalProtein = foodItems.reduce((sum, item) => sum + item.protein, 0);
-      const totalFat = foodItems.reduce((sum, item) => sum + item.fat, 0);
-      const totalCarbs = foodItems.reduce((sum, item) => sum + item.carbs, 0);
-      
-      onAddMeal({
-        name: mealName,
-        calories: totalCalories,
-        protein: totalProtein,
-        fat: totalFat,
-        carbs: totalCarbs,
-        time: currentTime,
-        images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
-        isMultipleMeals: true,
-        meals: foodItems.map(item => ({
+      foodItems.forEach(item => {
+        onAddMeal({
           name: item.name,
-          displayName: item.name,
           calories: item.calories,
           protein: item.protein,
           fat: item.fat,
-          carbs: item.carbs
-        }))
+          carbs: item.carbs,
+          time: currentTime,
+          images: uploadedImages.length > 0 ? uploadedImages : (manualImages.length > 0 ? manualImages : undefined),
+          foodItems: [item]
+        });
       });
     } else {
       // 単一食事または手動入力の場合
