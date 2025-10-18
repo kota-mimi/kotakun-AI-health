@@ -3376,10 +3376,11 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
     if (response.ok) {
       const result = await response.json();
       
-      // フィードバックメッセージを送信
+      // フィードバックメッセージをFlexメッセージで送信
       await replyMessage(replyToken, [{
-        type: 'text',
-        text: result.feedback
+        type: 'flex',
+        altText: '今日の健康フィードバック📊',
+        contents: createDailyFeedbackFlex(result.feedback)
       }]);
       
       console.log('✅ 1日フィードバック送信完了:', userId);
@@ -3398,4 +3399,225 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
       text: '申し訳ございません。1日のフィードバック生成でエラーが発生しました。\n\nしばらく時間をおいてからもう一度お試しください。🙏'
     }]);
   }
+}
+
+// 日次フィードバック用のFlexメッセージを作成
+function createDailyFeedbackFlex(feedbackText: string) {
+  // フィードバックテキストを解析してセクション分け
+  const lines = feedbackText.split('\n').filter(line => line.trim());
+  
+  // ヘッダー（今日の記録）を取得
+  const headerIndex = lines.findIndex(line => line.includes('📊 今日の記録'));
+  const headerSection = lines.slice(headerIndex, headerIndex + 4); // 記録部分
+  
+  // 各セクションを抽出
+  const weightSection = extractSection(lines, '🎯 体重');
+  const mealSection = extractSection(lines, '🥗 食事');
+  const exerciseSection = extractSection(lines, '💪 運動');
+  const encouragementSection = extractSection(lines, '🌟');
+
+  return {
+    type: 'bubble',
+    size: 'giga',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      contents: [
+        {
+          type: 'text',
+          text: '今日の健康フィードバック',
+          weight: 'bold',
+          size: 'xl',
+          color: '#ffffff'
+        },
+        {
+          type: 'text',
+          text: new Date().toLocaleDateString('ja-JP', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          size: 'sm',
+          color: '#ffffff',
+          margin: 'sm'
+        }
+      ],
+      backgroundColor: '#4A90E2',
+      paddingAll: '20px'
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      contents: [
+        // 今日の記録サマリー
+        {
+          type: 'box',
+          layout: 'vertical',
+          contents: [
+            {
+              type: 'text',
+              text: '📊 今日の記録',
+              weight: 'bold',
+              size: 'lg',
+              color: '#333333'
+            },
+            ...headerSection.slice(1).map(line => ({
+              type: 'text' as const,
+              text: line,
+              size: 'sm' as const,
+              color: '#666666',
+              wrap: true,
+              margin: 'xs' as const
+            }))
+          ],
+          backgroundColor: '#F8F9FA',
+          cornerRadius: '8px',
+          paddingAll: '12px',
+          margin: 'md'
+        },
+        
+        // 区切り線
+        {
+          type: 'separator',
+          margin: 'xl'
+        },
+        
+        // 体重セクション
+        ...(weightSection.length > 0 ? [{
+          type: 'box' as const,
+          layout: 'vertical' as const,
+          contents: [
+            {
+              type: 'text' as const,
+              text: '🎯 体重',
+              weight: 'bold' as const,
+              size: 'md' as const,
+              color: '#4A90E2'
+            },
+            ...weightSection.map(line => ({
+              type: 'text' as const,
+              text: line,
+              size: 'sm' as const,
+              color: '#333333',
+              wrap: true,
+              margin: 'xs' as const
+            }))
+          ],
+          margin: 'lg' as const
+        }] : []),
+        
+        // 食事セクション
+        ...(mealSection.length > 0 ? [{
+          type: 'box' as const,
+          layout: 'vertical' as const,
+          contents: [
+            {
+              type: 'text' as const,
+              text: '🥗 食事',
+              weight: 'bold' as const,
+              size: 'md' as const,
+              color: '#FF6B6B'
+            },
+            ...mealSection.map(line => ({
+              type: 'text' as const,
+              text: line,
+              size: 'sm' as const,
+              color: '#333333',
+              wrap: true,
+              margin: 'xs' as const
+            }))
+          ],
+          margin: 'lg' as const,
+          backgroundColor: '#FFF5F5',
+          cornerRadius: '8px',
+          paddingAll: '12px'
+        }] : []),
+        
+        // 運動セクション
+        ...(exerciseSection.length > 0 ? [{
+          type: 'box' as const,
+          layout: 'vertical' as const,
+          contents: [
+            {
+              type: 'text' as const,
+              text: '💪 運動',
+              weight: 'bold' as const,
+              size: 'md' as const,
+              color: '#4ECDC4'
+            },
+            ...exerciseSection.map(line => ({
+              type: 'text' as const,
+              text: line,
+              size: 'sm' as const,
+              color: '#333333',
+              wrap: true,
+              margin: 'xs' as const
+            }))
+          ],
+          margin: 'lg' as const,
+          backgroundColor: '#F0FDFC',
+          cornerRadius: '8px',
+          paddingAll: '12px'
+        }] : [])
+      ],
+      spacing: 'sm',
+      paddingAll: '20px'
+    },
+    footer: {
+      type: 'box',
+      layout: 'vertical',
+      contents: [
+        {
+          type: 'separator',
+          margin: 'md'
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          contents: [
+            {
+              type: 'text',
+              text: '🌟 応援メッセージ',
+              weight: 'bold',
+              size: 'md',
+              color: '#FFD93D'
+            },
+            ...encouragementSection.map(line => ({
+              type: 'text' as const,
+              text: line.replace('🌟 ', ''),
+              size: 'sm' as const,
+              color: '#333333',
+              wrap: true,
+              margin: 'xs' as const
+            }))
+          ],
+          backgroundColor: '#FFFBF0',
+          cornerRadius: '8px',
+          paddingAll: '12px',
+          margin: 'md'
+        }
+      ]
+    }
+  };
+}
+
+// セクションのテキストを抽出するヘルパー関数
+function extractSection(lines: string[], sectionStart: string): string[] {
+  const startIndex = lines.findIndex(line => line.includes(sectionStart));
+  if (startIndex === -1) return [];
+  
+  const nextSectionIndex = lines.findIndex((line, index) => 
+    index > startIndex && (
+      line.includes('🎯') || 
+      line.includes('🥗') || 
+      line.includes('💪') || 
+      line.includes('🌟') ||
+      line.includes('━━━')
+    )
+  );
+  
+  const endIndex = nextSectionIndex === -1 ? lines.length : nextSectionIndex;
+  return lines.slice(startIndex + 1, endIndex).filter(line => 
+    line.trim() && !line.includes('━━━')
+  );
 }
