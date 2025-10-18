@@ -3412,9 +3412,20 @@ function createDailyFeedbackFlex(feedbackText: string) {
   
   // 各セクションを抽出
   const weightSection = extractSection(lines, '🎯 体重');
-  const mealSection = extractSection(lines, '🥗 食事');
-  const exerciseSection = extractSection(lines, '💪 運動');
-  const encouragementSection = extractSection(lines, '🌟');
+  const mealAnalysisSection = extractSection(lines, '🥗 食事分析');
+  const exerciseSection = extractSection(lines, '💪 運動分析');
+  const totalEvaluationSection = extractSection(lines, '🌟 総合評価');
+  
+  // データ抽出（カロリーやPFC情報）
+  const calorieMatch = feedbackText.match(/🍽️ 食事: (\d+)kcal/);
+  const pfcMatch = feedbackText.match(/P:(\d+)g F:(\d+)g C:(\d+)g/);
+  const exerciseMatch = feedbackText.match(/💪 運動: (\d+)分/);
+  
+  const calories = calorieMatch ? parseInt(calorieMatch[1]) : 0;
+  const protein = pfcMatch ? parseInt(pfcMatch[1]) : 0;
+  const fat = pfcMatch ? parseInt(pfcMatch[2]) : 0;
+  const carbs = pfcMatch ? parseInt(pfcMatch[3]) : 0;
+  const exerciseTime = exerciseMatch ? parseInt(exerciseMatch[1]) : 0;
 
   return {
     type: 'bubble',
@@ -3449,7 +3460,7 @@ function createDailyFeedbackFlex(feedbackText: string) {
       type: 'box',
       layout: 'vertical',
       contents: [
-        // 今日の記録サマリー
+        // 今日の記録サマリー（数値ベース）
         {
           type: 'box',
           layout: 'vertical',
@@ -3459,20 +3470,121 @@ function createDailyFeedbackFlex(feedbackText: string) {
               text: '📊 今日の記録',
               weight: 'bold',
               size: 'lg',
-              color: '#333333'
+              color: '#333333',
+              margin: 'none'
             },
-            ...headerSection.slice(1).map(line => ({
-              type: 'text' as const,
-              text: line,
-              size: 'sm' as const,
-              color: '#666666',
-              wrap: true,
-              margin: 'xs' as const
-            }))
+            {
+              type: 'box',
+              layout: 'horizontal',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'vertical',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `${calories}`,
+                      size: 'xl',
+                      weight: 'bold',
+                      color: '#FF6B6B'
+                    },
+                    {
+                      type: 'text',
+                      text: 'kcal',
+                      size: 'xs',
+                      color: '#999999'
+                    }
+                  ],
+                  flex: 1
+                },
+                {
+                  type: 'box',
+                  layout: 'vertical',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `${protein}g`,
+                      size: 'md',
+                      weight: 'bold',
+                      color: '#4A90E2'
+                    },
+                    {
+                      type: 'text',
+                      text: 'タンパク質',
+                      size: 'xxs',
+                      color: '#999999'
+                    }
+                  ],
+                  flex: 1
+                },
+                {
+                  type: 'box',
+                  layout: 'vertical',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `${fat}g`,
+                      size: 'md',
+                      weight: 'bold',
+                      color: '#FFD93D'
+                    },
+                    {
+                      type: 'text',
+                      text: '脂質',
+                      size: 'xxs',
+                      color: '#999999'
+                    }
+                  ],
+                  flex: 1
+                },
+                {
+                  type: 'box',
+                  layout: 'vertical',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `${carbs}g`,
+                      size: 'md',
+                      weight: 'bold',
+                      color: '#4ECDC4'
+                    },
+                    {
+                      type: 'text',
+                      text: '炭水化物',
+                      size: 'xxs',
+                      color: '#999999'
+                    }
+                  ],
+                  flex: 1
+                }
+              ],
+              margin: 'md',
+              spacing: 'sm'
+            },
+            ...(exerciseTime > 0 ? [{
+              type: 'box' as const,
+              layout: 'horizontal' as const,
+              contents: [
+                {
+                  type: 'text' as const,
+                  text: '💪',
+                  size: 'sm' as const,
+                  flex: 0
+                },
+                {
+                  type: 'text' as const,
+                  text: `運動: ${exerciseTime}分`,
+                  size: 'sm' as const,
+                  color: '#666666',
+                  flex: 1
+                }
+              ],
+              margin: 'md' as const
+            }] : [])
           ],
           backgroundColor: '#F8F9FA',
-          cornerRadius: '8px',
-          paddingAll: '12px',
+          cornerRadius: '12px',
+          paddingAll: '16px',
           margin: 'md'
         },
         
@@ -3506,19 +3618,19 @@ function createDailyFeedbackFlex(feedbackText: string) {
           margin: 'lg' as const
         }] : []),
         
-        // 食事セクション
-        ...(mealSection.length > 0 ? [{
+        // 食事分析セクション（詳細表示）
+        ...(mealAnalysisSection.length > 0 ? [{
           type: 'box' as const,
           layout: 'vertical' as const,
           contents: [
             {
               type: 'text' as const,
-              text: '🥗 食事',
+              text: '🥗 食事分析',
               weight: 'bold' as const,
               size: 'md' as const,
               color: '#FF6B6B'
             },
-            ...mealSection.map(line => ({
+            ...mealAnalysisSection.map(line => ({
               type: 'text' as const,
               text: line,
               size: 'sm' as const,
@@ -3529,18 +3641,18 @@ function createDailyFeedbackFlex(feedbackText: string) {
           ],
           margin: 'lg' as const,
           backgroundColor: '#FFF5F5',
-          cornerRadius: '8px',
-          paddingAll: '12px'
+          cornerRadius: '12px',
+          paddingAll: '16px'
         }] : []),
         
-        // 運動セクション
+        // 運動分析セクション
         ...(exerciseSection.length > 0 ? [{
           type: 'box' as const,
           layout: 'vertical' as const,
           contents: [
             {
               type: 'text' as const,
-              text: '💪 運動',
+              text: '💪 運動分析',
               weight: 'bold' as const,
               size: 'md' as const,
               color: '#4ECDC4'
@@ -3556,8 +3668,8 @@ function createDailyFeedbackFlex(feedbackText: string) {
           ],
           margin: 'lg' as const,
           backgroundColor: '#F0FDFC',
-          cornerRadius: '8px',
-          paddingAll: '12px'
+          cornerRadius: '12px',
+          paddingAll: '16px'
         }] : [])
       ],
       spacing: 'sm',
@@ -3577,12 +3689,12 @@ function createDailyFeedbackFlex(feedbackText: string) {
           contents: [
             {
               type: 'text',
-              text: '🌟 応援メッセージ',
+              text: '🌟 総合評価',
               weight: 'bold',
               size: 'md',
               color: '#FFD93D'
             },
-            ...encouragementSection.map(line => ({
+            ...totalEvaluationSection.map(line => ({
               type: 'text' as const,
               text: line.replace('🌟 ', ''),
               size: 'sm' as const,

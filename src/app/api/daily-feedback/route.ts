@@ -126,50 +126,77 @@ async function generateDailyFeedback(data: DailyRecord, date: string): Promise<s
   const totalCarbs = data.meals.reduce((sum, meal) => sum + meal.carbs, 0);
   const totalExerciseTime = data.exercises.reduce((sum, ex) => sum + ex.duration, 0);
 
+  // 詳細分析のためのデータ計算
+  const mealCount = data.meals.length;
+  const mealTimes = data.meals.map(meal => meal.timestamp).filter(t => t);
+  const exerciseTime = totalExerciseTime;
+  const calorieStatus = totalCalories < 1200 ? '少なめ' : totalCalories > 2500 ? '多め' : '適量';
+  const proteinRatio = totalCalories > 0 ? Math.round((totalProtein * 4 / totalCalories) * 100) : 0;
+  const fatRatio = totalCalories > 0 ? Math.round((totalFat * 9 / totalCalories) * 100) : 0;
+  const carbsRatio = totalCalories > 0 ? Math.round((totalCarbs * 4 / totalCalories) * 100) : 0;
+  
   // プロンプトを作成
   const prompt = `
-以下は${date}の健康記録です。分かりやすく親しみやすい口調で、1日のフィードバックを作成してください。
+【データ分析専門AI】として、以下の健康記録を詳細に分析し、具体的で実用的なフィードバックを作成してください。
 
-【記録データ】
-体重: ${data.weight?.value || '記録なし'}kg
-総摂取カロリー: ${totalCalories}kcal
-タンパク質: ${totalProtein}g
-脂質: ${totalFat}g  
-炭水化物: ${totalCarbs}g
-運動: ${data.exercises.map(ex => `${ex.type} ${ex.duration}分`).join(', ') || '記録なし'}
+【${date}の記録データ】
+🏃‍♂️ 体重: ${data.weight?.value || '未記録'}kg
+🍽️ 食事回数: ${mealCount}回 (時間: ${mealTimes.join(', ') || '未記録'})
+🔥 総カロリー: ${totalCalories}kcal (${calorieStatus})
+📊 PFC比率: P${proteinRatio}% F${fatRatio}% C${carbsRatio}%
+   - タンパク質: ${totalProtein}g
+   - 脂質: ${totalFat}g
+   - 炭水化物: ${totalCarbs}g
+💪 運動: ${exerciseTime}分 (${data.exercises.map(ex => `${ex.type}${ex.duration}分`).join(', ') || '未実施'})
 
-【フィードバック形式】
+【具体的な食事内容】
+${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
+
+【分析指示】
+1. **数値の具体的評価**: カロリー・PFC比率・食事タイミングを厳密に分析
+2. **改善点の特定**: 数値データから明確な改善ポイントを抽出
+3. **実行可能なアドバイス**: 明日から実践できる具体的な提案
+4. **バランス評価**: 全体的な栄養バランスを客観的に評価
+
+【出力形式】
 📊 今日の記録
-⚖️ 体重: [体重] (前回比較は省略)
-🍽️ 食事: [カロリー]kcal | P:[タンパク質]g F:[脂質]g C:[炭水化物]g
-💪 運動: [運動内容]
+⚖️ 体重: ${data.weight?.value || '記録なし'}kg
+🍽️ 食事: ${totalCalories}kcal (${mealCount}回) | P:${totalProtein}g F:${totalFat}g C:${totalCarbs}g
+💪 運動: ${exerciseTime > 0 ? `${exerciseTime}分` : '記録なし'}
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🎯 体重
-[1行でシンプルなコメント]
+🎯 体重管理
+[記録状況と体重管理のコメント]
 
-🥗 食事
-👍 今日良かったところ:
-・[具体的な良い点を2-3個、分かりやすく]
+🥗 食事分析 (${totalCalories}kcal)
+📈 カロリー評価: [${calorieStatus}の詳細分析]
+⚖️ PFC比率: [P${proteinRatio}% F${fatRatio}% C${carbsRatio}%の評価]
+⏰ 食事タイミング: [${mealCount}回の食事タイミング評価]
 
-💡 もっと良くなるコツ:
-・[改善点を2-3個、具体的で実行しやすく]
-[明日試してほしいことを1つ]
+👍 良かった点:
+・[具体的なデータに基づく良い点]
+・[栄養バランスの良い部分]
 
-💪 運動
-[良かった点とアドバイスを簡潔に]
+🔧 改善できる点:
+・[具体的な数値改善案]
+・[食事内容の具体的改善案]
+
+💡 明日の提案: [1つの具体的アクション]
+
+💪 運動分析
+[${exerciseTime}分の運動評価と具体的アドバイス]
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🌟 [ポジティブな全体励まし]
+🌟 総合評価
+[データに基づく客観的評価と励まし]
 
-【注意点】
-- 専門用語は使わずPFCなど基本的な用語のみ
-- 敬語は使わず親しみやすい口調
-- 必ずポジティブな要素を含める
-- 具体的で実行しやすいアドバイス
-- 絵文字を適度に使用
+【出力要件】
+- 数値を積極的に活用した具体的分析
+- 毎日異なる内容になるよう詳細に
+- 親しみやすいがデータドリブンな口調
+- 実行可能な具体的アドバイス重視
 `;
 
   try {
