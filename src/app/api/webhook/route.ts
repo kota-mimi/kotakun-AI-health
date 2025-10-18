@@ -772,69 +772,12 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       snack: '間食'
     }[mealType] || '食事';
     
-    // 画像URLを取得（保存されていれば）
-    let imageUrl = null;
+    // 画像URLを取得（一時保存時に既にStorageに保存済み）
+    let imageUrl = tempData.imageUrl || null;
     console.log('🖼️ 画像チェック:', {
-      hasImageContent: !!tempData.imageContent,
-      imageContentSize: tempData.imageContent?.length || 0
+      hasImageUrl: !!imageUrl,
+      imageUrl: imageUrl
     });
-    
-    if (tempData.imageContent) {
-      // Admin SDKを使用して画像をアップロード
-      try {
-        // 🔧 環境変数から正しいバケット名を取得
-        console.log('🔍 環境変数確認:', {
-          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        });
-        
-        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 
-          || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`
-          || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // フォールバック
-        
-        console.log('🔍 最終的に使用するバケット名:', bucketName);
-        const bucket = admin.storage().bucket(bucketName);
-        
-        const imageId = `meal_${generateId()}`;
-        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        const fileName = `meals/${userId}/${today}/${imageId}.jpg`;
-        
-        console.log('🔍 アップロード先:', fileName);
-        const file = bucket.file(fileName);
-        await file.save(tempData.imageContent, {
-          metadata: {
-            contentType: 'image/jpeg',
-          },
-        });
-        
-        // Public URLを生成
-        await file.makePublic();
-        imageUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-        console.log('✅ 画像アップロード成功 (Admin SDK):', imageUrl);
-      } catch (error) {
-        console.error('❌ Admin SDK画像アップロードエラー:', error);
-        
-        // 🔄 フォールバック: Client SDK を使用して再試行
-        try {
-          console.log('🔄 Client SDK でのアップロードを試行...');
-          const clientStorage = storage;
-          const storageRef = ref(clientStorage, `meals/${userId}/${new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })}/meal_${generateId()}.jpg`);
-          
-          const snapshot = await uploadBytes(storageRef, tempData.imageContent, {
-            contentType: 'image/jpeg'
-          });
-          
-          imageUrl = await getDownloadURL(snapshot.ref);
-          console.log('✅ フォールバック画像アップロード成功 (Client SDK):', imageUrl);
-        } catch (clientError) {
-          console.error('❌ Client SDK フォールバックも失敗:', clientError);
-          // 🎯 最後の手段: 画像データを一時的にbase64で保存（後で改善）
-          console.log('⚠️ 画像アップロード完全失敗 - 画像なしで記録継続');
-        }
-      }
-    } else {
-      console.log('⚠️ 画像データが見つかりません');
-    }
     
     // 元のユーザー入力テキストを取得
     const originalText = tempData.originalText || tempData.analysis.displayName || tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
@@ -965,7 +908,7 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
   }
 }
 
-// 簡単な一時保存関数
+// 簡単な一時保存関数（画像はFirebase Storageに保存）
 async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer, originalText?: string) {
   try {
     // AIアドバイスを除去してクリーンなデータのみ保存
@@ -987,10 +930,31 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
       // adviceは意図的に除外
     };
     
+    let imageUrl = null;
+    
+    // 画像がある場合はFirebase Storageに保存（Firestoreドキュメントサイズ削減）
+    if (imageContent) {
+      try {
+        const tempImageId = generateId();
+        const clientStorage = storage;
+        const storageRef = ref(clientStorage, `temp_meals/${userId}/${tempImageId}.jpg`);
+        
+        const snapshot = await uploadBytes(storageRef, imageContent, {
+          contentType: 'image/jpeg'
+        });
+        
+        imageUrl = await getDownloadURL(snapshot.ref);
+        console.log('✅ 一時画像アップロード成功:', imageUrl);
+      } catch (uploadError) {
+        console.error('❌ 一時画像アップロード失敗:', uploadError);
+        // 画像アップロードに失敗してもテキストデータは保存継続
+      }
+    }
+    
     const db = admin.firestore();
     await db.collection('users').doc(userId).collection('tempMealData').doc('current').set({
       analysis: cleanAnalysis,
-      image: imageContent ? imageContent.toString('base64') : null,
+      imageUrl: imageUrl, // base64ではなくURLで保存
       originalText: originalText || '', // 元のテキストを保存
       createdAt: new Date()
     });
@@ -1007,7 +971,8 @@ async function getTempMealAnalysis(userId: string) {
       const data = doc.data();
       return {
         analysis: data.analysis,
-        imageContent: data.image ? Buffer.from(data.image, 'base64') : null
+        imageUrl: data.imageUrl || null, // URLで取得
+        originalText: data.originalText || ''
       };
     }
     return null;

@@ -18,10 +18,10 @@ export function compressImage(
   options: CompressOptions = {}
 ): Promise<string> {
   const {
-    maxWidth = 800,
-    maxHeight = 800,
-    quality = 0.8,
-    maxSizeKB = 1000 // 1MB制限
+    maxWidth = 600,
+    maxHeight = 600,
+    quality = 0.7,
+    maxSizeKB = 200 // Firestoreドキュメントサイズ制限を考慮して200KBに削減
   } = options;
 
   return new Promise((resolve, reject) => {
@@ -91,5 +91,5 @@ export function getImageSizeKB(base64Data: string): number {
  * 画像データがlocalStorageに保存可能かチェック
  */
 export function canStoreInLocalStorage(base64Data: string): boolean {
-  return getImageSizeKB(base64Data) <= 1000; // 1MB制限
+  return getImageSizeKB(base64Data) <= 200; // Firestoreドキュメントサイズ制限を考慮して200KB制限
 }
