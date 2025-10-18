@@ -3376,11 +3376,10 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
     if (response.ok) {
       const result = await response.json();
       
-      // フィードバックメッセージをFlexメッセージで送信
+      // フィードバックメッセージを送信
       await replyMessage(replyToken, [{
-        type: 'flex',
-        altText: '今日の健康フィードバック📊',
-        contents: createDailyFeedbackFlex(result.feedback)
+        type: 'text',
+        text: result.feedback
       }]);
       
       console.log('✅ 1日フィードバック送信完了:', userId);
