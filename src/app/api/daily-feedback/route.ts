@@ -77,14 +77,24 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     });
     
     // Firebase Admin で取得したデータをAI用のフォーマットに変換
-    const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => ({
-      calories: meal.calories || 0,
-      protein: meal.protein || 0,
-      fat: meal.fat || 0,
-      carbs: meal.carbs || 0,
-      foods: meal.foodItems || meal.items || [meal.name] || [],
-      timestamp: meal.time || (meal.timestamp ? new Date(meal.timestamp._seconds * 1000 || meal.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '')
-    }));
+    const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => {
+      console.log('📊 Meal データ:', {
+        name: meal.name,
+        calories: meal.calories,
+        protein: meal.protein,
+        fat: meal.fat,
+        carbs: meal.carbs,
+        allFields: Object.keys(meal)
+      });
+      return {
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        fat: meal.fat || 0,
+        carbs: meal.carbs || 0,
+        foods: meal.foodItems || meal.items || [meal.name] || [],
+        timestamp: meal.time || (meal.timestamp ? new Date(meal.timestamp._seconds * 1000 || meal.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '')
+      };
+    });
     
     const formattedExercises = (dailyRecord?.exercises || []).map((exercise: any) => ({
       type: exercise.name || exercise.type || '運動',
@@ -202,7 +212,7 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp}: ${meal.foods.join(', '
   try {
     // Gemini APIでフィードバック生成
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
