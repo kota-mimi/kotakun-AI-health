@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { FirestoreService } from '@/services/firestoreService';
+import { admin } from '@/lib/firebase-admin';
 
 interface DailyRecord {
   weight?: { value: number; date: string };
@@ -49,15 +49,16 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 1日の記録データを取得（Firestoreから実際のデータを取得）
+// 1日の記録データを取得（Firebase Admin SDKで直接取得）
 async function getDailyRecords(userId: string, date: string): Promise<DailyRecord> {
   try {
     console.log('📊 getDailyRecords開始:', { userId, date });
     
-    const firestoreService = new FirestoreService();
-    const dailyRecord = await firestoreService.getDailyRecord(userId, date);
+    const db = admin.firestore();
+    const recordRef = db.doc(`users/${userId}/dailyRecords/${date}`);
+    const recordSnap = await recordRef.get();
     
-    if (!dailyRecord) {
+    if (!recordSnap.exists) {
       console.log('📊 記録データなし - デフォルトデータを返却');
       return {
         meals: [],
@@ -65,33 +66,35 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
       };
     }
     
-    console.log('📊 Firestoreデータ取得成功:', {
-      hasMeals: !!dailyRecord.meals,
-      mealsCount: dailyRecord.meals?.length || 0,
-      hasExercises: !!dailyRecord.exercises,
-      exercisesCount: dailyRecord.exercises?.length || 0,
-      hasWeight: !!dailyRecord.weight
+    const dailyRecord = recordSnap.data();
+    
+    console.log('📊 Firebase Admin データ取得成功:', {
+      hasMeals: !!dailyRecord?.meals,
+      mealsCount: dailyRecord?.meals?.length || 0,
+      hasExercises: !!dailyRecord?.exercises,
+      exercisesCount: dailyRecord?.exercises?.length || 0,
+      hasWeight: !!dailyRecord?.weight
     });
     
-    // Firestoreのデータ構造をAI用のフォーマットに変換
-    const formattedMeals = (dailyRecord.meals || []).map(meal => ({
+    // Firebase Admin で取得したデータをAI用のフォーマットに変換
+    const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => ({
       calories: meal.calories || 0,
       protein: meal.protein || 0,
       fat: meal.fat || 0,
       carbs: meal.carbs || 0,
       foods: meal.foodItems || meal.items || [meal.name] || [],
-      timestamp: meal.time || new Date(meal.timestamp || '').toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+      timestamp: meal.time || (meal.timestamp ? new Date(meal.timestamp._seconds * 1000 || meal.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '')
     }));
     
-    const formattedExercises = (dailyRecord.exercises || []).map(exercise => ({
+    const formattedExercises = (dailyRecord?.exercises || []).map((exercise: any) => ({
       type: exercise.name || exercise.type || '運動',
       duration: exercise.duration || 0,
       intensity: exercise.type === 'strength' ? '筋トレ' : exercise.type === 'cardio' ? '有酸素' : '軽運動',
-      timestamp: exercise.time || new Date(exercise.timestamp || '').toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+      timestamp: exercise.time || (exercise.timestamp ? new Date(exercise.timestamp._seconds * 1000 || exercise.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '')
     }));
     
     const result: DailyRecord = {
-      weight: dailyRecord.weight ? { value: dailyRecord.weight, date: date } : undefined,
+      weight: dailyRecord?.weight ? { value: dailyRecord.weight, date: date } : undefined,
       meals: formattedMeals,
       exercises: formattedExercises
     };
@@ -171,7 +174,7 @@ async function generateDailyFeedback(data: DailyRecord, date: string): Promise<s
 
   try {
     // Gemini APIでフィードバック生成
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     
     const result = await model.generateContent(prompt);
