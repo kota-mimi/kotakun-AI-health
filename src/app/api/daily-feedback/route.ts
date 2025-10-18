@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { FirestoreService } from '@/services/firestoreService';
 
 interface DailyRecord {
   weight?: { value: number; date: string };
@@ -48,46 +49,69 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 1日の記録データを取得（実際はFirestoreから取得）
+// 1日の記録データを取得（Firestoreから実際のデータを取得）
 async function getDailyRecords(userId: string, date: string): Promise<DailyRecord> {
-  // 模擬データ - 実際の実装ではFirestoreから取得
-  return {
-    weight: { value: 57.8, date: date },
-    meals: [
-      {
-        calories: 380,
-        protein: 15,
-        fat: 8,
-        carbs: 65,
-        foods: ['オートミール', 'バナナ', 'アーモンド'],
-        timestamp: '07:30'
-      },
-      {
-        calories: 520,
-        protein: 35,
-        fat: 12,
-        carbs: 55,
-        foods: ['サラダチキン', 'サラダ', '玄米おにぎり'],
-        timestamp: '12:45'
-      },
-      {
-        calories: 650,
-        protein: 40,
-        fat: 18,
-        carbs: 75,
-        foods: ['鮭の塩焼き', 'ブロッコリー', '白米'],
-        timestamp: '19:30'
-      }
-    ],
-    exercises: [
-      {
-        type: '上半身筋トレ',
-        duration: 50,
-        intensity: '中強度',
-        timestamp: '18:00'
-      }
-    ]
-  };
+  try {
+    console.log('📊 getDailyRecords開始:', { userId, date });
+    
+    const firestoreService = new FirestoreService();
+    const dailyRecord = await firestoreService.getDailyRecord(userId, date);
+    
+    if (!dailyRecord) {
+      console.log('📊 記録データなし - デフォルトデータを返却');
+      return {
+        meals: [],
+        exercises: []
+      };
+    }
+    
+    console.log('📊 Firestoreデータ取得成功:', {
+      hasMeals: !!dailyRecord.meals,
+      mealsCount: dailyRecord.meals?.length || 0,
+      hasExercises: !!dailyRecord.exercises,
+      exercisesCount: dailyRecord.exercises?.length || 0,
+      hasWeight: !!dailyRecord.weight
+    });
+    
+    // Firestoreのデータ構造をAI用のフォーマットに変換
+    const formattedMeals = (dailyRecord.meals || []).map(meal => ({
+      calories: meal.calories || 0,
+      protein: meal.protein || 0,
+      fat: meal.fat || 0,
+      carbs: meal.carbs || 0,
+      foods: meal.foodItems || meal.items || [meal.name] || [],
+      timestamp: meal.time || new Date(meal.timestamp || '').toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+    }));
+    
+    const formattedExercises = (dailyRecord.exercises || []).map(exercise => ({
+      type: exercise.name || exercise.type || '運動',
+      duration: exercise.duration || 0,
+      intensity: exercise.type === 'strength' ? '筋トレ' : exercise.type === 'cardio' ? '有酸素' : '軽運動',
+      timestamp: exercise.time || new Date(exercise.timestamp || '').toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+    }));
+    
+    const result: DailyRecord = {
+      weight: dailyRecord.weight ? { value: dailyRecord.weight, date: date } : undefined,
+      meals: formattedMeals,
+      exercises: formattedExercises
+    };
+    
+    console.log('📊 フォーマット済みデータ:', {
+      mealsCount: result.meals.length,
+      exercisesCount: result.exercises.length,
+      totalCalories: result.meals.reduce((sum, meal) => sum + meal.calories, 0)
+    });
+    
+    return result;
+    
+  } catch (error) {
+    console.error('📊 getDailyRecords エラー:', error);
+    // エラー時はデフォルトデータを返却
+    return {
+      meals: [],
+      exercises: []
+    };
+  }
 }
 
 // AIを使ってフィードバックを生成
