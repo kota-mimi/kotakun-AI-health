@@ -61,6 +61,51 @@ export function MyProfilePage({
   // 実際のユーザーデータを取得
   const { isLiffReady, isLoggedIn, liffUser, hasCompletedCounseling } = useAuth();
   const { counselingResult, refetch } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+
+  // カウンセリング未完了の場合は専用画面を表示
+  if (isLiffReady && isLoggedIn && !hasCompletedCounseling) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center p-4">
+        <div className="max-w-sm mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageCircle className="w-8 h-8 text-blue-600" />
+          </div>
+          
+          <h2 className="text-xl font-bold text-gray-800 mb-3">
+            初回カウンセリングが必要です
+          </h2>
+          
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            マイページをご利用いただくには、まず初回カウンセリングを完了していただく必要があります。
+          </p>
+          
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.liff) {
+                window.liff.sendMessages([
+                  {
+                    type: 'text',
+                    text: 'カウンセリング'
+                  }
+                ]).then(() => {
+                  window.liff.closeWindow();
+                }).catch((error) => {
+                  console.error('Message send failed:', error);
+                });
+              }
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+          >
+            カウンセリングを開始する
+          </button>
+          
+          <p className="text-xs text-gray-500 mt-4">
+            カウンセリング完了後にマイページがご利用いただけます
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   // 日付ベースのデータマネージャーを取得
   const dateBasedDataManager = useDateBasedData();
