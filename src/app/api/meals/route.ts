@@ -99,20 +99,60 @@ export async function PUT(request: NextRequest) {
     
     // 複数食事の一括保存（LINEと同じ方式）
     if (multipleMeals && Array.isArray(multipleMeals)) {
-      const firestoreMealsData = multipleMeals.map(meal => ({
-        id: meal.id,
-        name: meal.name,
-        type: mealType,
-        calories: meal.calories || 0,
-        protein: meal.protein || 0,
-        fat: meal.fat || 0,
-        carbs: meal.carbs || 0,
-        time: meal.time || '00:00',
-        images: meal.images || [],
-        image: meal.images?.[0] || meal.image || null,
-        foodItems: meal.foodItems || [],
-        timestamp: new Date(),
-        createdAt: meal.createdAt || new Date()
+      // 画像圧縮処理
+      const compressImageBase64 = async (base64String: string): Promise<string> => {
+        try {
+          if (!base64String || !base64String.includes(',')) return base64String;
+          
+          const base64Data = base64String.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          
+          const sharp = (await import('sharp')).default;
+          const compressedBuffer = await sharp(imageBuffer)
+            .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 60, progressive: true })
+            .toBuffer();
+          
+          const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
+          console.log(`🗜️ 画像圧縮: ${imageBuffer.length} bytes → ${compressedBuffer.length} bytes (${(100 - (compressedBuffer.length / imageBuffer.length) * 100).toFixed(1)}% 削減)`);
+          
+          return compressedBase64;
+        } catch (error) {
+          console.error('画像圧縮エラー:', error);
+          return base64String;
+        }
+      };
+
+      const firestoreMealsData = await Promise.all(multipleMeals.map(async (meal) => {
+        // 画像データを圧縮（同じ画像が複数の食事に使われる場合、最初の1回だけ圧縮）
+        let compressedImages: string[] = [];
+        let compressedImage: string | null = null;
+        
+        if (meal.images && meal.images.length > 0) {
+          // 同じ画像が繰り返される場合は1回だけ圧縮
+          const uniqueImages = [...new Set(meal.images)];
+          compressedImages = await Promise.all(uniqueImages.map(img => compressImageBase64(img)));
+          compressedImage = compressedImages[0];
+        } else if (meal.image) {
+          compressedImage = await compressImageBase64(meal.image);
+          compressedImages = [compressedImage];
+        }
+
+        return {
+          id: meal.id,
+          name: meal.name,
+          type: mealType,
+          calories: meal.calories || 0,
+          protein: meal.protein || 0,
+          fat: meal.fat || 0,
+          carbs: meal.carbs || 0,
+          time: meal.time || '00:00',
+          images: compressedImages,
+          image: compressedImage,
+          foodItems: meal.foodItems || [],
+          timestamp: new Date(),
+          createdAt: meal.createdAt || new Date()
+        };
       }));
 
       // Admin SDKで複数食事データを一括追加
@@ -136,6 +176,42 @@ export async function PUT(request: NextRequest) {
     }
 
     // 単一食事の保存（既存ロジック）
+    // 画像圧縮処理（単一食事用）
+    const compressImageBase64 = async (base64String: string): Promise<string> => {
+      try {
+        if (!base64String || !base64String.includes(',')) return base64String;
+        
+        const base64Data = base64String.split(',')[1];
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        
+        const sharp = (await import('sharp')).default;
+        const compressedBuffer = await sharp(imageBuffer)
+          .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 60, progressive: true })
+          .toBuffer();
+        
+        const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
+        console.log(`🗜️ 単一食事画像圧縮: ${imageBuffer.length} bytes → ${compressedBuffer.length} bytes (${(100 - (compressedBuffer.length / imageBuffer.length) * 100).toFixed(1)}% 削減)`);
+        
+        return compressedBase64;
+      } catch (error) {
+        console.error('単一食事画像圧縮エラー:', error);
+        return base64String;
+      }
+    };
+
+    // 画像データを圧縮
+    let compressedImages: string[] = [];
+    let compressedImage: string | null = null;
+    
+    if (mealData.images && mealData.images.length > 0) {
+      compressedImages = await Promise.all(mealData.images.map(img => compressImageBase64(img)));
+      compressedImage = compressedImages[0];
+    } else if (mealData.image) {
+      compressedImage = await compressImageBase64(mealData.image);
+      compressedImages = [compressedImage];
+    }
+
     const firestoreMealData = {
       id: mealData.id,
       name: mealData.name,
@@ -145,8 +221,8 @@ export async function PUT(request: NextRequest) {
       fat: mealData.fat || 0,
       carbs: mealData.carbs || 0,
       time: mealData.time || '00:00',
-      images: mealData.images || [],
-      image: mealData.images?.[0] || mealData.image || null,
+      images: compressedImages,
+      image: compressedImage,
       foodItems: mealData.foodItems || [],
       timestamp: new Date(),
       createdAt: mealData.createdAt || new Date()
