@@ -1256,7 +1256,7 @@ class AIHealthService {
         .add({
           userMessage,
           aiResponse,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          timestamp: admin.FieldValue.serverTimestamp(),
         });
 
       // 古い会話を削除（直近10件だけ保持）
