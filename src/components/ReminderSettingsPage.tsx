@@ -126,7 +126,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 overflow-y-auto">
       {/* ヘッダー */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
@@ -144,7 +144,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
         </div>
       </div>
 
-      <div className="p-4 pb-8 space-y-6">
+      <div className="p-4 pb-20 space-y-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
@@ -245,7 +245,7 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
         </Card>
 
         {/* 注意事項 */}
-        <Card className="p-4 bg-yellow-50 border-yellow-200 mb-8">
+        <Card className="p-4 bg-yellow-50 border-yellow-200">
           <h4 className="font-medium text-yellow-800 mb-2">⚠️ ご注意</h4>
           <ul className="text-sm text-yellow-700 space-y-1">
             <li>• 通知はLINEのトーク画面に送信されます</li>
