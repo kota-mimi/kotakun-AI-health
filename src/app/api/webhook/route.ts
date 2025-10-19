@@ -9,6 +9,27 @@ import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeight
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
 
+// 画像キャッシュ（メモリに一時保存）
+const imageCache = new Map<string, Buffer>();
+
+// 画像キャッシュに保存
+function cacheImage(userId: string, imageData: Buffer): string {
+  const cacheKey = `${userId}_${Date.now()}`;
+  imageCache.set(cacheKey, imageData);
+  
+  // 5分後に自動削除
+  setTimeout(() => {
+    imageCache.delete(cacheKey);
+  }, 5 * 60 * 1000);
+  
+  return cacheKey;
+}
+
+// 画像キャッシュから取得
+function getCachedImage(cacheKey: string): Buffer | null {
+  return imageCache.get(cacheKey) || null;
+}
+
 // 記録モード統一クイックリプライ
 function getRecordModeQuickReply() {
   return {
@@ -459,8 +480,9 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       return;
     }
     
-    // 4. 食事画像の場合：分析結果を一時保存（食事タイプ選択のため）
-    await storeTempMealAnalysis(userId, mealAnalysis, imageContent);
+    // 4. 食事画像の場合：画像をキャッシュに保存し、分析結果を一時保存
+    const imageCacheKey = cacheImage(userId, imageContent);
+    await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
     
     // 5. 食事タイプ選択のクイックリプライ表示
     await showMealTypeSelection(replyToken);
@@ -966,7 +988,7 @@ async function saveMealDirectly(userId: string, mealType: string, mealAnalysis: 
 }
 
 // 簡単な一時保存関数
-async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer, originalText?: string) {
+async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageContent?: Buffer, originalText?: string, imageCacheKey?: string) {
   try {
     // AIアドバイスを除去してクリーンなデータのみ保存
     const cleanAnalysis = {
@@ -990,7 +1012,7 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
     const db = admin.firestore();
     await db.collection('users').doc(userId).collection('tempMealData').doc('current').set({
       analysis: cleanAnalysis,
-      image: imageContent ? imageContent.toString('base64') : null,
+      imageCacheKey: imageCacheKey || null, // 画像キャッシュキーのみ保存
       originalText: originalText || '', // 元のテキストを保存
       createdAt: new Date()
     });
@@ -1007,7 +1029,7 @@ async function getTempMealAnalysis(userId: string) {
       const data = doc.data();
       return {
         analysis: data.analysis,
-        imageContent: data.image ? Buffer.from(data.image, 'base64') : null
+        imageContent: data.imageCacheKey ? getCachedImage(data.imageCacheKey) : null
       };
     }
     return null;
