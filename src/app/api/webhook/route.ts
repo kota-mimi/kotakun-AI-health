@@ -1112,8 +1112,8 @@ async function getImageContent(messageId: string): Promise<Buffer | null> {
     try {
       const sharp = (await import('sharp')).default;
       const compressedBuffer = await sharp(originalBuffer)
-        .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: 30, progressive: true })
+        .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 75, progressive: true })
         .toBuffer();
       
       console.log(`🗜️ 画像圧縮: ${originalBuffer.length} bytes → ${compressedBuffer.length} bytes (${(100 - (compressedBuffer.length / originalBuffer.length) * 100).toFixed(1)}% 削減)`);
