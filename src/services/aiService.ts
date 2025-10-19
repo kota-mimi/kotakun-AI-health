@@ -1249,9 +1249,8 @@ class AIHealthService {
   // 会話履歴を保存
   async saveConversation(userId: string, userMessage: string, aiResponse: string) {
     try {
-      const conversationRef = collection(db, 'conversations');
+      const conversationRef = collection(db, 'users', userId, 'conversations');
       await addDoc(conversationRef, {
-        userId,
         userMessage,
         aiResponse,
         timestamp: new Date(),
@@ -1268,10 +1267,9 @@ class AIHealthService {
   // 会話履歴を取得
   async getConversationHistory(userId: string): Promise<Array<{userMessage: string, aiResponse: string}>> {
     try {
-      const conversationRef = collection(db, 'conversations');
+      const conversationRef = collection(db, 'users', userId, 'conversations');
       const q = query(
         conversationRef,
-        where('userId', '==', userId),
         orderBy('timestamp', 'desc'),
         limit(8) // 直近8回分取得
       );
@@ -1298,10 +1296,9 @@ class AIHealthService {
   // 古い会話を削除
   private async cleanupOldConversations(userId: string) {
     try {
-      const conversationRef = collection(db, 'conversations');
+      const conversationRef = collection(db, 'users', userId, 'conversations');
       const q = query(
         conversationRef,
-        where('userId', '==', userId),
         orderBy('timestamp', 'desc')
       );
       
