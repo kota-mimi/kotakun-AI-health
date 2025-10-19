@@ -24,8 +24,10 @@ export async function GET(request: NextRequest) {
 
     const db = admin.firestore();
     const reminderDoc = await db
-      .collection('reminders')
+      .collection('users')
       .doc(userId)
+      .collection('reminders')
+      .doc('settings')
       .get();
 
     if (!reminderDoc.exists) {
@@ -116,8 +118,10 @@ export async function POST(request: NextRequest) {
     
     // Firestoreに保存
     await db
-      .collection('reminders')
+      .collection('users')
       .doc(userId)
+      .collection('reminders')
+      .doc('settings')
       .set({
         reminders,
         updatedAt: admin.FieldValue.serverTimestamp(),
@@ -153,8 +157,10 @@ export async function DELETE(request: NextRequest) {
 
     const db = admin.firestore();
     await db
-      .collection('reminders')
+      .collection('users')
       .doc(userId)
+      .collection('reminders')
+      .doc('settings')
       .delete();
 
     return NextResponse.json({

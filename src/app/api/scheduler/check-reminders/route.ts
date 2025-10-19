@@ -73,13 +73,13 @@ export async function GET(request: NextRequest) {
     const db = admin.firestore();
     
     // 全ユーザーのリマインダー設定を取得
-    const remindersCollection = await db.collection('reminders').get();
+    const usersCollection = await db.collection('users').get();
     
-    if (remindersCollection.empty) {
-      console.log('📝 リマインダー設定が見つかりません');
+    if (usersCollection.empty) {
+      console.log('📝 ユーザーが見つかりません');
       return NextResponse.json({
         success: true,
-        message: 'リマインダー設定なし',
+        message: 'ユーザーなし',
         checkedTime: currentTime
       });
     }
@@ -88,9 +88,22 @@ export async function GET(request: NextRequest) {
     const notifications: Array<{userId: string, reminder: string, status: string}> = [];
 
     // 各ユーザーの設定をチェック
-    for (const doc of remindersCollection.docs) {
-      const userId = doc.id;
-      const data = doc.data() as { reminders: ReminderSetting[] };
+    for (const userDoc of usersCollection.docs) {
+      const userId = userDoc.id;
+      
+      // ユーザーのリマインダー設定を取得
+      const reminderDoc = await db
+        .collection('users')
+        .doc(userId)
+        .collection('reminders')
+        .doc('settings')
+        .get();
+      
+      if (!reminderDoc.exists) {
+        continue;
+      }
+      
+      const data = reminderDoc.data() as { reminders: ReminderSetting[] };
       
       if (!data.reminders || !Array.isArray(data.reminders)) {
         continue;
