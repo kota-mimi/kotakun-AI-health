@@ -109,8 +109,8 @@ export async function PUT(request: NextRequest) {
           
           const sharp = (await import('sharp')).default;
           const compressedBuffer = await sharp(imageBuffer)
-            .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 60, progressive: true })
+            .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 30, progressive: true })
             .toBuffer();
           
           const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
@@ -186,8 +186,8 @@ export async function PUT(request: NextRequest) {
         
         const sharp = (await import('sharp')).default;
         const compressedBuffer = await sharp(imageBuffer)
-          .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
-          .jpeg({ quality: 60, progressive: true })
+          .resize(256, 256, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 30, progressive: true })
           .toBuffer();
         
         const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
