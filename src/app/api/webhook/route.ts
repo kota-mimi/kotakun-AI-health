@@ -471,7 +471,13 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     // 3. 食事画像かどうかチェック
     if (!mealAnalysis.isFoodImage) {
       // 食事じゃない画像の場合：一般AIで会話
-      const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`);
+      const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId);
+      
+      // 会話履歴を保存
+      if (aiResponse) {
+        await aiService.saveConversation(userId, '画像を送信', aiResponse);
+      }
+      
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
@@ -620,7 +626,13 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         await deleteTempMealAnalysis(userId);
         
         const aiService = new AIHealthService();
-        const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは');
+        const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは', userId);
+        
+        // 会話履歴を保存
+        if (generalResponse) {
+          await aiService.saveConversation(userId, tempData?.originalText || 'こんにちは', generalResponse);
+        }
+        
         await replyMessage(replyToken, [{
           type: 'text',
           text: generalResponse
