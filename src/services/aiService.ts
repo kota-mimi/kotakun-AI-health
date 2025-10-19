@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
-import { db } from '@/lib/firebase';
-import { collection, doc, addDoc, query, orderBy, limit, getDocs, deleteDoc, where } from 'firebase/firestore';
+import { admin } from '@/lib/firebase-admin';
 
 class AIHealthService {
   private genAI: GoogleGenerativeAI;
@@ -1249,12 +1248,16 @@ class AIHealthService {
   // 会話履歴を保存
   async saveConversation(userId: string, userMessage: string, aiResponse: string) {
     try {
-      const conversationRef = collection(db, 'users', userId, 'conversations');
-      await addDoc(conversationRef, {
-        userMessage,
-        aiResponse,
-        timestamp: new Date(),
-      });
+      const db = admin.firestore();
+      await db
+        .collection('users')
+        .doc(userId)
+        .collection('conversations')
+        .add({
+          userMessage,
+          aiResponse,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
 
       // 古い会話を削除（直近10件だけ保持）
       await this.cleanupOldConversations(userId);
@@ -1267,14 +1270,15 @@ class AIHealthService {
   // 会話履歴を取得
   async getConversationHistory(userId: string): Promise<Array<{userMessage: string, aiResponse: string}>> {
     try {
-      const conversationRef = collection(db, 'users', userId, 'conversations');
-      const q = query(
-        conversationRef,
-        orderBy('timestamp', 'desc'),
-        limit(8) // 直近8回分取得
-      );
+      const db = admin.firestore();
+      const querySnapshot = await db
+        .collection('users')
+        .doc(userId)
+        .collection('conversations')
+        .orderBy('timestamp', 'desc')
+        .limit(8) // 直近8回分取得
+        .get();
       
-      const querySnapshot = await getDocs(q);
       const conversations: Array<{userMessage: string, aiResponse: string}> = [];
       
       querySnapshot.forEach((doc) => {
@@ -1296,20 +1300,21 @@ class AIHealthService {
   // 古い会話を削除
   private async cleanupOldConversations(userId: string) {
     try {
-      const conversationRef = collection(db, 'users', userId, 'conversations');
-      const q = query(
-        conversationRef,
-        orderBy('timestamp', 'desc')
-      );
+      const db = admin.firestore();
+      const querySnapshot = await db
+        .collection('users')
+        .doc(userId)
+        .collection('conversations')
+        .orderBy('timestamp', 'desc')
+        .get();
       
-      const querySnapshot = await getDocs(q);
       const docs = querySnapshot.docs;
       
       // 10件以上ある場合、古いものを削除
       if (docs.length > 10) {
         const docsToDelete = docs.slice(10); // 11番目以降を削除対象
         for (const docToDelete of docsToDelete) {
-          await deleteDoc(docToDelete.ref);
+          await docToDelete.ref.delete();
         }
       }
     } catch (error) {
