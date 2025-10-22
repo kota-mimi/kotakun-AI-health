@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { admin } from '@/lib/firebase-admin';
+import { createDailyFeedbackFlexMessage } from '@/services/flexMessageTemplates';
 
 interface DailyRecord {
   weight?: { value: number; date: string };
@@ -28,15 +29,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'userId and date are required' }, { status: 400 });
     }
 
-    // 1日の記録データを取得（ここでは模擬データ）
+    // 1日の記録データを取得
     const dailyData = await getDailyRecords(userId, date);
     
-    // フィードバックを生成
-    const feedback = await generateDailyFeedback(dailyData, date);
+    // プロファイル履歴から目標値を取得（アプリと統一）
+    const targetValues = await getTargetValuesForDate(userId, date);
+    
+    // フィードバックを生成（目標値情報も含める）
+    const feedback = await generateDailyFeedback(dailyData, date, targetValues);
+
+    // ユーザー名を取得
+    const userName = await getUserName(userId);
+    
+    // プロファイル履歴から目標値を取得（アプリと統一）
+    const targetValues = await getTargetValuesForDate(userId, date);
+
+    // フィードバック用データを準備
+    const feedbackData = {
+      date: formatDate(date),
+      weight: dailyData.weight,
+      calories: dailyData.meals.reduce((sum, meal) => sum + meal.calories, 0),
+      protein: dailyData.meals.reduce((sum, meal) => sum + meal.protein, 0),
+      fat: dailyData.meals.reduce((sum, meal) => sum + meal.fat, 0),
+      carbs: dailyData.meals.reduce((sum, meal) => sum + meal.carbs, 0),
+      exerciseTime: dailyData.exercises.reduce((sum, ex) => sum + ex.duration, 0),
+      exercises: dailyData.exercises.map(ex => ({ type: ex.type, duration: ex.duration })),
+      mealCount: dailyData.meals.length
+    };
+
+    // Flexメッセージを生成
+    const flexMessage = createDailyFeedbackFlexMessage(feedbackData, feedback, userName);
 
     return NextResponse.json({
       success: true,
       feedback,
+      flexMessage,
+      feedbackData,
       date
     });
 
@@ -128,7 +156,7 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
 }
 
 // AIを使ってフィードバックを生成
-async function generateDailyFeedback(data: DailyRecord, date: string): Promise<string> {
+async function generateDailyFeedback(data: DailyRecord, date: string, targetValues?: any): Promise<string> {
   // 栄養データを計算
   const totalCalories = data.meals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = data.meals.reduce((sum, meal) => sum + meal.protein, 0);
@@ -145,68 +173,87 @@ async function generateDailyFeedback(data: DailyRecord, date: string): Promise<s
   const fatRatio = totalCalories > 0 ? Math.round((totalFat * 9 / totalCalories) * 100) : 0;
   const carbsRatio = totalCalories > 0 ? Math.round((totalCarbs * 4 / totalCalories) * 100) : 0;
   
+  // 目標値との比較
+  const targetCalories = targetValues?.targetCalories || 2000;
+  const targetProtein = targetValues?.macros?.protein || 120;
+  const targetFat = targetValues?.macros?.fat || 67;
+  const targetCarbs = targetValues?.macros?.carbs || 250;
+  
+  const calorieAchievement = Math.round((totalCalories / targetCalories) * 100);
+  const proteinAchievement = Math.round((totalProtein / targetProtein) * 100);
+  const fatAchievement = Math.round((totalFat / targetFat) * 100);
+  const carbsAchievement = Math.round((totalCarbs / targetCarbs) * 100);
+  
+  // 体重変化の分析（過去3日間の体重を取得して比較）
+  const weightTrend = await getWeightTrend(userId, date);
+  
   // プロンプトを作成
   const prompt = `
-【データ分析専門AI】として、以下の健康記録を詳細に分析し、具体的で実用的なフィードバックを作成してください。
+あなたは経験豊富なパーソナルトレーナーと管理栄養士の知識を持つアドバイザーです。
+ユーザーから提供された1日の食事内容と運動内容を分析し、具体的で実践的なフィードバックを提供してください。
 
 【${date}の記録データ】
-🏃‍♂️ 体重: ${data.weight?.value || '未記録'}kg
-🍽️ 食事回数: ${mealCount}回 (時間: ${mealTimes.join(', ') || '未記録'})
-🔥 総カロリー: ${totalCalories}kcal (${calorieStatus})
-📊 PFC比率: P${proteinRatio}% F${fatRatio}% C${carbsRatio}%
-   - タンパク質: ${totalProtein}g
-   - 脂質: ${totalFat}g
-   - 炭水化物: ${totalCarbs}g
-💪 運動: ${exerciseTime}分 (${data.exercises.map(ex => `${ex.type}${ex.duration}分`).join(', ') || '未実施'})
+📊 基本情報:
+- 体重: ${data.weight?.value || '未記録'}kg
+- 体重変化: ${weightTrend}
+- 食事回数: ${mealCount}回 (記録時間: ${mealTimes.join(', ') || '未記録'})
 
-【具体的な食事内容】
-${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
+🔥 カロリー分析:
+- 摂取カロリー: ${totalCalories}kcal (目標: ${targetCalories}kcal)
+- 達成率: ${calorieAchievement}% ${calorieAchievement >= 90 && calorieAchievement <= 110 ? '✅ 適正範囲' : calorieAchievement < 90 ? '⚠️ 不足' : '⚠️ 過多'}
 
-【分析指示】
-1. **数値の具体的評価**: カロリー・PFC比率・食事タイミングを厳密に分析
-2. **改善点の特定**: 数値データから明確な改善ポイントを抽出
-3. **実行可能なアドバイス**: 明日から実践できる具体的な提案
-4. **バランス評価**: 全体的な栄養バランスを客観的に評価
+🎯 PFC目標達成率:
+- タンパク質: ${totalProtein}g / ${targetProtein}g (${proteinAchievement}%) ${proteinAchievement >= 90 ? '✅' : '⚠️'}
+- 脂質: ${totalFat}g / ${targetFat}g (${fatAchievement}%) ${fatAchievement >= 80 && fatAchievement <= 120 ? '✅' : '⚠️'}
+- 炭水化物: ${totalCarbs}g / ${targetCarbs}g (${carbsAchievement}%) ${carbsAchievement >= 80 && carbsAchievement <= 120 ? '✅' : '⚠️'}
 
-【出力形式】
-📊 今日の記録
-⚖️ 体重: ${data.weight?.value || '記録なし'}kg
-🍽️ 食事: ${totalCalories}kcal (${mealCount}回) | P:${totalProtein}g F:${totalFat}g C:${totalCarbs}g
-💪 運動: ${exerciseTime > 0 ? `${exerciseTime}分` : '記録なし'}
+💪 運動記録:
+- 総運動時間: ${exerciseTime}分
+- 運動内容: ${data.exercises.map(ex => `${ex.type}${ex.duration}分`).join(', ') || '未実施'}
 
-━━━━━━━━━━━━━━━━━━━━
+🍽️ 食事詳細:
+${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
 
-🎯 体重管理
-[記録状況と体重管理のコメント]
+【重要な分析ポイント】
+1. 食事の記録時刻が深夜や就寝前の場合は、まとめて記録している可能性を考慮
+2. 目標達成率を重視した評価
+3. 体重変化と食事・運動の関連性を分析
+4. 実践的で継続可能な改善提案
 
-🥗 食事分析 (${totalCalories}kcal)
-📈 カロリー評価: [${calorieStatus}の詳細分析]
-⚖️ PFC比率: [P${proteinRatio}% F${fatRatio}% C${carbsRatio}%の評価]
-⏰ 食事タイミング: [${mealCount}回の食事タイミング評価]
+【必須出力形式】
+■ 本日の食事内容の評価
+【良かった点】
+・[具体的な数値に基づく評価（2〜3つ）]
+・[栄養バランスの優れた点]
 
-👍 良かった点:
-・[具体的なデータに基づく良い点]
-・[栄養バランスの良い部分]
+【改善が必要な点】
+・[具体的な数値改善案（2〜3つ）]
+・[なぜその改善が重要かの理由も含める]
 
-🔧 改善できる点:
-・[具体的な数値改善案]
-・[食事内容の具体的改善案]
+■ 本日の運動内容の評価
+【良かった点】
+・[運動時間や内容の具体的評価]
 
-💡 明日の提案: [1つの具体的アクション]
+【改善提案】
+・[より効果的な運動方法（2〜3つ）]
+・[継続可能な範囲での提案]
 
-💪 運動分析
-[${exerciseTime}分の運動評価と具体的アドバイス]
+■ 明日からの具体的アクション
+【優先度 高】
+[最も重要で実践しやすい改善策]
 
-━━━━━━━━━━━━━━━━━━━━
+【優先度 中】
+[次に取り組むべき改善策]
 
-🌟 総合評価
-[データに基づく客観的評価と励まし]
+【優先度 低】
+[余裕があれば取り組む改善策]
 
-【出力要件】
-- 数値を積極的に活用した具体的分析
-- 毎日異なる内容になるよう詳細に
-- 親しみやすいがデータドリブンな口調
-- 実行可能な具体的アドバイス重視
+【出力スタイル要件】
+- 前向きで励ましのある口調
+- 専門用語は控えめに、わかりやすく
+- 小さな良い点も見逃さず評価
+- 記録時刻と実際の食事時刻が異なる可能性を考慮した表現
+- 数値データを積極的に活用した具体的分析
 `;
 
   try {
@@ -262,4 +309,178 @@ ${exerciseTime > 0 ? `${exerciseTime}分も頑張った！素晴らしい🔥` :
 🌟 今日も記録お疲れさま！
 継続してるだけで確実に良い方向に向かってるよ✨
 明日も一緒に頑張ろうね💪`;
+}
+
+// ユーザー名を取得
+async function getUserName(userId: string): Promise<string | undefined> {
+  try {
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(userId);
+    const userSnap = await userRef.get();
+    
+    if (!userSnap.exists) {
+      return undefined;
+    }
+    
+    const userData = userSnap.data();
+    return userData?.profile?.name || undefined;
+  } catch (error) {
+    console.error('ユーザー名取得エラー:', error);
+    return undefined;
+  }
+}
+
+// 日付をフォーマット（YYYY-MM-DD → M/D形式）
+function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  } catch (error) {
+    return dateString;
+  }
+}
+
+// プロファイル履歴から目標値を取得（アプリと同じロジック）
+async function getTargetValuesForDate(userId: string, date: string) {
+  try {
+    const db = admin.firestore();
+    
+    // 1. プロファイル履歴から指定日に有効なプロファイルを取得
+    const profileHistoryRef = db.collection('users').doc(userId).collection('profileHistory');
+    const snapshot = await profileHistoryRef
+      .where('changeDate', '<=', date)
+      .orderBy('changeDate', 'desc')
+      .limit(1)
+      .get();
+    
+    if (!snapshot.empty) {
+      const profileData = snapshot.docs[0].data();
+      console.log('📊 プロファイル履歴から目標値取得:', {
+        date,
+        profileDate: profileData.changeDate,
+        targetCalories: profileData.targetCalories
+      });
+      
+      return {
+        targetCalories: profileData.targetCalories || 2000,
+        bmr: profileData.bmr || 1500,
+        tdee: profileData.tdee || 2000,
+        macros: profileData.macros || {
+          protein: 120,
+          fat: 67,
+          carbs: 250
+        }
+      };
+    }
+    
+    // 2. プロファイル履歴がない場合、最新のカウンセリング結果を取得
+    const counselingRef = db.collection('users').doc(userId).collection('counseling').doc('result');
+    const counselingSnap = await counselingRef.get();
+    
+    if (counselingSnap.exists) {
+      const counselingData = counselingSnap.data();
+      const aiAnalysis = counselingData?.aiAnalysis?.nutritionPlan;
+      
+      if (aiAnalysis) {
+        console.log('📊 カウンセリング結果から目標値取得:', {
+          dailyCalories: aiAnalysis.dailyCalories,
+          bmr: aiAnalysis.bmr,
+          tdee: aiAnalysis.tdee
+        });
+        
+        return {
+          targetCalories: aiAnalysis.dailyCalories || 2000,
+          bmr: aiAnalysis.bmr || 1500,
+          tdee: aiAnalysis.tdee || 2000,
+          macros: aiAnalysis.macros || {
+            protein: Math.round((aiAnalysis.dailyCalories * 0.25) / 4),
+            fat: Math.round((aiAnalysis.dailyCalories * 0.30) / 9),
+            carbs: Math.round((aiAnalysis.dailyCalories * 0.45) / 4)
+          }
+        };
+      }
+    }
+    
+    // 3. デフォルト値
+    console.log('📊 デフォルト値を使用');
+    return {
+      targetCalories: 2000,
+      bmr: 1500,
+      tdee: 2000,
+      macros: {
+        protein: 120,
+        fat: 67,
+        carbs: 250
+      }
+    };
+    
+  } catch (error) {
+    console.error('目標値取得エラー:', error);
+    // エラー時はデフォルト値
+    return {
+      targetCalories: 2000,
+      bmr: 1500,
+      tdee: 2000,
+      macros: {
+        protein: 120,
+        fat: 67,
+        carbs: 250
+      }
+    };
+  }
+}
+
+// 体重変化の傾向を分析（過去3日間）
+async function getWeightTrend(userId: string, currentDate: string): Promise<string> {
+  try {
+    const db = admin.firestore();
+    const currentDateObj = new Date(currentDate);
+    
+    // 過去3日間の日付を生成
+    const dates = [];
+    for (let i = 2; i >= 0; i--) {
+      const date = new Date(currentDateObj);
+      date.setDate(date.getDate() - i);
+      dates.push(date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }));
+    }
+    
+    // 各日付の体重記録を取得
+    const weights = [];
+    for (const date of dates) {
+      const recordRef = db.doc(`users/${userId}/dailyRecords/${date}`);
+      const recordSnap = await recordRef.get();
+      
+      if (recordSnap.exists) {
+        const data = recordSnap.data();
+        if (data?.weight) {
+          weights.push({
+            date,
+            weight: data.weight,
+            dateObj: new Date(date)
+          });
+        }
+      }
+    }
+    
+    if (weights.length < 2) {
+      return '体重変化の比較データが不足しています';
+    }
+    
+    // 最新と最古の体重を比較
+    const latestWeight = weights[weights.length - 1].weight;
+    const oldestWeight = weights[0].weight;
+    const weightChange = Math.round((latestWeight - oldestWeight) * 10) / 10;
+    
+    if (Math.abs(weightChange) < 0.1) {
+      return '安定 (変化なし)';
+    } else if (weightChange > 0) {
+      return `+${weightChange}kg (${weights.length}日間で増加)`;
+    } else {
+      return `${weightChange}kg (${weights.length}日間で減少)`;
+    }
+    
+  } catch (error) {
+    console.error('体重変化分析エラー:', error);
+    return '体重変化の分析中にエラーが発生しました';
+  }
 }

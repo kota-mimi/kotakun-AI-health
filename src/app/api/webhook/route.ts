@@ -3157,10 +3157,15 @@ const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 const recordModeUsers = new Map<string, number>();
 // タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
 
-// 連続タップ防止機能
+// 強化された連続タップ防止機能
 const processingUsers = new Map<string, number>(); // 処理中ユーザー管理
 const lastTapTime = new Map<string, number>(); // 最後のタップ時間記録
+const tapCounts = new Map<string, number>(); // 連続タップ回数記録
 const ANTI_SPAM_DELAY = 2000; // 2秒間の連続タップ防止
+const BURST_LIMIT = 3; // 連続タップ回数制限（3回まで）
+const BURST_WINDOW = 10000; // 10秒間のウィンドウ
+const PENALTY_DURATION = 30000; // ペナルティ期間（30秒）
+const penalizedUsers = new Map<string, number>(); // ペナルティ中ユーザー
 
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
@@ -3193,17 +3198,56 @@ async function isAIAdviceMode(userId: string): Promise<boolean> {
   return true;
 }
 
-// 連続タップ防止機能
+// 強化された連続タップ防止機能
 function canProcessTap(userId: string): boolean {
   const now = Date.now();
-  const lastTap = lastTapTime.get(userId);
   
-  if (lastTap && (now - lastTap) < ANTI_SPAM_DELAY) {
-    console.log(`🚫 連続タップ防止: ${userId} (${now - lastTap}ms前にタップ済み)`);
+  // 1. ペナルティ期間中かチェック
+  const penaltyEnd = penalizedUsers.get(userId);
+  if (penaltyEnd && now < penaltyEnd) {
+    const remainingSeconds = Math.ceil((penaltyEnd - now) / 1000);
+    console.log(`🚫 ペナルティ中: ${userId} (残り${remainingSeconds}秒)`);
     return false;
   }
   
+  // ペナルティ期間終了済みの場合はリセット
+  if (penaltyEnd && now >= penaltyEnd) {
+    penalizedUsers.delete(userId);
+    tapCounts.delete(userId);
+    console.log(`✅ ペナルティ解除: ${userId}`);
+  }
+  
+  // 2. 基本的な連続タップチェック（2秒間隔）
+  const lastTap = lastTapTime.get(userId);
+  if (lastTap && (now - lastTap) < ANTI_SPAM_DELAY) {
+    console.log(`🚫 連続タップ防止: ${userId} (${now - lastTap}ms前にタップ済み)`);
+    
+    // 3. バースト検出：10秒間に3回以上の連続タップ
+    const currentCount = tapCounts.get(userId) || 0;
+    const newCount = currentCount + 1;
+    tapCounts.set(userId, newCount);
+    
+    if (newCount >= BURST_LIMIT) {
+      // ペナルティ適用
+      const penaltyUntil = now + PENALTY_DURATION;
+      penalizedUsers.set(userId, penaltyUntil);
+      console.log(`⚠️ バースト検出 - ペナルティ適用: ${userId} (30秒間)`);
+      
+      return false;
+    }
+    
+    return false;
+  }
+  
+  // 4. 正常なタップの場合
   lastTapTime.set(userId, now);
+  
+  // 5. バーストカウンターのリセット（正常間隔の場合）
+  const timeSinceLastTap = lastTap ? (now - lastTap) : BURST_WINDOW + 1;
+  if (timeSinceLastTap > BURST_WINDOW) {
+    tapCounts.delete(userId);
+  }
+  
   return true;
 }
 
@@ -3465,13 +3509,18 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
     if (response.ok) {
       const result = await response.json();
       
-      // フィードバックメッセージを送信
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: result.feedback
-      }]);
-      
-      console.log('✅ 1日フィードバック送信完了:', userId);
+      // Flexメッセージでフィードバックを送信
+      if (result.flexMessage) {
+        await replyMessage(replyToken, [result.flexMessage]);
+        console.log('✅ 1日フィードバック（Flexメッセージ）送信完了:', userId);
+      } else {
+        // フォールバック: テキストメッセージ
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: result.feedback
+        }]);
+        console.log('✅ 1日フィードバック（テキスト）送信完了:', userId);
+      }
     } else {
       throw new Error(`API呼び出し失敗: ${response.status}`);
     }
