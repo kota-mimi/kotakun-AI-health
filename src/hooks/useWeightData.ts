@@ -244,13 +244,13 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return 0; // 何も見つからない場合
   };
 
-  // 前日の体重を取得
+  // 前日の体重を取得（その日の実際の記録を正確に取得）
   const getPreviousWeight = (date: Date): number => {
     const dateKey = getDateKey(date);
     
-    // まずrealWeightDataから確認
+    // 指定された日付の実際の記録を取得（realWeightDataから）
     const realDataForDate = realWeightData.find(item => item.date === dateKey);
-    if (realDataForDate) {
+    if (realDataForDate && realDataForDate.weight > 0) {
       return realDataForDate.weight;
     }
     
@@ -261,26 +261,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return dayData.weightEntries[dayData.weightEntries.length - 1].weight;
     }
     
-    // さらに前の日を検索（最大7日間）
-    for (let i = 1; i <= 7; i++) {
-      const searchDate = new Date(date);
-      searchDate.setDate(searchDate.getDate() - i);
-      const searchDateKey = getDateKey(searchDate);
-      
-      // まずrealWeightDataから検索
-      const realSearchData = realWeightData.find(item => item.date === searchDateKey);
-      if (realSearchData) {
-        return realSearchData.weight;
-      }
-      
-      // ローカルデータから検索
-      const searchDayData = dateBasedData[searchDateKey];
-      if (searchDayData?.weightEntries && searchDayData.weightEntries.length > 0) {
-        return searchDayData.weightEntries[searchDayData.weightEntries.length - 1].weight;
-      }
-    }
-    
-    return 0; // デフォルト値
+    // その日に記録がない場合は0を返す（前日比を表示しない）
+    return 0;
   };
 
   // 体重記録を追加
