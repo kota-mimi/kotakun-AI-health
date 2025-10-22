@@ -553,6 +553,18 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const startTime = Date.now();
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
+      // 既に記録モード中かチェック
+      const alreadyInRecordMode = await isRecordMode(userId);
+      if (alreadyInRecordMode) {
+        console.log('⚠️ 既に記録モード中: ボタン押下を無視');
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '既に記録モード中です！\n\n「通常モードに戻る」ボタンを押してから再度お試しください。',
+          quickReply: getRecordModeQuickReply()
+        }]);
+        return;
+      }
+      
       // 連続タップ防止チェック
       if (!canProcessTap(userId)) {
         console.log('🚫 連続タップ防止: 記録モードボタン無視');
@@ -3128,26 +3140,7 @@ async function startRecordMode(replyToken: string, userId: string) {
         ]
       }
     },
-    quickReply: {
-      items: [
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: 'テキストで記録',
-            data: 'action=open_keyboard',
-            inputOption: 'openKeyboard'
-          }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'camera',
-            label: 'カメラで記録'
-          }
-        }
-      ]
-    }
+    quickReply: getRecordModeQuickReply()
   };
   
   const flexBuildEnd = Date.now();
