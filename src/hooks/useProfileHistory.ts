@@ -250,50 +250,75 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
   return defaultValues;
 }
 
-// カウンセリングデータから動的に目標値を計算
+// カウンセリングデータから動的に目標値を計算（カウンセリングページと同じロジック）
 function calculateDynamicValues(answers: any) {
   try {
-    const profile: UserProfile = {
-      name: answers.name || 'ユーザー',
-      age: Number(answers.age) || 30,
-      gender: answers.gender || 'female',
-      height: Number(answers.height) || 160,
-      weight: Number(answers.weight) || 60,
-      targetWeight: Number(answers.targetWeight) || Number(answers.weight) || 60,
-      activityLevel: answers.activityLevel || 'normal',
-      goals: [{
-        type: answers.primaryGoal || 'fitness_improve',
-        targetValue: Number(answers.targetWeight) || Number(answers.weight) || 60,
-      }] as HealthGoal[],
-      sleepDuration: '8h_plus',
-      sleepQuality: 'normal',
-      exerciseHabit: 'yes',
-      exerciseFrequency: 'weekly_3_4',
-      mealFrequency: '3',
-      snackFrequency: 'sometimes',
-      alcoholFrequency: 'none'
+    // カウンセリングページと同じBMR計算
+    const age = Number(answers.age) || 30;
+    const gender = answers.gender || 'female';
+    const height = Number(answers.height) || 160;
+    const weight = Number(answers.weight) || 60;
+    
+    let bmr;
+    if (gender === 'male') {
+      bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    } else if (gender === 'female') {
+      bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    } else {
+      // その他の場合は平均値を使用
+      const maleValue = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+      const femaleValue = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+      bmr = (maleValue + femaleValue) / 2;
+    }
+    
+    // カウンセリングページと同じTDEE計算
+    const activityLevel = answers.activityLevel || 'light';
+    const multipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55
     };
+    const tdee = bmr * (multipliers[activityLevel] || 1.375);
+    
+    // カウンセリングページと同じターゲットカロリー計算
+    const goal = answers.primaryGoal || 'weight_loss';
+    let targetCalories;
+    switch (goal) {
+      case 'weight_loss':
+        targetCalories = tdee - 500; // アプリと統一（標準的な500kcal減）
+        break;
+      case 'muscle_gain':
+        targetCalories = tdee + 300;
+        break;
+      case 'maintenance':
+      default:
+        targetCalories = tdee;
+    }
+    
+    // カウンセリングページと同じPFC計算
+    let proteinMultiplier = 1.6;
+    if (goal === 'muscle_gain') proteinMultiplier = 2.0;
+    if (goal === 'weight_loss') proteinMultiplier = 1.8;
+    
+    const protein = Math.round(weight * proteinMultiplier);
+    const proteinCalories = protein * 4;
+    
+    const fatCalories = targetCalories * 0.25;
+    const fat = Math.round(fatCalories / 9);
+    
+    const carbCalories = targetCalories - proteinCalories - fatCalories;
+    const carbs = Math.round(carbCalories / 4);
 
-    const goals: HealthGoal[] = [{
-      type: answers.primaryGoal as HealthGoal['type'] || 'fitness_improve',
-      targetValue: profile.targetWeight
-    }];
-
-    const targetCalories = calculateCalorieTarget(profile, goals);
-    const macros = calculateMacroTargets(targetCalories);
-    const bmr = calculateBMR(profile);
-    const tdee = calculateTDEE(profile);
-
-    console.log('🧮 動的計算結果:', { targetCalories, bmr, tdee, macros });
+    console.log('🧮 カウンセリング統一計算結果:', { targetCalories: Math.round(targetCalories), bmr: Math.round(bmr), tdee: Math.round(tdee), macros: { protein, fat, carbs } });
 
     return {
-      targetCalories,
+      targetCalories: Math.round(targetCalories),
       bmr: Math.round(bmr),
       tdee: Math.round(tdee),
       macros: {
-        protein: macros.protein,
-        fat: macros.fat,
-        carbs: macros.carbs
+        protein,
+        fat,
+        carbs
       }
     };
   } catch (error) {
