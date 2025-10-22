@@ -270,6 +270,12 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中：食事・運動・体重記録のみ処理
       console.log('📝 記録モード中 - 記録処理のみ実行');
       
+      // 連続入力防止（記録処理中の連続投稿を防ぐ）
+      if (!canProcessTap(userId)) {
+        console.log('🚫 記録モード - 連続入力防止: 処理スキップ');
+        return;
+      }
+      
       // 記録モード終了はクイックリプライの「通常モードに戻る」ボタンのみで可能
       // テキストでの終了は無効化（記録処理に専念）
       
@@ -547,41 +553,63 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const startTime = Date.now();
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
-      // 記録モードを開始（複数回押しても安全）
-      await setRecordMode(userId, true);
-      const modeSetTime = Date.now();
-      console.log('✅ 記録モード設定完了:', { 
-        userId, 
-        isNowInRecordMode: await isRecordMode(userId),
-        recordModeUsersSize: recordModeUsers.size,
-        timeElapsed: `${modeSetTime - startTime}ms`
-      });
-      
-      // AIアドバイスモード中なら自動終了
-      const wasInAdviceMode = await isAIAdviceMode(userId);
-      if (wasInAdviceMode) {
-        console.log('🤖 AIアドバイスモード自動終了:', userId);
-        await setAIAdviceMode(userId, false);
+      // 連続タップ防止チェック
+      if (!canProcessTap(userId)) {
+        console.log('🚫 連続タップ防止: 記録モードボタン無視');
+        return;
       }
       
-      try {
-        // 記録モード開始のFlexメッセージ
-        console.log('📝 記録モードFlexメッセージ送信開始:', userId);
-        const flexStartTime = Date.now();
-        await startRecordMode(replyToken, userId);
-        const flexEndTime = Date.now();
-        console.log('✅ 記録モードFlexメッセージ送信完了:', { 
-          userId,
-          flexProcessTime: `${flexEndTime - flexStartTime}ms`,
-          totalTime: `${flexEndTime - startTime}ms`
-        });
-      } catch (error) {
-        console.error('❌ 記録モードFlexメッセージ送信エラー:', error);
-        // フォールバック: シンプルなテキストメッセージ
+      // 処理中チェック
+      if (isProcessing(userId)) {
+        console.log('⏳ 処理中: 記録モードボタン無視');
         await replyMessage(replyToken, [{
           type: 'text',
-          text: '記録モードを開始しました！\n\n食事・運動・体重を記録してください。'
+          text: '処理中です。少々お待ちください...'
         }]);
+        return;
+      }
+      
+      setProcessing(userId, true);
+      
+      try {
+        // 記録モードを開始（複数回押しても安全）
+        await setRecordMode(userId, true);
+        const modeSetTime = Date.now();
+        console.log('✅ 記録モード設定完了:', { 
+          userId, 
+          isNowInRecordMode: await isRecordMode(userId),
+          recordModeUsersSize: recordModeUsers.size,
+          timeElapsed: `${modeSetTime - startTime}ms`
+        });
+        
+        // AIアドバイスモード中なら自動終了
+        const wasInAdviceMode = await isAIAdviceMode(userId);
+        if (wasInAdviceMode) {
+          console.log('🤖 AIアドバイスモード自動終了:', userId);
+          await setAIAdviceMode(userId, false);
+        }
+        
+        try {
+          // 記録モード開始のFlexメッセージ
+          console.log('📝 記録モードFlexメッセージ送信開始:', userId);
+          const flexStartTime = Date.now();
+          await startRecordMode(replyToken, userId);
+          const flexEndTime = Date.now();
+          console.log('✅ 記録モードFlexメッセージ送信完了:', { 
+            userId,
+            flexProcessTime: `${flexEndTime - flexStartTime}ms`,
+            totalTime: `${flexEndTime - startTime}ms`
+          });
+        } catch (error) {
+          console.error('❌ 記録モードFlexメッセージ送信エラー:', error);
+          // フォールバック: シンプルなテキストメッセージ
+          await replyMessage(replyToken, [{
+            type: 'text',
+            text: '記録モードを開始しました！\n\n食事・運動・体重を記録してください。'
+          }]);
+        }
+      } finally {
+        setProcessing(userId, false);
       }
       break;
     case 'daily_feedback':
@@ -613,6 +641,12 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       }]);
       break;
     case 'exit_record_mode':
+      // 連続タップ防止
+      if (!canProcessTap(userId)) {
+        console.log('🚫 連続タップ防止: 記録モード終了ボタン無視');
+        return;
+      }
+      
       await setRecordMode(userId, false);
       await replyMessage(replyToken, [{
         type: 'text',
@@ -3135,6 +3169,11 @@ const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
 const recordModeUsers = new Map<string, number>();
 // タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
 
+// 連続タップ防止機能
+const processingUsers = new Map<string, number>(); // 処理中ユーザー管理
+const lastTapTime = new Map<string, number>(); // 最後のタップ時間記録
+const ANTI_SPAM_DELAY = 2000; // 2秒間の連続タップ防止
+
 async function setAIAdviceMode(userId: string, enabled: boolean) {
   if (enabled) {
     aiAdviceModeUsers.set(userId, Date.now());
@@ -3164,6 +3203,34 @@ async function isAIAdviceMode(userId: string): Promise<boolean> {
   // まだ有効：時間を更新
   aiAdviceModeUsers.set(userId, Date.now());
   return true;
+}
+
+// 連続タップ防止機能
+function canProcessTap(userId: string): boolean {
+  const now = Date.now();
+  const lastTap = lastTapTime.get(userId);
+  
+  if (lastTap && (now - lastTap) < ANTI_SPAM_DELAY) {
+    console.log(`🚫 連続タップ防止: ${userId} (${now - lastTap}ms前にタップ済み)`);
+    return false;
+  }
+  
+  lastTapTime.set(userId, now);
+  return true;
+}
+
+function setProcessing(userId: string, processing: boolean): void {
+  if (processing) {
+    processingUsers.set(userId, Date.now());
+    console.log(`⏳ 処理開始: ${userId}`);
+  } else {
+    processingUsers.delete(userId);
+    console.log(`✅ 処理完了: ${userId}`);
+  }
+}
+
+function isProcessing(userId: string): boolean {
+  return processingUsers.has(userId);
 }
 
 // 記録モード管理関数（Firestoreベース + メモリキャッシュ）
