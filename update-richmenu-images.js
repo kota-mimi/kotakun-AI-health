@@ -5,9 +5,9 @@ async function createNewRichMenuImage() {
   try {
     console.log('🎨 新しいリッチメニュー画像を作成中...');
     
-    // リッチメニューのサイズ: 2500x843
+    // リッチメニューのサイズ: 2500x632 (4分の3サイズ)
     const menuWidth = 2500;
-    const menuHeight = 843;
+    const menuHeight = 632;
     const buttonWidth = Math.floor(menuWidth / 3); // 833px each
     
     // 各画像を読み込んでリサイズ
