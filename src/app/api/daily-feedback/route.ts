@@ -40,9 +40,6 @@ export async function POST(request: NextRequest) {
 
     // ユーザー名を取得
     const userName = await getUserName(userId);
-    
-    // プロファイル履歴から目標値を取得（アプリと統一）
-    const targetValues = await getTargetValuesForDate(userId, date);
 
     // フィードバック用データを準備
     const feedbackData = {
