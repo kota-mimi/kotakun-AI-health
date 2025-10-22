@@ -48,7 +48,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
             align: 'center'
           }
         ],
-        backgroundColor: '#33B8F4',
+        backgroundColor: '#1E90FF',
         paddingAll: '16px'
       },
       body: {

@@ -3103,7 +3103,7 @@ async function startRecordMode(replyToken: string, userId: string) {
             color: '#ffffff'
           }
         ],
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#1E90FF',
         paddingAll: 'md'
       },
       body: {
