@@ -87,8 +87,6 @@ export async function POST(request: NextRequest) {
         aiAnalysis: {
           nutritionPlan: {
             dailyCalories: results.targetCalories,
-            bmr: results.bmr,
-            tdee: results.tdee,
             macros: results.pfc
           }
         },
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
           gender: answers.gender || 'other',
           height: Number(answers.height) || 170,
           weight: Number(answers.weight) || 60,
-          activityLevel: answers.activityLevel || 'light',
+          activityLevel: answers.activityLevel || 'normal',
           goals: [{
             type: answers.primaryGoal || 'fitness_improve',
             targetValue: Number(answers.targetWeight) || Number(answers.weight) || 60,
@@ -179,8 +177,6 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     const mockAnalysis = {
       nutritionPlan: {
         dailyCalories: results.targetCalories,
-        bmr: results.bmr,
-        tdee: results.tdee,
         macros: results.pfc
       }
     };
