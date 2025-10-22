@@ -556,12 +556,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       // 既に記録モード中かチェック
       const alreadyInRecordMode = await isRecordMode(userId);
       if (alreadyInRecordMode) {
-        console.log('⚠️ 既に記録モード中: ボタン押下を無視');
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '既に記録モード中です！\n\n「通常モードに戻る」ボタンを押してから再度お試しください。',
-          quickReply: getRecordModeQuickReply()
-        }]);
+        console.log('⚠️ 既に記録モード中: ボタン押下を完全無視（無反応）');
         return;
       }
       
