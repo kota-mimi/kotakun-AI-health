@@ -51,7 +51,7 @@ const calculateTDEE = (bmr: number, activityLevel: ActivityLevel['level']) => {
 const calculateTargetCalories = (tdee: number, goal: Goal['type']) => {
   switch (goal) {
     case 'weight_loss':
-      return tdee - 400;
+      return tdee - 500; // アプリと統一（標準的な500kcal減）
     case 'muscle_gain':
       return tdee + 300;
     case 'maintenance':
