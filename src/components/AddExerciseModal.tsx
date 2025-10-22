@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
+import { findExerciseByName, calculateCalories, getRecommendedExercises, EXERCISE_DATABASE } from '@/utils/exerciseDatabase';
 import { 
   X,
   Heart,
@@ -16,7 +17,8 @@ import {
   Flame,
   Plus,
   Timer,
-  Target
+  Target,
+  Calculator
 } from 'lucide-react';
 
 interface AddExerciseModalProps {
@@ -52,6 +54,9 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
     maxHeartRate: '',
     notes: ''
   });
+  const [isAutoCalorie, setIsAutoCalorie] = useState(true);
+  const [bodyWeight, setBodyWeight] = useState(60); // デフォルト体重
+  const [exerciseSuggestions, setExerciseSuggestions] = useState(getRecommendedExercises(10));
 
   if (!isOpen) return null;
 
@@ -109,8 +114,27 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
     });
   };
 
+  // 自動カロリー計算
+  useEffect(() => {
+    if (isAutoCalorie && formData.name && formData.duration) {
+      const exerciseData = findExerciseByName(formData.name);
+      if (exerciseData) {
+        const duration = parseInt(formData.duration);
+        if (duration > 0) {
+          const autoCalories = calculateCalories(exerciseData, duration, bodyWeight);
+          setFormData(prev => ({ ...prev, calories: autoCalories.toString() }));
+        }
+      }
+    }
+  }, [formData.name, formData.duration, bodyWeight, isAutoCalorie]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // カロリー手動入力時は自動計算を無効化
+    if (field === 'calories') {
+      setIsAutoCalorie(false);
+    }
   };
 
   const selectPresetExercise = (exercise: string) => {
@@ -172,14 +196,17 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
               <div>
                 <Label className="text-xs text-slate-600 mb-2 block">よく選ばれる運動</Label>
                 <div className="flex flex-wrap gap-2">
-                  {currentType.examples.map((exercise) => (
+                  {EXERCISE_DATABASE
+                    .filter(ex => ex.category === exerciseType)
+                    .slice(0, 6)
+                    .map((exercise) => (
                     <button
-                      key={exercise}
+                      key={exercise.id}
                       type="button"
-                      onClick={() => selectPresetExercise(exercise)}
+                      onClick={() => selectPresetExercise(exercise.name)}
                       className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-slate-700 rounded-full transition-colors"
                     >
-                      {exercise}
+                      {exercise.name}
                     </button>
                   ))}
                 </div>
@@ -281,18 +308,50 @@ export function AddExerciseModal({ isOpen, onClose, onAddExercise }: AddExercise
               </div>
             )}
 
+            {/* 体重入力（自動計算用） */}
+            {isAutoCalorie && (
+              <div>
+                <Label htmlFor="bodyWeight" className="text-sm font-medium text-slate-700">体重（kg）- 自動計算用</Label>
+                <Input
+                  id="bodyWeight"
+                  type="number"
+                  value={bodyWeight}
+                  onChange={(e) => setBodyWeight(parseInt(e.target.value) || 60)}
+                  placeholder="60"
+                  className="mt-1"
+                />
+              </div>
+            )}
+
             {/* 消費カロリー */}
             <div>
-              <Label htmlFor="calories" className="text-sm font-medium text-slate-700">消費カロリー（kcal）</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="calories" className="text-sm font-medium text-slate-700">消費カロリー（kcal）</Label>
+                <button
+                  type="button"
+                  onClick={() => setIsAutoCalorie(!isAutoCalorie)}
+                  className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800"
+                >
+                  <Calculator size={12} />
+                  <span>{isAutoCalorie ? '手動入力' : '自動計算'}</span>
+                </button>
+              </div>
               <Input
                 id="calories"
                 type="number"
                 value={formData.calories}
                 onChange={(e) => handleInputChange('calories', e.target.value)}
-                placeholder="280"
+                placeholder={isAutoCalorie ? "運動名と時間を入力すると自動計算" : "280"}
                 required
-                className="mt-1"
+                disabled={isAutoCalorie}
+                className={`mt-1 ${isAutoCalorie ? 'bg-gray-50' : ''}`}
               />
+              {isAutoCalorie && formData.name && (
+                <div className="mt-1 text-xs text-green-600 flex items-center space-x-1">
+                  <Calculator size={10} />
+                  <span>METs値に基づいて自動計算中</span>
+                </div>
+              )}
             </div>
 
             {/* 心拍数（オプション） */}
