@@ -10,17 +10,26 @@ async function createNewRichMenuImage() {
     const menuHeight = 632;
     const buttonWidth = Math.floor(menuWidth / 3); // 833px each
     
-    // 各画像を読み込んでリサイズ
+    // 各画像を読み込んでリサイズ（aspect ratioを維持して適切にフィット）
     const image1 = await sharp('./1.png')
-      .resize(buttonWidth, menuHeight, { fit: 'cover' })
+      .resize(buttonWidth, menuHeight, { 
+        fit: 'contain',  // アスペクト比を維持
+        background: { r: 255, g: 255, b: 255, alpha: 1 } // 白背景
+      })
       .toBuffer();
     
     const image2 = await sharp('./2.png')
-      .resize(buttonWidth, menuHeight, { fit: 'cover' })
+      .resize(buttonWidth, menuHeight, { 
+        fit: 'contain',
+        background: { r: 255, g: 255, b: 255, alpha: 1 }
+      })
       .toBuffer();
     
     const image3 = await sharp('./3.png')
-      .resize(buttonWidth, menuHeight, { fit: 'cover' })
+      .resize(buttonWidth, menuHeight, { 
+        fit: 'contain',
+        background: { r: 255, g: 255, b: 255, alpha: 1 }
+      })
       .toBuffer();
     
     // 3つの画像を横に結合
