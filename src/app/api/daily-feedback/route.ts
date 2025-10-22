@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const targetValues = await getTargetValuesForDate(userId, date);
     
     // フィードバックを生成（目標値情報も含める）
-    const feedback = await generateDailyFeedback(dailyData, date, targetValues);
+    const feedback = await generateDailyFeedback(dailyData, date, targetValues, userId);
 
     // ユーザー名を取得
     const userName = await getUserName(userId);
@@ -153,7 +153,7 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
 }
 
 // AIを使ってフィードバックを生成
-async function generateDailyFeedback(data: DailyRecord, date: string, targetValues?: any): Promise<string> {
+async function generateDailyFeedback(data: DailyRecord, date: string, targetValues?: any, userId?: string): Promise<string> {
   // 栄養データを計算
   const totalCalories = data.meals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = data.meals.reduce((sum, meal) => sum + meal.protein, 0);
@@ -182,7 +182,7 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   const carbsAchievement = Math.round((totalCarbs / targetCarbs) * 100);
   
   // 体重変化の分析（過去3日間の体重を取得して比較）
-  const weightTrend = await getWeightTrend(userId, date);
+  const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
   // プロンプトを作成
   const prompt = `
