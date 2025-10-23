@@ -101,7 +101,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
 
   if (sortedData.length === 0) {
     return (
-      <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-8">
+      <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-8">
         <div className="text-center space-y-4">
           <div 
             className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center"
@@ -119,7 +119,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
   }
 
   return (
-    <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+    <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-800">記録履歴</h3>
         <Badge variant="secondary" className="bg-blue-100 text-blue-700">
@@ -135,7 +135,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
           return (
             <div 
               key={entry.date}
-              className="bg-white/60 rounded-xl border border-white/40 overflow-hidden transition-all duration-200"
+              className="bg-gray-100 rounded-xl border border-gray-200 overflow-hidden transition-all duration-200"
             >
               {/* メイン表示 */}
               <div className="p-4">
@@ -203,7 +203,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleExpanded(entry.date)}
-                      className="p-1 h-6 w-6 rounded-lg hover:bg-white/60"
+                      className="p-1 h-6 w-6 rounded-lg hover:bg-gray-100"
                     >
                       <MoreVertical size={12} className="text-slate-400" />
                     </Button>
@@ -213,7 +213,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
 
               {/* 展開エリア */}
               {isExpanded && (
-                <div className="border-t border-white/30 bg-white/40 p-4 space-y-3">
+                <div className="border-t border-gray-200 bg-gray-100 p-4 space-y-3">
                   {/* 詳細情報 */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -231,7 +231,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
                     {entry.note && (
                       <div className="text-sm">
                         <span className="text-slate-600 block mb-1">メモ</span>
-                        <p className="text-slate-800 bg-white/60 rounded-lg p-2">{entry.note}</p>
+                        <p className="text-slate-800 bg-gray-100 rounded-lg p-2">{entry.note}</p>
                       </div>
                     )}
                   </div>
@@ -242,7 +242,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
                       variant="outline"
                       size="sm"
                       onClick={() => onEdit(entry)}
-                      className="flex-1 rounded-lg border-slate-200 hover:bg-white/60"
+                      className="flex-1 rounded-lg border-slate-200 hover:bg-gray-100"
                     >
                       <Edit2 size={14} className="mr-1" />
                       編集
@@ -265,7 +265,7 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
       </div>
 
       {/* フッター統計 */}
-      <div className="mt-4 pt-4 border-t border-white/30">
+      <div className="mt-4 pt-4 border-t border-gray-200">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-slate-500 mb-1">記録期間</p>

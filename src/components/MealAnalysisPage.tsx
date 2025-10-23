@@ -173,7 +173,7 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 relative" : ""}>
+    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : ""}>
       {/* 背景装飾 - hideHeaderの場合のみ */}
       {hideHeader && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
@@ -187,7 +187,7 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="p-2 rounded-xl bg-white/80 hover:bg-white/90 backdrop-blur-sm shadow-sm border border-white/40"
+              className="p-2 rounded-xl bg-white hover:bg-white  shadow-sm border border-gray-200"
             >
               <Menu size={20} style={{color: '#4682B4'}} />
             </Button>
@@ -206,7 +206,7 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
 
       <div className={`space-y-4 ${hideHeader ? '' : 'px-4 py-4'}`}>
         {/* 詳細サマリーカード */}
-        <Card className="backdrop-blur-xl bg-white/95 border border-slate-200/50 rounded-2xl shadow-sm p-4">
+        <Card className=" bg-white border border-slate-200/50 rounded-2xl shadow-sm p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-slate-800">食事分析</h3>
             <span className="text-xs text-slate-500">
@@ -251,14 +251,14 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
         </Card>
 
         {/* 栄養バランス */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-2">
+        <Card className=" bg-white shadow-sm border border-gray-200 rounded-xl p-2">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-slate-800">栄養バランス</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onNavigateToNutritionSettings && onNavigateToNutritionSettings()}
-              className="p-1 rounded-lg hover:bg-white/60"
+              className="p-1 rounded-lg hover:bg-gray-100"
               style={{color: '#4682B4'}}
             >
               <Settings size={14} />

@@ -57,7 +57,7 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="p-2 rounded-xl bg-white/80 hover:bg-white/90 backdrop-blur-sm shadow-sm border border-white/40"
+          className="p-2 rounded-xl bg-white hover:bg-gray-100 shadow-sm border border-gray-200"
         >
           <ArrowLeft size={20} style={{color: '#4682B4'}} />
         </Button>
@@ -73,7 +73,7 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
 
       <div className="space-y-4 px-4 pb-20">
         {/* 設定項目 */}
-        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/90 to-white/70 shadow-lg border border-white/40 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <div className="space-y-4">
             {settingItems.map((item) => (
               <div key={item.key} className="flex items-center justify-between py-3">
@@ -103,11 +103,11 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
         </Card>
 
         {/* プレビュー */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <h3 className="font-semibold text-slate-800 mb-4">記録プレビュー</h3>
           
           <div className="space-y-3">
-            <div className="p-3 bg-white/60 rounded-lg">
+            <div className="p-3 bg-gray-100 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-700">基本体重</span>
                 <span className="text-sm text-slate-800">72.5kg</span>
@@ -148,7 +148,7 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
         </Card>
 
         {/* 注意事項 */}
-        <Card className="backdrop-blur-xl bg-blue-50/80 shadow-lg border border-blue-200/50 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <h3 className="font-medium text-blue-800 mb-2">💡 使い方のヒント</h3>
           <div className="text-sm text-blue-700 space-y-2">
             <p>• <strong>体脂肪率</strong>: 体組成計がある場合におすすめ</p>

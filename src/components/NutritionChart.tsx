@@ -61,7 +61,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white/95 backdrop-blur-sm border border-white/40 rounded-xl p-3 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
           <p className="text-sm font-medium text-slate-800 mb-1">{data.name}</p>
           <div className="space-y-1">
             <div className="text-sm text-slate-600">
@@ -84,7 +84,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
   const BarTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 backdrop-blur-sm border border-white/40 rounded-xl p-3 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
           <p className="text-sm font-medium text-slate-800 mb-1">{label}</p>
           <div className="space-y-1">
             {payload.map((entry: any, index: number) => (
@@ -109,7 +109,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
     return (
       <div className="grid grid-cols-1 gap-4">
         {/* PFCバランス円グラフ */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <h3 className="font-semibold text-slate-800 mb-4">PFCバランス (カロリー基準)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,7 +142,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
           </div>
           
           {/* 総カロリー表示 */}
-          <div className="text-center mt-4 p-3 bg-white/50 rounded-lg">
+          <div className="text-center mt-4 p-3 bg-gray-100 rounded-lg">
             <div className="text-sm text-slate-600 mb-1">PFCからの総カロリー</div>
             <div className="text-lg font-semibold text-slate-800">
               {proteinCalories + fatCalories + carbsCalories}kcal
@@ -154,7 +154,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
         </Card>
 
         {/* 目標との比較 */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <h3 className="font-semibold text-slate-800 mb-4">目標との比較</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -185,7 +185,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
 
   // 週間・月間表示
   return (
-    <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+    <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
       <h3 className="font-semibold text-slate-800 mb-4">
         {period === 'week' ? '週間' : '月間'}栄養トレンド
       </h3>

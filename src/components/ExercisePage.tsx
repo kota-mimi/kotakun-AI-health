@@ -273,14 +273,7 @@ export function ExercisePage({
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 relative" : "min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 max-w-sm mx-auto relative"}>
-      {/* 背景装飾 - hideHeaderの場合のみ */}
-      {hideHeader && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
-      )}
-      {!hideHeader && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
-      )}
+    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : "min-h-screen bg-gray-50 max-w-sm mx-auto relative"}>
       
       {!hideHeader && (
         <CompactHeader
@@ -292,7 +285,7 @@ export function ExercisePage({
 
       <div className={`relative space-y-4 ${hideHeader ? '' : 'px-4 py-4 pb-20'}`}>
         {/* 今日のサマリーカード */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-slate-800">今日の運動記録</h4>
             <div className="text-xs text-slate-600">
@@ -300,19 +293,19 @@ export function ExercisePage({
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-white/60 rounded-lg">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-xs text-slate-600 mb-1">消費カロリー</div>
               <div className="font-bold text-slate-800">
                 {summary.totalCalories > 0 ? summary.totalCalories : '-'}<span className="text-sm">{summary.totalCalories > 0 ? 'kcal' : ''}</span>
               </div>
             </div>
-            <div className="text-center p-3 bg-white/60 rounded-lg">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-xs text-slate-600 mb-1">運動時間</div>
               <div className="font-bold text-slate-800">
                 {summary.totalDuration > 0 ? summary.totalDuration : '-'}<span className="text-sm">{summary.totalDuration > 0 ? '分' : ''}</span>
               </div>
             </div>
-            <div className="text-center p-3 bg-white/60 rounded-lg">
+            <div className="text-center p-3 bg-white rounded-lg">
               <div className="text-xs text-slate-600 mb-1">種目数</div>
               <div className="font-bold text-slate-800">
                 {exerciseData.length}<span className="text-sm">種目</span>
@@ -324,8 +317,8 @@ export function ExercisePage({
 
 
         {/* 運動記録リスト */}
-        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/95 to-white/85 border border-white/60 rounded-2xl overflow-hidden">
-          <div className="px-3 py-2 bg-white/40">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="px-3 py-2 bg-white">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-slate-800">運動記録</h3>
               <Button 
@@ -340,17 +333,17 @@ export function ExercisePage({
             </div>
           </div>
 
-          <div className="divide-y divide-white/40">
+          <div className="divide-y divide-gray-200">
             {exerciseData.length > 0 ? (
               exerciseData.map((exercise) => (
                 <div 
                   key={exercise.id} 
-                  className="px-3 py-3 cursor-pointer hover:bg-white/30 transition-colors duration-200"
+                  className="px-3 py-3 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
                   onClick={() => handleViewExerciseDetail(exercise)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 flex-1">
-                      <div className="w-8 h-8 rounded-lg bg-white/70 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
                         {getExerciseTypeIcon(exercise.type)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -398,7 +391,7 @@ export function ExercisePage({
                       })()}
                       <Badge 
                         variant="secondary" 
-                        className="text-xs bg-white/60 text-slate-600 border-white/60"
+                        className="text-xs bg-white text-slate-600 border border-gray-200"
                       >
                         {getExerciseTypeName(exercise.type)}
                       </Badge>
@@ -406,7 +399,7 @@ export function ExercisePage({
                   </div>
 
                   {(exercise.weightSets && Array.isArray(exercise.weightSets) && exercise.weightSets.length > 0) ? (
-                    <div className="mt-2 pt-2 border-t border-white/40">
+                    <div className="mt-2 pt-2 border-t border-gray-200">
                       <div className="flex flex-wrap gap-1">
                         {exercise.weightSets.slice(0, 3).map((set, index) => {
                           const parts = [];
@@ -417,32 +410,32 @@ export function ExercisePage({
                           return (
                             <span 
                               key={index}
-                              className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
+                              className="inline-block bg-white rounded-md px-2 py-1 text-xs text-slate-600"
                             >
                               セット{index + 1}: {parts.join(' × ') || '記録'}
                             </span>
                           );
                         })}
                         {exercise.weightSets.length > 3 && (
-                          <span className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-500">
+                          <span className="inline-block bg-white rounded-md px-2 py-1 text-xs text-slate-500">
                             +{exercise.weightSets.length - 3}more
                           </span>
                         )}
                       </div>
                     </div>
                   ) : exercise.sets && Array.isArray(exercise.sets) && (
-                    <div className="mt-2 pt-2 border-t border-white/40">
+                    <div className="mt-2 pt-2 border-t border-gray-200">
                       <div className="flex flex-wrap gap-1">
                         {exercise.sets.slice(0, 3).map((set, index) => (
                           <span 
                             key={index}
-                            className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-600"
+                            className="inline-block bg-white rounded-md px-2 py-1 text-xs text-slate-600"
                           >
                             {set.weight}kg × {set.reps}回
                           </span>
                         ))}
                         {exercise.sets.length > 3 && (
-                          <span className="inline-block bg-white/60 rounded-md px-2 py-1 text-xs text-slate-500">
+                          <span className="inline-block bg-white rounded-md px-2 py-1 text-xs text-slate-500">
                             +{exercise.sets.length - 3}more
                           </span>
                         )}
@@ -451,8 +444,8 @@ export function ExercisePage({
                   )}
 
                   {exercise.notes && (
-                    <div className="mt-2 pt-2 border-t border-white/40">
-                      <div className="text-xs text-slate-600 bg-white/50 rounded-lg px-2 py-1">
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="text-xs text-slate-600 bg-white rounded-lg px-2 py-1">
                         {exercise.notes.length > 50 
                           ? `${exercise.notes.substring(0, 50)}...` 
                           : exercise.notes}

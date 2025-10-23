@@ -131,11 +131,7 @@ export function WeightDetailPage({
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 relative" : ""}>
-      {/* 背景装飾 - hideHeaderの場合のみ */}
-      {hideHeader && (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
-      )}
+    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : ""}>
       
       {!hideHeader && (
         <>
@@ -145,7 +141,7 @@ export function WeightDetailPage({
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="p-2 rounded-xl bg-white/80 hover:bg-white/90 backdrop-blur-sm shadow-sm border border-white/40"
+              className="p-2 rounded-xl bg-white hover:bg-white  shadow-sm border border-gray-200"
             >
               <ArrowLeft size={20} style={{color: '#4682B4'}} />
             </Button>
@@ -163,7 +159,7 @@ export function WeightDetailPage({
       <div className={`relative space-y-4 ${hideHeader ? '' : 'px-4 py-4 pb-20'}`}>{/* ここに残りのコンテンツが続く */}
 
         {/* 体重記録カード */}
-        <Card className="bg-white/90 border border-slate-200/50 rounded-xl p-3">
+        <Card className="bg-white border border-slate-200/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-slate-800">体重記録</h4>
               {onNavigateToSettings && (
@@ -171,7 +167,7 @@ export function WeightDetailPage({
                   size="sm"
                   onClick={onNavigateToSettings}
                   variant="outline"
-                  className="rounded-md border-slate-200 hover:bg-white/60 p-1"
+                  className="rounded-md border-slate-200 hover:bg-gray-100 p-1"
                 >
                   <Settings size={12} className="text-slate-600" />
                 </Button>
@@ -202,7 +198,7 @@ export function WeightDetailPage({
         </Card>
 
         {/* 体重グラフ（期間選択統合） */}
-        <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <Card className=" bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           {/* 期間選択セグメントコントロール */}
           <div className="bg-slate-100/60 rounded-xl p-1 flex mb-4">
             {periodOptions.map((option) => (
@@ -212,7 +208,7 @@ export function WeightDetailPage({
                 className={`flex-1 py-2.5 px-3 text-xs font-medium rounded-lg transition-all duration-300 ${
                   selectedPeriod === option.key
                     ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/50'
+                    : 'text-slate-600 hover:text-slate-800 hover:bg-gray-100'
                 }`}
               >
                 {option.label}

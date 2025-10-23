@@ -93,9 +93,8 @@ export function NutritionSettingsPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 max-w-sm mx-auto relative">
+    <div className="min-h-screen bg-gray-50 max-w-sm mx-auto relative">
       {/* 背景装飾 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
       
       {/* ヘッダー */}
       <CompactHeader
@@ -108,7 +107,7 @@ export function NutritionSettingsPage({
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="text-slate-700 hover:bg-white/60 rounded-lg p-2"
+              className="text-slate-700 hover:bg-gray-100 rounded-lg p-2"
             >
               <ArrowLeft size={20} />
             </Button>
@@ -124,7 +123,7 @@ export function NutritionSettingsPage({
       {/* メインコンテンツ */}
       <div className="relative px-4 py-4 pb-24 space-y-4">
         {/* 概要カード */}
-        <Card className="backdrop-blur-xl bg-gradient-to-br from-white/90 to-white/70 shadow-lg border border-white/40 rounded-xl p-4">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
@@ -138,11 +137,11 @@ export function NutritionSettingsPage({
           </div>
           
           <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 bg-white/50 rounded-lg">
+            <div className="text-center p-3 bg-gray-100 rounded-lg">
               <div className="text-lg font-semibold text-slate-800">{getSelectedCount()}</div>
               <div className="text-xs text-slate-600">選択中の栄養素</div>
             </div>
-            <div className="text-center p-3 bg-white/50 rounded-lg">
+            <div className="text-center p-3 bg-gray-100 rounded-lg">
               <div className="text-lg font-semibold" style={{color: '#4682B4'}}>
                 {nutritionCategories.reduce((total, cat) => total + cat.items.length, 0)}
               </div>
@@ -153,7 +152,7 @@ export function NutritionSettingsPage({
 
         {/* 栄養素カテゴリ別設定 */}
         {nutritionCategories.map((category, categoryIndex) => (
-          <Card key={categoryIndex} className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+          <Card key={categoryIndex} className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
             <div className="flex items-center space-x-2 mb-3">
               <Target size={16} style={{color: '#4682B4'}} />
               <h3 className="font-semibold text-slate-800">{category.title}</h3>
@@ -163,7 +162,7 @@ export function NutritionSettingsPage({
             
             <div className="space-y-3">
               {category.items.map((item, itemIndex) => (
-                <div key={item.key} className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-white/60 hover:bg-white/80 transition-colors">
+                <div key={item.key} className="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors">
                   <div className="flex-1 mr-3">
                     <div className="flex items-center space-x-3 mb-1">
                       <div 
@@ -192,7 +191,7 @@ export function NutritionSettingsPage({
         ))}
 
         {/* 情報カード */}
-        <Card className="backdrop-blur-xl bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 rounded-xl p-4">
+        <Card className="bg-white border border-gray-200 rounded-xl p-4">
           <div className="flex items-start space-x-3">
             <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mt-1">
               <Info size={14} className="text-blue-600" />
@@ -211,7 +210,7 @@ export function NutritionSettingsPage({
       </div>
 
       {/* 固定フッター */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-white/40 p-4 max-w-sm mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-sm mx-auto">
         <div className="flex space-x-3">
           <Button
             variant="outline"

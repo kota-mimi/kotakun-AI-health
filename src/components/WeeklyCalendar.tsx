@@ -40,13 +40,13 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
   };
 
   return (
-    <div className="backdrop-blur-xl bg-white/70 rounded-2xl p-6 shadow-lg border border-white/30 shadow-emerald-100/20">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 shadow-emerald-100/20">
       <div className="flex items-center justify-between mb-6">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setSelectedWeek(selectedWeek - 1)}
-          className="p-3 rounded-xl hover:bg-white/50 text-slate-600 border border-white/20 backdrop-blur-sm"
+          className="p-3 rounded-xl hover:bg-gray-100 text-slate-600 border border-gray-200"
         >
           <ChevronLeft size={16} />
         </Button>
@@ -56,14 +56,14 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
               key={date.toISOString()}
               variant="ghost"
               onClick={() => onDateSelect(date)}
-              className="h-14 flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 text-slate-600 hover:bg-white/60 border border-transparent hover:border-white/40"
+              className="h-14 flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 text-slate-600 hover:bg-gray-100 border border-transparent hover:border-gray-200"
             >
               <span className="text-xs mb-2 text-slate-500">
                 {dayNames[date.getDay()]}
               </span>
               <div className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
                 isSameDate(date, currentDate)
-                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200/50'
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm'
                   : isToday(date)
                   ? 'bg-blue-100 text-blue-700 border border-blue-200'
                   : 'text-slate-700'
@@ -82,7 +82,7 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
           variant="ghost"
           size="sm"
           onClick={() => setSelectedWeek(selectedWeek + 1)}
-          className="p-3 rounded-xl hover:bg-white/50 text-slate-600 border border-white/20 backdrop-blur-sm"
+          className="p-3 rounded-xl hover:bg-gray-100 text-slate-600 border border-gray-200"
         >
           <ChevronRight size={16} />
         </Button>
