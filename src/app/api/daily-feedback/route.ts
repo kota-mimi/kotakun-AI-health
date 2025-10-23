@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     
     await recordRef.set({
       feedback: feedback,
-      feedbackCreatedAt: admin.firestore.FieldValue.serverTimestamp()
+      feedbackCreatedAt: new Date().toISOString()
     }, { merge: true });
 
     console.log('💾 フィードバックをFirestoreに保存完了:', { userId, date });
