@@ -620,7 +620,21 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       }
       break;
     case 'daily_feedback':
-      await handleDailyFeedback(replyToken, userId);
+      // フィードバック生成中かチェック
+      const isFeedbackProcessing = isProcessing(userId);
+      if (isFeedbackProcessing) {
+        console.log('⚠️ フィードバック生成中: ボタン押下を無視');
+        return;
+      }
+      
+      // 重複実行防止フラグを設定
+      setProcessing(userId, true);
+      
+      try {
+        await handleDailyFeedback(replyToken, userId);
+      } finally {
+        setProcessing(userId, false);
+      }
       break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
