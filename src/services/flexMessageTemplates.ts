@@ -957,47 +957,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: '【優先度 高】',
-                weight: 'bold',
-                size: 'md',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 高】', '【優先度 中】') || '朝食にタンパク質を意識した食事を選んでみよう',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'sm'
-              },
-              {
-                type: 'text',
-                text: '【優先度 中】',
-                weight: 'bold',
-                size: 'md',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 中】', '【優先度 低】') || '昼食では野菜を多めに摂取しよう',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'sm'
-              },
-              {
-                type: 'text',
-                text: '【優先度 低】',
-                weight: 'bold',
-                size: 'md',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 低】', '') || '夕方に軽い運動を取り入れてみよう',
+                text: extractSectionFromText(feedbackText, '■ 明日からの具体的アクション', '') || '・朝食にタンパク質を意識した食事を追加\n・野菜を毎食プラス1品\n・運動前後にストレッチを5分間',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
