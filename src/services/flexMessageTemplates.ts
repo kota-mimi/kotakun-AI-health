@@ -547,38 +547,32 @@ export function createDailyFeedbackFlexMessage(
           // カロリー達成率
           {
             type: 'box',
-            layout: 'vertical',
+            layout: 'horizontal',
             contents: [
               {
-                type: 'box',
-                layout: 'horizontal',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '摂取カロリー',
-                    size: 'md',
-                    color: '#374151',
-                    flex: 0
-                  },
-                  {
-                    type: 'text',
-                    text: `${feedbackData.calories} / ${targetCal}kcal`,
-                    size: 'md',
-                    color: '#6B7280',
-                    align: 'end',
-                    flex: 1,
-                    wrap: true
-                  }
-                ]
+                type: 'text',
+                text: '摂取カロリー',
+                size: 'sm',
+                color: '#374151',
+                flex: 2
+              },
+              {
+                type: 'text',
+                text: `${feedbackData.calories}kcal`,
+                size: 'sm',
+                color: '#2563EB',
+                align: 'end',
+                flex: 2,
+                weight: 'bold'
               },
               {
                 type: 'text',
                 text: calorieStatus.text,
-                size: 'sm',
+                size: 'xs',
                 color: calorieStatus.color,
                 align: 'end',
-                weight: 'bold',
-                margin: 'xs'
+                flex: 1,
+                weight: 'bold'
               }
             ],
             margin: 'md'
@@ -600,38 +594,32 @@ export function createDailyFeedbackFlexMessage(
               // タンパク質
               {
                 type: 'box',
-                layout: 'vertical',
+                layout: 'horizontal',
                 contents: [
                   {
-                    type: 'box',
-                    layout: 'horizontal',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: 'タンパク質',
-                        size: 'md',
-                        color: '#374151',
-                        flex: 0
-                      },
-                      {
-                        type: 'text',
-                        text: `${feedbackData.protein} / ${targetProtein}g`,
-                        size: 'md',
-                        color: '#6B7280',
-                        align: 'end',
-                        flex: 1,
-                        wrap: true
-                      }
-                    ]
+                    type: 'text',
+                    text: 'タンパク質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 2
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.protein}g`,
+                    size: 'sm',
+                    color: '#DC2626',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
                   },
                   {
                     type: 'text',
                     text: proteinStatus.text,
-                    size: 'sm',
+                    size: 'xs',
                     color: proteinStatus.color,
                     align: 'end',
-                    weight: 'bold',
-                    margin: 'xs'
+                    flex: 1,
+                    weight: 'bold'
                   }
                 ],
                 margin: 'sm'
@@ -639,38 +627,32 @@ export function createDailyFeedbackFlexMessage(
               // 脂質
               {
                 type: 'box',
-                layout: 'vertical',
+                layout: 'horizontal',
                 contents: [
                   {
-                    type: 'box',
-                    layout: 'horizontal',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: '脂質',
-                        size: 'md',
-                        color: '#374151',
-                        flex: 0
-                      },
-                      {
-                        type: 'text',
-                        text: `${feedbackData.fat} / ${targetFat}g`,
-                        size: 'md',
-                        color: '#6B7280',
-                        align: 'end',
-                        flex: 1,
-                        wrap: true
-                      }
-                    ]
+                    type: 'text',
+                    text: '脂質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 2
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.fat}g`,
+                    size: 'sm',
+                    color: '#F59E0B',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
                   },
                   {
                     type: 'text',
                     text: fatStatus.text,
-                    size: 'sm',
+                    size: 'xs',
                     color: fatStatus.color,
                     align: 'end',
-                    weight: 'bold',
-                    margin: 'xs'
+                    flex: 1,
+                    weight: 'bold'
                   }
                 ],
                 margin: 'xs'
@@ -678,38 +660,32 @@ export function createDailyFeedbackFlexMessage(
               // 炭水化物
               {
                 type: 'box',
-                layout: 'vertical',
+                layout: 'horizontal',
                 contents: [
                   {
-                    type: 'box',
-                    layout: 'horizontal',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: '炭水化物',
-                        size: 'md',
-                        color: '#374151',
-                        flex: 0
-                      },
-                      {
-                        type: 'text',
-                        text: `${feedbackData.carbs} / ${targetCarbs}g`,
-                        size: 'md',
-                        color: '#6B7280',
-                        align: 'end',
-                        flex: 1,
-                        wrap: true
-                      }
-                    ]
+                    type: 'text',
+                    text: '炭水化物',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 2
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.carbs}g`,
+                    size: 'sm',
+                    color: '#059669',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
                   },
                   {
                     type: 'text',
                     text: carbsStatus.text,
-                    size: 'sm',
+                    size: 'xs',
                     color: carbsStatus.color,
                     align: 'end',
-                    weight: 'bold',
-                    margin: 'xs'
+                    flex: 1,
+                    weight: 'bold'
                   }
                 ],
                 margin: 'xs'
