@@ -880,6 +880,7 @@ export function createDailyFeedbackFlexMessage(
           {
             type: 'box',
             layout: 'vertical',
+            spacing: 'none',
             contents: [
               {
                 type: 'text',
@@ -929,6 +930,7 @@ export function createDailyFeedbackFlexMessage(
           {
             type: 'box',
             layout: 'vertical',
+            spacing: 'none',
             contents: [
               {
                 type: 'text',
