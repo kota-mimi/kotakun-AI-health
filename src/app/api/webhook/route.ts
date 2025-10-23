@@ -642,7 +642,34 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'cancel_record':
       await replyMessage(replyToken, [{
         type: 'text',
-        text: 'また記録してね！'
+        text: 'また記録してね！',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'camera'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: 'テキストで記録',
+                data: 'action=open_keyboard',
+                inputOption: 'openKeyboard'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: '通常モードに戻る',
+                data: 'action=exit_record_mode'
+              }
+            }
+          ]
+        }
       }]);
       break;
     case 'exercise_running_30':
@@ -739,6 +766,12 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
         ...weightFlexMessage,
         quickReply: {
           items: [
+            {
+              type: 'action',
+              action: {
+                type: 'camera'
+              }
+            },
             {
               type: 'action',
               action: {
