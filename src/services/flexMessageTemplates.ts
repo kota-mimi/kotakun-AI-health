@@ -859,7 +859,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 今日の食事の良かったところ', '■ 食事で改善できるところ') || '・栄養バランスを意識した食事選択\n・適切な食事回数の維持',
+                text: extractSectionFromText(feedbackText, '良かった点:', '改善点:') || '・栄養バランスを意識した食事選択\n・適切な食事回数の維持',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
@@ -875,7 +875,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 食事で改善できるところ', '■ 運動について') || '・タンパク質摂取量の調整\n・食事タイミングの見直し',
+                text: extractSectionFromText(feedbackText, '改善点:', '■ 運動評価') || '・タンパク質摂取量の調整\n・食事タイミングの見直し',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
@@ -912,7 +912,23 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 運動について', '■ 明日はこれを試してみて！') || '・運動習慣の継続',
+                text: extractSectionFromText(feedbackText, '良かった点:', '改善提案:') || '・運動習慣の継続',
+                size: 'sm',
+                color: '#333333',
+                wrap: true,
+                margin: 'sm'
+              },
+              {
+                type: 'text',
+                text: '改善提案',
+                weight: 'bold',
+                size: 'md',
+                color: '#FF9800',
+                margin: 'md'
+              },
+              {
+                type: 'text',
+                text: extractSectionFromText(feedbackText, '改善提案:', '■ 明日からのアクション') || '・運動強度の調整\n・バランスの良い運動プログラム',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
@@ -933,7 +949,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '明日はこれを試してみて！',
+                text: '明日からのアクション',
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
@@ -941,12 +957,51 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 明日はこれを試してみて！', '') || '・朝食にタンパク質を意識した食事を選んでみよう\n・昼食では野菜を多めに摂取しよう\n・夕方に軽い運動を取り入れてみよう',
+                text: '【優先度 高】',
+                weight: 'bold',
+                size: 'md',
+                color: '#FF5722',
+                margin: 'md'
+              },
+              {
+                type: 'text',
+                text: extractSectionFromText(feedbackText, '【優先度 高】', '【優先度 中】') || '朝食にタンパク質を意識した食事を選んでみよう',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'md',
-                maxLines: 10
+                margin: 'sm'
+              },
+              {
+                type: 'text',
+                text: '【優先度 中】',
+                weight: 'bold',
+                size: 'md',
+                color: '#FF9800',
+                margin: 'md'
+              },
+              {
+                type: 'text',
+                text: extractSectionFromText(feedbackText, '【優先度 中】', '【優先度 低】') || '昼食では野菜を多めに摂取しよう',
+                size: 'sm',
+                color: '#333333',
+                wrap: true,
+                margin: 'sm'
+              },
+              {
+                type: 'text',
+                text: '【優先度 低】',
+                weight: 'bold',
+                size: 'md',
+                color: '#4CAF50',
+                margin: 'md'
+              },
+              {
+                type: 'text',
+                text: extractSectionFromText(feedbackText, '【優先度 低】', '') || '夕方に軽い運動を取り入れてみよう',
+                size: 'sm',
+                color: '#333333',
+                wrap: true,
+                margin: 'sm'
               }
             ]
           },
