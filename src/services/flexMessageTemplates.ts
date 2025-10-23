@@ -894,7 +894,8 @@ export function createDailyFeedbackFlexMessage(
                 text: '良かった点',
                 weight: 'bold',
                 size: 'md',
-                color: '#4CAF50'
+                color: '#4CAF50',
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -910,13 +911,15 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
+                margin: 'none'
               },
               {
                 type: 'text',
                 text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
                 size: 'sm',
                 color: '#333333',
-                wrap: true
+                wrap: true,
+                margin: 'none'
               }
             ]
           },
@@ -945,6 +948,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -960,6 +964,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -988,13 +993,15 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
+                margin: 'none'
               },
               {
                 type: 'text',
                 text: extractSectionFromText(feedbackText, '■ 総合アドバイス', '') || '・今日もお疲れさま！継続が何より大切だから、自分のペースで頑張ろうね。',
                 size: 'sm',
                 color: '#333333',
-                wrap: true
+                wrap: true,
+                margin: 'none'
               }
             ]
           },
