@@ -551,7 +551,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '摂取カロリー',
+                text: 'カロリー',
                 size: 'sm',
                 color: '#374151',
                 flex: 2
@@ -620,12 +620,29 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.protein}/${targetProtein}g`,
-                    size: 'sm',
-                    color: '#6B7280',
-                    align: 'end',
-                    flex: 4
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.protein}`,
+                        size: 'sm',
+                        color: '#DC2626',
+                        weight: 'bold',
+                        align: 'end',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetProtein}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
+                    ],
+                    flex: 4,
+                    justifyContent: 'flex-end'
                   },
                   {
                     type: 'text',
@@ -652,12 +669,29 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.fat}/${targetFat}g`,
-                    size: 'sm',
-                    color: '#6B7280',
-                    align: 'end',
-                    flex: 4
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.fat}`,
+                        size: 'sm',
+                        color: '#F59E0B',
+                        weight: 'bold',
+                        align: 'end',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetFat}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
+                    ],
+                    flex: 4,
+                    justifyContent: 'flex-end'
                   },
                   {
                     type: 'text',
@@ -684,12 +718,29 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.carbs}/${targetCarbs}g`,
-                    size: 'sm',
-                    color: '#6B7280',
-                    align: 'end',
-                    flex: 4
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.carbs}`,
+                        size: 'sm',
+                        color: '#059669',
+                        weight: 'bold',
+                        align: 'end',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetCarbs}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
+                    ],
+                    flex: 4,
+                    justifyContent: 'flex-end'
                   },
                   {
                     type: 'text',
