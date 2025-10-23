@@ -587,7 +587,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'xs',
                 color: calorieStatus.color,
                 align: 'end',
-                flex: 2,
+                flex: 3,
                 weight: 'bold'
               }
             ],
@@ -633,7 +633,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: proteinStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 3,
                     weight: 'bold'
                   }
                 ],
@@ -665,7 +665,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: fatStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 3,
                     weight: 'bold'
                   }
                 ],
@@ -697,7 +697,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: carbsStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 3,
                     weight: 'bold'
                   }
                 ],
