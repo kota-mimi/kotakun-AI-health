@@ -650,7 +650,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
               {
                 type: 'action',
                 action: {
-                  type: 'camera'
+                  type: 'camera',
+                  label: 'カメラで記録'
                 }
               },
               {
@@ -780,7 +781,8 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
             {
               type: 'action',
               action: {
-                type: 'camera'
+                type: 'camera',
+                label: 'カメラで記録'
               }
             },
             {
