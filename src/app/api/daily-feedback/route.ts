@@ -162,8 +162,6 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   const totalExerciseTime = data.exercises.reduce((sum, ex) => sum + ex.duration, 0);
 
   // 詳細分析のためのデータ計算
-  const mealCount = data.meals.length;
-  const mealTimes = data.meals.map(meal => meal.timestamp).filter(t => t);
   const exerciseTime = totalExerciseTime;
   const calorieStatus = totalCalories < 1200 ? '少なめ' : totalCalories > 2500 ? '多め' : '適量';
   const proteinRatio = totalCalories > 0 ? Math.round((totalProtein * 4 / totalCalories) * 100) : 0;
@@ -193,7 +191,6 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
 📊 基本情報:
 - 体重: ${data.weight?.value || '未記録'}kg
 - 体重変化: ${weightTrend}
-- 食事回数: ${mealCount}回 (記録時間: ${mealTimes.join(', ') || '未記録'})
 
 🔥 カロリー分析:
 - 摂取カロリー: ${totalCalories}kcal (目標: ${targetCalories}kcal)
