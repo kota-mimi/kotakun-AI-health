@@ -551,10 +551,10 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: 'カロリー',
+                text: '摂取カロリー',
                 size: 'sm',
                 color: '#374151',
-                flex: 2
+                flex: 3
               },
               {
                 type: 'box',
@@ -578,7 +578,7 @@ export function createDailyFeedbackFlexMessage(
                     flex: 0
                   }
                 ],
-                flex: 4,
+                flex: 3,
                 justifyContent: 'flex-end'
               },
               {
@@ -617,7 +617,7 @@ export function createDailyFeedbackFlexMessage(
                     text: 'タンパク質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'box',
@@ -641,7 +641,7 @@ export function createDailyFeedbackFlexMessage(
                         flex: 0
                       }
                     ],
-                    flex: 4,
+                    flex: 3,
                     justifyContent: 'flex-end'
                   },
                   {
@@ -666,7 +666,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '脂質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'box',
@@ -690,7 +690,7 @@ export function createDailyFeedbackFlexMessage(
                         flex: 0
                       }
                     ],
-                    flex: 4,
+                    flex: 3,
                     justifyContent: 'flex-end'
                   },
                   {
@@ -715,7 +715,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '炭水化物',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'box',
@@ -739,7 +739,7 @@ export function createDailyFeedbackFlexMessage(
                         flex: 0
                       }
                     ],
-                    flex: 4,
+                    flex: 3,
                     justifyContent: 'flex-end'
                   },
                   {
