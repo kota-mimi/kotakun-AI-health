@@ -843,7 +843,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '本日の食事内容の評価',
+                text: '食事評価',
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
@@ -875,7 +875,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '改善点:', '■ 本日の運動内容の評価') || '・野菜の摂取量を増やすと栄養バランスがより良くなります\n・水分補給も意識してみてください',
+                text: extractSectionFromText(feedbackText, '改善点:', '■ 運動評価') || '・野菜不足が気になります\n・水分補給を意識してください',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
@@ -896,7 +896,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '本日の運動内容の評価',
+                text: '運動評価',
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
@@ -928,7 +928,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '改善提案:', '■ 明日からの具体的アクション') || '・筋トレと有酸素運動のバランスを意識してみましょう\n・運動前後のストレッチも取り入れてみてください',
+                text: extractSectionFromText(feedbackText, '改善提案:', '■ 明日のアクション') || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
@@ -949,7 +949,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '明日からの具体的アクション',
+                text: '明日のアクション',
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
@@ -957,7 +957,7 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 明日からの具体的アクション', '') || '・朝食にタンパク質を意識した食事を追加\n・野菜を毎食プラス1品\n・運動前後にストレッチを5分間',
+                text: extractSectionFromText(feedbackText, '■ 明日のアクション', '') || '1. 朝食にタンパク質を追加\n2. 野菜を毎食プラス1品\n3. 運動前後にストレッチを5分間',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
