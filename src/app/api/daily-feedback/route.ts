@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
 
     // 体重比較のための前回体重を取得
     const weightComparison = await getWeightComparison(userId, date);
+    console.log('💰 体重比較データ:', weightComparison);
     
     // フィードバック用データを準備
     const feedbackData = {
@@ -257,6 +258,7 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
     
   } catch (error) {
     console.error('AI生成エラー:', error);
+    console.log('🚨 フォールバック関数を使用');
     // フォールバック: 固定テンプレート
     return generateFallbackFeedback(data, totalCalories, totalProtein, totalFat, totalCarbs, totalExerciseTime);
   }

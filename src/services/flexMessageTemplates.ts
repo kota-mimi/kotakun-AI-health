@@ -905,8 +905,7 @@ export function createDailyFeedbackFlexMessage(
                 text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
                 size: 'sm',
                 color: '#333333',
-                wrap: true,
-                margin: 'none'
+                wrap: true
               },
               {
                 type: 'text',
@@ -921,8 +920,7 @@ export function createDailyFeedbackFlexMessage(
                 text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
                 size: 'sm',
                 color: '#333333',
-                wrap: true,
-                margin: 'none'
+                wrap: true
               }
             ]
           },
@@ -958,8 +956,7 @@ export function createDailyFeedbackFlexMessage(
                 text: extractSectionFromText(feedbackText, '■ 運動評価', '■ 総合アドバイス').split('改善提案:')[0].replace('良かった点:', '') || '・継続的な運動習慣が素晴らしいです',
                 size: 'sm',
                 color: '#333333',
-                wrap: true,
-                margin: 'none'
+                wrap: true
               },
               {
                 type: 'text',
@@ -974,8 +971,7 @@ export function createDailyFeedbackFlexMessage(
                 text: extractSectionFromText(feedbackText, '■ 運動評価', '■ 総合アドバイス').split('改善提案:')[1] || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加',
                 size: 'sm',
                 color: '#333333',
-                wrap: true,
-                margin: 'none'
+                wrap: true
               },
             ]
           },
@@ -1003,8 +999,7 @@ export function createDailyFeedbackFlexMessage(
                 text: extractSectionFromText(feedbackText, '■ 総合アドバイス', '') || '・今日もお疲れさま！継続が何より大切だから、自分のペースで頑張ろうね。',
                 size: 'sm',
                 color: '#333333',
-                wrap: true,
-                margin: 'none'
+                wrap: true
               }
             ]
           },
