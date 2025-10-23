@@ -3535,6 +3535,10 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
         }]);
         console.log('✅ 1日フィードバック（テキスト）送信完了:', userId);
       }
+      
+      // フィードバック送信後、記録モードを解除して通常モードに戻す
+      await setRecordMode(userId, false);
+      console.log('🔄 フィードバック送信後、通常モードに自動切替:', userId);
     } else {
       throw new Error(`API呼び出し失敗: ${response.status}`);
     }

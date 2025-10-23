@@ -949,9 +949,10 @@ class AIHealthService {
 話し方：
 - 自然な標準語で敬語なし
 - 質問のトーンに合わせて回答の長さを調整
-- 「やあ」「〇〇さ」など余計な言葉は使わない
+- 「やあ」「〇〇さ」「〇〇だとか」「〇〇とか」など余計な言葉は一切使わない
 - 「おすすめ」「効果的」など簡潔に断言
-- シンプルで分かりやすく、無駄のない回答${conversationHistory}
+- シンプルで分かりやすく、無駄のない回答
+- 「〇〇だとか」「〇〇とか」のような曖昧な表現は絶対に使わない${conversationHistory}
 返答:`;
 
       const result = await model.generateContent(prompt);
@@ -1218,9 +1219,10 @@ class AIHealthService {
 話し方：
 - 自然な標準語で敬語なし
 - 質問のトーンに合わせて回答の長さを調整
-- 「やあ」「〇〇さ」など余計な言葉は使わない
+- 「やあ」「〇〇さ」「〇〇だとか」「〇〇とか」など余計な言葉は一切使わない
 - 「おすすめ」「効果的」など簡潔に断言
-- シンプルで分かりやすく、無駄のない回答${conversationHistory}
+- シンプルで分かりやすく、無駄のない回答
+- 「〇〇だとか」「〇〇とか」のような曖昧な表現は絶対に使わない${conversationHistory}
 返答:`;
 
       const result = await model.generateContent(prompt);
