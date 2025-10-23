@@ -295,7 +295,6 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                 weight: 'bold',
                 size: 'md',
                 color: '#374151',
-                margin: 'md'
               },
               {
                 type: 'separator',
@@ -648,7 +647,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'sm',
                 color: '#374151',
-                margin: 'md'
               },
               // タンパク質
               {
@@ -811,7 +809,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'sm',
                 color: '#374151',
-                margin: 'md'
               },
               // 運動リスト
               ...(feedbackData.exercises.length > 0 ? 
@@ -890,7 +887,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -898,7 +894,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -913,7 +908,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -941,7 +935,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -949,7 +942,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -964,7 +956,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'md'
               },
               {
                 type: 'text',
@@ -992,7 +983,6 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
-                margin: 'md'
               },
               {
                 type: 'text',
