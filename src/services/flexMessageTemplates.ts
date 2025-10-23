@@ -557,13 +557,27 @@ export function createDailyFeedbackFlexMessage(
                 flex: 2
               },
               {
-                type: 'text',
-                text: `${feedbackData.calories}kcal`,
-                size: 'sm',
-                color: '#2563EB',
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: `${feedbackData.calories}`,
+                    size: 'sm',
+                    color: '#2563EB',
+                    weight: 'bold',
+                    flex: 0
+                  },
+                  {
+                    type: 'text',
+                    text: `/${targetCal}kcal`,
+                    size: 'sm',
+                    color: '#6B7280',
+                    flex: 0
+                  }
+                ],
                 align: 'end',
-                flex: 2,
-                weight: 'bold'
+                flex: 2
               },
               {
                 type: 'text',
@@ -905,29 +919,6 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
 
-          // フッター部分
-          {
-            type: 'separator',
-            color: '#E0E0E0',
-            margin: 'lg'
-          },
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: '継続が力になります。明日も頑張りましょう✨',
-                size: 'sm',
-                color: '#666666',
-                align: 'center',
-                margin: 'md'
-              }
-            ],
-            backgroundColor: '#F5F5F5',
-            paddingAll: '12px',
-            cornerRadius: '8px'
-          }
         ],
         paddingAll: '16px'
       }
