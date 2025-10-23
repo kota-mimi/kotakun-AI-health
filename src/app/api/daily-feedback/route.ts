@@ -64,6 +64,17 @@ export async function POST(request: NextRequest) {
     // Flexメッセージを生成
     const flexMessage = createDailyFeedbackFlexMessage(feedbackData, feedback, userName, targetValues);
 
+    // フィードバックをFirestoreに保存
+    const db = admin.firestore();
+    const recordRef = db.doc(`users/${userId}/dailyRecords/${date}`);
+    
+    await recordRef.set({
+      feedback: feedback,
+      feedbackCreatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    console.log('💾 フィードバックをFirestoreに保存完了:', { userId, date });
+
     return NextResponse.json({
       success: true,
       feedback,

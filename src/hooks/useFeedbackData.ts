@@ -56,7 +56,7 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
       
       try {
         console.log('🔄 フィードバックデータをAPIから取得');
-        const response = await fetch('/api/daily-feedback', {
+        const response = await fetch('/api/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -67,15 +67,15 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
 
         if (response.ok) {
           const result = await response.json();
-          const feedbackText = result.feedback || '';
+          const feedbackItem = result.data;
           
-          // フィードバックテキストが存在する場合のみ処理
-          if (feedbackText.trim()) {
-            const parsedFeedback = parseFeedbackText(feedbackText);
+          // フィードバックデータが存在する場合のみ処理
+          if (feedbackItem && feedbackItem.feedback && feedbackItem.feedback.trim()) {
+            const parsedFeedback = parseFeedbackText(feedbackItem.feedback);
             
             const feedbackData = {
               date: dateStr,
-              feedback: feedbackText,
+              feedback: feedbackItem.feedback,
               ...parsedFeedback
             };
             
