@@ -248,17 +248,19 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
 `;
 
   try {
+    console.log('🤖🤖🤖 AI生成開始 🤖🤖🤖');
     // Gemini APIでフィードバック生成
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
+    console.log('✅✅✅ AI生成成功！ ✅✅✅');
     return response.text();
     
   } catch (error) {
-    console.error('AI生成エラー:', error);
-    console.log('🚨 フォールバック関数を使用');
+    console.error('❌❌❌ AI生成エラー:', error);
+    console.log('🚨🚨🚨 フォールバック関数使用中！！！ 🚨🚨🚨');
     // フォールバック: 固定テンプレート
     return generateFallbackFeedback(data, totalCalories, totalProtein, totalFat, totalCarbs, totalExerciseTime);
   }
