@@ -578,7 +578,7 @@ export function createDailyFeedbackFlexMessage(
                     flex: 0
                   }
                 ],
-                flex: 3,
+                flex: 4,
                 justifyContent: 'flex-end'
               },
               {
@@ -587,7 +587,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'xs',
                 color: calorieStatus.color,
                 align: 'end',
-                flex: 3,
+                flex: 1,
                 weight: 'bold'
               }
             ],
@@ -625,7 +625,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3
+                    flex: 4
                   },
                   {
                     type: 'text',
@@ -633,7 +633,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: proteinStatus.color,
                     align: 'end',
-                    flex: 3,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
@@ -657,7 +657,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3
+                    flex: 4
                   },
                   {
                     type: 'text',
@@ -665,7 +665,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: fatStatus.color,
                     align: 'end',
-                    flex: 3,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
@@ -689,7 +689,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3
+                    flex: 4
                   },
                   {
                     type: 'text',
@@ -697,7 +697,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: carbsStatus.color,
                     align: 'end',
-                    flex: 3,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
