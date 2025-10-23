@@ -701,17 +701,50 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       }]);
       break;
     case 'exit_record_mode':
-      // 連続タップ防止
+      console.log('🔄 通常モードに戻るボタン押下:', { userId, timestamp: new Date().toISOString() });
+      
+      // 連続タップ防止チェック
       if (!canProcessTap(userId)) {
         console.log('🚫 連続タップ防止: 記録モード終了ボタン無視');
         return;
       }
       
-      await setRecordMode(userId, false);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '通常モードに戻りました！\n\nAIアドバイス機能が使えるようになりました。'
-      }]);
+      // 既に通常モードかチェック
+      const alreadyInNormalMode = !(await isRecordMode(userId));
+      if (alreadyInNormalMode) {
+        console.log('⚠️ 既に通常モード中: ボタン押下を完全無視（無反応）');
+        return;
+      }
+      
+      // 処理中チェック
+      if (isProcessing(userId)) {
+        console.log('⏳ 処理中: 通常モードに戻るボタン無視');
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '処理中です。少々お待ちください...'
+        }]);
+        return;
+      }
+      
+      setProcessing(userId, true);
+      
+      try {
+        await setRecordMode(userId, false);
+        console.log('✅ 通常モードに戻る処理完了:', userId);
+        
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '通常モードに戻りました！\n\nAIアドバイス機能が使えるようになりました。'
+        }]);
+      } catch (error) {
+        console.error('❌ 通常モードに戻る処理エラー:', error);
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'エラーが発生しました。もう一度お試しください。'
+        }]);
+      } finally {
+        setProcessing(userId, false);
+      }
       break;
     case 'confirm_record':
       const confirm = params.get('confirm');
