@@ -969,8 +969,9 @@ class AIHealthService {
       cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
       cleanText = cleanText.replace(/\n\s*\n/g, '\n');
       
-      // 人間らしい自然な改行を追加（句点で改行、空行なし）
+      // 人間らしい自然な改行を追加（句点・感嘆符で改行、空行なし）
       cleanText = cleanText.replace(/。(?!\s*$)/g, '。\n');
+      cleanText = cleanText.replace(/！(?!\s*$)/g, '！\n');
       cleanText = cleanText.replace(/よ。/g, 'よ。\n');
       cleanText = cleanText.replace(/ね。/g, 'ね。\n');
       cleanText = cleanText.replace(/だよ。/g, 'だよ。\n');
@@ -978,6 +979,10 @@ class AIHealthService {
       cleanText = cleanText.replace(/です。/g, 'です。\n');
       cleanText = cleanText.replace(/ます。/g, 'ます。\n');
       cleanText = cleanText.replace(/から。/g, 'から。\n');
+      cleanText = cleanText.replace(/よ！/g, 'よ！\n');
+      cleanText = cleanText.replace(/ね！/g, 'ね！\n');
+      cleanText = cleanText.replace(/だよ！/g, 'だよ！\n');
+      cleanText = cleanText.replace(/だね！/g, 'だね！\n');
       cleanText = cleanText.replace(/\n\s*\n/g, '\n');
       cleanText = cleanText.trim();
       
@@ -1250,8 +1255,9 @@ class AIHealthService {
       cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [リンクテキスト](URL)をテキストのみに
       cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 空行を単一改行に
       
-      // 人間らしい自然な改行を追加（句点で改行、空行なし）
+      // 人間らしい自然な改行を追加（句点・感嘆符で改行、空行なし）
       cleanText = cleanText.replace(/。(?!\s*$)/g, '。\n');
+      cleanText = cleanText.replace(/！(?!\s*$)/g, '！\n');
       cleanText = cleanText.replace(/よ。/g, 'よ。\n');
       cleanText = cleanText.replace(/ね。/g, 'ね。\n');
       cleanText = cleanText.replace(/だよ。/g, 'だよ。\n');
@@ -1259,6 +1265,10 @@ class AIHealthService {
       cleanText = cleanText.replace(/です。/g, 'です。\n');
       cleanText = cleanText.replace(/ます。/g, 'ます。\n');
       cleanText = cleanText.replace(/から。/g, 'から。\n');
+      cleanText = cleanText.replace(/よ！/g, 'よ！\n');
+      cleanText = cleanText.replace(/ね！/g, 'ね！\n');
+      cleanText = cleanText.replace(/だよ！/g, 'だよ！\n');
+      cleanText = cleanText.replace(/だね！/g, 'だね！\n');
       cleanText = cleanText.replace(/\n\s*\n/g, '\n');
       cleanText = cleanText.trim();
       
