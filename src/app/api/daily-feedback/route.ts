@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Flexメッセージを生成
-    const flexMessage = createDailyFeedbackFlexMessage(feedbackData, feedback, userName);
+    const flexMessage = createDailyFeedbackFlexMessage(feedbackData, feedback, userName, targetValues);
 
     return NextResponse.json({
       success: true,

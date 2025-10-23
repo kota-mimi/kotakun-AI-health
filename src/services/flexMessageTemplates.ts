@@ -441,7 +441,15 @@ export function createDailyFeedbackFlexMessage(
     mealCount: number;
   },
   feedbackText: string,
-  userName?: string
+  userName?: string,
+  targetValues?: {
+    targetCalories: number;
+    macros: {
+      protein: number;
+      fat: number;
+      carbs: number;
+    }
+  }
 ) {
   // フィードバックテキストを解析してセクション分け
   const lines = feedbackText.split('\n').filter(line => line.trim());
@@ -451,11 +459,16 @@ export function createDailyFeedbackFlexMessage(
   const bodySection = extractSection(lines, '🎯 体重管理', '🌟 総合評価');
   const totalSection = extractSection(lines, '🌟 総合評価', '');
 
-  // PFC比率計算
-  const totalCalories = feedbackData.calories;
-  const proteinRatio = totalCalories > 0 ? Math.round((feedbackData.protein * 4 / totalCalories) * 100) : 0;
-  const fatRatio = totalCalories > 0 ? Math.round((feedbackData.fat * 9 / totalCalories) * 100) : 0;
-  const carbsRatio = totalCalories > 0 ? Math.round((feedbackData.carbs * 4 / totalCalories) * 100) : 0;
+  // 達成率計算
+  const targetCal = targetValues?.targetCalories || 2000;
+  const targetProtein = targetValues?.macros.protein || 120;
+  const targetFat = targetValues?.macros.fat || 67;
+  const targetCarbs = targetValues?.macros.carbs || 250;
+  
+  const calorieAchievement = Math.round((feedbackData.calories / targetCal) * 100);
+  const proteinAchievement = Math.round((feedbackData.protein / targetProtein) * 100);
+  const fatAchievement = Math.round((feedbackData.fat / targetFat) * 100);
+  const carbsAchievement = Math.round((feedbackData.carbs / targetCarbs) * 100);
 
   return {
     type: 'flex',
@@ -473,7 +486,7 @@ export function createDailyFeedbackFlexMessage(
         contents: [
           {
             type: 'text',
-            text: '本日のアクティビティレポート',
+            text: `${feedbackData.date} フィードバック`,
             weight: 'bold',
             color: '#ffffff',
             size: 'lg',
@@ -502,7 +515,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '📊 今日の記録',
+                text: '今日の記録',
                 weight: 'bold',
                 size: 'md',
                 color: '#374151',
@@ -515,156 +528,226 @@ export function createDailyFeedbackFlexMessage(
               }
             ]
           },
-
-          // サマリーセクション（Hero部分）
+          
+          // カロリー達成率
+          {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'text',
+                text: '摂取カロリー',
+                size: 'sm',
+                color: '#374151',
+                flex: 3
+              },
+              {
+                type: 'text',
+                text: `${feedbackData.calories} / ${targetCal}kcal`,
+                size: 'sm',
+                color: '#6B7280',
+                align: 'end',
+                flex: 4
+              },
+              {
+                type: 'text',
+                text: `(${calorieAchievement}%)`,
+                size: 'sm',
+                color: calorieAchievement >= 90 && calorieAchievement <= 110 ? '#059669' : '#DC2626',
+                align: 'end',
+                flex: 2,
+                weight: 'bold'
+              }
+            ],
+            margin: 'md'
+          },
+          
+          // PFC達成率セクション
           {
             type: 'box',
             layout: 'vertical',
             contents: [
               {
                 type: 'text',
-                text: `摂取カロリー: ${feedbackData.calories}kcal`,
+                text: 'PFCバランス',
+                weight: 'bold',
                 size: 'sm',
-                color: '#666666',
+                color: '#374151',
+                margin: 'md'
+              },
+              // タンパク質
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'タンパク質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.protein} / ${targetProtein}g`,
+                    size: 'sm',
+                    color: '#6B7280',
+                    align: 'end',
+                    flex: 4
+                  },
+                  {
+                    type: 'text',
+                    text: `(${proteinAchievement}%)`,
+                    size: 'sm',
+                    color: proteinAchievement >= 80 ? '#059669' : '#DC2626',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
+                  }
+                ],
                 margin: 'sm'
               },
+              // 脂質
               {
-                type: 'text',
-                text: `PFCバランス: P ${feedbackData.protein}g / F ${feedbackData.fat}g / C ${feedbackData.carbs}g`,
-                size: 'sm',
-                color: '#666666',
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '脂質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.fat} / ${targetFat}g`,
+                    size: 'sm',
+                    color: '#6B7280',
+                    align: 'end',
+                    flex: 4
+                  },
+                  {
+                    type: 'text',
+                    text: `(${fatAchievement}%)`,
+                    size: 'sm',
+                    color: fatAchievement >= 70 && fatAchievement <= 120 ? '#059669' : '#DC2626',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
+                  }
+                ],
                 margin: 'xs'
               },
+              // 炭水化物
               {
-                type: 'text',
-                text: `運動内容: ${feedbackData.exercises.length > 0 ? feedbackData.exercises.map(ex => `${ex.type} ${ex.duration}分`).join(', ') : '未実施'}`,
-                size: 'sm',
-                color: '#666666',
-                margin: 'xs'
-              },
-              {
-                type: 'text',
-                text: `総運動時間: ${feedbackData.exerciseTime}分`,
-                size: 'sm',
-                color: '#666666',
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '炭水化物',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${feedbackData.carbs} / ${targetCarbs}g`,
+                    size: 'sm',
+                    color: '#6B7280',
+                    align: 'end',
+                    flex: 4
+                  },
+                  {
+                    type: 'text',
+                    text: `(${carbsAchievement}%)`,
+                    size: 'sm',
+                    color: carbsAchievement >= 70 && carbsAchievement <= 120 ? '#059669' : '#DC2626',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
+                  }
+                ],
                 margin: 'xs'
               }
-            ],
-            backgroundColor: '#F0F8FF',
-            borderColor: '#E6F3FF',
-            borderWidth: '1px',
-            cornerRadius: '8px',
-            paddingAll: '16px',
-            margin: 'sm'
+            ]
           },
-
-          // PFCバランス
-          {
-            type: 'text',
-            text: 'PFCバランス',
-            weight: 'bold',
-            size: 'sm',
-            color: '#374151',
-            margin: 'md'
-          },
+          
+          // 運動記録（縦並び）
           {
             type: 'box',
-            layout: 'horizontal',
+            layout: 'vertical',
             contents: [
               {
-                type: 'box',
-                layout: 'vertical',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'P',
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
-                    type: 'text',
-                    text: `${feedbackData.protein}g`,
-                    size: 'sm',
-                    color: '#EF4444',
-                    align: 'center',
-                    margin: 'xs'
-                  },
-                  {
-                    type: 'text',
-                    text: `${proteinRatio}%`,
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  }
-                ],
-                flex: 1
+                type: 'text',
+                text: '運動記録',
+                weight: 'bold',
+                size: 'sm',
+                color: '#374151',
+                margin: 'md'
               },
+              // 運動リスト
+              ...(feedbackData.exercises.length > 0 ? 
+                feedbackData.exercises.map(exercise => ({
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `・${exercise.type}`,
+                      size: 'sm',
+                      color: '#374151',
+                      flex: 4
+                    },
+                    {
+                      type: 'text',
+                      text: `${exercise.duration}分`,
+                      size: 'sm',
+                      color: '#6B7280',
+                      align: 'end',
+                      flex: 2
+                    }
+                  ],
+                  margin: 'sm'
+                })) : 
+                [{
+                  type: 'text',
+                  text: '運動記録なし',
+                  size: 'sm',
+                  color: '#9CA3AF',
+                  margin: 'sm'
+                }]
+              ),
+              // 総運動時間
               {
                 type: 'box',
-                layout: 'vertical',
+                layout: 'horizontal',
                 contents: [
                   {
                     type: 'text',
-                    text: 'F',
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
-                    type: 'text',
-                    text: `${feedbackData.fat}g`,
+                    text: '総運動時間',
                     size: 'sm',
-                    color: '#F59E0B',
-                    align: 'center',
-                    margin: 'xs'
+                    color: '#374151',
+                    weight: 'bold',
+                    flex: 4
                   },
                   {
                     type: 'text',
-                    text: `${fatRatio}%`,
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
+                    text: `${feedbackData.exerciseTime}分`,
+                    size: 'sm',
+                    color: '#059669',
+                    align: 'end',
+                    flex: 2,
+                    weight: 'bold'
                   }
                 ],
-                flex: 1
-              },
-              {
-                type: 'box',
-                layout: 'vertical',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'C',
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
-                    type: 'text',
-                    text: `${feedbackData.carbs}g`,
-                    size: 'sm',
-                    color: '#10B981',
-                    align: 'center',
-                    margin: 'xs'
-                  },
-                  {
-                    type: 'text',
-                    text: `${carbsRatio}%`,
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  }
-                ],
-                flex: 1
+                margin: 'md',
+                backgroundColor: '#F0FDF4',
+                paddingAll: '8px',
+                cornerRadius: '6px'
               }
-            ],
-            backgroundColor: '#F9FAFB',
-            borderColor: '#F3F4F6',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
+            ]
           },
 
           // 食事評価セクション
