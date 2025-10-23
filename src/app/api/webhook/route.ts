@@ -640,37 +640,48 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;
     case 'cancel_record':
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'また記録してね！',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'camera'
+      console.log('📝 記録しないボタン押下:', { userId, timestamp: new Date().toISOString() });
+      try {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'また記録してね！',
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'camera'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: 'テキストで記録',
+                  data: 'action=open_keyboard',
+                  inputOption: 'openKeyboard'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '通常モードに戻る',
+                  data: 'action=exit_record_mode'
+                }
               }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: 'テキストで記録',
-                data: 'action=open_keyboard',
-                inputOption: 'openKeyboard'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '通常モードに戻る',
-                data: 'action=exit_record_mode'
-              }
-            }
-          ]
-        }
-      }]);
+            ]
+          }
+        }]);
+        console.log('✅ 記録しないボタン処理完了:', userId);
+      } catch (error) {
+        console.error('❌ 記録しないボタン処理エラー:', error);
+        // フォールバック: シンプルなメッセージ
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'また記録してね！'
+        }]);
+      }
       break;
     case 'exercise_running_30':
     case 'exercise_strength_45':
