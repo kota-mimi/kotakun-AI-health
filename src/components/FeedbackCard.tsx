@@ -76,27 +76,15 @@ export function FeedbackCard({
         >
           <div className="flex items-center space-x-3">
             <div className="text-lg font-semibold text-slate-900">
-              📊 今日のフィードバック
+              📊 フィードバック
             </div>
             {hasFeedbackData && (
               <div className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                生成済み
+                データあり
               </div>
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {!hasFeedbackData && isToday() && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerateFeedback();
-                }}
-                disabled={isLoading}
-                className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? '生成中...' : 'フィードバック生成'}
-              </button>
-            )}
             {isExpanded ? (
               <ChevronUp className="h-5 w-5 text-slate-400" />
             ) : (
@@ -117,20 +105,9 @@ export function FeedbackCard({
 
             {!isLoading && !hasFeedbackData && (
               <div className="text-center py-8">
-                <p className="text-sm text-slate-600 mb-4">
-                  {isToday() 
-                    ? 'まだフィードバックが生成されていません。' 
-                    : 'この日のフィードバックデータがありません。'
-                  }
+                <p className="text-sm text-slate-600">
+                  この日のフィードバックデータがありません。
                 </p>
-                {isToday() && (
-                  <button
-                    onClick={onGenerateFeedback}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    フィードバック生成
-                  </button>
-                )}
               </div>
             )}
 
@@ -142,7 +119,7 @@ export function FeedbackCard({
                     className="bg-blue-50 px-4 py-3 cursor-pointer flex items-center justify-between"
                     onClick={() => toggleSection('food')}
                   >
-                    <h3 className="font-semibold text-blue-900">🍽️ 食事評価</h3>
+                    <h3 className="font-semibold text-blue-900">食事評価</h3>
                     {expandedSections.food ? (
                       <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
@@ -173,7 +150,7 @@ export function FeedbackCard({
                     className="bg-blue-50 px-4 py-3 cursor-pointer flex items-center justify-between"
                     onClick={() => toggleSection('exercise')}
                   >
-                    <h3 className="font-semibold text-blue-900">🏃‍♂️ 運動評価</h3>
+                    <h3 className="font-semibold text-blue-900">運動評価</h3>
                     {expandedSections.exercise ? (
                       <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
@@ -204,7 +181,7 @@ export function FeedbackCard({
                     className="bg-blue-50 px-4 py-3 cursor-pointer flex items-center justify-between"
                     onClick={() => toggleSection('overall')}
                   >
-                    <h3 className="font-semibold text-blue-900">💡 総合アドバイス</h3>
+                    <h3 className="font-semibold text-blue-900">総合アドバイス</h3>
                     {expandedSections.overall ? (
                       <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
