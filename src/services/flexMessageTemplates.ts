@@ -432,6 +432,7 @@ export function createDailyFeedbackFlexMessage(
   feedbackData: {
     date: string;
     weight?: { value: number };
+    weightComparison?: { current?: number; previous?: number; change?: number; changeText?: string };
     calories: number;
     protein: number;
     fat: number;
@@ -543,6 +544,48 @@ export function createDailyFeedbackFlexMessage(
               }
             ]
           },
+          
+          // 体重比較（摂取カロリーの上に表示）
+          ...(feedbackData.weightComparison && feedbackData.weightComparison.current ? [{
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'text',
+                text: '体重',
+                size: 'sm',
+                color: '#374151',
+                flex: 3
+              },
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: `${feedbackData.weightComparison.current}kg`,
+                    size: 'sm',
+                    color: '#2563EB',
+                    weight: 'bold',
+                    align: 'end',
+                    flex: 0
+                  },
+                  ...(feedbackData.weightComparison.changeText ? [{
+                    type: 'text',
+                    text: `(${feedbackData.weightComparison.changeText})`,
+                    size: 'xs',
+                    color: feedbackData.weightComparison.change && feedbackData.weightComparison.change > 0 ? '#DC2626' : feedbackData.weightComparison.change && feedbackData.weightComparison.change < 0 ? '#059669' : '#6B7280',
+                    align: 'end',
+                    flex: 0,
+                    margin: 'xs'
+                  }] : [])
+                ],
+                flex: 7,
+                justifyContent: 'flex-end'
+              }
+            ],
+            margin: 'md'
+          }] : []),
           
           // カロリー達成率
           {
@@ -863,7 +906,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -879,7 +922,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'sm'
+                margin: 'none'
               }
             ]
           },
@@ -916,7 +959,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -932,7 +975,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'sm'
+                margin: 'none'
               },
             ]
           },
@@ -961,7 +1004,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'sm'
+                margin: 'none'
               }
             ]
           },

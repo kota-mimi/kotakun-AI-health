@@ -41,10 +41,14 @@ export async function POST(request: NextRequest) {
     // ユーザー名を取得
     const userName = await getUserName(userId);
 
+    // 体重比較のための前回体重を取得
+    const weightComparison = await getWeightComparison(userId, date);
+    
     // フィードバック用データを準備
     const feedbackData = {
       date: formatDate(date),
       weight: dailyData.weight,
+      weightComparison: weightComparison,
       calories: dailyData.meals.reduce((sum, meal) => sum + meal.calories, 0),
       protein: dailyData.meals.reduce((sum, meal) => sum + meal.protein, 0),
       fat: dailyData.meals.reduce((sum, meal) => sum + meal.fat, 0),
@@ -458,5 +462,65 @@ async function getWeightTrend(userId: string, currentDate: string): Promise<stri
   } catch (error) {
     console.error('体重変化分析エラー:', error);
     return '体重変化の分析中にエラーが発生しました';
+  }
+}
+
+// 体重比較データを取得（現在の体重 vs 前回の体重）
+async function getWeightComparison(userId: string, currentDate: string): Promise<{ current?: number; previous?: number; change?: number; changeText?: string }> {
+  try {
+    const db = admin.firestore();
+    const currentDateObj = new Date(currentDate);
+    
+    // 現在の日付の体重を取得
+    const currentRecordRef = db.doc(`users/${userId}/dailyRecords/${currentDate}`);
+    const currentRecordSnap = await currentRecordRef.get();
+    const currentWeight = currentRecordSnap.exists ? currentRecordSnap.data()?.weight : undefined;
+    
+    if (!currentWeight) {
+      return {};
+    }
+    
+    // 過去7日間で最も最近の体重記録を探す
+    let previousWeight = undefined;
+    for (let i = 1; i <= 7; i++) {
+      const pastDate = new Date(currentDateObj);
+      pastDate.setDate(pastDate.getDate() - i);
+      const pastDateString = pastDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      const pastRecordRef = db.doc(`users/${userId}/dailyRecords/${pastDateString}`);
+      const pastRecordSnap = await pastRecordRef.get();
+      
+      if (pastRecordSnap.exists && pastRecordSnap.data()?.weight) {
+        previousWeight = pastRecordSnap.data()?.weight;
+        break;
+      }
+    }
+    
+    if (!previousWeight) {
+      return { current: currentWeight };
+    }
+    
+    // 体重変化を計算
+    const change = Math.round((currentWeight - previousWeight) * 10) / 10;
+    let changeText = '';
+    
+    if (Math.abs(change) < 0.1) {
+      changeText = '変化なし';
+    } else if (change > 0) {
+      changeText = `+${change}kg`;
+    } else {
+      changeText = `${change}kg`;
+    }
+    
+    return {
+      current: currentWeight,
+      previous: previousWeight,
+      change: change,
+      changeText: changeText
+    };
+    
+  } catch (error) {
+    console.error('体重比較取得エラー:', error);
+    return {};
   }
 }
