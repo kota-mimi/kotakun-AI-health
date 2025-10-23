@@ -562,8 +562,9 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#6B7280',
                 align: 'end',
-                flex: 4,
-                wrap: true
+                flex: 6,
+                wrap: true,
+                maxLines: 2
               },
               {
                 type: 'text',
@@ -609,8 +610,9 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4,
-                    wrap: true
+                    flex: 6,
+                    wrap: true,
+                    maxLines: 2
                   },
                   {
                     type: 'text',
@@ -642,8 +644,9 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4,
-                    wrap: true
+                    flex: 6,
+                    wrap: true,
+                    maxLines: 2
                   },
                   {
                     type: 'text',
@@ -675,8 +678,9 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4,
-                    wrap: true
+                    flex: 6,
+                    wrap: true,
+                    maxLines: 2
                   },
                   {
                     type: 'text',
@@ -887,7 +891,7 @@ export function createDailyFeedbackFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '明日からのアクション',
+                text: '明日はこれを試してみて！',
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
@@ -895,51 +899,12 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
-                text: '【優先度 高】',
-                weight: 'bold',
-                size: 'sm',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 高】', '【優先度 中】') || '主要な改善ポイントに集中して取り組む',
+                text: extractSectionFromText(feedbackText, '■ 明日はこれを試してみて！', '') || '・朝食にタンパク質を意識した食事を選んでみよう\n・昼食では野菜を多めに摂取しよう\n・夕方に軽い運動を取り入れてみよう',
                 size: 'sm',
                 color: '#333333',
                 wrap: true,
-                margin: 'xs'
-              },
-              {
-                type: 'text',
-                text: '【優先度 中】',
-                weight: 'bold',
-                size: 'sm',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 中】', '【優先度 低】') || '食事バランスの微調整',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'xs'
-              },
-              {
-                type: 'text',
-                text: '【優先度 低】',
-                weight: 'bold',
-                size: 'sm',
-                color: '#1E90FF',
-                margin: 'md'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '【優先度 低】', '') || '運動メニューの多様化',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'xs'
+                margin: 'md',
+                maxLines: 10
               }
             ]
           },
