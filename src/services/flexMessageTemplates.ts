@@ -894,7 +894,7 @@ export function createDailyFeedbackFlexMessage(
                 text: '良かった点',
                 weight: 'bold',
                 size: 'md',
-                color: '#4CAF50',
+                color: '#4CAF50'
               },
               {
                 type: 'text',
