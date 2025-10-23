@@ -578,7 +578,7 @@ export function createDailyFeedbackFlexMessage(
                     align: 'end'
                   }
                 ],
-                flex: 2
+                flex: 3
               },
               {
                 type: 'text',
@@ -586,7 +586,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'xs',
                 color: calorieStatus.color,
                 align: 'end',
-                flex: 1,
+                flex: 2,
                 weight: 'bold'
               }
             ],
@@ -640,7 +640,7 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end'
                       }
                     ],
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'text',
@@ -648,7 +648,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: proteinStatus.color,
                     align: 'end',
-                    flex: 1,
+                    flex: 2,
                     weight: 'bold'
                   }
                 ],
@@ -688,7 +688,7 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end'
                       }
                     ],
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'text',
@@ -696,7 +696,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: fatStatus.color,
                     align: 'end',
-                    flex: 1,
+                    flex: 2,
                     weight: 'bold'
                   }
                 ],
@@ -736,7 +736,7 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end'
                       }
                     ],
-                    flex: 2
+                    flex: 3
                   },
                   {
                     type: 'text',
@@ -744,7 +744,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'xs',
                     color: carbsStatus.color,
                     align: 'end',
-                    flex: 1,
+                    flex: 2,
                     weight: 'bold'
                   }
                 ],
@@ -768,28 +768,54 @@ export function createDailyFeedbackFlexMessage(
               },
               // 運動リスト
               ...(feedbackData.exercises.length > 0 ? 
-                feedbackData.exercises.map(exercise => ({
-                  type: 'box',
-                  layout: 'horizontal',
-                  contents: [
-                    {
-                      type: 'text',
-                      text: `・${exercise.type}`,
-                      size: 'sm',
-                      color: '#374151',
-                      flex: 4
-                    },
-                    {
-                      type: 'text',
-                      text: `${exercise.duration}分`,
-                      size: 'sm',
-                      color: '#6B7280',
-                      align: 'end',
-                      flex: 2
-                    }
-                  ],
-                  margin: 'sm'
-                })) : 
+                feedbackData.exercises.map(exercise => {
+                  // 運動の詳細情報を構築
+                  const details = [];
+                  
+                  // 時間がある場合
+                  if (exercise.duration && exercise.duration > 0) {
+                    details.push(`${exercise.duration}分`);
+                  }
+                  
+                  // 筋トレの場合：重量・セット・回数
+                  if (exercise.weight && exercise.sets && exercise.reps) {
+                    details.push(`${exercise.weight}kg × ${exercise.reps}回 × ${exercise.sets}セット`);
+                  } else if (exercise.sets && exercise.reps) {
+                    details.push(`${exercise.reps}回 × ${exercise.sets}セット`);
+                  } else if (exercise.reps) {
+                    details.push(`${exercise.reps}回`);
+                  }
+                  
+                  // 距離がある場合
+                  if (exercise.distance) {
+                    details.push(`${exercise.distance}km`);
+                  }
+                  
+                  const detailText = details.length > 0 ? details.join(' ') : '記録あり';
+                  
+                  return {
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `・${exercise.type}`,
+                        size: 'sm',
+                        color: '#374151',
+                        flex: 3
+                      },
+                      {
+                        type: 'text',
+                        text: detailText,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 3
+                      }
+                    ],
+                    margin: 'sm'
+                  };
+                }) : 
                 [{
                   type: 'text',
                   text: '運動記録なし',
@@ -797,35 +823,7 @@ export function createDailyFeedbackFlexMessage(
                   color: '#9CA3AF',
                   margin: 'sm'
                 }]
-              ),
-              // 総運動時間
-              {
-                type: 'box',
-                layout: 'horizontal',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '総運動時間',
-                    size: 'sm',
-                    color: '#374151',
-                    weight: 'bold',
-                    flex: 4
-                  },
-                  {
-                    type: 'text',
-                    text: `${feedbackData.exerciseTime}分`,
-                    size: 'sm',
-                    color: '#059669',
-                    align: 'end',
-                    flex: 2,
-                    weight: 'bold'
-                  }
-                ],
-                margin: 'md',
-                backgroundColor: '#F0FDF4',
-                paddingAll: '8px',
-                cornerRadius: '6px'
-              }
+              )
             ]
           },
 
