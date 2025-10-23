@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  NAME: 'LINE健康管理',
+  NAME: 'こたくん',
   VERSION: '1.0.0',
   DESCRIPTION: 'AIを活用した個人向け健康管理サービス',
 } as const;
