@@ -618,13 +618,27 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.protein}g`,
-                    size: 'sm',
-                    color: '#DC2626',
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.protein}`,
+                        size: 'sm',
+                        color: '#DC2626',
+                        weight: 'bold',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetProtein}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        flex: 0
+                      }
+                    ],
                     align: 'end',
-                    flex: 2,
-                    weight: 'bold'
+                    flex: 2
                   },
                   {
                     type: 'text',
@@ -651,13 +665,27 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.fat}g`,
-                    size: 'sm',
-                    color: '#F59E0B',
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.fat}`,
+                        size: 'sm',
+                        color: '#F59E0B',
+                        weight: 'bold',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetFat}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        flex: 0
+                      }
+                    ],
                     align: 'end',
-                    flex: 2,
-                    weight: 'bold'
+                    flex: 2
                   },
                   {
                     type: 'text',
@@ -684,13 +712,27 @@ export function createDailyFeedbackFlexMessage(
                     flex: 2
                   },
                   {
-                    type: 'text',
-                    text: `${feedbackData.carbs}g`,
-                    size: 'sm',
-                    color: '#059669',
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `${feedbackData.carbs}`,
+                        size: 'sm',
+                        color: '#059669',
+                        weight: 'bold',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: `/${targetCarbs}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        flex: 0
+                      }
+                    ],
                     align: 'end',
-                    flex: 2,
-                    weight: 'bold'
+                    flex: 2
                   },
                   {
                     type: 'text',
