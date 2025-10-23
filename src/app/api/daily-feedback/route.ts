@@ -22,8 +22,10 @@ interface DailyRecord {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🚀🚀🚀 /api/daily-feedback 呼び出し開始！🚀🚀🚀');
   try {
     const { userId, date } = await request.json();
+    console.log('📋 Request data:', { userId, date });
 
     if (!userId || !date) {
       return NextResponse.json({ error: 'userId and date are required' }, { status: 400 });
