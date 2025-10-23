@@ -554,7 +554,7 @@ export function createDailyFeedbackFlexMessage(
                 text: '摂取カロリー',
                 size: 'sm',
                 color: '#374151',
-                flex: 2
+                flex: 1
               },
               {
                 type: 'text',
@@ -562,7 +562,7 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#6B7280',
                 align: 'end',
-                flex: 3,
+                flex: 4,
                 wrap: true
               },
               {
@@ -601,7 +601,7 @@ export function createDailyFeedbackFlexMessage(
                     text: 'タンパク質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 1
                   },
                   {
                     type: 'text',
@@ -609,7 +609,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3,
+                    flex: 4,
                     wrap: true
                   },
                   {
@@ -634,7 +634,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '脂質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 1
                   },
                   {
                     type: 'text',
@@ -642,7 +642,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3,
+                    flex: 4,
                     wrap: true
                   },
                   {
@@ -667,7 +667,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '炭水化物',
                     size: 'sm',
                     color: '#374151',
-                    flex: 2
+                    flex: 1
                   },
                   {
                     type: 'text',
@@ -675,7 +675,7 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 3,
+                    flex: 4,
                     wrap: true
                   },
                   {
