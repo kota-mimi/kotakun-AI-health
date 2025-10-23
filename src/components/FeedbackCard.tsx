@@ -68,7 +68,7 @@ export function FeedbackCard({
 
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4">
+      <div className="p-3">
         {/* ヘッダー */}
         <div 
           className="flex items-center justify-between cursor-pointer"
