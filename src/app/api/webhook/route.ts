@@ -518,7 +518,7 @@ async function handleFollow(replyToken: string, source: any) {
     altText: 'LINE健康管理へようこそ！',
     template: {
       type: 'buttons',
-      text: 'LINE健康管理へようこそ！\n\nあなた専用の健康プランを作成しませんか？',
+      text: 'こんにちは！こたくんです！\n\n健康管理をお手伝いするために、あなたについていくつか教えてもらえる？',
       actions: [{
         type: 'uri',
         label: 'カウンセリング開始',
