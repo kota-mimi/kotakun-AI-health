@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from './ui/card';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FeedbackData {
   date: string;
@@ -98,9 +98,9 @@ export function FeedbackCard({
               </button>
             )}
             {isExpanded ? (
-              <ChevronUpIcon className="h-5 w-5 text-slate-400" />
+              <ChevronUp className="h-5 w-5 text-slate-400" />
             ) : (
-              <ChevronDownIcon className="h-5 w-5 text-slate-400" />
+              <ChevronDown className="h-5 w-5 text-slate-400" />
             )}
           </div>
         </div>
@@ -144,9 +144,9 @@ export function FeedbackCard({
                   >
                     <h3 className="font-semibold text-blue-900">🍽️ 食事評価</h3>
                     {expandedSections.food ? (
-                      <ChevronUpIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
-                      <ChevronDownIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronDown className="h-4 w-4 text-blue-600" />
                     )}
                   </div>
                   {expandedSections.food && (
@@ -175,9 +175,9 @@ export function FeedbackCard({
                   >
                     <h3 className="font-semibold text-blue-900">🏃‍♂️ 運動評価</h3>
                     {expandedSections.exercise ? (
-                      <ChevronUpIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
-                      <ChevronDownIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronDown className="h-4 w-4 text-blue-600" />
                     )}
                   </div>
                   {expandedSections.exercise && (
@@ -206,9 +206,9 @@ export function FeedbackCard({
                   >
                     <h3 className="font-semibold text-blue-900">💡 総合アドバイス</h3>
                     {expandedSections.overall ? (
-                      <ChevronUpIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronUp className="h-4 w-4 text-blue-600" />
                     ) : (
-                      <ChevronDownIcon className="h-4 w-4 text-blue-600" />
+                      <ChevronDown className="h-4 w-4 text-blue-600" />
                     )}
                   </div>
                   {expandedSections.overall && (
