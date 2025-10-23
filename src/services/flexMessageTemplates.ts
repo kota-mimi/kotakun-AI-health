@@ -470,6 +470,29 @@ export function createDailyFeedbackFlexMessage(
   const fatAchievement = Math.round((feedbackData.fat / targetFat) * 100);
   const carbsAchievement = Math.round((feedbackData.carbs / targetCarbs) * 100);
 
+  // 達成状況の判定と色分け
+  const getAchievementStatus = (value: number, type: 'calorie' | 'protein' | 'fat' | 'carbs') => {
+    if (type === 'calorie') {
+      if (value >= 90 && value <= 110) return { text: '良好', color: '#059669' };
+      if (value < 90) return { text: '不足', color: '#DC2626' };
+      return { text: '過多', color: '#EA580C' };
+    }
+    if (type === 'protein') {
+      if (value >= 80) return { text: '良好', color: '#059669' };
+      return { text: '不足', color: '#DC2626' };
+    }
+    if (type === 'fat' || type === 'carbs') {
+      if (value >= 70 && value <= 120) return { text: '良好', color: '#059669' };
+      if (value < 70) return { text: '不足', color: '#DC2626' };
+      return { text: '過多', color: '#EA580C' };
+    }
+  };
+
+  const calorieStatus = getAchievementStatus(calorieAchievement, 'calorie');
+  const proteinStatus = getAchievementStatus(proteinAchievement, 'protein');
+  const fatStatus = getAchievementStatus(fatAchievement, 'fat');
+  const carbsStatus = getAchievementStatus(carbsAchievement, 'carbs');
+
   return {
     type: 'flex',
     altText: `${userName ? userName + 'さんの' : ''}${feedbackData.date}の1日フィードバック`,
@@ -491,14 +514,6 @@ export function createDailyFeedbackFlexMessage(
             color: '#ffffff',
             size: 'lg',
             align: 'center'
-          },
-          {
-            type: 'text',
-            text: `${feedbackData.date} アクティビティサマリー`,
-            color: '#ffffff',
-            size: 'sm',
-            align: 'center',
-            margin: 'xs'
           }
         ],
         backgroundColor: '#1E90FF',
@@ -539,7 +554,7 @@ export function createDailyFeedbackFlexMessage(
                 text: '摂取カロリー',
                 size: 'sm',
                 color: '#374151',
-                flex: 3
+                flex: 2
               },
               {
                 type: 'text',
@@ -547,15 +562,16 @@ export function createDailyFeedbackFlexMessage(
                 size: 'sm',
                 color: '#6B7280',
                 align: 'end',
-                flex: 4
+                flex: 3,
+                wrap: true
               },
               {
                 type: 'text',
-                text: `(${calorieAchievement}%)`,
+                text: calorieStatus.text,
                 size: 'sm',
-                color: calorieAchievement >= 90 && calorieAchievement <= 110 ? '#059669' : '#DC2626',
+                color: calorieStatus.color,
                 align: 'end',
-                flex: 2,
+                flex: 1,
                 weight: 'bold'
               }
             ],
@@ -585,7 +601,7 @@ export function createDailyFeedbackFlexMessage(
                     text: 'タンパク質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 3
+                    flex: 2
                   },
                   {
                     type: 'text',
@@ -593,15 +609,16 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4
+                    flex: 3,
+                    wrap: true
                   },
                   {
                     type: 'text',
-                    text: `(${proteinAchievement}%)`,
+                    text: proteinStatus.text,
                     size: 'sm',
-                    color: proteinAchievement >= 80 ? '#059669' : '#DC2626',
+                    color: proteinStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
@@ -617,7 +634,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '脂質',
                     size: 'sm',
                     color: '#374151',
-                    flex: 3
+                    flex: 2
                   },
                   {
                     type: 'text',
@@ -625,15 +642,16 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4
+                    flex: 3,
+                    wrap: true
                   },
                   {
                     type: 'text',
-                    text: `(${fatAchievement}%)`,
+                    text: fatStatus.text,
                     size: 'sm',
-                    color: fatAchievement >= 70 && fatAchievement <= 120 ? '#059669' : '#DC2626',
+                    color: fatStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
@@ -649,7 +667,7 @@ export function createDailyFeedbackFlexMessage(
                     text: '炭水化物',
                     size: 'sm',
                     color: '#374151',
-                    flex: 3
+                    flex: 2
                   },
                   {
                     type: 'text',
@@ -657,15 +675,16 @@ export function createDailyFeedbackFlexMessage(
                     size: 'sm',
                     color: '#6B7280',
                     align: 'end',
-                    flex: 4
+                    flex: 3,
+                    wrap: true
                   },
                   {
                     type: 'text',
-                    text: `(${carbsAchievement}%)`,
+                    text: carbsStatus.text,
                     size: 'sm',
-                    color: carbsAchievement >= 70 && carbsAchievement <= 120 ? '#059669' : '#DC2626',
+                    color: carbsStatus.color,
                     align: 'end',
-                    flex: 2,
+                    flex: 1,
                     weight: 'bold'
                   }
                 ],
