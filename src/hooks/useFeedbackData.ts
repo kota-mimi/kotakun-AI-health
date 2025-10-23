@@ -29,6 +29,69 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     setIsClient(true);
   }, []);
 
+  // 自動でフィードバックデータを取得
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const fetchFeedbackData = async () => {
+      const lineUserId = liffUser?.userId;
+      const dateStr = getDateKey(selectedDate);
+      
+      if (!lineUserId) return;
+      
+      // 未来の日付は取得しない
+      const today = getDateKey(new Date());
+      if (dateStr > today) return;
+      
+      // キャッシュキー生成
+      const cacheKey = createCacheKey('feedback', lineUserId, dateStr);
+      
+      // キャッシュチェック
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData) {
+        console.log('📊 フィードバックデータをキャッシュから取得');
+        setFeedbackData(cachedData);
+        return;
+      }
+      
+      try {
+        console.log('🔄 フィードバックデータをAPIから取得');
+        const response = await fetch('/api/daily-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lineUserId,
+            date: dateStr
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const feedbackText = result.feedback || '';
+          
+          // フィードバックテキストが存在する場合のみ処理
+          if (feedbackText.trim()) {
+            const parsedFeedback = parseFeedbackText(feedbackText);
+            
+            const feedbackData = {
+              date: dateStr,
+              feedback: feedbackText,
+              ...parsedFeedback
+            };
+            
+            // キャッシュに保存（30分間有効）
+            apiCache.set(cacheKey, feedbackData, 30 * 60 * 1000);
+            setFeedbackData(feedbackData);
+          }
+        }
+      } catch (error) {
+        console.error('フィードバック取得エラー:', error);
+      }
+    };
+
+    fetchFeedbackData();
+  }, [selectedDate, liffUser?.userId, isClient]);
+
   // 日付のキーを生成（日本時間基準で統一）
   const getDateKey = (date: Date) => {
     return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });

@@ -76,7 +76,7 @@ export function FeedbackCard({
         >
           <div className="flex items-center space-x-3">
             <div className="text-lg font-semibold text-slate-900">
-              📊 フィードバック
+              フィードバック
             </div>
             {hasFeedbackData && (
               <div className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
