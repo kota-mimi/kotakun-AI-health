@@ -8,12 +8,14 @@ import { useMealData } from '@/hooks/useMealData';
 import { useExerciseData } from '@/hooks/useExerciseData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
+import { useFeedbackData } from '@/hooks/useFeedbackData';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { WeightCard } from '@/components/WeightCard';
 import { CalorieCard } from '@/components/CalorieCard';
 import { MealSummaryCard } from '@/components/MealSummaryCard';
 import { WorkoutSummaryCard } from '@/components/WorkoutSummaryCard';
+import { FeedbackCard } from '@/components/FeedbackCard';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { AddMealModal } from '@/components/AddMealModal';
 import { EditMealModal } from '@/components/EditMealModal';
@@ -122,6 +124,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
   );
 
   const weightManager = useWeightData(
+    navigation?.selectedDate || new Date(),
+    dateBasedDataManager?.dateBasedData || {},
+    updateDateData
+  );
+
+  const feedbackManager = useFeedbackData(
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
     updateDateData
@@ -275,6 +283,17 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   onUpdateExercise={(exerciseId, updates) => exerciseManager.handleUpdateExercise?.(exerciseId, updates)}
                 />
               )}
+            </div>
+
+            {/* フィードバックカード */}
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              <FeedbackCard
+                feedbackData={feedbackManager.feedbackData}
+                isLoading={feedbackManager.isLoading}
+                hasFeedbackData={feedbackManager.hasFeedbackData}
+                onGenerateFeedback={feedbackManager.generateFeedback}
+                selectedDate={navigation.selectedDate}
+              />
             </div>
           </div>
 
