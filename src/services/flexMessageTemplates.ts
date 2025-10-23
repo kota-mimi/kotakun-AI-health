@@ -888,6 +888,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -941,6 +942,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'lg',
                 color: '#1E90FF',
+                margin: 'none'
               },
               {
                 type: 'text',
