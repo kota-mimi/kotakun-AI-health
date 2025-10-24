@@ -9,7 +9,6 @@ import {
   Dumbbell,
   BarChart3
 } from 'lucide-react';
-import { CompactHeader } from './CompactHeader';
 import { MealAnalysisPage } from './MealAnalysisPage';
 import { WeightDetailPage } from './WeightDetailPage';
 import { ExercisePage } from './ExercisePage';
@@ -118,24 +117,26 @@ export function DataManagementPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 背景装飾 */}
-      <div className="" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>
-      
-      {/* 日付ヘッダー（一番上に移動） */}
-      <CompactHeader
-        currentDate={selectedDate}
-        onDateSelect={onDateSelect}
-        onCalendar={handleCalendar}
-        onNavigateToProfile={() => {}}
-        onNavigateToData={onBack}
-      />
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 overflow-y-auto">
       {/* ヘッダー */}
-
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft size={20} />
+            <span>戻る</span>
+          </Button>
+          <h1 className="text-lg font-semibold text-gray-800">データ管理</h1>
+          <div className="w-16"></div> {/* スペーサー */}
+        </div>
+      </div>
       
       {/* タブナビゲーション */}
-      <div className="relative px-4 pt-2 pb-2">
+      <div className="relative px-4 pt-4 pb-2">
         <div className="bg-slate-100/80 rounded-2xl p-1 flex">
           {tabs.map((tab) => {
             const Icon = tab.icon;

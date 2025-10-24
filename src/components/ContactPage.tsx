@@ -98,62 +98,79 @@ export function ContactPage({ onBack }: ContactPageProps) {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50 relative flex items-center justify-center">
-        <Card className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mx-4">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle size={32} className="text-success" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-800 mb-2">送信完了</h2>
-              <p className="text-sm text-slate-600 mb-4">
-                お問い合わせありがとうございます。<br />
-                24時間以内にご返信いたします。
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Button 
-                onClick={onBack}
-                variant="outline"
-                className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50"
-              >
-                戻る
-              </Button>
-              <Button 
-                onClick={onBack}
-                className="flex-1 bg-health-primary hover:bg-health-primary-dark text-white"
-              >
-                ホームへ
-              </Button>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto">
+        {/* ヘッダー */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="flex items-center justify-between p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+            >
+              <ArrowLeft size={20} />
+              <span>戻る</span>
+            </Button>
+            <h1 className="text-lg font-semibold text-gray-800">お問い合わせ</h1>
+            <div className="w-16"></div> {/* スペーサー */}
           </div>
-        </Card>
+        </div>
+
+        <div className="p-4 pb-20 space-y-6 flex items-center justify-center min-h-[60vh]">
+          <Card className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mx-4">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle size={32} className="text-success" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-800 mb-2">送信完了</h2>
+                <p className="text-sm text-slate-600 mb-4">
+                  お問い合わせありがとうございます。<br />
+                  24時間以内にご返信いたします。
+                </p>
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  onClick={onBack}
+                  variant="outline"
+                  className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                  戻る
+                </Button>
+                <Button 
+                  onClick={onBack}
+                  className="flex-1 bg-health-primary hover:bg-health-primary-dark text-white"
+                >
+                  ホームへ
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
-      
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 overflow-y-auto">
       {/* ヘッダー */}
-      <div className="relative px-4 pt-4 pb-2">
-        <div className="flex items-center space-x-3 mb-4">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="p-2 hover:bg-white/60"
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
           >
             <ArrowLeft size={20} />
+            <span>戻る</span>
           </Button>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-800">お問い合わせ</h1>
-          </div>
+          <h1 className="text-lg font-semibold text-gray-800">お問い合わせ</h1>
+          <div className="w-16"></div> {/* スペーサー */}
         </div>
       </div>
 
-      {/* メインコンテンツ */}
-      <div className="relative px-4 py-2 pb-20 space-y-4">
+      <div className="p-4 pb-20 space-y-6">
 
         {/* お問い合わせフォーム */}
         <Card className="bg-white shadow-sm border border-gray-200 rounded-lg p-4">

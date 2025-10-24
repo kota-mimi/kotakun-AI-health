@@ -50,28 +50,25 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
   ];
 
   return (
-    <>
-      {/* 戻るボタン */}
-      <div className="absolute top-4 left-4 z-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="p-2 rounded-xl bg-white hover:bg-gray-100 shadow-sm border border-gray-200"
-        >
-          <ArrowLeft size={20} style={{color: '#4682B4'}} />
-        </Button>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 overflow-y-auto">
       {/* ヘッダー */}
-      <div className="px-4 pt-16 pb-6">
-        <div className="text-center">
-          <h1 className="font-semibold text-slate-800 mb-2">体重記録設定</h1>
-          <p className="text-sm text-slate-600">記録・表示する項目を選択してください</p>
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft size={20} />
+            <span>戻る</span>
+          </Button>
+          <h1 className="text-lg font-semibold text-gray-800">体重記録設定</h1>
+          <div className="w-16"></div> {/* スペーサー */}
         </div>
       </div>
 
-      <div className="space-y-4 px-4 pb-20">
+      <div className="p-4 pb-20 space-y-6">
         {/* 設定項目 */}
         <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <div className="space-y-4">
@@ -157,6 +154,6 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
           </div>
         </Card>
       </div>
-    </>
+    </div>
   );
 }

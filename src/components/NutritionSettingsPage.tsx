@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
-import { CompactHeader } from './CompactHeader';
 import { 
   ArrowLeft,
   Settings,
@@ -93,35 +92,25 @@ export function NutritionSettingsPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
-      {/* 背景装飾 */}
-      
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50 overflow-y-auto">
       {/* ヘッダー */}
-      <CompactHeader
-        currentDate={new Date()}
-        onDateSelect={() => {}}
-        onCalendar={() => {}}
-        customContent={
-          <div className="flex items-center justify-between w-full">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="text-slate-700 hover:bg-gray-100 rounded-lg p-2"
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            <div className="text-center flex-1">
-              <h1 className="font-semibold text-slate-800">栄養素設定</h1>
-              <p className="text-xs text-slate-600">表示する栄養素を選択</p>
-            </div>
-            <div className="w-8"></div>
-          </div>
-        }
-      />
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft size={20} />
+            <span>戻る</span>
+          </Button>
+          <h1 className="text-lg font-semibold text-gray-800">栄養素設定</h1>
+          <div className="w-16"></div> {/* スペーサー */}
+        </div>
+      </div>
 
-      {/* メインコンテンツ */}
-      <div className="relative px-4 py-4 pb-24 space-y-4">
+      <div className="p-4 pb-20 space-y-6">
         {/* 概要カード */}
         <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
