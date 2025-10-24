@@ -87,8 +87,8 @@ export async function POST(request: NextRequest) {
         aiAnalysis: {
           nutritionPlan: {
             dailyCalories: results.targetCalories,
-            bmr: results.bmr,
-            tdee: results.tdee,
+            bmr: results.bmr || null,
+            tdee: results.tdee || null,
             macros: results.pfc
           }
         },

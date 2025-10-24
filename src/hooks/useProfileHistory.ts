@@ -188,11 +188,12 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
   }
 
   // 📅 プロフィール履歴がない場合のフォールバック: 最新のaiAnalysis
-  if (counselingFallback?.aiAnalysis?.nutritionPlan?.bmr && counselingFallback?.aiAnalysis?.nutritionPlan?.tdee) {
+  if (counselingFallback?.aiAnalysis?.nutritionPlan?.dailyCalories) {
+    // BMRとTDEEが存在する場合は使用、なければ動的計算用の値は後で設定
     const fallbackValues = {
       targetCalories: counselingFallback.aiAnalysis.nutritionPlan.dailyCalories,
-      bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr,
-      tdee: counselingFallback.aiAnalysis.nutritionPlan.tdee,
+      bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr || 0,
+      tdee: counselingFallback.aiAnalysis.nutritionPlan.tdee || 0,
       macros: counselingFallback.aiAnalysis.nutritionPlan.macros || {
         protein: Math.round((counselingFallback.aiAnalysis.nutritionPlan.dailyCalories * 0.25) / 4),
         fat: Math.round((counselingFallback.aiAnalysis.nutritionPlan.dailyCalories * 0.30) / 9),
