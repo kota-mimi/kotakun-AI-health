@@ -8,7 +8,7 @@ import { NumberPickerModal } from './NumberPickerModal';
 interface ExerciseEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { type: string; duration: number; calories: number; reps?: number; weight?: number; setsCount?: number; distance?: number; steps?: number }) => void;
+  onSubmit: (data: { type: string; duration: number; calories: number; reps?: number; weight?: number; setsCount?: number; distance?: number }) => void;
   userWeight: number;
 }
 
@@ -52,7 +52,6 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   const [customExerciseName, setCustomExerciseName] = useState('');
   const [duration, setDuration] = useState(0);
   const [distance, setDistance] = useState(0);
-  const [steps, setSteps] = useState(0);
   const [sets, setSets] = useState<ExerciseSet[]>([{ weight: 0, reps: 0 }]);
   const [isStrengthDropdownOpen, setIsStrengthDropdownOpen] = useState(false);
   const [customStrengthExercises, setCustomStrengthExercises] = useState<StrengthExercise[]>([]);
@@ -104,7 +103,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   // ピッカーモーダル状態
   const [pickerState, setPickerState] = useState<{
     isOpen: boolean;
-    type: 'duration' | 'distance' | 'steps' | 'weight' | 'reps';
+    type: 'duration' | 'distance' | 'weight' | 'reps';
     title: string;
     min: number;
     max: number;
@@ -288,26 +287,23 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
       calories: estimatedCalories
     };
 
-    // 有酸素運動の場合は距離・歩数を追加
+    // 有酸素運動の場合は距離を追加
     if (exerciseType === 'cardio') {
       if (distance > 0) exerciseData.distance = distance;
-      if (steps > 0) exerciseData.steps = steps;
     }
 
     // 筋トレの場合はセット情報を追加
     if (exerciseType === 'strength') {
-      const validSets = sets.filter(set => set.weight > 0 && set.reps > 0);
+      // 回数が入力されているセットを有効とする（重量は0でもOK）
+      const validSets = sets.filter(set => set.reps > 0);
       if (validSets.length > 0) {
         exerciseData.sets = validSets;
-      } else {
-        // 回数のみの記録の場合
-        const totalReps = sets.reduce((sum, set) => sum + (set.reps > 0 ? set.reps : 0), 0);
-        const totalWeight = sets.reduce((sum, set) => sum + (set.weight > 0 ? set.weight : 0), 0);
-        if (totalReps > 0) {
-          exerciseData.reps = totalReps;
-          if (totalWeight > 0) exerciseData.weight = totalWeight;
-          exerciseData.setsCount = sets.filter(set => set.reps > 0).length;
-        }
+        // 合計回数と重量も追加（表示用）
+        const totalReps = validSets.reduce((sum, set) => sum + set.reps, 0);
+        const totalWeight = validSets.reduce((sum, set) => sum + (set.weight || 0), 0);
+        exerciseData.reps = totalReps;
+        if (totalWeight > 0) exerciseData.weight = totalWeight;
+        exerciseData.setsCount = validSets.length;
       }
     }
 
@@ -320,7 +316,6 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
     setCustomOtherExerciseName('');
     setDuration(0);
     setDistance(0);
-    setSteps(0);
     setSets([{ weight: 0, reps: 0 }]);
     setIsStrengthDropdownOpen(false);
     onClose();
@@ -346,7 +341,7 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
   };
   
   // ピッカー開く
-  const openPicker = (type: 'duration' | 'distance' | 'steps' | 'weight' | 'reps', setIndex?: number) => {
+  const openPicker = (type: 'duration' | 'distance' | 'weight' | 'reps', setIndex?: number) => {
     let config = { min: 0, max: 100, value: 0, step: 1, unit: '', title: '' };
     
     switch (type) {
@@ -368,16 +363,6 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
           step: 0.5,
           unit: 'km',
           title: '距離'
-        };
-        break;
-      case 'steps':
-        config = {
-          min: 0,
-          max: 50000,
-          value: steps,
-          step: 100,
-          unit: '歩',
-          title: '歩数'
         };
         break;
       case 'weight':
@@ -418,9 +403,6 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
         break;
       case 'distance':
         setDistance(value);
-        break;
-      case 'steps':
-        setSteps(value);
         break;
       case 'weight':
         if (pickerState.setIndex !== undefined) {
@@ -568,20 +550,6 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
                 </button>
               </div>
               
-              {/* 歩数入力（ウォーキングのみ） */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 text-sm">歩数（任意）</Label>
-                <button
-                  type="button"
-                  onClick={() => openPicker('steps')}
-                  className="w-full py-3 px-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors"
-                >
-                  <div className="text-xl font-semibold text-slate-800">
-                    {steps.toLocaleString()}
-                    <span className="text-base text-slate-500 ml-1">歩</span>
-                  </div>
-                </button>
-              </div>
             </>
           )}
 
