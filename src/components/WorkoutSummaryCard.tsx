@@ -266,8 +266,8 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           <span className="text-xs text-slate-500">{exercise.time}</span>
                         </div>
                         <div className="text-right">
-                          {/* 重量とセット数がある場合は表示しない（下の詳細で表示）、回数のみの場合のみ回数表示 */}
-                          {exercise.reps && exercise.reps > 0 && exercise.duration === 0 && (!exercise.weight || exercise.weight === 0) && (!exercise.setsCount || exercise.setsCount <= 1) && (!exercise.weightSets || exercise.weightSets.length === 0) && (!exercise.sets || exercise.sets.length === 0) ? (
+                          {/* 回数表示を優先、時間表示、その他の順 */}
+                          {exercise.reps && exercise.reps > 0 ? (
                             <div className="font-bold text-slate-800">{exercise.reps}<span className="text-xs text-slate-600 ml-1">回</span></div>
                           ) : exercise.duration && exercise.duration > 0 ? (
                             <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
