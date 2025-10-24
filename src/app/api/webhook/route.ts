@@ -941,7 +941,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         console.log('✅ 通常モードに戻る処理完了:', userId);
         
         // AIコメント付きのメッセージを送信
-        const message = aiComment + '\n\n通常モードに戻りました！\nAIアドバイス機能が使えるようになりました。';
+        const message = aiComment + '\n\n通常モードに戻ったよ！また記録してね！';
         
         await replyMessage(replyToken, [{
           type: 'text',
@@ -4179,53 +4179,57 @@ function extractSection(lines: string[], sectionStart: string): string[] {
   );
 }
 
-// 記録モード中＋最近5〜10件の記録データを取得
+// 記録モード中に記録されたデータのみ取得
 async function getRecentRecordsForComment(userId: string, recordModeStartTime: number): Promise<any> {
   try {
     const db = admin.firestore();
     const now = new Date();
     const startTime = new Date(recordModeStartTime);
     
-    // 最近7日間のデータを取得（記録モード期間を含む範囲）
+    // 記録モード中のデータのみ取得
     const records = {
       meals: [] as any[],
       exercises: [] as any[],
       weights: [] as any[]
     };
     
-    // 過去7日分のdailyRecordsを確認
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    // 今日の記録のみチェック（記録モードは基本的に当日内で使用）
+    const today = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const recordRef = db.doc(`users/${userId}/dailyRecords/${today}`);
+    const recordSnap = await recordRef.get();
+    
+    if (recordSnap.exists) {
+      const data = recordSnap.data();
       
-      const recordRef = db.doc(`users/${userId}/dailyRecords/${dateStr}`);
-      const recordSnap = await recordRef.get();
+      // 記録モード期間中に記録されたもののみフィルタ
+      const isInRecordMode = (timestamp: any) => {
+        if (!timestamp) return false;
+        const recordTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return recordTime >= startTime && recordTime <= now;
+      };
       
-      if (recordSnap.exists) {
-        const data = recordSnap.data();
-        
-        // 食事記録
-        if (data?.meals) {
-          records.meals.push(...data.meals.map(meal => ({ ...meal, date: dateStr })));
-        }
-        
-        // 運動記録
-        if (data?.exercises) {
-          records.exercises.push(...data.exercises.map(ex => ({ ...ex, date: dateStr })));
-        }
-        
-        // 体重記録
-        if (data?.weight) {
-          records.weights.push({ ...data.weight, date: dateStr });
+      // 食事記録（記録モード中のもののみ）
+      if (data?.meals) {
+        records.meals = data.meals.filter(meal => 
+          isInRecordMode(meal.createdAt || meal.timestamp)
+        );
+      }
+      
+      // 運動記録（記録モード中のもののみ）
+      if (data?.exercises) {
+        records.exercises = data.exercises.filter(ex => 
+          isInRecordMode(ex.createdAt || ex.timestamp)
+        );
+      }
+      
+      // 体重記録（記録モード中のもののみ）
+      if (data?.weight) {
+        const weightTime = data.weight.createdAt || data.weight.timestamp;
+        if (isInRecordMode(weightTime)) {
+          records.weights.push(data.weight);
         }
       }
     }
-    
-    // 最新順にソートして最大10件に制限
-    records.meals = records.meals.sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime()).slice(0, 10);
-    records.exercises = records.exercises.sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime()).slice(0, 10);
-    records.weights = records.weights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
     
     console.log('📊 記録モード終了時データ取得:', {
       userId,
@@ -4286,14 +4290,14 @@ ${dataText}
 
 【コメントの条件】
 - 1行で簡潔に（30文字以内）
-- 自然で親しみやすい口調
-- 具体的な記録内容に言及
+- 通常の会話と同じ親しみやすい口調（「だね」「～じゃん」「いいね」など）
+- 具体的な記録内容に言及してお疲れさまの気持ちを表現
 - 前向きで励ましの要素を含む
 
 例：
-- "カレーライスいいね！でも、もう少しタンパク質取ったほうがいいかも！"
-- "腕立て伏せ20回？すごいじゃん！"
-- "いい感じで進んでるね！"
+- "腹筋100回お疲れさま！しっかり頑張ってるね✨"
+- "朝食パンいいね！エネルギー補給できたね"
+- "体重記録ありがとう！継続が大事だよ"
 
 コメントのみを返してください（説明不要）：
 `;
