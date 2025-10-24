@@ -106,6 +106,7 @@ export interface Exercise {
   reps?: number;
   weight?: number;
   distance?: number;
+  steps?: number; // 歩数
   timeOfDay?: string; // Time of day (morning, evening, etc.)
   totalSets?: number;
   avgWeight?: number;

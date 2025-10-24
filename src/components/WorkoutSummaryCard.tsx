@@ -19,6 +19,7 @@ interface Exercise {
   duration: number;
   time: string;
   distance?: number;
+  steps?: number; // 歩数
   sets?: ExerciseSet[];
   setsCount?: number;
   reps?: number;
@@ -323,8 +324,9 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                           );
                         }
                         
-                        // その他の詳細情報（距離、時間など）
+                        // その他の詳細情報（距離、歩数、時間など）
                         const parts = [];
+                        if (exercise.steps && exercise.steps > 0) parts.push(`${exercise.steps.toLocaleString()}歩`);
                         if (exercise.distance && exercise.distance > 0) parts.push(`${exercise.distance}km`);
                         if (exercise.duration && exercise.duration > 0 && (!exercise.reps || exercise.reps === 0) && (!exercise.weight || exercise.weight === 0)) parts.push(`${exercise.duration}分`);
                         
