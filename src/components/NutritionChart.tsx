@@ -71,7 +71,7 @@ export function NutritionChart({ data, period, weeklyData }: NutritionChartProps
               重量: {data.grams}g
             </div>
             <div className="text-sm text-slate-600">
-              割合: {((data.value / (proteinCalories + fatCalories + carbsCalories)) * 100).toFixed(1)}%
+              割合: {(proteinCalories + fatCalories + carbsCalories) > 0 ? ((data.value / (proteinCalories + fatCalories + carbsCalories)) * 100).toFixed(1) : '0.0'}%
             </div>
           </div>
         </div>

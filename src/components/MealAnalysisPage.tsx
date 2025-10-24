@@ -121,10 +121,10 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
   const nutrition = calculateDailyNutrition();
   
   // 達成率計算
-  const calorieProgress = Math.round((nutrition.calories / nutrition.targets.calories) * 100);
-  const proteinProgress = Math.round((nutrition.protein / nutrition.targets.protein) * 100);
-  const fatProgress = Math.round((nutrition.fat / nutrition.targets.fat) * 100);
-  const carbsProgress = Math.round((nutrition.carbs / nutrition.targets.carbs) * 100);
+  const calorieProgress = Number(((nutrition.calories / nutrition.targets.calories) * 100).toFixed(1));
+  const proteinProgress = Number(((nutrition.protein / nutrition.targets.protein) * 100).toFixed(1));
+  const fatProgress = Number(((nutrition.fat / nutrition.targets.fat) * 100).toFixed(1));
+  const carbsProgress = Number(((nutrition.carbs / nutrition.targets.carbs) * 100).toFixed(1));
 
   // トレンド計算
   const yesterdayCalories = weeklyTrends[weeklyTrends.length - 2]?.calories || 0;
@@ -274,7 +274,7 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
                                   option.key === 'carbs' ? nutrition.carbs :
                                   nutrition.extended[option.key as keyof typeof nutrition.extended];
                 const targetValue = nutrition.targets[option.key as keyof typeof nutrition.targets];
-                const progress = Math.round((currentValue / targetValue) * 100);
+                const progress = Number(((currentValue / targetValue) * 100).toFixed(1));
                 
                 return (
                   <div key={option.key}>
