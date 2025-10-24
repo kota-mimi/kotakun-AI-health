@@ -91,7 +91,7 @@ export function DataManagementModal({
         }
       }}
     >
-      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      <div className="bg-white rounded-xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl"
            onClick={(e) => e.stopPropagation()}>
         {/* ヘッダー */}
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">

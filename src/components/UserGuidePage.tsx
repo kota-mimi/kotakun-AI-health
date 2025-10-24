@@ -8,7 +8,7 @@ interface UserGuidePageProps {
 
 export function UserGuidePage({ onBack }: UserGuidePageProps) {
   return (
-    <div className="min-h-screen bg-gray-50 max-w-sm mx-auto relative">
+    <div className="min-h-screen bg-gray-50 relative">
       
       {/* ヘッダー */}
       <div className="relative px-4 pt-4 pb-2">
@@ -30,7 +30,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
 
       {/* メインコンテンツ */}
       <div className="relative px-4 py-8 pb-20 flex items-center justify-center min-h-[60vh]">
-        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-8 text-center max-w-xs">
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-8 text-center mx-4">
           <div className="space-y-4">
             <div className="w-16 h-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center">
               <BookOpen size={32} className="text-slate-400" />

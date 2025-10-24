@@ -79,7 +79,7 @@ export function StepsSettingsModal({ isOpen, onClose, onSave }: StepsSettingsMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl">
+      <DialogContent className="w-full mx-4 bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Footprints size={20} style={{color: '#22C55E'}} />

@@ -63,7 +63,7 @@ export function SummaryEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg">
             {mealTypeLabels[mealType]}の合計を編集

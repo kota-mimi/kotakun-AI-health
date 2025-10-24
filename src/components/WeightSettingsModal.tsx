@@ -79,7 +79,7 @@ export function WeightSettingsModal({
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-t-2xl w-full max-w-sm mx-auto p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-2xl w-full mx-4 p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div>

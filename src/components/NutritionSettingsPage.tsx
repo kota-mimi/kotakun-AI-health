@@ -93,7 +93,7 @@ export function NutritionSettingsPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-sm mx-auto relative">
+    <div className="min-h-screen bg-gray-50 relative">
       {/* 背景装飾 */}
       
       {/* ヘッダー */}
@@ -210,7 +210,7 @@ export function NutritionSettingsPage({
       </div>
 
       {/* 固定フッター */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-sm mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <div className="flex space-x-3">
           <Button
             variant="outline"

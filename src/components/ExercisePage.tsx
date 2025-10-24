@@ -273,7 +273,7 @@ export function ExercisePage({
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : "min-h-screen bg-gray-50 max-w-sm mx-auto relative"}>
+    <div className="min-h-screen bg-gray-50 relative">
       
       {!hideHeader && (
         <CompactHeader

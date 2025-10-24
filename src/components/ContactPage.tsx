@@ -98,7 +98,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gray-50 max-w-sm mx-auto relative flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 relative flex items-center justify-center">
         <Card className="bg-white shadow-sm border border-gray-200 rounded-lg p-6 mx-4">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto">
@@ -133,7 +133,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-sm mx-auto relative">
+    <div className="min-h-screen bg-gray-50 relative">
       
       {/* ヘッダー */}
       <div className="relative px-4 pt-4 pb-2">

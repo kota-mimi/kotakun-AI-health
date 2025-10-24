@@ -92,7 +92,7 @@ export function WeightEntryModal({ isOpen, onClose, onSubmit, currentWeight }: W
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 space-y-6 shadow-2xl">
+      <div className="bg-white rounded-2xl w-full mx-4 p-6 space-y-6 shadow-2xl">
         {/* ヘッダー */}
         <div className="flex items-center justify-between">
           <div>

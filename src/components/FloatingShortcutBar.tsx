@@ -29,7 +29,7 @@ export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercis
   if (isExpanded) {
     return (
       <div className="fixed bottom-28 left-0 right-0 z-50 px-4">
-        <div className="mx-auto max-w-lg">
+        <div className="mx-auto">
           <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-slate-900">クイック記録</h3>
