@@ -553,34 +553,36 @@ export function ExerciseEntryModal({ isOpen, onClose, onSubmit, userWeight }: Ex
 
           {/* 距離入力（ウォーキング・ランニングのみ） */}
           {selectedExercise && (selectedExercise.id === 'walking' || selectedExercise.id === 'running') && (
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">距離（任意）</Label>
-              <button
-                type="button"
-                onClick={() => openPicker('distance')}
-                className="w-full py-3 px-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors"
-              >
-                <div className="text-xl font-semibold text-slate-800">
-                  {distance}
-                  <span className="text-base text-slate-500 ml-1">km</span>
-                </div>
-              </button>
-            </div>
-            
-            {/* 歩数入力（ウォーキングのみ） */}
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">歩数（任意）</Label>
-              <button
-                type="button"
-                onClick={() => openPicker('steps')}
-                className="w-full py-3 px-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors"
-              >
-                <div className="text-xl font-semibold text-slate-800">
-                  {steps.toLocaleString()}
-                  <span className="text-base text-slate-500 ml-1">歩</span>
-                </div>
-              </button>
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">距離（任意）</Label>
+                <button
+                  type="button"
+                  onClick={() => openPicker('distance')}
+                  className="w-full py-3 px-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors"
+                >
+                  <div className="text-xl font-semibold text-slate-800">
+                    {distance}
+                    <span className="text-base text-slate-500 ml-1">km</span>
+                  </div>
+                </button>
+              </div>
+              
+              {/* 歩数入力（ウォーキングのみ） */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">歩数（任意）</Label>
+                <button
+                  type="button"
+                  onClick={() => openPicker('steps')}
+                  className="w-full py-3 px-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors"
+                >
+                  <div className="text-xl font-semibold text-slate-800">
+                    {steps.toLocaleString()}
+                    <span className="text-base text-slate-500 ml-1">歩</span>
+                  </div>
+                </button>
+              </div>
+            </>
           )}
 
           {/* 筋トレ種目選択 */}
