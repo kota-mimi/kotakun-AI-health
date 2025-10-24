@@ -55,28 +55,23 @@ async function isCounselingCompleted(userId: string): Promise<boolean> {
   }
 }
 
-// カウンセリング誘導メッセージを送信
+// カウンセリング誘導メッセージを送信（友達追加時と同じ形式）
 async function sendCounselingPrompt(replyToken: string, actionName: string) {
-  const appUrl = process.env.NEXT_PUBLIC_LIFF_ID 
-    ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/counseling`
-    : `${process.env.NEXT_PUBLIC_APP_URL}/counseling`;
-
-  await replyMessage(replyToken, [{
-    type: 'text',
-    text: `${actionName}を利用するには、まず初期設定（カウンセリング）を完了する必要があります。\n\n下のボタンから設定を開始してください。`,
-    quickReply: {
-      items: [
-        {
-          type: 'action',
-          action: {
-            type: 'uri',
-            label: '初期設定を開始',
-            uri: appUrl
-          }
-        }
-      ]
+  const counselingMessage = {
+    type: 'template',
+    altText: `${actionName}を利用するには初期設定が必要です`,
+    template: {
+      type: 'buttons',
+      text: `${actionName}を利用するには、まず初期設定（カウンセリング）を完了する必要があります。\n\nあなたについていくつか教えてもらえる？`,
+      actions: [{
+        type: 'uri',
+        label: 'カウンセリング開始',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/counseling` : `${process.env.NEXT_PUBLIC_APP_URL}/counseling`
+      }]
     }
-  }]);
+  };
+
+  await replyMessage(replyToken, [counselingMessage]);
 }
 
 // 記録モード統一クイックリプライ
