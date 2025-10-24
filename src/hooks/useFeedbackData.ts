@@ -13,7 +13,6 @@ interface FeedbackData {
     goodPoints: string;
     improvements: string;
   };
-  overallAdvice: string;
 }
 
 export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
@@ -107,12 +106,9 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     const foodImprovements = foodSection.split('改善点:')[1]?.trim() || '・野菜不足が気になります\n・水分補給を意識してください';
     
     // 運動評価セクションを抽出
-    const exerciseSection = extractSection(lines, '■ 運動評価', '■ 総合アドバイス');
+    const exerciseSection = extractSection(lines, '■ 運動評価', '');
     const exerciseGoodPoints = exerciseSection.split('改善提案:')[0].replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです';
     const exerciseImprovements = exerciseSection.split('改善提案:')[1]?.trim() || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加';
-    
-    // 総合アドバイスセクションを抽出
-    const overallAdvice = extractSection(lines, '■ 総合アドバイス', '').trim() || '・今日もお疲れさま！継続が何より大切だから、自分のペースで頑張ろうね。';
     
     return {
       foodEvaluation: {
@@ -122,8 +118,7 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
       exerciseEvaluation: {
         goodPoints: exerciseGoodPoints,
         improvements: exerciseImprovements
-      },
-      overallAdvice
+      }
     };
   };
 

@@ -15,7 +15,6 @@ interface FeedbackData {
     goodPoints: string;
     improvements: string;
   };
-  overallAdvice: string;
 }
 
 interface FeedbackCardProps {
@@ -38,8 +37,7 @@ export function FeedbackCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     food: false,
-    exercise: false,
-    overall: false
+    exercise: false
   });
   
   // カウンセリング状態を取得
@@ -69,7 +67,7 @@ export function FeedbackCard({
     return dateKey > todayKey;
   };
 
-  const toggleSection = (section: 'food' | 'exercise' | 'overall') => {
+  const toggleSection = (section: 'food' | 'exercise') => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -190,27 +188,6 @@ export function FeedbackCard({
                   )}
                 </div>
 
-                {/* 総合アドバイスセクション */}
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                  <div 
-                    className="bg-blue-50 px-4 py-3 cursor-pointer flex items-center justify-between"
-                    onClick={() => toggleSection('overall')}
-                  >
-                    <h3 className="font-semibold text-blue-900">総合アドバイス</h3>
-                    {expandedSections.overall ? (
-                      <ChevronUp className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-blue-600" />
-                    )}
-                  </div>
-                  {expandedSections.overall && (
-                    <div className="p-4">
-                      <p className="text-sm text-slate-700 whitespace-pre-line">
-                        {feedbackData.overallAdvice}
-                      </p>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
