@@ -221,7 +221,15 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
 
 💪 運動記録:
 - 総運動時間: ${exerciseTime}分
-- 運動内容: ${data.exercises.map(ex => `${ex.type}${ex.duration}分`).join(', ') || '未実施'}
+- 運動内容: ${data.exercises.map(ex => {
+  const details = [];
+  if (ex.duration > 0) details.push(`${ex.duration}分`);
+  if (ex.reps > 0) details.push(`${ex.reps}回`);
+  if (ex.weight > 0) details.push(`${ex.weight}kg`);
+  if (ex.setsCount > 0) details.push(`${ex.setsCount}セット`);
+  if (ex.distance > 0) details.push(`${ex.distance}km`);
+  return `${ex.displayName || ex.type}${details.length > 0 ? ` (${details.join(', ')})` : ''}`;
+}).join(', ') || '未実施'}
 
 🍽️ 食事詳細:
 ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
