@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
       date: formatDate(date),
       weight: dailyData.weight,
       weightComparison: weightComparison,
-      calories: dailyData.meals.reduce((sum, meal) => sum + meal.calories, 0),
-      protein: dailyData.meals.reduce((sum, meal) => sum + meal.protein, 0),
-      fat: dailyData.meals.reduce((sum, meal) => sum + meal.fat, 0),
-      carbs: dailyData.meals.reduce((sum, meal) => sum + meal.carbs, 0),
+      calories: Math.round(dailyData.meals.reduce((sum, meal) => sum + meal.calories, 0)),
+      protein: Number(dailyData.meals.reduce((sum, meal) => sum + meal.protein, 0).toFixed(1)),
+      fat: Number(dailyData.meals.reduce((sum, meal) => sum + meal.fat, 0).toFixed(1)),
+      carbs: Number(dailyData.meals.reduce((sum, meal) => sum + meal.carbs, 0).toFixed(1)),
       exerciseTime: dailyData.exercises.reduce((sum, ex) => sum + ex.duration, 0),
       exercises: dailyData.exercises.map(ex => ({ type: ex.type, duration: ex.duration })),
       mealCount: dailyData.meals.length
@@ -173,10 +173,10 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
 // AIを使ってフィードバックを生成
 async function generateDailyFeedback(data: DailyRecord, date: string, targetValues?: any, userId?: string): Promise<string> {
   // 栄養データを計算
-  const totalCalories = data.meals.reduce((sum, meal) => sum + meal.calories, 0);
-  const totalProtein = data.meals.reduce((sum, meal) => sum + meal.protein, 0);
-  const totalFat = data.meals.reduce((sum, meal) => sum + meal.fat, 0);
-  const totalCarbs = data.meals.reduce((sum, meal) => sum + meal.carbs, 0);
+  const totalCalories = Math.round(data.meals.reduce((sum, meal) => sum + meal.calories, 0));
+  const totalProtein = Number(data.meals.reduce((sum, meal) => sum + meal.protein, 0).toFixed(1));
+  const totalFat = Number(data.meals.reduce((sum, meal) => sum + meal.fat, 0).toFixed(1));
+  const totalCarbs = Number(data.meals.reduce((sum, meal) => sum + meal.carbs, 0).toFixed(1));
   const totalExerciseTime = data.exercises.reduce((sum, ex) => sum + ex.duration, 0);
 
   // 詳細分析のためのデータ計算
@@ -192,10 +192,10 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   const targetFat = targetValues?.macros?.fat || 67;
   const targetCarbs = targetValues?.macros?.carbs || 250;
   
-  const calorieAchievement = Math.round((totalCalories / targetCalories) * 100);
-  const proteinAchievement = Math.round((totalProtein / targetProtein) * 100);
-  const fatAchievement = Math.round((totalFat / targetFat) * 100);
-  const carbsAchievement = Math.round((totalCarbs / targetCarbs) * 100);
+  const calorieAchievement = Number(((totalCalories / targetCalories) * 100).toFixed(1));
+  const proteinAchievement = Number(((totalProtein / targetProtein) * 100).toFixed(1));
+  const fatAchievement = Number(((totalFat / targetFat) * 100).toFixed(1));
+  const carbsAchievement = Number(((totalCarbs / targetCarbs) * 100).toFixed(1));
   
   // 体重変化の分析（過去3日間の体重を取得して比較）
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
