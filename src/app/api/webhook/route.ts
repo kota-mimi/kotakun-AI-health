@@ -488,70 +488,179 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
   try {
     console.log('🔥 シンプル画像処理開始:', { userId, messageId });
     
-    // AIアドバイスモード中かチェック
-    const isAdviceMode = await isAIAdviceMode(userId);
-    
-    if (isAdviceMode) {
-      // AIアドバイスモード中は画像記録を無効化
+    // 処理中チェック（重複画像処理防止）
+    if (isProcessing(userId)) {
+      console.log('⏳ 処理中: 画像処理を無視');
       await replyMessage(replyToken, [{
         type: 'text',
-        text: 'AIアドバイスモード中は画像での記録はできません。\n\n画像について相談されたい場合は、まず通常モードに戻ってから再度お試しください。'
+        text: '処理中です。少々お待ちください...'
       }]);
       return;
     }
     
-    // Loading Animation開始（AIが画像分析中）
-    await startLoadingAnimation(userId, 30);
+    // 処理開始フラグを設定
+    setProcessing(userId, true);
     
-    // 1. 画像を取得
-    const imageContent = await getImageContent(messageId);
-    if (!imageContent) {
-      await stopLoadingAnimation(userId);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '画像がうまく受け取れなかった！もう一度送ってみて？'
-      }]);
-      return;
-    }
-
-    // 2. AI分析実行
-    const aiService = new AIHealthService();
-    const mealAnalysis = await aiService.analyzeMealFromImage(imageContent);
-    
-    // 3. 食事画像かどうかチェック
-    if (!mealAnalysis.isFoodImage) {
-      // 食事じゃない画像の場合：一般AIで会話
-      const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId);
+    try {
+      // AIアドバイスモード中かチェック
+      const isAdviceMode = await isAIAdviceMode(userId);
       
-      // 会話履歴を保存
-      if (aiResponse) {
-        await aiService.saveConversation(userId, '画像を送信', aiResponse);
+      if (isAdviceMode) {
+        // AIアドバイスモード中は画像記録を無効化
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: 'AIアドバイスモード中は画像での記録はできません。\n\n画像について相談されたい場合は、まず通常モードに戻ってから再度お試しください。'
+        }]);
+        return;
+      }
+    
+      // Loading Animation開始（AIが画像分析中）
+      await startLoadingAnimation(userId, 30);
+      
+      // 1. 画像を取得
+      const imageContent = await getImageContent(messageId);
+      if (!imageContent) {
+        await stopLoadingAnimation(userId);
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '画像がうまく受け取れなかった！もう一度送ってみて？',
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: 'テキストで記録',
+                  data: 'action=open_keyboard',
+                  inputOption: 'openKeyboard'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'camera',
+                  label: 'カメラで記録'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '通常モードに戻る',
+                  data: 'action=exit_record_mode'
+                }
+              }
+            ]
+          }
+        }]);
+        return;
+      }
+
+      // 2. AI分析実行
+      const aiService = new AIHealthService();
+      const mealAnalysis = await aiService.analyzeMealFromImage(imageContent);
+      
+      // 3. 食事画像かどうかチェック
+      if (!mealAnalysis.isFoodImage) {
+        // 食事じゃない画像の場合：一般AIで会話
+        const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId);
+        
+        // 会話履歴を保存
+        if (aiResponse) {
+          await aiService.saveConversation(userId, '画像を送信', aiResponse);
+        }
+        
+        await stopLoadingAnimation(userId);
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: aiResponse
+        }]);
+        return;
       }
       
+      // 4. 食事画像の場合：画像をキャッシュに保存し、分析結果を一時保存
+      const imageCacheKey = cacheImage(userId, imageContent);
+      await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
+      
+      // 5. 食事タイプ選択のクイックリプライ表示
+      await showMealTypeSelection(replyToken);
+      await stopLoadingAnimation(userId);
+      
+      console.log('🔥 シンプル画像処理完了');
+      
+    } catch (error) {
+      console.error('🔥 画像処理エラー:', error);
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
-        text: aiResponse
+        text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: 'テキストで記録',
+                data: 'action=open_keyboard',
+                inputOption: 'openKeyboard'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'camera',
+                label: 'カメラで記録'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'postback',
+                label: '通常モードに戻る',
+                data: 'action=exit_record_mode'
+              }
+            }
+          ]
+        }
       }]);
-      return;
+    } finally {
+      // 処理完了フラグをクリア
+      setProcessing(userId, false);
     }
-    
-    // 4. 食事画像の場合：画像をキャッシュに保存し、分析結果を一時保存
-    const imageCacheKey = cacheImage(userId, imageContent);
-    await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
-    
-    // 5. 食事タイプ選択のクイックリプライ表示
-    await showMealTypeSelection(replyToken);
-    await stopLoadingAnimation(userId);
-    
-    console.log('🔥 シンプル画像処理完了');
-    
-  } catch (error) {
-    console.error('🔥 画像処理エラー:', error);
-    await stopLoadingAnimation(userId);
+  } catch (outerError) {
+    // 外側のtryブロックでのエラー（処理フラグ設定前のエラー）
+    console.error('🔥 画像処理外側エラー:', outerError);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？'
+      text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: 'テキストで記録',
+              data: 'action=open_keyboard',
+              inputOption: 'openKeyboard'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'camera',
+              label: 'カメラで記録'
+            }
+          },
+          {
+            type: 'action',
+            action: {
+              type: 'postback',
+              label: '通常モードに戻る',
+              data: 'action=exit_record_mode'
+            }
+          }
+        ]
+      }
     }]);
   }
 }
