@@ -184,7 +184,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                   カテゴリ
                 </label>
                 <Select onValueChange={setSelectedCategory} value={selectedCategory}>
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger className="bg-white border border-gray-300">
                     <SelectValue placeholder="カテゴリを選択してください" />
                   </SelectTrigger>
                   <SelectContent>
@@ -206,7 +206,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="お名前を入力してください"
-                  className="bg-white"
+                  className="bg-white border border-gray-300"
                 />
               </div>
 
@@ -220,7 +220,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="メールアドレスを入力してください"
-                  className="bg-white"
+                  className="bg-white border border-gray-300"
                 />
               </div>
 
@@ -233,7 +233,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="お問い合わせの件名を入力してください"
-                  className="bg-white"
+                  className="bg-white border border-gray-300"
                 />
               </div>
 
@@ -247,7 +247,7 @@ export function ContactPage({ onBack }: ContactPageProps) {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="詳細な内容をお書きください。不具合の場合は、発生した状況や操作手順もお教えください。"
                   rows={5}
-                  className="bg-white"
+                  className="bg-white border border-gray-300"
                 />
               </div>
 
