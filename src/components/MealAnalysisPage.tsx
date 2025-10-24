@@ -173,7 +173,7 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : ""}>
+    <div className={hideHeader ? "min-h-screen bg-white relative" : ""}>
       {/* 背景装飾 - hideHeaderの場合のみ */}
       {hideHeader && (
         <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 via-transparent to-indigo-50/20 pointer-events-none" style={{background: 'linear-gradient(135deg, rgba(70, 130, 180, 0.1) 0%, transparent 50%, rgba(70, 130, 180, 0.05) 100%)'}}></div>

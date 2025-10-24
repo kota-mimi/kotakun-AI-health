@@ -131,7 +131,7 @@ export function WeightDetailPage({
   };
 
   return (
-    <div className={hideHeader ? "min-h-screen bg-gray-50 relative" : ""}>
+    <div className={hideHeader ? "min-h-screen bg-white relative" : ""}>
       
       {!hideHeader && (
         <>

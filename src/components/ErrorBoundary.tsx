@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // デフォルトエラーUI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-white px-4">
           <div className="w-full mx-4 bg-white rounded-lg shadow-lg p-6 text-center">
             <div className="mb-4">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">

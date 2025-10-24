@@ -50,7 +50,7 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 overflow-y-auto">
+    <div className="min-h-screen bg-white overflow-y-auto">
       {/* ヘッダー */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
