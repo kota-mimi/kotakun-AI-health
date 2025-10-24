@@ -81,8 +81,8 @@ async function createRichMenu(accessToken: string) {
           height: 632
         },
         action: {
-          type: "uri",
-          uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+          type: "postback",
+          data: "action=open_dashboard"
         }
       },
       {
