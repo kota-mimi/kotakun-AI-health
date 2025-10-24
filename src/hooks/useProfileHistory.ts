@@ -272,13 +272,14 @@ function calculateDynamicValues(answers: any) {
     }
     
     // カウンセリングページと同じTDEE計算
-    const activityLevel = answers.activityLevel || 'light';
+    // アクティビティレベルが取得できない場合は、より安全なデフォルト値を使用
+    const activityLevel = answers.activityLevel || 'moderate'; // lightからmoderateに変更
     const multipliers = {
       sedentary: 1.2,
       light: 1.375,
       moderate: 1.55
     };
-    const tdee = bmr * (multipliers[activityLevel] || 1.375);
+    const tdee = bmr * (multipliers[activityLevel] || 1.55); // 1.375から1.55に変更
     
     // カウンセリングページと同じターゲットカロリー計算
     const goal = answers.primaryGoal || 'weight_loss';
