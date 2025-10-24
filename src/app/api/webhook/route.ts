@@ -941,7 +941,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         console.log('✅ 通常モードに戻る処理完了:', userId);
         
         // AIコメント付きのメッセージを送信
-        const message = aiComment + '\n\n通常モードに戻ったよ！また記録してね！';
+        const message = aiComment + '\n\n通常モードに戻ったよー！';
         
         await replyMessage(replyToken, [{
           type: 'text',
