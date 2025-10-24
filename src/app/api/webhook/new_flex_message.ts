@@ -917,6 +917,253 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
   };
 }
 
+// 運動カテゴリ判定関数（拡張版）
+function determineExerciseCategory(exercise: any): string {
+  const name = exercise.name || exercise.exerciseName || '';
+  const type = exercise.type || exercise.exerciseType || '';
+  
+  // 既存のtypeが設定されている場合は優先
+  if (type && ['cardio', 'strength', 'sports', 'flexibility', 'daily', 'water', 'martial_arts', 'dance', 'winter'].includes(type)) {
+    return type;
+  }
+  
+  // 運動名から判定
+  const exerciseName = name.toLowerCase();
+  
+  // 水中運動
+  if (/水泳|プール|泳|サーフィン|ダイビング|カヤック|ウィンドサーフィン|水中/.test(exerciseName)) {
+    return 'water';
+  }
+  
+  // 格闘技
+  if (/空手|柔道|剣道|ボクシング|キック|格闘技|武術|合気道/.test(exerciseName)) {
+    return 'martial_arts';
+  }
+  
+  // ダンス
+  if (/ダンス|踊|社交|ヒップホップ|エアロビクス|バレエ/.test(exerciseName)) {
+    return 'dance';
+  }
+  
+  // ウィンタースポーツ
+  if (/スキー|スノーボード|スケート|雪/.test(exerciseName)) {
+    return 'winter';
+  }
+  
+  // 柔軟性・ストレッチ
+  if (/ヨガ|ピラティス|ストレッチ|太極拳|柔軟/.test(exerciseName)) {
+    return 'flexibility';
+  }
+  
+  // 筋力トレーニング
+  if (/筋トレ|腕立て|腹筋|背筋|スクワット|ベンチ|デッド|プレス|懸垂|バーベル|ダンベル|重量/.test(exerciseName)) {
+    return 'strength';
+  }
+  
+  // 有酸素運動
+  if (/ランニング|ジョギング|ウォーキング|歩|走|サイクリング|自転車|ハイキング|エアロ/.test(exerciseName)) {
+    return 'cardio';
+  }
+  
+  // スポーツ・球技
+  if (/野球|サッカー|テニス|バスケ|バレー|卓球|バドミントン|ゴルフ|ボウリング|スポーツ|クライミング/.test(exerciseName)) {
+    return 'sports';
+  }
+  
+  // 日常活動
+  if (/家事|掃除|ガーデニング|階段|買い物|日常/.test(exerciseName)) {
+    return 'daily';
+  }
+  
+  // デフォルト（既存のtypeフィールドがある場合はそれを使用、なければcardio）
+  return type || 'cardio';
+}
+
+// カテゴリ別の表示項目を決定する関数
+function getDisplayItemsForCategory(category: string, exercise: any): any[] {
+  const details = [];
+  
+  // 基本的な時間表示（ほぼ全カテゴリで使用）
+  if (exercise.duration && exercise.duration > 0) {
+    details.push(createDetailRow('時間', `${exercise.duration}分`));
+  }
+  
+  switch (category) {
+    case 'cardio': // 有酸素運動
+      if (exercise.steps && exercise.steps > 0) {
+        details.push(createDetailRow('歩数', `${exercise.steps.toLocaleString()}歩`));
+      }
+      if (exercise.distance && exercise.distance > 0) {
+        details.push(createDetailRow('距離', `${exercise.distance}km`));
+        if (exercise.duration && exercise.duration > 0) {
+          const pace = (exercise.duration / exercise.distance).toFixed(1);
+          details.push(createDetailRow('ペース', `${pace}分/km`));
+        }
+      }
+      break;
+      
+    case 'strength': // 筋力トレーニング
+      if (exercise.weightSets && exercise.weightSets.length > 0) {
+        exercise.weightSets.forEach((weightSet: any, index: number) => {
+          let displayText = '';
+          if (weightSet.weight && weightSet.weight > 0) {
+            displayText = `${weightSet.weight}kg × ${weightSet.reps}回`;
+            if (weightSet.sets && weightSet.sets > 1) {
+              displayText += ` × ${weightSet.sets}セット`;
+            }
+          } else {
+            displayText = `${weightSet.reps}回`;
+            if (weightSet.sets && weightSet.sets > 1) {
+              displayText += ` × ${weightSet.sets}セット`;
+            }
+          }
+          details.push(createDetailRow(`セット${index + 1}`, displayText));
+        });
+      } else {
+        if (exercise.sets && exercise.sets > 0 && exercise.reps && exercise.reps > 0) {
+          let displayText = '';
+          if (exercise.weight && exercise.weight > 0) {
+            displayText = `${exercise.weight}kg × ${exercise.reps}回 × ${exercise.sets}セット`;
+          } else {
+            displayText = `${exercise.reps}回 × ${exercise.sets}セット`;
+          }
+          details.push(createDetailRow('セット', displayText));
+        } else if (exercise.reps && exercise.reps > 0) {
+          details.push(createDetailRow('回数', `${exercise.reps}回`));
+        }
+        if (exercise.weight && exercise.weight > 0 && !exercise.weightSets) {
+          details.push(createDetailRow('重量', `${exercise.weight}kg`));
+        }
+      }
+      if (exercise.totalReps && exercise.totalReps > 0) {
+        details.push(createDetailRow('総回数', `${exercise.totalReps}回`));
+      }
+      break;
+      
+    case 'water': // 水中運動
+      if (exercise.distance && exercise.distance > 0) {
+        details.push(createDetailRow('距離', `${exercise.distance}km`));
+      }
+      if (exercise.intensity) {
+        const intensityMap = { 'low': '軽め', 'moderate': '中程度', 'high': '激しい', 'light': '軽い', 'medium': '中程度' };
+        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'sports': // スポーツ・球技
+      if (exercise.intensity) {
+        const intensityMap = { 'low': '練習', 'moderate': '通常', 'high': '試合', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'flexibility': // ストレッチ・ヨガ
+      if (exercise.intensity) {
+        const intensityMap = { 'low': 'リラックス', 'moderate': '通常', 'high': 'パワー', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'martial_arts': // 格闘技
+      if (exercise.reps && exercise.reps > 0) {
+        details.push(createDetailRow('技数', `${exercise.reps}回`));
+      }
+      if (exercise.intensity) {
+        const intensityMap = { 'low': '基本', 'moderate': '練習', 'high': '試合', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'dance': // ダンス
+      if (exercise.intensity) {
+        const intensityMap = { 'low': 'ゆっくり', 'moderate': '通常', 'high': '激しい', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('テンポ', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'winter': // ウィンタースポーツ
+      if (exercise.distance && exercise.distance > 0) {
+        details.push(createDetailRow('距離', `${exercise.distance}km`));
+      }
+      if (exercise.intensity) {
+        const intensityMap = { 'low': '初心者', 'moderate': '中級', 'high': '上級', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    case 'daily': // 日常活動
+      if (exercise.intensity) {
+        const intensityMap = { 'low': '軽い', 'moderate': '普通', 'high': '激しい', 'light': '軽め', 'medium': '中程度' };
+        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
+      }
+      break;
+      
+    default:
+      // その他の場合は基本的な情報のみ
+      if (exercise.reps && exercise.reps > 0) {
+        details.push(createDetailRow('回数', `${exercise.reps}回`));
+      }
+      if (exercise.distance && exercise.distance > 0) {
+        details.push(createDetailRow('距離', `${exercise.distance}km`));
+      }
+      break;
+  }
+  
+  // 消費カロリー表示（全カテゴリ共通・青色表示）
+  if (exercise.calories || exercise.caloriesBurned) {
+    details.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'sm',
+      contents: [
+        {
+          type: 'text',
+          text: '消費カロリー',
+          size: 'sm',
+          color: '#666666',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: `${exercise.calories || exercise.caloriesBurned || 0}kcal`,
+          size: 'sm',
+          color: '#4a90e2',
+          weight: 'bold',
+          flex: 0
+        }
+      ]
+    });
+  }
+  
+  return details;
+}
+
+// 詳細行作成ヘルパー関数
+function createDetailRow(label: string, value: string) {
+  return {
+    type: 'box',
+    layout: 'horizontal',
+    margin: 'sm',
+    contents: [
+      {
+        type: 'text',
+        text: label,
+        size: 'sm',
+        color: '#666666',
+        flex: 1
+      },
+      {
+        type: 'text',
+        text: value,
+        size: 'sm',
+        color: '#333333',
+        weight: 'bold',
+        flex: 0
+      }
+    ]
+  };
+}
+
 // 運動記録用のFlexメッセージ
 export function createExerciseFlexMessage(exerciseData: any, originalText?: string) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
@@ -929,6 +1176,10 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
   // 単一運動の場合
   const exercise = exerciseData.exercise || exerciseData;
   console.log('🏃‍♂️ Flexメッセージ作成 - exercise data:', JSON.stringify(exercise, null, 2));
+  
+  // 運動カテゴリの判定（拡張版）
+  const exerciseType = determineExerciseCategory(exercise);
+  console.log('🏃‍♂️ 運動カテゴリ判定結果:', exerciseType);
   
   // displayNameから回数を抽出してrepsに設定（フォールバック）
   if (!exercise.reps && exercise.displayName) {
@@ -981,226 +1232,11 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     }
   ];
 
-  // 運動詳細を追加
-  const details = [];
-  
-  if (exercise.duration && exercise.duration > 0) {
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '時間',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${exercise.duration}分`,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-
-  // weightSetsがある場合（複数重量パターン）
-  if (exercise.weightSets && exercise.weightSets.length > 0) {
-    exercise.weightSets.forEach((weightSet, index) => {
-      details.push({
-        type: 'box',
-        layout: 'horizontal',
-        margin: 'sm',
-        contents: [
-          {
-            type: 'text',
-            text: `セット${index + 1}`,
-            size: 'sm',
-            color: '#666666',
-            flex: 1
-          },
-          {
-            type: 'text',
-            text: `${weightSet.weight && weightSet.weight > 0 ? `${weightSet.weight}kg × ` : ''}${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
-            size: 'sm',
-            color: '#333333',
-            weight: 'bold',
-            flex: 0
-          }
-        ]
-      });
-    });
-  } else if (exercise.sets && exercise.sets > 0 && exercise.reps && exercise.reps > 0) {
-    // 通常のセット・回数表示（重量も含める）
-    let displayText = '';
-    if (exercise.weight && exercise.weight > 0) {
-      displayText = `${exercise.weight}kg × ${exercise.reps}回 × ${exercise.sets}セット`;
-    } else {
-      displayText = `${exercise.reps}回 × ${exercise.sets}セット`;
-    }
-    
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: 'セット',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: displayText,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-
-  // 単純な回数表示（weightSetsもsetsもない場合）
-  if (exercise.reps && exercise.reps > 0 && (!exercise.weightSets || exercise.weightSets.length === 0) && (!exercise.sets || exercise.sets <= 1)) {
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '回数',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${exercise.reps}回`,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-
-  if (exercise.weight && exercise.weight > 0 && !exercise.weightSets) {
-    // weightSetsがない場合のみ単体重量表示
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '重量',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${exercise.weight}kg`,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-
-  if (exercise.distance) {
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '距離',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${exercise.distance}km`,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-
-  // 強度は表示しない（ユーザー要望により非表示）
-  /*
-  if (exercise.intensity) {
-    details.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '強度',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: exercise.intensity,
-          size: 'sm',
-          color: '#333333',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
-  */
+  // カテゴリ別の動的詳細表示
+  const details = getDisplayItemsForCategory(exerciseType, exercise);
 
   // 詳細を追加
   contents.push(...details);
-
-  // カロリー表示
-  if (exercise.calories || exercise.caloriesBurned) {
-    contents.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '消費カロリー',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${exercise.calories || exercise.caloriesBurned || 0}kcal`,
-          size: 'sm',
-          color: '#4a90e2',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
 
   return {
     type: 'flex',

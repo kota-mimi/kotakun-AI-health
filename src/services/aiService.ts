@@ -1051,11 +1051,15 @@ class AIHealthService {
 - 時間・場所の表現（朝、夜、今日、昨日、ジムで、公園で、家で、etc）
 
 運動の分類：
-- "strength": 筋トレ、ウェイトトレーニング（腹筋、腕立て、スクワット、ベンチプレス、etc）
-- "cardio": 有酸素運動（ランニング、ジョギング、ウォーキング、サイクリング、etc）
-- "sports": スポーツ活動（野球、サッカー、テニス、バスケ、バレー、etc）
-- "flexibility": ストレッチ、ヨガ、ピラティス
-- "daily": 日常活動（掃除、階段昇降、買い物、etc）
+- "strength": 筋トレ、ウェイトトレーニング（腹筋、腕立て、スクワット、ベンチプレス、懸垂、バーベル、ダンベル、etc）
+- "cardio": 有酸素運動（ランニング、ジョギング、ウォーキング、歩行、サイクリング、ハイキング、etc）
+- "sports": スポーツ活動（野球、サッカー、テニス、バスケ、バレー、卓球、バドミントン、ゴルフ、etc）
+- "water": 水中運動（水泳、プール、サーフィン、ダイビング、カヤック、ウィンドサーフィン、水中エアロ、etc）
+- "martial_arts": 格闘技（空手、柔道、剣道、ボクシング、キックボクシング、武術、合気道、etc）
+- "dance": ダンス（社交ダンス、ヒップホップダンス、バレエ、エアロビクスダンス、踊り、etc）
+- "winter": ウィンタースポーツ（スキー、スノーボード、アイススケート、雪かき、etc）
+- "flexibility": ストレッチ、ヨガ、ピラティス、太極拳、柔軟
+- "daily": 日常活動（掃除、階段昇降、買い物、家事、ガーデニング、etc）
 
 **重要：記録モード中はより敏感に判定し、運動の可能性があるものは積極的に記録として扱う**
 
@@ -1077,6 +1081,10 @@ class AIHealthService {
 例：
 - 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", displayName: "野球", duration: 0, intensity: null
 - 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", displayName: "ランニング", duration: 0, intensity: "light", timeOfDay: "朝"
+- 「プールで泳いだ」→ isMultipleExercises: false, exerciseType: "water", exerciseName: "水泳", displayName: "水泳", duration: 0
+- 「空手の練習した」→ isMultipleExercises: false, exerciseType: "martial_arts", exerciseName: "空手", displayName: "空手", duration: 0
+- 「社交ダンス踊った」→ isMultipleExercises: false, exerciseType: "dance", exerciseName: "社交ダンス", displayName: "社交ダンス", duration: 0
+- 「スキーしてきた」→ isMultipleExercises: false, exerciseType: "winter", exerciseName: "スキー", displayName: "スキー", duration: 0
 - 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋運動", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
 - 「腕立て10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
 - 「腕立て 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
