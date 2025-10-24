@@ -929,12 +929,23 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       setProcessing(userId, true);
       
       try {
+        // 記録モード開始時間を取得
+        const recordModeStartTime = recordModeUsers.get(userId) || Date.now();
+        
+        // 記録データを取得してAIコメントを生成
+        const records = await getRecentRecordsForComment(userId, recordModeStartTime);
+        const aiComment = await generateExitComment(records, userId);
+        
+        // 記録モードを終了
         await setRecordMode(userId, false);
         console.log('✅ 通常モードに戻る処理完了:', userId);
         
+        // AIコメント付きのメッセージを送信
+        const message = aiComment + '\n\n通常モードに戻りました！\nAIアドバイス機能が使えるようになりました。';
+        
         await replyMessage(replyToken, [{
           type: 'text',
-          text: '通常モードに戻りました！\n\nAIアドバイス機能が使えるようになりました。'
+          text: message
         }]);
       } catch (error) {
         console.error('❌ 通常モードに戻る処理エラー:', error);
@@ -4166,4 +4177,132 @@ function extractSection(lines: string[], sectionStart: string): string[] {
   return lines.slice(startIndex + 1, endIndex).filter(line => 
     line.trim() && !line.includes('━━━')
   );
+}
+
+// 記録モード中＋最近5〜10件の記録データを取得
+async function getRecentRecordsForComment(userId: string, recordModeStartTime: number): Promise<any> {
+  try {
+    const db = admin.firestore();
+    const now = new Date();
+    const startTime = new Date(recordModeStartTime);
+    
+    // 最近7日間のデータを取得（記録モード期間を含む範囲）
+    const records = {
+      meals: [] as any[],
+      exercises: [] as any[],
+      weights: [] as any[]
+    };
+    
+    // 過去7日分のdailyRecordsを確認
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      const recordRef = db.doc(`users/${userId}/dailyRecords/${dateStr}`);
+      const recordSnap = await recordRef.get();
+      
+      if (recordSnap.exists) {
+        const data = recordSnap.data();
+        
+        // 食事記録
+        if (data?.meals) {
+          records.meals.push(...data.meals.map(meal => ({ ...meal, date: dateStr })));
+        }
+        
+        // 運動記録
+        if (data?.exercises) {
+          records.exercises.push(...data.exercises.map(ex => ({ ...ex, date: dateStr })));
+        }
+        
+        // 体重記録
+        if (data?.weight) {
+          records.weights.push({ ...data.weight, date: dateStr });
+        }
+      }
+    }
+    
+    // 最新順にソートして最大10件に制限
+    records.meals = records.meals.sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime()).slice(0, 10);
+    records.exercises = records.exercises.sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime()).slice(0, 10);
+    records.weights = records.weights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+    
+    console.log('📊 記録モード終了時データ取得:', {
+      userId,
+      recordModeStart: startTime.toISOString(),
+      meals: records.meals.length,
+      exercises: records.exercises.length,
+      weights: records.weights.length
+    });
+    
+    return records;
+    
+  } catch (error) {
+    console.error('📊 記録データ取得エラー:', error);
+    return { meals: [], exercises: [], weights: [] };
+  }
+}
+
+// 記録データに基づいてAIコメントを生成
+async function generateExitComment(records: any, userId: string): Promise<string> {
+  try {
+    // 記録がない場合
+    if (records.meals.length === 0 && records.exercises.length === 0 && records.weights.length === 0) {
+      return 'また記録してね！';
+    }
+    
+    const aiService = new AIHealthService();
+    
+    // 記録データを整理
+    let dataText = '';
+    
+    if (records.meals.length > 0) {
+      const latestMeal = records.meals[0];
+      dataText += `最近の食事：${latestMeal.foodItems?.join(', ') || latestMeal.displayName || '食事記録'} (${Math.round(latestMeal.calories || 0)}kcal)\n`;
+    }
+    
+    if (records.exercises.length > 0) {
+      const latestExercise = records.exercises[0];
+      dataText += `最近の運動：${latestExercise.displayName || latestExercise.type} ${latestExercise.duration ? latestExercise.duration + '分' : ''} ${latestExercise.reps ? latestExercise.reps + '回' : ''}\n`;
+    }
+    
+    if (records.weights.length > 0) {
+      const latestWeight = records.weights[0];
+      const previousWeight = records.weights[1];
+      if (previousWeight) {
+        const change = latestWeight.value - previousWeight.value;
+        dataText += `体重：${latestWeight.value}kg (前回から${change > 0 ? '+' : ''}${change.toFixed(1)}kg)\n`;
+      } else {
+        dataText += `体重：${latestWeight.value}kg\n`;
+      }
+    }
+    
+    // AIプロンプト
+    const prompt = `
+以下のユーザーの最近の記録に基づいて、自然で親しみやすい一言コメントを生成してください。
+
+【記録データ】
+${dataText}
+
+【コメントの条件】
+- 1行で簡潔に（30文字以内）
+- 自然で親しみやすい口調
+- 具体的な記録内容に言及
+- 前向きで励ましの要素を含む
+
+例：
+- "カレーライスいいね！でも、もう少しタンパク質取ったほうがいいかも！"
+- "腕立て伏せ20回？すごいじゃん！"
+- "いい感じで進んでるね！"
+
+コメントのみを返してください（説明不要）：
+`;
+    
+    const comment = await aiService.generateGeneralResponse(prompt, userId);
+    return comment || 'お疲れさま！';
+    
+  } catch (error) {
+    console.error('🤖 AIコメント生成エラー:', error);
+    return 'お疲れさま！';
+  }
 }
