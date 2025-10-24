@@ -30,6 +30,55 @@ function getCachedImage(cacheKey: string): Buffer | null {
   return imageCache.get(cacheKey) || null;
 }
 
+// カウンセリング完了状態をチェック
+async function isCounselingCompleted(userId: string): Promise<boolean> {
+  try {
+    const db = admin.firestore();
+    const counselingRef = db.collection('users').doc(userId).collection('counseling').doc('result');
+    const counselingSnap = await counselingRef.get();
+    
+    if (!counselingSnap.exists) {
+      return false;
+    }
+    
+    const counselingData = counselingSnap.data();
+    const aiAnalysis = counselingData?.aiAnalysis;
+    
+    // aiAnalysisと栄養プランが存在し、カロリー目標が設定されているかチェック
+    return !!(
+      aiAnalysis?.nutritionPlan?.dailyCalories &&
+      counselingData?.answers
+    );
+  } catch (error) {
+    console.error('カウンセリング状態チェックエラー:', error);
+    return false;
+  }
+}
+
+// カウンセリング誘導メッセージを送信
+async function sendCounselingPrompt(replyToken: string, actionName: string) {
+  const appUrl = process.env.NEXT_PUBLIC_LIFF_ID 
+    ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/counseling`
+    : `${process.env.NEXT_PUBLIC_APP_URL}/counseling`;
+
+  await replyMessage(replyToken, [{
+    type: 'text',
+    text: `${actionName}を利用するには、まず初期設定（カウンセリング）を完了する必要があります。\n\n下のボタンから設定を開始してください。`,
+    quickReply: {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'uri',
+            label: '初期設定を開始',
+            uri: appUrl
+          }
+        }
+      ]
+    }
+  }]);
+}
+
 // 記録モード統一クイックリプライ
 function getRecordModeQuickReply() {
   return {
@@ -553,6 +602,14 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const startTime = Date.now();
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
+      // カウンセリング完了チェック
+      const isRecordCounselingCompleted = await isCounselingCompleted(userId);
+      if (!isRecordCounselingCompleted) {
+        console.log('⚠️ カウンセリング未完了: 記録モード開始をブロック');
+        await sendCounselingPrompt(replyToken, '記録機能');
+        return;
+      }
+      
       // 既に記録モード中かチェック
       const alreadyInRecordMode = await isRecordMode(userId);
       if (alreadyInRecordMode) {
@@ -620,6 +677,14 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       }
       break;
     case 'daily_feedback':
+      // カウンセリング完了チェック
+      const isFeedbackCounselingCompleted = await isCounselingCompleted(userId);
+      if (!isFeedbackCounselingCompleted) {
+        console.log('⚠️ カウンセリング未完了: 1日のフィードバック生成をブロック');
+        await sendCounselingPrompt(replyToken, '1日のフィードバック');
+        return;
+      }
+      
       // フィードバック生成中かチェック
       const isFeedbackProcessing = isProcessing(userId);
       if (isFeedbackProcessing) {
