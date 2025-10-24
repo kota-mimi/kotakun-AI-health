@@ -164,6 +164,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
                 onNavigateToReminderSettings={navigation.handleNavigateToReminderSettings}
+                onNavigateToCounseling={() => {
+                  window.location.href = '/counseling';
+                }}
               />
             </div>
           ) : navigation.showSettings && !navigation.showNutritionSettings ? (
@@ -293,6 +296,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 hasFeedbackData={feedbackManager.hasFeedbackData}
                 onGenerateFeedback={feedbackManager.generateFeedback}
                 selectedDate={navigation.selectedDate}
+                onNavigateToCounseling={() => {
+                  window.location.href = '/counseling';
+                }}
               />
             </div>
           </div>

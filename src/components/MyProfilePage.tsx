@@ -13,6 +13,7 @@ import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
 import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal } from '@/types';
 import { WeightChart } from './WeightChart';
 import { 
@@ -42,6 +43,7 @@ interface MyProfilePageProps {
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
   onNavigateToReminderSettings?: () => void;
+  onNavigateToCounseling?: () => void;
 }
 
 export function MyProfilePage({ 
@@ -51,7 +53,8 @@ export function MyProfilePage({
   onNavigateToPaymentSettings,
   onNavigateToUserGuide,
   onNavigateToContact,
-  onNavigateToReminderSettings
+  onNavigateToReminderSettings,
+  onNavigateToCounseling
 }: MyProfilePageProps) {
   // 編集モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -619,19 +622,34 @@ export function MyProfilePage({
       icon: Bell,
       label: 'リマインダー設定',
       color: '#8B5CF6',
-      action: onNavigateToReminderSettings
+      action: onNavigateToCounseling ? withCounselingGuard(
+        counselingResult,
+        onNavigateToCounseling,
+        'リマインダー設定',
+        onNavigateToReminderSettings || (() => {})
+      ) : onNavigateToReminderSettings
     },
     {
       icon: Trophy,
       label: 'プラン・サブスクリプション',
       color: '#FBBF24',
-      action: onNavigateToPlanSettings
+      action: onNavigateToCounseling ? withCounselingGuard(
+        counselingResult,
+        onNavigateToCounseling,
+        'プラン設定',
+        onNavigateToPlanSettings || (() => {})
+      ) : onNavigateToPlanSettings
     },
     {
       icon: CreditCard,
       label: '支払い設定',
       color: '#EF4444',
-      action: onNavigateToPaymentSettings
+      action: onNavigateToCounseling ? withCounselingGuard(
+        counselingResult,
+        onNavigateToCounseling,
+        '支払い設定',
+        onNavigateToPaymentSettings || (() => {})
+      ) : onNavigateToPaymentSettings
     }
   ];
 

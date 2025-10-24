@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Card } from './ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useCounselingData } from '@/hooks/useCounselingData';
+import { withCounselingGuard } from '@/utils/counselingGuard';
 
 interface FeedbackData {
   date: string;
@@ -22,6 +24,7 @@ interface FeedbackCardProps {
   hasFeedbackData: boolean;
   onGenerateFeedback: () => void;
   selectedDate: Date;
+  onNavigateToCounseling?: () => void;
 }
 
 export function FeedbackCard({ 
@@ -29,7 +32,8 @@ export function FeedbackCard({
   isLoading, 
   hasFeedbackData, 
   onGenerateFeedback,
-  selectedDate 
+  selectedDate,
+  onNavigateToCounseling
 }: FeedbackCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -37,6 +41,17 @@ export function FeedbackCard({
     exercise: false,
     overall: false
   });
+  
+  // カウンセリング状態を取得
+  const { counselingResult } = useCounselingData();
+  
+  // カウンセリングガード付きのフィードバック生成関数
+  const handleGenerateFeedback = onNavigateToCounseling ? withCounselingGuard(
+    counselingResult,
+    onNavigateToCounseling,
+    '1日のフィードバック',
+    onGenerateFeedback
+  ) : onGenerateFeedback;
   
   // 今日の日付かチェック
   const isToday = () => {

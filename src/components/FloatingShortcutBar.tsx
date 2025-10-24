@@ -1,22 +1,48 @@
 import React, { useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { MessageCircle, Camera, Plus, X } from 'lucide-react';
+import { useCounselingData } from '@/hooks/useCounselingData';
+import { withCounselingGuard } from '@/utils/counselingGuard';
 
 interface FloatingShortcutBarProps {
   onTextRecord: () => void;
   onCameraRecord: () => void;
   onAddExercise?: () => void;
+  onNavigateToCounseling?: () => void;
 }
 
-export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercise }: FloatingShortcutBarProps) {
+export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercise, onNavigateToCounseling }: FloatingShortcutBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // カウンセリング状態を取得
+  const { counselingResult } = useCounselingData();
+  
+  // カウンセリングガード付きの関数を作成
+  const handleTextRecord = onNavigateToCounseling ? withCounselingGuard(
+    counselingResult,
+    onNavigateToCounseling,
+    'テキストで記録',
+    onTextRecord
+  ) : onTextRecord;
+  
+  const handleCameraRecord = onNavigateToCounseling ? withCounselingGuard(
+    counselingResult,
+    onNavigateToCounseling,
+    '写真で食事記録',
+    onCameraRecord
+  ) : onCameraRecord;
+  
+  const handleAddExercise = onAddExercise && onNavigateToCounseling ? withCounselingGuard(
+    counselingResult,
+    onNavigateToCounseling,
+    '運動記録',
+    onAddExercise
+  ) : onAddExercise;
 
   const handleCameraClick = () => {
-    // モバイルデバイスでカメラを開く
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    // カウンセリングガードをチェックしてからカメラを開く
+    handleCameraRecord();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +73,7 @@ export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercis
               {/* テキストで記録 */}
               <Button
                 onClick={() => {
-                  onTextRecord();
+                  handleTextRecord();
                   setIsExpanded(false);
                 }}
                 className="flex flex-col items-center justify-center h-20 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl"
@@ -74,7 +100,7 @@ export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercis
               <div className="mt-3">
                 <Button
                   onClick={() => {
-                    onAddExercise();
+                    handleAddExercise?.();
                     setIsExpanded(false);
                   }}
                   className="w-full flex items-center justify-center h-12 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-xl"
