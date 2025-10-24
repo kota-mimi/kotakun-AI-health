@@ -57,7 +57,15 @@ export async function POST(request: NextRequest) {
       fat: Number(dailyData.meals.reduce((sum, meal) => sum + meal.fat, 0).toFixed(1)),
       carbs: Number(dailyData.meals.reduce((sum, meal) => sum + meal.carbs, 0).toFixed(1)),
       exerciseTime: dailyData.exercises.reduce((sum, ex) => sum + ex.duration, 0),
-      exercises: dailyData.exercises.map(ex => ({ type: ex.type, duration: ex.duration })),
+      exercises: dailyData.exercises.map(ex => ({ 
+        type: ex.type, 
+        displayName: ex.displayName,
+        duration: ex.duration,
+        reps: ex.reps,
+        weight: ex.weight,
+        setsCount: ex.setsCount,
+        distance: ex.distance
+      })),
       mealCount: dailyData.meals.length
     };
 
@@ -141,7 +149,12 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     
     const formattedExercises = (dailyRecord?.exercises || []).map((exercise: any) => ({
       type: exercise.name || exercise.type || '運動',
+      displayName: exercise.displayName || exercise.name || exercise.type || '運動',
       duration: exercise.duration || 0,
+      reps: exercise.reps || exercise.repetitions || 0,
+      weight: exercise.weight || 0,
+      setsCount: exercise.setsCount || exercise.sets || 0,
+      distance: exercise.distance || 0,
       intensity: exercise.type === 'strength' ? '筋トレ' : exercise.type === 'cardio' ? '有酸素' : '軽運動',
       timestamp: exercise.time || (exercise.timestamp ? new Date(exercise.timestamp._seconds * 1000 || exercise.timestamp).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '')
     }));

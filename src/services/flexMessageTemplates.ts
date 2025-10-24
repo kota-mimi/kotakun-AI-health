@@ -437,7 +437,7 @@ export function createDailyFeedbackFlexMessage(
     fat: number;
     carbs: number;
     exerciseTime: number;
-    exercises: Array<{ type: string; duration: number }>;
+    exercises: Array<{ type: string; displayName?: string; duration: number; reps?: number; weight?: number; setsCount?: number; distance?: number }>;
     mealCount: number;
   },
   feedbackText: string,
@@ -816,26 +816,26 @@ export function createDailyFeedbackFlexMessage(
                   // 運動の詳細情報を構築
                   const details = [];
                   
-                  // 時間がある場合
+                  // 筋トレ系：重量・回数・セット数
+                  if (exercise.weight && exercise.weight > 0) {
+                    details.push(`${exercise.weight}kg`);
+                  }
+                  if (exercise.reps && exercise.reps > 0) {
+                    details.push(`${exercise.reps}回`);
+                  }
+                  if (exercise.setsCount && exercise.setsCount > 0) {
+                    details.push(`${exercise.setsCount}セット`);
+                  }
+                  
+                  // 有酸素系：時間・距離
                   if (exercise.duration && exercise.duration > 0) {
                     details.push(`${exercise.duration}分`);
                   }
-                  
-                  // 筋トレの場合：重量・セット・回数
-                  if (exercise.weight && exercise.sets && exercise.reps) {
-                    details.push(`${exercise.weight}kg × ${exercise.reps}回 × ${exercise.sets}セット`);
-                  } else if (exercise.sets && exercise.reps) {
-                    details.push(`${exercise.reps}回 × ${exercise.sets}セット`);
-                  } else if (exercise.reps) {
-                    details.push(`${exercise.reps}回`);
-                  }
-                  
-                  // 距離がある場合
-                  if (exercise.distance) {
+                  if (exercise.distance && exercise.distance > 0) {
                     details.push(`${exercise.distance}km`);
                   }
                   
-                  const detailText = details.length > 0 ? details.join(' ') : '記録あり';
+                  const detailText = details.length > 0 ? details.join(', ') : '記録あり';
                   
                   return {
                     type: 'box',
@@ -843,7 +843,7 @@ export function createDailyFeedbackFlexMessage(
                     contents: [
                       {
                         type: 'text',
-                        text: `・${exercise.type}`,
+                        text: `・${exercise.displayName || exercise.type}`,
                         size: 'sm',
                         color: '#374151',
                         flex: 3
