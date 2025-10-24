@@ -267,13 +267,23 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                         </div>
                         <div className="text-right">
                           {/* 回数表示を優先、時間表示、その他の順 */}
-                          {exercise.reps && exercise.reps > 0 ? (
-                            <div className="font-bold text-slate-800">{exercise.reps}<span className="text-xs text-slate-600 ml-1">回</span></div>
-                          ) : exercise.duration && exercise.duration > 0 ? (
-                            <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>
-                          ) : (
-                            <div className="font-bold text-slate-800">-</div>
-                          )}
+                          {(() => {
+                            // repsフィールドから回数取得
+                            let totalReps = exercise.reps || 0;
+                            
+                            // repsが0の場合、setsから合計回数を計算
+                            if (totalReps === 0 && exercise.sets && exercise.sets.length > 0) {
+                              totalReps = exercise.sets.reduce((sum, set) => sum + (set.reps || 0), 0);
+                            }
+                            
+                            if (totalReps > 0) {
+                              return <div className="font-bold text-slate-800">{totalReps}<span className="text-xs text-slate-600 ml-1">回</span></div>;
+                            } else if (exercise.duration && exercise.duration > 0) {
+                              return <div className="font-bold text-slate-800">{exercise.duration}<span className="text-xs text-slate-600 ml-1">分</span></div>;
+                            } else {
+                              return <div className="font-bold text-slate-800">-</div>;
+                            }
+                          })()}
                           {exercise.calories && (
                             <div className="text-xs text-orange-600 font-medium">{exercise.calories}kcal</div>
                           )}
@@ -301,7 +311,13 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                             <div className="mt-2 text-xs space-y-1">
                               {exercise.sets.map((set, setIndex) => (
                                 <div key={setIndex} className="text-orange-600 font-medium">
-                                  セット{setIndex + 1}: {set.weight}kg × {set.reps}回
+                                  セット{setIndex + 1}: {
+                                    // 重量が記入されている運動（ベンチプレス等）は0kgでも表示
+                                    // 重量が記入されていない運動（腹筋等）は回数のみ
+                                    (exercise.weight && exercise.weight > 0) || exercise.sets?.some(s => s.weight > 0) 
+                                      ? `${set.weight}kg × ${set.reps}回`
+                                      : `${set.reps}回`
+                                  }
                                 </div>
                               ))}
                             </div>
