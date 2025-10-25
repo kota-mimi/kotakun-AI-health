@@ -143,21 +143,9 @@ export function useCounselingData() {
           });
 
           const responseTime = Date.now() - startTime;
-            status: response.status,
-            statusText: response.statusText,
-            responseTime: `${responseTime}ms`,
-            headers: Object.fromEntries(response.headers.entries())
-          });
 
           if (response.ok) {
             const data = await response.json();
-              hasCounselingResult: !!data.counselingResult,
-              hasAnswers: !!(data.counselingResult?.answers),
-              hasAiAnalysis: !!(data.counselingResult?.aiAnalysis),
-              hasNutritionPlan: !!(data.counselingResult?.aiAnalysis?.nutritionPlan),
-              dailyCalories: data.counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories,
-              macros: data.counselingResult?.aiAnalysis?.nutritionPlan?.macros
-            });
             
             if (data.counselingResult) {
               // Firestoreから取得したデータも「利光湖太郎」なら無視

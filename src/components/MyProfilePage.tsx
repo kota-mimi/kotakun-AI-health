@@ -354,7 +354,7 @@ export function MyProfilePage({
             newMacros,
             newBMR,
             newTDEE
-          });
+          };
           
           // プロフィール履歴をAPIで保存
           const profileHistoryResponse = await fetch('/api/profile/save', {

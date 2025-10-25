@@ -116,11 +116,6 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     
     // Firebase Admin で取得したデータをAI用のフォーマットに変換
     const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => {
-        protein: meal.protein,
-        fat: meal.fat,
-        carbs: meal.carbs,
-        allFields: Object.keys(meal)
-      });
       return {
         calories: meal.calories || 0,
         protein: meal.protein || 0,

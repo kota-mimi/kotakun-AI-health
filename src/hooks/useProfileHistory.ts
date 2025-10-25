@@ -146,18 +146,6 @@ export function useLatestProfile(): UseProfileHistoryReturn {
 
 // プロフィールデータから現在の日付に対応する目標値を取得するユーティリティ
 export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, counselingFallback?: any) {
-    hasProfileData: !!profileData,
-    profileDate: profileData?.changeDate,
-    hasCounselingFallback: !!counselingFallback,
-    counselingStructure: counselingFallback ? {
-      hasAiAnalysis: !!counselingFallback.aiAnalysis,
-      hasNutritionPlan: !!counselingFallback.aiAnalysis?.nutritionPlan,
-      dailyCalories: counselingFallback.aiAnalysis?.nutritionPlan?.dailyCalories,
-      bmr: counselingFallback.aiAnalysis?.nutritionPlan?.bmr,
-      tdee: counselingFallback.aiAnalysis?.nutritionPlan?.tdee,
-      macros: counselingFallback.aiAnalysis?.nutritionPlan?.macros
-    } : null
-  });
 
   // ✅ 正しい優先順位: 日付ベースのプロフィール履歴を最優先
   if (profileData) {
