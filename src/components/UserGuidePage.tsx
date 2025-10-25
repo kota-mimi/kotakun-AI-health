@@ -31,6 +31,23 @@ interface UserGuidePageProps {
 }
 
 export function UserGuidePage({ onBack }: UserGuidePageProps) {
+  // CSS for hiding scrollbar
+  const scrollbarHideStyle = `
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  `;
+  
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = scrollbarHideStyle;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   const [activeTab, setActiveTab] = useState('getting-started');
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -428,7 +445,10 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
         {/* スライド可能なタブメニュー */}
         <div className="px-4 pb-2">
           <div 
-            className="flex overflow-x-auto space-x-2 scrollbar-hide"
+            className="flex overflow-x-scroll space-x-2 scrollbar-hide"
+            style={{
+              WebkitOverflowScrolling: 'touch'
+            }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -438,7 +458,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 variant={activeTab === tab.id ? "default" : "outline"}
-                className={`flex-shrink-0 px-3 py-2 text-sm ${
+                className={`flex-shrink-0 px-4 py-2 text-sm whitespace-nowrap ${
                   activeTab === tab.id 
                     ? 'bg-green-600 text-white border-green-600' 
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
