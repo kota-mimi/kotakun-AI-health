@@ -425,9 +425,6 @@ export async function DELETE(request: NextRequest) {
       }
 
       // 対象の複数食事を見つける
-        originalMealId, 
-        availableMealIds: existingRecord.meals.map((m: any) => m.id) 
-      });
       
       const targetMealIndex = existingRecord.meals.findIndex((meal: any) => meal.id === originalMealId);
       
