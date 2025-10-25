@@ -137,11 +137,10 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
     
-    // 未来の日付の場合は最新の体重を表示（前日比は0）
+    // 未来の日付の場合は体重を表示しない
     if (dateKey > today) {
-      const latestWeight = getLatestWeight();
       return {
-        current: latestWeight,
+        current: 0, // 未来の日付は体重を表示しない
         previous: 0, // 未来なので前日比は表示しない
         target: weightSettingsStorage.value.targetWeight || 68.0
       };
@@ -203,10 +202,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // デフォルトデータを返す（最新の体重を表示）
-    const latestWeight = getLatestWeight();
+    // デフォルトデータを返す（記録がない日は0を返す）
     return {
-      current: latestWeight,
+      current: 0, // 記録がない日は体重を表示しない
       previous: 0, // 記録がない日は前日比なし
       target: weightSettingsStorage.value.targetWeight || 68.0
     };
