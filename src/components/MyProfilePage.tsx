@@ -154,11 +154,6 @@ export function MyProfilePage({
       joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
     };
 
-      name: userName,
-      calories: finalCalories,
-      protein: finalProtein,
-      bmr: bmrData
-    });
     
     return { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData };
   }, [refreshKey, latestProfile, counselingResult, liffUser?.displayName]);

@@ -74,10 +74,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       }
       // 日本時間ベースの日付でAPI取得（重要：UTCではなく日本時間）
       const currentDate = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-        selectedDate: selectedDate.toString(),
-        utcDate: selectedDate.toISOString().split('T')[0],
-        japanDate: currentDate
-      });
       
       // キャッシュキー生成
       const cacheKey = createCacheKey('exercises', lineUserId, currentDate);

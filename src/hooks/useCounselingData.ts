@@ -76,10 +76,6 @@ export function useCounselingData() {
               
               const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
               
-                answersKeys: Object.keys(answers),
-                hasAnalysis: !!analysis,
-                analysisKeys: analysis ? Object.keys(analysis) : []
-              });
               
               setCounselingResult({
                 answers,
