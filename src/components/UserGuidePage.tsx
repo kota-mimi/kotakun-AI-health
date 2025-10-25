@@ -87,12 +87,12 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
   };
 
   const tabs = [
-    { id: 'getting-started', title: '🎯 はじめに', subtitle: 'カウンセリング・初期設定' },
-    { id: 'ai-chat', title: '🤖 AIと会話', subtitle: 'LINE基本操作・AI分析' },
-    { id: 'recording', title: '📝 記録方法', subtitle: '食事・運動・体重記録' },
-    { id: 'feedback', title: '📊 フィードバック', subtitle: '1日の振り返り・データ活用' },
-    { id: 'web-app', title: '🌐 アプリ活用', subtitle: 'Webアプリ・詳細機能' },
-    { id: 'troubleshooting', title: '❓ トラブル', subtitle: 'よくある質問・問題解決' }
+    { id: 'getting-started', title: 'はじめに', subtitle: 'カウンセリング・初期設定' },
+    { id: 'ai-chat', title: 'こたくんと会話', subtitle: 'LINE基本操作・AI分析' },
+    { id: 'recording', title: '記録方法', subtitle: '食事・運動・体重記録' },
+    { id: 'feedback', title: 'フィードバック', subtitle: '1日の振り返り・データ活用' },
+    { id: 'web-app', title: 'アプリ活用', subtitle: 'Webアプリ・詳細機能' },
+    { id: 'troubleshooting', title: 'よくある質問', subtitle: 'よくある質問・問題解決' }
   ];
 
   // アクティブタブが変わったらタブメニューをスクロール
@@ -119,7 +119,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
 
   const guideContent = {
     'getting-started': `
-## 🎯 はじめに・初期設定
+## はじめに・初期設定
 
 ### kotakunへようこそ！
 kotakunは、LINEで簡単に記録できる健康管理アプリです。
@@ -158,7 +158,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
 これで基本設定は完了です！
     `,
     'ai-chat': `
-## 🤖 AIと会話
+## こたくんと会話
 
 ### リッチメニューの使い方
 **📸 [リッチメニュー画像をここに配置]**
@@ -208,7 +208,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
 - 生活習慣改善案
     `,
     'recording': `
-## 📝 記録方法
+## 記録方法
 
 ### 運動記録の方法
 **📸 [運動記録画面をここに配置]**
@@ -266,7 +266,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
 - **休息日も大切**：完全休養も記録
     `,
     'feedback': `
-## 📊 フィードバック・データ活用
+## フィードバック・データ活用
 
 ### 1日の振り返り
 **📸 [日次フィードバック画面をここに配置]**
@@ -311,7 +311,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
 - 目標達成への調整
     `,
     'web-app': `
-## 🌐 Webアプリ活用
+## Webアプリ活用
 
 ### アクセス方法
 **📸 [Webアプリアクセス画面をここに配置]**
@@ -362,7 +362,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
 - **アカウント移行**：機種変更時の準備
     `,
     'troubleshooting': `
-## ❓ よくある質問・トラブル対応
+## よくある質問・トラブル対応
 
 ### 🚨 記録に関するトラブル
 
