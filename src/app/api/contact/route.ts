@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
             <p><strong>件名:</strong> ${subject}</p>
             <p><strong>お名前:</strong> ${name}</p>
             <p><strong>メールアドレス:</strong> ${email}</p>
-            ${lineUserId ? `<p><strong>LINE User ID:</strong> ${lineUserId}</p>` : ''}
+            ${lineUserId ? `<p><strong>LINE User ID:</strong> ${lineUserId}</p>` : '<p><strong>LINE User ID:</strong> 取得できませんでした（Web版からのアクセス）</p>'}
           </div>
           
           <div style="background: white; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">

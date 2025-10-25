@@ -21,7 +21,7 @@ interface ContactPageProps {
 }
 
 export function ContactPage({ onBack }: ContactPageProps) {
-  const { liff } = useLiff();
+  const { isLoggedIn, user, context } = useLiff();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,13 +31,14 @@ export function ContactPage({ onBack }: ContactPageProps) {
   const [lineUserId, setLineUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (liff?.isLoggedIn()) {
-      const context = liff.getContext();
-      if (context?.userId) {
-        setLineUserId(context.userId);
-      }
+    console.log('🔍 LIFF状態:', { isLoggedIn, user, context });
+    if (isLoggedIn && user?.userId) {
+      setLineUserId(user.userId);
+      console.log('✅ LINE User ID設定:', user.userId);
+    } else {
+      console.log('⚠️ LINE User ID取得できず');
     }
-  }, [liff]);
+  }, [isLoggedIn, user, context]);
 
 
   const inquiryCategories = [
