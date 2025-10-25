@@ -476,7 +476,8 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
             style={{
               WebkitOverflowScrolling: 'touch',
               width: 'calc(100vw - 2rem)',
-              minWidth: '100%'
+              minWidth: '100%',
+              scrollBehavior: 'smooth'
             }}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
@@ -487,10 +488,10 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 variant={activeTab === tab.id ? "default" : "outline"}
-                className={`flex-shrink-0 px-6 py-2 text-sm whitespace-nowrap min-w-[160px] ${
+                className={`flex-shrink-0 px-6 py-2 text-sm whitespace-nowrap min-w-[160px] transition-all duration-300 ease-in-out ${
                   activeTab === tab.id 
-                    ? 'bg-green-600 text-white border-green-600' 
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                    ? 'bg-green-600 text-white border-green-600 shadow-md transform scale-105' 
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:shadow-sm'
                 }`}
               >
                 {tab.title}
