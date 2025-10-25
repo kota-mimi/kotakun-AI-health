@@ -837,18 +837,7 @@ export function createDailyFeedbackFlexMessage(
                   
                   detailText = details.length > 0 ? details.join(' ') : '';
                   
-                  // 詳細情報がない場合は運動名のみ表示
-                  if (!detailText) {
-                    return {
-                      type: 'text',
-                      text: `・${exercise.displayName || exercise.type}`,
-                      size: 'sm',
-                      color: '#374151',
-                      margin: 'sm'
-                    };
-                  }
-                  
-                  // 詳細情報がある場合は横並びで右寄せ
+                  // 常に横並び：左に運動名、右に詳細情報
                   return {
                     type: 'box',
                     layout: 'horizontal',
@@ -858,14 +847,15 @@ export function createDailyFeedbackFlexMessage(
                         text: `・${exercise.displayName || exercise.type}`,
                         size: 'sm',
                         color: '#374151',
-                        flex: 3
+                        flex: 2
                       },
                       {
                         type: 'text',
-                        text: detailText,
+                        text: detailText || '',
                         size: 'sm',
                         color: '#6B7280',
                         align: 'end',
+                        wrap: true,
                         flex: 3
                       }
                     ],
