@@ -445,14 +445,8 @@ export async function DELETE(request: NextRequest) {
       }
 
       // 個別食事を削除
-        originalLength: targetMeal.meals.length,
-        indexToDelete: finalIndividualMealIndex
-      });
       
       const updatedIndividualMeals = targetMeal.meals.filter((_: any, index: number) => index !== finalIndividualMealIndex);
-        newLength: updatedIndividualMeals.length,
-        willDeleteEntireMeal: updatedIndividualMeals.length === 0
-      });
       
       if (updatedIndividualMeals.length === 0) {
         // 全て削除された場合は食事全体を削除
