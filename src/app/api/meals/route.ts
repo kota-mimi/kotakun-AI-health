@@ -416,10 +416,6 @@ export async function DELETE(request: NextRequest) {
       }
       
       const existingRecord = recordDoc.data();
-        hasRecord: !!existingRecord, 
-        hasMeals: !!existingRecord?.meals,
-        mealsCount: existingRecord?.meals?.length || 0
-      });
       
       if (!existingRecord || !existingRecord.meals) {
         return NextResponse.json(

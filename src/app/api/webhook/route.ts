@@ -3611,11 +3611,6 @@ async function isRecordMode(userId: string): Promise<boolean> {
     const userStateDoc = await db.collection('userStates').doc(userId).get();
     const firestoreState = userStateDoc.exists ? userStateDoc.data()?.recordMode : false;
     
-      userId, 
-      hasInMemory, 
-      firestoreState,
-      finalResult: hasInMemory || firestoreState
-    });
     
     // どちらかがtrueなら記録モード中
     if (firestoreState && !hasInMemory) {
