@@ -816,46 +816,26 @@ export function createDailyFeedbackFlexMessage(
                   // 運動の詳細情報を構築（柔軟に対応）
                   let detailText = '';
                   
-                  // セット数がある場合は1セットごとに表示
-                  if (exercise.setsCount && exercise.setsCount > 1) {
-                    const setDetails = [];
-                    if (exercise.weight && exercise.weight > 0) {
-                      setDetails.push(`${exercise.weight}kg`);
-                    }
-                    if (exercise.reps && exercise.reps > 0) {
-                      setDetails.push(`${exercise.reps}回`);
-                    }
-                    
-                    if (setDetails.length > 0) {
-                      const setInfo = setDetails.join(' × ');
-                      detailText = Array.from({length: exercise.setsCount}, (_, i) => 
-                        `${i + 1}セット目: ${setInfo}`
-                      ).join('\n');
-                    } else {
-                      detailText = `${exercise.setsCount}セット`;
-                    }
-                  } else {
-                    // 1セットまたはセット数なしの場合
-                    const details = [];
-                    
-                    if (exercise.weight && exercise.weight > 0) {
-                      details.push(`${exercise.weight}kg`);
-                    }
-                    if (exercise.reps && exercise.reps > 0) {
-                      details.push(`${exercise.reps}回`);
-                    }
-                    if (exercise.setsCount === 1) {
-                      details.push('1セット');
-                    }
-                    if (exercise.duration && exercise.duration > 0) {
-                      details.push(`${exercise.duration}分`);
-                    }
-                    if (exercise.distance && exercise.distance > 0) {
-                      details.push(`${exercise.distance}km`);
-                    }
-                    
-                    detailText = details.length > 0 ? details.join(' × ') : '';
+                  // 運動の詳細情報を構築（シンプルに）
+                  const details = [];
+                  
+                  if (exercise.weight && exercise.weight > 0) {
+                    details.push(`${exercise.weight}kg`);
                   }
+                  if (exercise.reps && exercise.reps > 0) {
+                    details.push(`${exercise.reps}回`);
+                  }
+                  if (exercise.setsCount && exercise.setsCount > 0) {
+                    details.push(`${exercise.setsCount}セット`);
+                  }
+                  if (exercise.duration && exercise.duration > 0) {
+                    details.push(`${exercise.duration}分`);
+                  }
+                  if (exercise.distance && exercise.distance > 0) {
+                    details.push(`${exercise.distance}km`);
+                  }
+                  
+                  detailText = details.length > 0 ? details.join(' ') : '';
                   
                   // 詳細情報がない場合は運動名のみ表示
                   if (!detailText) {
@@ -868,25 +848,25 @@ export function createDailyFeedbackFlexMessage(
                     };
                   }
                   
-                  // 詳細情報がある場合
+                  // 詳細情報がある場合は横並びで右寄せ
                   return {
                     type: 'box',
-                    layout: 'vertical',
+                    layout: 'horizontal',
                     contents: [
                       {
                         type: 'text',
                         text: `・${exercise.displayName || exercise.type}`,
                         size: 'sm',
                         color: '#374151',
-                        weight: 'bold'
+                        flex: 3
                       },
                       {
                         type: 'text',
                         text: detailText,
-                        size: 'xs',
+                        size: 'sm',
                         color: '#6B7280',
-                        wrap: true,
-                        margin: 'xs'
+                        align: 'end',
+                        flex: 3
                       }
                     ],
                     margin: 'sm'
