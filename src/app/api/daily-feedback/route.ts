@@ -362,10 +362,6 @@ async function getTargetValuesForDate(userId: string, date: string) {
       const aiAnalysis = counselingData?.aiAnalysis?.nutritionPlan;
       
       if (aiAnalysis) {
-          dailyCalories: aiAnalysis.dailyCalories,
-          bmr: aiAnalysis.bmr,
-          tdee: aiAnalysis.tdee
-        });
         
         return {
           targetCalories: aiAnalysis.dailyCalories || 2000,

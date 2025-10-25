@@ -15,11 +15,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      userId: userId
-    });
 
     // Firebase Admin SDKでアップロード（LINEのWebhookと全く同じ設定）
     const storage = admin.storage();

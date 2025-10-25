@@ -349,9 +349,6 @@ export function MyProfilePage({
           newMacros = calculateMacroTargets(newCalorieTarget);
           newBMR = calculateBMR(newProfile);
           newTDEE = calculateTDEE(newProfile);
-
-            newCalorieTarget
-          };
           
           // プロフィール履歴をAPIで保存
           const profileHistoryResponse = await fetch('/api/profile/save', {
@@ -388,9 +385,6 @@ export function MyProfilePage({
           const profileHistoryResult = await profileHistoryResponse.json();
           
           // デバッグ用詳細ログ
-            newCalorieTarget,
-            newMacros
-          };
 
           // LocalStorageとFirestoreのカウンセリングデータも更新（同期保持）
           const updatedCounselingData = {

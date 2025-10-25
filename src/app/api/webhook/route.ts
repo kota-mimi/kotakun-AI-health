@@ -1151,9 +1151,6 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       // Admin SDKを使用して画像をアップロード
       try {
         // 🔧 環境変数から正しいバケット名を取得
-          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        });
         
         const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 
           || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`

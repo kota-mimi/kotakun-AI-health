@@ -12,10 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-      lineUserId, 
-      hasProfileData: !!profileData,
-      changeDate: profileData.changeDate 
-    });
 
     const adminDb = admin.firestore();
     
