@@ -851,7 +851,7 @@ export function createDailyFeedbackFlexMessage(
                       },
                       {
                         type: 'text',
-                        text: detailText || '',
+                        text: detailText || ' ',
                         size: 'sm',
                         color: '#6B7280',
                         align: 'end',
