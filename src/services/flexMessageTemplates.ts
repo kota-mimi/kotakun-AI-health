@@ -844,7 +844,7 @@ export function createDailyFeedbackFlexMessage(
                     contents: [
                       {
                         type: 'text',
-                        text: `・${exercise.displayName || exercise.type}`,
+                        text: `・${exercise.type}`,
                         size: 'sm',
                         color: '#374151',
                         flex: 2
