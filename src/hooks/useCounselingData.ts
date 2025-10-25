@@ -160,10 +160,6 @@ export function useCounselingData() {
             }
           } else {
             const errorText = await response.text();
-              status: response.status,
-              statusText: response.statusText,
-              errorBody: errorText
-            });
             // APIエラーでもローカルストレージデータがあれば問題なし
           }
         } catch (apiError) {
