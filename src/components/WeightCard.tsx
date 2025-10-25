@@ -49,18 +49,15 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
     return targetDate.toDateString() === appStartDate.toDateString();
   };
   
-  // 実際の記録データを優先、アプリ開始日のみカウンセリング結果を使用
-  const isAppStartDaySelected = isAppStartDay(selectedDate);
-  const currentWeight = hasData ? data.current : (isAppStartDaySelected && counselingResult?.answers?.weight ? counselingResult.answers.weight : 0);
+  // データをそのまま使用（ロジックはuseWeightDataで処理済み）
+  const currentWeight = data.current;
   const difference = hasData ? (currentWeight - data.previous) : 0;
-  // カウンセリング結果の目標体重があれば優先、なければデータの目標体重を使用
   const targetWeight = counselingResult?.answers?.targetWeight || data.target;
-  // 目標体重が設定されているかチェック（0より大きい値）
   const hasTargetWeight = targetWeight && targetWeight > 0;
-  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (isAppStartDaySelected && counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
+  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : 0;
   
-  // 記録がある場合、またはカウンセリング結果がある場合は表示を有効にする
-  const shouldShowWeight = hasData || (counselingResult?.answers?.weight && counselingResult.answers.weight > 0);
+  // データがあれば表示
+  const shouldShowWeight = hasData;
   
   // 前日比を表示するかチェック（アプリ開始日や未記録日は「--」）
   const shouldShowDifference = hasData && data.previous > 0 && !isAppStartDay(selectedDate);

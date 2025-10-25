@@ -126,7 +126,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const weightManager = useWeightData(
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
-    updateDateData
+    updateDateData,
+    counselingResult
   );
 
   const feedbackManager = useFeedbackData(

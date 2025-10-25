@@ -29,7 +29,7 @@ interface WeightSettings {
   reminderEnabled: boolean;
 }
 
-export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
+export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any) {
   const { liffUser } = useAuth();
   
   // モーダル状態管理
@@ -123,6 +123,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return allEntries.sort((a, b) => b.timestamp - a.timestamp);
   };
 
+  // カウンセリング日かどうかをチェック
+  const isCounselingDate = (checkDate: Date): boolean => {
+    if (!counselingResult) return false;
+    const counselingDateRaw = counselingResult.firstCompletedAt || 
+                             counselingResult.createdAt || 
+                             counselingResult.completedAt;
+    if (!counselingDateRaw) return false;
+    const counselingDate = new Date(counselingDateRaw);
+    return checkDate.toDateString() === counselingDate.toDateString();
+  };
+
   // 特定の日付の体重データを取得
   const getWeightDataForDate = (date: Date): WeightData => {
     // クライアントサイドでない場合はデフォルト値を返す
@@ -198,6 +209,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: latestEntry.weight,
         previous: previousWeight,
+        target: weightSettingsStorage.value.targetWeight || 68.0
+      };
+    }
+    
+    // カウンセリング日の場合はカウンセリング体重を返す
+    if (isCounselingDate(date) && counselingResult?.answers?.weight) {
+      return {
+        current: counselingResult.answers.weight,
+        previous: 0, // カウンセリング日は前日比なし
         target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
