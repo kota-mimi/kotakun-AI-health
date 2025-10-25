@@ -48,8 +48,10 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
+  
   const [activeTab, setActiveTab] = useState('getting-started');
   const contentRef = useRef<HTMLDivElement>(null);
+  const tabContainerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -81,6 +83,21 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
       setActiveTab(tabs[currentIndex - 1].id);
     }
   };
+
+  // アクティブタブが変わったらタブメニューをスクロール
+  useEffect(() => {
+    if (tabContainerRef.current) {
+      const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+      const tabButtons = tabContainerRef.current.children;
+      if (tabButtons[currentIndex]) {
+        tabButtons[currentIndex].scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, [activeTab, tabs]);
   
   const tabs = [
     { id: 'getting-started', title: '🎯 はじめに', subtitle: 'カウンセリング・初期設定' },
@@ -445,6 +462,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
         {/* スライド可能なタブメニュー */}
         <div className="px-4 pb-2">
           <div 
+            ref={tabContainerRef}
             className="flex overflow-x-scroll space-x-2 scrollbar-hide w-full"
             style={{
               WebkitOverflowScrolling: 'touch',
