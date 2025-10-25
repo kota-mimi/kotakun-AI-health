@@ -156,8 +156,6 @@ export class FirestoreService {
       
       if (recordSnap.exists()) {
         const data = recordSnap.data();
-          allKeys: Object.keys(data)
-        });
         
         // Migration: Handle both old 'exercise' and new 'exercises' field names
         let exercises = data.exercises;

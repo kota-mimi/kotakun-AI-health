@@ -42,20 +42,6 @@ export async function POST(request: NextRequest) {
       };
       
       // 🔍 デバッグログ: 画像データの変換を確認
-        originalMeal: {
-          id: meal.id,
-          name: meal.name,
-          image: meal.image,
-          images: meal.images,
-          imageUrl: meal.imageUrl
-        },
-        convertedMeal: {
-          id: convertedMeal.id,
-          name: convertedMeal.name,
-          image: convertedMeal.image,
-          images: convertedMeal.images
-        }
-      });
       
       return convertedMeal;
     };

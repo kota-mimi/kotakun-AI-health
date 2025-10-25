@@ -340,10 +340,6 @@ async function getTargetValuesForDate(userId: string, date: string) {
     
     if (!snapshot.empty) {
       const profileData = snapshot.docs[0].data();
-        date,
-        profileDate: profileData.changeDate,
-        targetCalories: profileData.targetCalories
-      });
       
       return {
         targetCalories: profileData.targetCalories || 2000,

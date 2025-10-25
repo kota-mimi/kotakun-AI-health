@@ -389,7 +389,8 @@ export function MyProfilePage({
           
           // デバッグ用詳細ログ
             newCalorieTarget,
-            newMacros,
+            newMacros
+          };
 
           // LocalStorageとFirestoreのカウンセリングデータも更新（同期保持）
           const updatedCounselingData = {
