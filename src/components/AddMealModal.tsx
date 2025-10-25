@@ -544,7 +544,7 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="w-full max-w-md max-h-[50vh] overflow-y-auto mx-auto"
+        className="w-full max-w-sm max-h-[70vh] overflow-y-auto mx-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >

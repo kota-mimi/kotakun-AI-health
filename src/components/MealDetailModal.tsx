@@ -86,7 +86,7 @@ export function MealDetailModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto mx-auto">
+        <DialogContent className="w-full max-w-sm max-h-[80vh] overflow-y-auto mx-auto">
           <DialogHeader>
             <DialogTitle className="text-lg mb-4">
               <div className="flex items-center justify-between">
