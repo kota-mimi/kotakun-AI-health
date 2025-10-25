@@ -136,12 +136,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           }
           
           // デバッグ：取得したデータをログ出力
-            name: ex.name,
-            reps: ex.reps,
-            weight: ex.weight,
-            setsCount: ex.setsCount,
-            weightSets: ex.weightSets
-          })));
           
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, exerciseData, 5 * 60 * 1000);

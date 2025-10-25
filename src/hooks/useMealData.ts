@@ -629,11 +629,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   // 食事詳細表示処理
   const handleViewMealDetail = (mealType: MealType, mealId: string) => {
-      mealType,
-      mealId,
-      mealData: mealData[mealType],
-      mealIds: mealData[mealType].map(m => m.id)
-    });
     
     const meal = mealData[mealType].find(m => m.id === mealId);
     

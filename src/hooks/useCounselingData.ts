@@ -96,9 +96,6 @@ export function useCounselingData() {
           const localAnswers = localStorage.getItem('counselingAnswers');
           const localAnalysis = localStorage.getItem('aiAnalysis');
           
-            hasAnswers: !!localAnswers,
-            hasAnalysis: !!localAnalysis
-          });
           
           if (localAnswers) {
             const answers = JSON.parse(localAnswers);

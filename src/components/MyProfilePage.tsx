@@ -254,16 +254,6 @@ export function MyProfilePage({
             newBMR = calculateBMR(newProfile);
             newTDEE = calculateTDEE(newProfile);
             
-              oldCalories: analysis.nutritionPlan?.dailyCalories,
-              newCalories: newCalorieTarget,
-              oldMacros: analysis.nutritionPlan?.macros,
-              newMacros: newMacros,
-              profileChange: {
-                weight: `${analysis.userProfile?.weight || 'なし'} → ${editForm.currentWeight}`,
-                goal: `${analysis.userProfile?.primaryGoal || 'なし'} → ${editForm.primaryGoal}`,
-                activity: `${analysis.userProfile?.activityLevel || 'なし'} → ${editForm.activityLevel}`
-              }
-            });
             
             updatedAnalysis = {
               ...analysis,

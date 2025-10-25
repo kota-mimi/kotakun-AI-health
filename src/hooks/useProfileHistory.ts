@@ -51,11 +51,6 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       const profile = await firestoreService.getProfileHistory(liffUser.userId, dateString);
       setProfileData(profile);
       
-        targetDate: dateString,
-        userId: liffUser.userId,
-        hasProfile: !!profile,
-        profileDate: profile?.changeDate
-      });
     } catch (err) {
       console.error('❌ プロフィール履歴取得エラー:', err);
       setError(err instanceof Error ? err.message : 'プロフィールデータの取得に失敗しました');
