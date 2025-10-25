@@ -262,21 +262,11 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     const aiService = new AIHealthService();
     
     // 記録モード中かチェック
-    console.log('🔍 記録モード判定開始:', { userId, text });
     const isInRecordMode = await isRecordMode(userId);
-    console.log('🔍 記録モード状態チェック:', { 
-      userId, 
-      isInRecordMode, 
-      text,
-      timestamp: new Date().toISOString(),
-      recordModeUsersSize: recordModeUsers.size,
-      hasUserId: recordModeUsers.has(userId),
-      serverRestartPossible: recordModeUsers.size === 0 ? '可能性あり' : 'なし'
-    });
     
     // 記録モード中の場合、絶対にreturnすることを保証
     if (isInRecordMode) {
-      console.log('🚨 記録モード中であることを確認！通常AI処理は絶対に実行しません！');
+      // 記録モード中は通常AI処理をスキップ
     }
     
     // AIアドバイスモード中かチェック
@@ -299,7 +289,6 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       return;
     }
     
-    console.log('🔍 記録モードチェック:', { userId, isInRecordMode, text });
     
     // デバッグ: ステータス確認コマンド
     if (text.includes('ステータス') || text.includes('状態')) {
@@ -1162,7 +1151,6 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
       // Admin SDKを使用して画像をアップロード
       try {
         // 🔧 環境変数から正しいバケット名を取得
-        console.log('🔍 環境変数確認:', {
           storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         });
@@ -1171,14 +1159,12 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
           || `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`
           || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // フォールバック
         
-        console.log('🔍 最終的に使用するバケット名:', bucketName);
         const bucket = admin.storage().bucket(bucketName);
         
         const imageId = `meal_${generateId()}`;
         const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
         const fileName = `meals/${userId}/${today}/${imageId}.jpg`;
         
-        console.log('🔍 アップロード先:', fileName);
         const file = bucket.file(fileName);
         await file.save(tempData.imageContent, {
           metadata: {
@@ -2180,7 +2166,6 @@ async function handleExerciseMessage(replyToken: string, userId: string, text: s
     
     if (hasKeywords) {
       // 確認メッセージ送信
-      console.log('運動キーワード検出、確認メッセージ送信');
       await askForExerciseDetails(replyToken, text);
       return true;
     }
@@ -3629,7 +3614,6 @@ async function isRecordMode(userId: string): Promise<boolean> {
     const userStateDoc = await db.collection('userStates').doc(userId).get();
     const firestoreState = userStateDoc.exists ? userStateDoc.data()?.recordMode : false;
     
-    console.log('🔍 記録モード状態確認:', { 
       userId, 
       hasInMemory, 
       firestoreState,
