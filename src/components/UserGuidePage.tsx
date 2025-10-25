@@ -73,32 +73,19 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-    
-    if (isLeftSwipe && currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1].id);
-    }
-    
-    if (isRightSwipe && currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1].id);
+    if (tabs.length > 0) {
+      const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+      
+      if (isLeftSwipe && currentIndex < tabs.length - 1) {
+        setActiveTab(tabs[currentIndex + 1].id);
+      }
+      
+      if (isRightSwipe && currentIndex > 0) {
+        setActiveTab(tabs[currentIndex - 1].id);
+      }
     }
   };
 
-  // アクティブタブが変わったらタブメニューをスクロール
-  useEffect(() => {
-    if (tabContainerRef.current) {
-      const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-      const tabButtons = tabContainerRef.current.children;
-      if (tabButtons[currentIndex]) {
-        tabButtons[currentIndex].scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
-    }
-  }, [activeTab, tabs]);
-  
   const tabs = [
     { id: 'getting-started', title: '🎯 はじめに', subtitle: 'カウンセリング・初期設定' },
     { id: 'ai-chat', title: '🤖 AIと会話', subtitle: 'LINE基本操作・AI分析' },
@@ -107,6 +94,28 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
     { id: 'web-app', title: '🌐 アプリ活用', subtitle: 'Webアプリ・詳細機能' },
     { id: 'troubleshooting', title: '❓ トラブル', subtitle: 'よくある質問・問題解決' }
   ];
+
+  // アクティブタブが変わったらタブメニューをスクロール
+  useEffect(() => {
+    if (tabContainerRef.current && tabs.length > 0) {
+      const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+      if (currentIndex >= 0) {
+        const tabButtons = tabContainerRef.current.children;
+        const targetButton = tabButtons[currentIndex] as HTMLElement;
+        if (targetButton && typeof targetButton.scrollIntoView === 'function') {
+          try {
+            targetButton.scrollIntoView({
+              behavior: 'smooth',
+              inline: 'center'
+            });
+          } catch (error) {
+            // Fallback for older browsers
+            targetButton.scrollIntoView();
+          }
+        }
+      }
+    }
+  }, [activeTab, tabs]);
 
   const guideContent = {
     'getting-started': `
@@ -468,9 +477,9 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
               WebkitOverflowScrolling: 'touch',
               maxWidth: '100vw'
             }}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           >
             {tabs.map((tab) => (
               <Button
