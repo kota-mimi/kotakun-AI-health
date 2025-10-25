@@ -469,13 +469,14 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
         </div>
         
         {/* スライド可能なタブメニュー */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2 overflow-hidden">
           <div 
             ref={tabContainerRef}
-            className="flex overflow-x-scroll space-x-2 scrollbar-hide w-full"
+            className="flex overflow-x-auto space-x-2 scrollbar-hide"
             style={{
               WebkitOverflowScrolling: 'touch',
-              maxWidth: '100vw'
+              width: 'calc(100vw - 2rem)',
+              minWidth: '100%'
             }}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
@@ -486,7 +487,7 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 variant={activeTab === tab.id ? "default" : "outline"}
-                className={`flex-shrink-0 px-6 py-2 text-sm whitespace-nowrap min-w-[140px] ${
+                className={`flex-shrink-0 px-6 py-2 text-sm whitespace-nowrap min-w-[160px] ${
                   activeTab === tab.id 
                     ? 'bg-green-600 text-white border-green-600' 
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
