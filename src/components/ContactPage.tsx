@@ -31,12 +31,8 @@ export function ContactPage({ onBack }: ContactPageProps) {
   const [lineUserId, setLineUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('🔍 LIFF状態:', { isLoggedIn, user, context });
     if (isLoggedIn && user?.userId) {
       setLineUserId(user.userId);
-      console.log('✅ LINE User ID設定:', user.userId);
-    } else {
-      console.log('⚠️ LINE User ID取得できず');
     }
   }, [isLoggedIn, user, context]);
 
@@ -81,15 +77,6 @@ export function ContactPage({ onBack }: ContactPageProps) {
     try {
       const categoryTitle = inquiryCategories.find(cat => cat.id === selectedCategory)?.title || selectedCategory;
       
-      console.log('🔍 送信データ:', {
-        name,
-        email,
-        category: categoryTitle,
-        subject,
-        message,
-        lineUserId
-      });
-      
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -104,16 +91,11 @@ export function ContactPage({ onBack }: ContactPageProps) {
           lineUserId,
         }),
       });
-
-      console.log('📡 レスポンスステータス:', response.status);
       
       if (response.ok) {
-        const result = await response.json();
-        console.log('✅ 送信成功:', result);
         setIsSubmitted(true);
       } else {
         const errorData = await response.json();
-        console.error('❌ メール送信エラー:', errorData);
         alert(`送信に失敗しました: ${errorData.error || 'エラーが発生しました'}`);
       }
     } catch (error) {
