@@ -436,10 +436,6 @@ export async function DELETE(request: NextRequest) {
       }
 
       const targetMeal = existingRecord.meals[targetMealIndex];
-        isMultipleMeals: targetMeal.isMultipleMeals,
-        hasMealsArray: !!targetMeal.meals,
-        mealsArrayLength: targetMeal.meals?.length || 0
-      });
       
       if (!targetMeal.isMultipleMeals || !targetMeal.meals) {
         return NextResponse.json(
