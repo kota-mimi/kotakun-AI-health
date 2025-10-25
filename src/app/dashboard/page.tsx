@@ -231,6 +231,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   data={weightManager.weightData} 
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen?.(true)}
                   counselingResult={counselingResult}
+                  selectedDate={navigation?.selectedDate}
                 />
               )}
             </div>
