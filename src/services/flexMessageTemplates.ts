@@ -898,7 +898,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'none'
+                margin: 'sm'
               },
               {
                 type: 'text',
@@ -914,7 +914,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'none'
+                margin: 'sm'
               },
               {
                 type: 'text',
@@ -952,7 +952,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'none'
+                margin: 'sm'
               },
               {
                 type: 'text',
@@ -968,7 +968,7 @@ export function createDailyFeedbackFlexMessage(
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'none'
+                margin: 'sm'
               },
               {
                 type: 'text',
