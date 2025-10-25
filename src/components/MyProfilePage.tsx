@@ -350,7 +350,8 @@ export function MyProfilePage({
           newBMR = calculateBMR(newProfile);
           newTDEE = calculateTDEE(newProfile);
 
-            newCalorieTarget,
+            newCalorieTarget
+          };
           
           // プロフィール履歴をAPIで保存
           const profileHistoryResponse = await fetch('/api/profile/save', {

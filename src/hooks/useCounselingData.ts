@@ -204,9 +204,6 @@ export function useCounselingData() {
           
           const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
           
-            カロリー: analysis?.nutritionPlan?.dailyCalories,
-            PFC: analysis?.nutritionPlan?.macros
-          });
           
           setCounselingResult({
             answers,

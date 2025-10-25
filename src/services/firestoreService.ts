@@ -156,12 +156,6 @@ export class FirestoreService {
       
       if (recordSnap.exists()) {
         const data = recordSnap.data();
-          lineUserId, 
-          date, 
-          hasExercises: !!data.exercises,
-          hasExercise: !!data.exercise,
-          exercisesLength: data.exercises?.length || 0,
-          exerciseLength: data.exercise?.length || 0,
           allKeys: Object.keys(data)
         });
         

@@ -85,11 +85,6 @@ export async function GET(request: NextRequest) {
       const recordDoc = await recordRef.get();
       const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
       
-        hasRecord: !!dailyRecord, 
-        hasExercises: !!dailyRecord?.exercises,
-        hasExercise: !!dailyRecord?.exercise,
-        exercisesLength: dailyRecord?.exercises?.length || 0,
-        exerciseLength: dailyRecord?.exercise?.length || 0,
         allKeys: dailyRecord ? Object.keys(dailyRecord) : []
       });
       

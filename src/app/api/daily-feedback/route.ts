@@ -144,10 +144,6 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
       exercises: formattedExercises
     };
     
-      mealsCount: result.meals.length,
-      exercisesCount: result.exercises.length,
-      totalCalories: result.meals.reduce((sum, meal) => sum + meal.calories, 0)
-    });
     
     return result;
     
