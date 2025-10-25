@@ -882,47 +882,56 @@ export function createDailyFeedbackFlexMessage(
           {
             type: 'box',
             layout: 'vertical',
-            spacing: 'none',
+            spacing: 'md',
             contents: [
               {
                 type: 'text',
                 text: '食事評価',
                 weight: 'bold',
                 size: 'lg',
-                color: '#1E90FF',
-                margin: 'none'
+                color: '#1E90FF'
               },
               {
-                type: 'text',
-                text: '良かった点',
-                weight: 'bold',
-                size: 'md',
-                color: '#4CAF50',
-                margin: 'sm'
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'none',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '良かった点',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#4CAF50'
+                  },
+                  {
+                    type: 'text',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
+                    size: 'sm',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
               },
               {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'none'
-              },
-              {
-                type: 'text',
-                text: '改善点',
-                weight: 'bold',
-                size: 'md',
-                color: '#FF9800',
-                margin: 'sm'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'none'
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'none',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '改善点',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#FF9800'
+                  },
+                  {
+                    type: 'text',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
+                    size: 'sm',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
               }
             ]
           },
@@ -936,48 +945,57 @@ export function createDailyFeedbackFlexMessage(
           {
             type: 'box',
             layout: 'vertical',
-            spacing: 'none',
+            spacing: 'md',
             contents: [
               {
                 type: 'text',
                 text: '運動評価',
                 weight: 'bold',
                 size: 'lg',
-                color: '#1E90FF',
-                margin: 'none'
+                color: '#1E90FF'
               },
               {
-                type: 'text',
-                text: '良かった点',
-                weight: 'bold',
-                size: 'md',
-                color: '#4CAF50',
-                margin: 'sm'
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'none',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '良かった点',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#4CAF50'
+                  },
+                  {
+                    type: 'text',
+                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[0].replace('良かった点:', '') || '・継続的な運動習慣が素晴らしいです',
+                    size: 'sm',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
               },
               {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[0].replace('良かった点:', '') || '・継続的な運動習慣が素晴らしいです',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'none'
-              },
-              {
-                type: 'text',
-                text: '改善提案',
-                weight: 'bold',
-                size: 'md',
-                color: '#FF9800',
-                margin: 'sm'
-              },
-              {
-                type: 'text',
-                text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[1] || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加',
-                size: 'sm',
-                color: '#333333',
-                wrap: true,
-                margin: 'none'
-              },
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'none',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '改善提案',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#FF9800'
+                  },
+                  {
+                    type: 'text',
+                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[1] || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加',
+                    size: 'sm',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
+              }
             ]
           },
 
