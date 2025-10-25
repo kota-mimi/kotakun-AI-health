@@ -894,11 +894,17 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
+                text: ' ',
+                size: 'xs',
+                margin: 'none'
+              },
+              {
+                type: 'text',
                 text: '良かった点',
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -910,11 +916,17 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
+                text: ' ',
+                size: 'xs',
+                margin: 'none'
+              },
+              {
+                type: 'text',
                 text: '改善点',
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -948,11 +960,17 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
+                text: ' ',
+                size: 'xs',
+                margin: 'none'
+              },
+              {
+                type: 'text',
                 text: '良かった点',
                 weight: 'bold',
                 size: 'md',
                 color: '#4CAF50',
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
@@ -964,11 +982,17 @@ export function createDailyFeedbackFlexMessage(
               },
               {
                 type: 'text',
+                text: ' ',
+                size: 'xs',
+                margin: 'none'
+              },
+              {
+                type: 'text',
                 text: '改善提案',
                 weight: 'bold',
                 size: 'md',
                 color: '#FF9800',
-                margin: 'sm'
+                margin: 'none'
               },
               {
                 type: 'text',
