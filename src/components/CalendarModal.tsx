@@ -106,7 +106,7 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, cou
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full mx-4 p-0 bg-white border border-slate-200 shadow-lg rounded-xl">
+      <DialogContent className="w-full max-w-md p-0 bg-white border border-slate-200 shadow-lg rounded-xl mx-auto">
         {/* ヘッダー */}
         <DialogHeader className="px-4 py-3 border-b border-slate-100">
           <div className="flex items-center justify-center">

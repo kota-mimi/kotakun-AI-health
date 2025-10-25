@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -32,6 +32,38 @@ interface UserGuidePageProps {
 
 export function UserGuidePage({ onBack }: UserGuidePageProps) {
   const [activeTab, setActiveTab] = useState('getting-started');
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // スワイプ機能
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+    
+    if (isLeftSwipe && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1].id);
+    }
+    
+    if (isRightSwipe && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1].id);
+    }
+  };
   
   const tabs = [
     { id: 'getting-started', title: '🎯 はじめに', subtitle: 'カウンセリング・初期設定' },
@@ -371,9 +403,14 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-y-auto">
+    <div 
+      className="h-screen bg-white flex flex-col overflow-hidden"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* ヘッダー */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
@@ -410,42 +447,47 @@ kotakunは、LINEで簡単に記録できる健康管理アプリです。
       </div>
 
       {/* メインコンテンツ */}
-      <div className="p-4 pb-20">
-        {/* アクティブタブの説明 */}
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">
-            {tabs.find(tab => tab.id === activeTab)?.title}
-          </h2>
-          <p className="text-sm text-gray-600">
-            {tabs.find(tab => tab.id === activeTab)?.subtitle}
-          </p>
-        </div>
-
-        {/* コンテンツ表示 */}
-        <div className="prose prose-gray max-w-none">
-          <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-            {guideContent[activeTab as keyof typeof guideContent]}
+      <div className="flex-1 overflow-hidden">
+        <div 
+          ref={contentRef}
+          className="h-full overflow-y-auto p-4"
+        >
+          {/* アクティブタブの説明 */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
+              {tabs.find(tab => tab.id === activeTab)?.title}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {tabs.find(tab => tab.id === activeTab)?.subtitle}
+            </p>
           </div>
-        </div>
 
-        {/* お問い合わせボタン */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <MessageCircle size={20} className="text-blue-600" />
-              <h4 className="font-semibold text-gray-800">困ったときは</h4>
+          {/* コンテンツ表示 */}
+          <div className="prose prose-gray max-w-none">
+            <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+              {guideContent[activeTab as keyof typeof guideContent]}
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-blue-300 text-blue-700 hover:bg-blue-50" 
-              onClick={() => console.log('お問い合わせ')}
-            >
-              <MessageCircle size={16} className="mr-2" />
-              お問い合わせフォーム
-            </Button>
-            <div className="text-xs text-gray-500 px-2">
-              <p>• LINE直接メッセージ：「ヘルプ」「困った」と送信</p>
-              <p>• 回答時間：平日24時間以内</p>
+          </div>
+
+          {/* お問い合わせボタン */}
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <MessageCircle size={20} className="text-blue-600" />
+                <h4 className="font-semibold text-gray-800">困ったときは</h4>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start border-blue-300 text-blue-700 hover:bg-blue-50" 
+                onClick={() => console.log('お問い合わせ')}
+              >
+                <MessageCircle size={16} className="mr-2" />
+                お問い合わせフォーム
+              </Button>
+              <div className="text-xs text-gray-500 px-2">
+                <p>• LINE直接メッセージ：「ヘルプ」「困った」と送信</p>
+                <p>• 回答時間：平日24時間以内</p>
+              </div>
             </div>
           </div>
         </div>

@@ -765,7 +765,7 @@ export function MyProfilePage({
 
       {/* プロフィール編集モーダル */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="w-full mx-4">
+        <DialogContent className="w-full max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center">プロフィール編集</DialogTitle>
           </DialogHeader>
