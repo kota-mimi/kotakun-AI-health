@@ -144,11 +144,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = sortedData.map(item => item.exercise);
   }
   
-    index,
-    name: ex.name,
-    time: ex.time,
-    timestamp: ex.timestamp,
-    source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
   })));
   const totalCalories = actualExerciseData.reduce((sum, ex) => sum + (ex.calories || 0), 0);
   const totalDuration = actualExerciseData.reduce((sum, ex) => sum + (ex.duration > 0 ? ex.duration : 0), 0);

@@ -109,14 +109,6 @@ export function MyProfilePage({
     );
   }
   
-  // 本番環境用詳細デバッグ: counselingResultの内容を確認
-    hasCounselingResult: !!counselingResult,
-    hasAnswers: !!(counselingResult?.answers),
-    hasAiAnalysis: !!(counselingResult?.aiAnalysis),
-    hasNutritionPlan: !!(counselingResult?.aiAnalysis?.nutritionPlan),
-    nutritionPlanDetails: counselingResult?.aiAnalysis?.nutritionPlan,
-    answersDetails: counselingResult?.answers
-  });
   
   // リアクティブなプロフィールデータ計算（refreshKey、latestProfile、counselingResultの変更に反応）
   const { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData } = useMemo(() => {

@@ -60,23 +60,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const finalFatTarget = targetValues.macros.fat;
   const finalCarbsTarget = targetValues.macros.carbs;
   
-  // 本番環境ログ
-    カウンセリング結果: !!counselingResult,
-    counselingResultStructure: counselingResult ? {
-      hasAiAnalysis: !!counselingResult.aiAnalysis,
-      hasNutritionPlan: !!counselingResult.aiAnalysis?.nutritionPlan,
-      dailyCalories: counselingResult.aiAnalysis?.nutritionPlan?.dailyCalories,
-      macros: counselingResult.aiAnalysis?.nutritionPlan?.macros
-    } : null,
-    receivedTargetCalories: targetCalories,
-    receivedPfc: pfc,
-    finalValues: {
-      目標カロリー: finalTargetCalories,
-      タンパク質: finalProteinTarget,
-      脂質: finalFatTarget,
-      炭水化物: finalCarbsTarget
-    }
-  });
   
   const intakeProgress = finalTargetCalories > 0 ? Number(((displayTotalCalories / finalTargetCalories) * 100).toFixed(1)) : 0;
   const proteinProgress = finalProteinTarget > 0 ? Number(((displayPfc.protein / finalProteinTarget) * 100).toFixed(1)) : 0;
