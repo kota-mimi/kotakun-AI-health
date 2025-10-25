@@ -25,11 +25,6 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ data, onNavigateToWeight, counselingResult, selectedDate }: WeightCardProps) {
-  // デバッグ用ログ
-  console.log('WeightCard - data:', data);
-  console.log('WeightCard - counselingResult:', counselingResult);
-  console.log('WeightCard - selectedDate:', selectedDate);
-  
   // データが記録されているかチェック
   const hasData = data.current > 0;
   
@@ -55,8 +50,6 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   const isAppStartDaySelected = isAppStartDay(selectedDate);
   const shouldUseFallback = isToday || isAppStartDaySelected;
   
-  console.log('WeightCard - isToday:', isToday, 'isAppStartDaySelected:', isAppStartDaySelected, 'shouldUseFallback:', shouldUseFallback);
-  
   // 実際の記録データを優先、条件付きでカウンセリング結果をフォールバック
   const currentWeight = hasData ? data.current : (shouldUseFallback && counselingResult?.answers?.weight ? counselingResult.answers.weight : 0);
   const difference = hasData ? (currentWeight - data.previous) : 0;
@@ -72,8 +65,6 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   // 前日比を表示するかチェック（アプリ開始日や未記録日は「--」）
   const shouldShowDifference = hasData && data.previous > 0 && !isAppStartDay(selectedDate);
   const isDecrease = difference < 0;
-  
-  console.log('WeightCard - currentWeight:', currentWeight, 'previous:', data.previous, 'target:', targetWeight);
 
   return (
     <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
