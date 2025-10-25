@@ -813,48 +813,80 @@ export function createDailyFeedbackFlexMessage(
               // 運動リスト
               ...(feedbackData.exercises.length > 0 ? 
                 feedbackData.exercises.map(exercise => {
-                  // 運動の詳細情報を構築
-                  const details = [];
+                  // 運動の詳細情報を構築（柔軟に対応）
+                  let detailText = '';
                   
-                  // 筋トレ系：重量・回数・セット数
-                  if (exercise.weight && exercise.weight > 0) {
-                    details.push(`${exercise.weight}kg`);
-                  }
-                  if (exercise.reps && exercise.reps > 0) {
-                    details.push(`${exercise.reps}回`);
-                  }
-                  if (exercise.setsCount && exercise.setsCount > 0) {
-                    details.push(`${exercise.setsCount}セット`);
+                  // セット数がある場合は1セットごとに表示
+                  if (exercise.setsCount && exercise.setsCount > 1) {
+                    const setDetails = [];
+                    if (exercise.weight && exercise.weight > 0) {
+                      setDetails.push(`${exercise.weight}kg`);
+                    }
+                    if (exercise.reps && exercise.reps > 0) {
+                      setDetails.push(`${exercise.reps}回`);
+                    }
+                    
+                    if (setDetails.length > 0) {
+                      const setInfo = setDetails.join(' × ');
+                      detailText = Array.from({length: exercise.setsCount}, (_, i) => 
+                        `${i + 1}セット目: ${setInfo}`
+                      ).join('\n');
+                    } else {
+                      detailText = `${exercise.setsCount}セット`;
+                    }
+                  } else {
+                    // 1セットまたはセット数なしの場合
+                    const details = [];
+                    
+                    if (exercise.weight && exercise.weight > 0) {
+                      details.push(`${exercise.weight}kg`);
+                    }
+                    if (exercise.reps && exercise.reps > 0) {
+                      details.push(`${exercise.reps}回`);
+                    }
+                    if (exercise.setsCount === 1) {
+                      details.push('1セット');
+                    }
+                    if (exercise.duration && exercise.duration > 0) {
+                      details.push(`${exercise.duration}分`);
+                    }
+                    if (exercise.distance && exercise.distance > 0) {
+                      details.push(`${exercise.distance}km`);
+                    }
+                    
+                    detailText = details.length > 0 ? details.join(' × ') : '';
                   }
                   
-                  // 有酸素系：時間・距離
-                  if (exercise.duration && exercise.duration > 0) {
-                    details.push(`${exercise.duration}分`);
-                  }
-                  if (exercise.distance && exercise.distance > 0) {
-                    details.push(`${exercise.distance}km`);
+                  // 詳細情報がない場合は運動名のみ表示
+                  if (!detailText) {
+                    return {
+                      type: 'text',
+                      text: `・${exercise.displayName || exercise.type}`,
+                      size: 'sm',
+                      color: '#374151',
+                      margin: 'sm'
+                    };
                   }
                   
-                  const detailText = details.length > 0 ? details.join(', ') : '記録あり';
-                  
+                  // 詳細情報がある場合
                   return {
                     type: 'box',
-                    layout: 'horizontal',
+                    layout: 'vertical',
                     contents: [
                       {
                         type: 'text',
                         text: `・${exercise.displayName || exercise.type}`,
                         size: 'sm',
                         color: '#374151',
-                        flex: 3
+                        weight: 'bold'
                       },
                       {
                         type: 'text',
                         text: detailText,
-                        size: 'sm',
+                        size: 'xs',
                         color: '#6B7280',
-                        align: 'end',
-                        flex: 3
+                        wrap: true,
+                        margin: 'xs'
                       }
                     ],
                     margin: 'sm'
