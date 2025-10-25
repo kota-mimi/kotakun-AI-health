@@ -105,10 +105,6 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
       setProfileData(profile);
       
-        userId: liffUser.userId,
-        hasProfile: !!profile,
-        profileDate: profile?.changeDate
-      });
     } catch (err) {
       console.error('❌ 最新プロフィール取得エラー:', err);
       setError(err instanceof Error ? err.message : '最新プロフィールデータの取得に失敗しました');

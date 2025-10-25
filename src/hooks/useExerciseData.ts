@@ -170,20 +170,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const exerciseData = firestoreExerciseData;
   
   // 本番環境でも詳細ログを出力して問題を特定
-    localCount: localExerciseData.length,
-    firestoreCount: firestoreExerciseData.length,
-    totalCount: exerciseData.length,
-    selectedDate: selectedDate.toISOString().split('T')[0],
-    localData: localExerciseData.map(ex => ({ name: ex.name, time: ex.time, timestamp: ex.timestamp, notes: ex.notes })),
-    firestoreData: firestoreExerciseData.map(ex => ({ name: ex.name, time: ex.time, timestamp: ex.timestamp, notes: ex.notes })),
-    finalSortedOrder: exerciseData.map((ex, index) => ({
-      index,
-      name: ex.name,
-      time: ex.time,
-      timestamp: ex.timestamp,
-      source: ex.notes?.includes('LINE') ? 'LINE' : 'APP'
-    }))
-  });
 
   // 運動記録を追加する関数（Firestoreに保存）
   const handleAddExercise = async (exercise: Omit<Exercise, 'id' | 'time'>) => {

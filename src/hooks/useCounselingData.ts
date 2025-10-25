@@ -111,17 +111,6 @@ export function useCounselingData() {
             
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
             
-              answers: {
-                keys: Object.keys(answers),
-                hasNutritionData: !!(answers.height && answers.weight),
-                hasCalorieTarget: !!(analysis?.nutritionPlan?.dailyCalories)
-              },
-              analysis: {
-                hasNutritionPlan: !!(analysis?.nutritionPlan),
-                dailyCalories: analysis?.nutritionPlan?.dailyCalories,
-                hasMacros: !!(analysis?.nutritionPlan?.macros)
-              }
-            });
             
             setCounselingResult({
               answers,

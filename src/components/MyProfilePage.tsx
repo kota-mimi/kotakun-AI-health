@@ -316,18 +316,6 @@ export function MyProfilePage({
       // プロフィール履歴をFirebaseに保存
       if (liffUser?.userId) {
         try {
-            userId: liffUser.userId,
-            profileData: {
-              name: editForm.name,
-              age: editForm.age,
-              gender: editForm.gender,
-              height: editForm.height,
-              weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight,
-              activityLevel: editForm.activityLevel,
-              primaryGoal: editForm.primaryGoal
-            }
-          });
           
           // 新しいプロフィールで計算（カウンセリング結果の有無に関係なく実行）
           const newProfile: UserProfile = {

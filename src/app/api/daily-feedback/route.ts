@@ -113,17 +113,9 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     
     const dailyRecord = recordSnap.data();
     
-      hasMeals: !!dailyRecord?.meals,
-      mealsCount: dailyRecord?.meals?.length || 0,
-      hasExercises: !!dailyRecord?.exercises,
-      exercisesCount: dailyRecord?.exercises?.length || 0,
-      hasWeight: !!dailyRecord?.weight
-    });
     
     // Firebase Admin で取得したデータをAI用のフォーマットに変換
     const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => {
-        name: meal.name,
-        calories: meal.calories,
         protein: meal.protein,
         fat: meal.fat,
         carbs: meal.carbs,
