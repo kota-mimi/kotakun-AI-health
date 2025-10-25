@@ -80,6 +80,15 @@ export function ContactPage({ onBack }: ContactPageProps) {
     try {
       const categoryTitle = inquiryCategories.find(cat => cat.id === selectedCategory)?.title || selectedCategory;
       
+      console.log('🔍 送信データ:', {
+        name,
+        email,
+        category: categoryTitle,
+        subject,
+        message,
+        lineUserId
+      });
+      
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -95,16 +104,20 @@ export function ContactPage({ onBack }: ContactPageProps) {
         }),
       });
 
+      console.log('📡 レスポンスステータス:', response.status);
+      
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ 送信成功:', result);
         setIsSubmitted(true);
       } else {
         const errorData = await response.json();
-        console.error('メール送信エラー:', errorData);
-        alert('送信に失敗しました。もう一度お試しください。');
+        console.error('❌ メール送信エラー:', errorData);
+        alert(`送信に失敗しました: ${errorData.error || 'エラーが発生しました'}`);
       }
     } catch (error) {
-      console.error('送信エラー:', error);
-      alert('送信に失敗しました。もう一度お試しください。');
+      console.error('❌ 送信エラー:', error);
+      alert('送信に失敗しました。ネットワークエラーの可能性があります。');
     }
   };
 

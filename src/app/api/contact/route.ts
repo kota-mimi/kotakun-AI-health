@@ -7,14 +7,25 @@ export async function POST(request: NextRequest) {
   try {
     const { name, email, category, subject, message, lineUserId } = await request.json();
 
+    console.log('📩 API: 受信データ:', {
+      name,
+      email,
+      category,
+      subject,
+      message,
+      lineUserId
+    });
+
     // バリデーション
     if (!name || !email || !category || !subject || !message) {
+      console.log('❌ API: バリデーション失敗');
       return NextResponse.json(
         { error: '必須項目が入力されていません' },
         { status: 400 }
       );
     }
 
+    console.log('📧 API: Resendでメール送信開始');
     const { data, error } = await resend.emails.send({
       from: 'お問い合わせ <onboarding@resend.dev>', // Resendの検証済みドメイン
       to: ['kotakun.health@gmail.com'],
@@ -49,13 +60,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('❌ API: Resend error:', error);
       return NextResponse.json(
-        { error: 'メール送信に失敗しました' },
+        { error: 'メール送信に失敗しました', details: error },
         { status: 500 }
       );
     }
 
+    console.log('✅ API: メール送信成功:', data);
     return NextResponse.json(
       { message: 'お問い合わせを送信しました', id: data?.id },
       { status: 200 }
