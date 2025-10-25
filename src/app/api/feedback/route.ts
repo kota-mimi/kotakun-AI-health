@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     const adminDb = admin.firestore();
     const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD (日本時間)
 
-    console.log('🔍 フィードバック取得:', { lineUserId, targetDate });
 
     // 指定日のフィードバックデータを取得（Admin SDK使用）
     const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDate);
@@ -23,14 +22,12 @@ export async function POST(request: NextRequest) {
     const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
 
     if (!dailyRecord || !dailyRecord.feedback) {
-      console.log('📭 フィードバックデータが見つかりません:', targetDate);
       return NextResponse.json({
         success: true,
         data: null
       });
     }
 
-    console.log('📊 フィードバックデータ取得成功:', targetDate);
     return NextResponse.json({
       success: true,
       data: {

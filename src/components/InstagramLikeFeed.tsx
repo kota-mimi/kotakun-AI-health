@@ -176,7 +176,6 @@ export function InstagramLikeFeed({ mealData, selectedDate, onMealClick }: Insta
                 }
                 
                 // 🔍 デバッグログ: 画像データの確認
-                console.log('🖼️ 画像デバッグ:', {
                   mealId: meal.id,
                   mealName: meal.name,
                   originalImages: meal.images,

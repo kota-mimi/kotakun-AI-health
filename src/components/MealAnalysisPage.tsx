@@ -132,7 +132,6 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
   const caloriesTrend = calorieChange > 0 ? 'up' : calorieChange < 0 ? 'down' : 'stable';
 
   const handleCalendar = () => {
-    console.log("カレンダー表示");
   };
 
   const trendPeriodOptions = [
@@ -331,7 +330,6 @@ export function MealAnalysisPage({ onBack, mealData, selectedDate, onDateSelect,
             selectedDate={selectedDate}
             onMealClick={(mealType, mealId) => {
               // 食事詳細表示の処理（必要に応じて実装）
-              console.log('Meal clicked:', mealType, mealId);
             }}
           />
         </div>

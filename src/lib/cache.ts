@@ -17,15 +17,12 @@ class SimpleCache {
   get(key: string): any | null {
     const item = this.cache.get(key);
     if (item && Date.now() < item.expires) {
-      console.log(`🎯 Cache HIT: ${key}`);
       return item.data;
     }
     
     if (item) {
-      console.log(`⏰ Cache EXPIRED: ${key}`);
       this.cache.delete(key);
     } else {
-      console.log(`❌ Cache MISS: ${key}`);
     }
     
     return null;
@@ -42,7 +39,6 @@ class SimpleCache {
       data,
       expires: Date.now() + ttlMs
     });
-    console.log(`💾 Cache SET: ${key} (TTL: ${ttlMs/1000}s)`);
   }
   
   /**
@@ -50,7 +46,6 @@ class SimpleCache {
    */
   delete(key: string): void {
     this.cache.delete(key);
-    console.log(`🗑️ Cache DELETE: ${key}`);
   }
   
   /**
@@ -58,7 +53,6 @@ class SimpleCache {
    */
   clear(): void {
     this.cache.clear();
-    console.log(`🧹 Cache CLEAR ALL`);
   }
   
   /**

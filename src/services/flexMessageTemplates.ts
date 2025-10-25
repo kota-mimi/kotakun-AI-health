@@ -3,8 +3,6 @@
 export function createCounselingResultFlexMessage(analysis: any, userProfile: any) {
   const nutritionPlan = analysis.nutritionPlan || {};
   const userName = userProfile.name;
-  console.log('🔍 Flex Template - userProfile.name:', userProfile.name);
-  console.log('🔍 Flex Template - userName:', userName);
   const age = userProfile.age || 0;
   const gender = userProfile.gender === 'male' ? '男性' : userProfile.gender === 'female' ? '女性' : 'その他';
   const height = parseFloat(userProfile.height) || 0;

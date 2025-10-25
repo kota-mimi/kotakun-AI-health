@@ -43,7 +43,6 @@ interface WorkoutPlan {
 
 export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
   try {
-    console.log('🏃 useExerciseData hook called with selectedDate:', selectedDate ? (isNaN(selectedDate.getTime()) ? 'Invalid Date' : selectedDate.toISOString().split('T')[0]) : 'undefined');
     
     // 運動プランデータをlocalStorageで永続化
     const workoutPlansStorage = useLocalStorage<WorkoutPlan[]>('healthApp_workoutPlans', []);
@@ -52,7 +51,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     const { liffUser } = useAuth();
     const lineUserId = liffUser?.userId;
     
-    console.log('🏃 useExerciseData initialized with lineUserId:', lineUserId);
   
   // クライアントサイドマウント状態（useWeightDataと同じパターン）
   const [isClient, setIsClient] = useState(false);
@@ -76,7 +74,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       }
       // 日本時間ベースの日付でAPI取得（重要：UTCではなく日本時間）
       const currentDate = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-      console.log('🔍 PRODUCTION DEBUG: Exercise fetch date conversion:', { 
         selectedDate: selectedDate.toString(),
         utcDate: selectedDate.toISOString().split('T')[0],
         japanDate: currentDate
@@ -92,17 +89,14 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       const shouldRefresh = !lastFetch || (now - parseInt(lastFetch)) < 5000; // 5秒以内は再取得
       
       if (cachedData && !shouldRefresh) {
-        console.log('🎯 運動データをキャッシュから取得:', currentDate);
         setFirestoreExerciseData(cachedData);
         return;
       }
       
       if (shouldRefresh) {
-        console.log('🔄 最近更新があったため強制的にAPIから取得:', currentDate);
       }
       
       try {
-        console.log('🔄 運動データをAPIから取得:', currentDate);
         const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${currentDate}`);
         
         if (response.ok) {
@@ -143,11 +137,9 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
                 notes: 'テストデータ'
               }
             ];
-            console.log('🧪 開発環境：テストデータを追加');
           }
           
           // デバッグ：取得したデータをログ出力
-          console.log('🏃 APIから取得した運動データ:', exerciseData.map(ex => ({
             name: ex.name,
             reps: ex.reps,
             weight: ex.weight,
@@ -188,7 +180,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   const exerciseData = firestoreExerciseData;
   
   // 本番環境でも詳細ログを出力して問題を特定
-  console.log('🏋️ EXERCISE DATA INTEGRATION (PRODUCTION DEBUG):', {
     localCount: localExerciseData.length,
     firestoreCount: firestoreExerciseData.length,
     totalCount: exerciseData.length,
@@ -216,7 +207,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
     };
     
     try {
-      console.log('🚨 アプリから運動記録をFirestoreに保存:', newExercise);
       
       // 楽観的UI更新：即座にUIに追加
       setFirestoreExerciseData(prev => [...prev, newExercise]);
@@ -236,7 +226,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       });
       
       if (response.ok) {
-        console.log('✅ アプリからの運動記録保存成功');
         // 最新データを取得して同期
         const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         if (fetchResponse.ok) {
@@ -296,7 +285,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   // 運動記録を削除する関数（本番環境向け）
   const handleDeleteExercise = async (exerciseId: string) => {
     try {
-      console.log('🚨 Production: Deleting exercise from Firestore:', exerciseId);
       
       // 楽観的UI更新：即座にUIから削除
       const currentData = getCurrentDateData();
@@ -313,7 +301,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       
       // Firestoreから削除（日本時間ベース）
       const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-      console.log('🔍 PRODUCTION DEBUG: Exercise delete date conversion:', { 
         selectedDate: selectedDate.toString(),
         utcDate: selectedDate.toISOString().split('T')[0],
         japanDate: dateStr
@@ -331,7 +318,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       });
       
       if (response.ok) {
-        console.log('🚨 Production: Firestore exercise delete successful, fetching latest data');
         // 削除成功：Firestoreから最新データを取得して同期
         const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         
@@ -339,7 +325,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise data synchronized with Firestore');
           }
         }
       } else {
@@ -351,7 +336,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise rollback completed');
           }
         }
         throw new Error('Firestore exercise delete failed');
@@ -367,7 +351,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise data consistency restored');
           }
         }
       } catch (syncError) {
@@ -379,7 +362,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
   // 運動記録を更新する関数（本番環境向け）
   const handleUpdateExercise = async (exerciseId: string, updates: Partial<Exercise>) => {
     try {
-      console.log('🚨 Production: Updating exercise in Firestore:', exerciseId);
       
       // 楽観的UI更新：即座にUIを更新
       const currentData = getCurrentDateData();
@@ -400,7 +382,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       
       // Firestoreで更新（日本時間ベース）
       const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-      console.log('🔍 PRODUCTION DEBUG: Exercise update date conversion:', { 
         selectedDate: selectedDate.toString(),
         utcDate: selectedDate.toISOString().split('T')[0],
         japanDate: dateStr
@@ -419,7 +400,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       });
       
       if (response.ok) {
-        console.log('🚨 Production: Firestore exercise update successful, fetching latest data');
         // 更新成功：Firestoreから最新データを取得して同期
         const fetchResponse = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
         
@@ -427,7 +407,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise update data synchronized with Firestore');
           }
         }
       } else {
@@ -439,7 +418,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise update rollback completed');
           }
         }
         throw new Error('Firestore exercise update failed');
@@ -455,7 +433,6 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
           const data = await fetchResponse.json();
           if (data.success && data.data) {
             setFirestoreExerciseData(data.data);
-            console.log('🚨 Production: Exercise update data consistency restored');
           }
         }
       } catch (syncError) {

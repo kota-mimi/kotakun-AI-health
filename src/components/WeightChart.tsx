@@ -76,7 +76,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       counselingDate = new Date(); // 現在の日付を使用
     }
     
-    console.log('📅 カウンセリング記録開始日:', {
       raw: counselingDateRaw,
       processed: counselingDate,
       formatted: `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`

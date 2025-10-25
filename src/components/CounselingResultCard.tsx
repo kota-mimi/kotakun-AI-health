@@ -46,7 +46,6 @@ export function CounselingResultCard({ counselingResult, onRecounseling }: Couns
   const results = counselingResult?.results || {};
   
   // デバッグ用ログ
-  console.log('🔍 CounselingResultCard - counselingResult:', counselingResult);
   
   const getGoalText = (goal: string) => {
     switch(goal) {

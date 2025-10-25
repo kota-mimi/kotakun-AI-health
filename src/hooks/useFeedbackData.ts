@@ -48,13 +48,11 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
       // キャッシュチェック
       const cachedData = apiCache.get(cacheKey);
       if (cachedData) {
-        console.log('📊 フィードバックデータをキャッシュから取得');
         setFeedbackData(cachedData);
         return;
       }
       
       try {
-        console.log('🔄 フィードバックデータをAPIから取得');
         const response = await fetch('/api/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -156,14 +154,12 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     // キャッシュチェック
     const cachedData = apiCache.get(cacheKey);
     if (cachedData) {
-      console.log('📊 フィードバックデータをキャッシュから取得');
       setFeedbackData(cachedData);
       setIsLoading(false);
       return;
     }
     
     try {
-      console.log('🔄 フィードバックデータをAPIから取得');
       const response = await fetch('/api/daily-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

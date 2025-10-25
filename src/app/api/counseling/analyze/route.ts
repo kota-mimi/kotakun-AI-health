@@ -75,12 +75,10 @@ async function sendAnalysisToLine(lineUserId: string, analysis: any, userProfile
     // Flexメッセージでカウンセリング結果を送信
     const flexMessage = createCounselingResultFlexMessage(analysis, userProfile);
     
-    console.log('送信中 - カウンセリング結果');
     await pushMessage(lineUserId, [flexMessage]);
 
     // マイページボタンは削除
 
-    console.log('LINEメッセージ送信完了:', userName);
 
   } catch (error) {
     console.error('LINE分析結果送信エラー:', error);
@@ -93,7 +91,6 @@ export async function saveAnalysisResult(userId: string, analysis: any) {
   try {
     // 現在はクライアント側のローカルストレージを使用
     // 将来的にはFirestore等のデータベースに保存
-    console.log('分析結果を保存:', { userId, analysis });
     return true;
   } catch (error) {
     console.error('分析結果保存エラー:', error);

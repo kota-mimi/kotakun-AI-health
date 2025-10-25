@@ -127,7 +127,6 @@ export function SettingsPage({ onBack, onNavigateToNutritionSettings }: Settings
       label: "データ削除",
       description: "すべての記録を完全削除",
       color: "#EF4444",
-      action: () => console.log("データ削除")
     }
   ];
 
@@ -139,7 +138,6 @@ export function SettingsPage({ onBack, onNavigateToNutritionSettings }: Settings
       color: "#EF4444",
       action: () => {
         if (window.confirm("本当にアカウントを削除しますか？この操作は取り消せません。")) {
-          console.log("アカウント削除");
         }
       }
     }

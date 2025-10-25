@@ -61,7 +61,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const finalCarbsTarget = targetValues.macros.carbs;
   
   // 本番環境ログ
-  console.log('🥗 CalorieCard DETAILED:', {
     カウンセリング結果: !!counselingResult,
     counselingResultStructure: counselingResult ? {
       hasAiAnalysis: !!counselingResult.aiAnalysis,

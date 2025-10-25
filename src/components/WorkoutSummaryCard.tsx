@@ -71,8 +71,6 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
 };
 
 export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise, onUpdateExercise }: WorkoutSummaryCardProps) {
-  console.log('💪 WorkoutSummaryCard received exerciseData:', exerciseData);
-  console.log('💪 exerciseData length:', exerciseData?.length || 0);
   
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -83,17 +81,14 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   const [emergencyExerciseData, setEmergencyExerciseData] = useState<Exercise[]>([]);
   
   useEffect(() => {
-    console.log('💪 EMERGENCY FETCH: Starting direct exercise data fetch');
     const fetchExerciseData = async () => {
       try {
         const lineUserId = 'Uae6f58bf8b3b8267fcc5cd16b5c3e6b8'; // 開発環境テスト用ID
         const dateStr = selectedDate.toISOString().split('T')[0];
         const response = await fetch(`/api/exercises?lineUserId=${lineUserId}&date=${dateStr}`);
-        console.log('💪 EMERGENCY FETCH: API response status:', response.status);
         
         if (response.ok) {
           const result = await response.json();
-          console.log('💪 EMERGENCY FETCH: Data received:', result.data);
           setEmergencyExerciseData(result.data || []);
         }
       } catch (error) {
@@ -112,7 +107,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   
   // 緊急フェッチデータの場合はここで確実にソートが必要
   if (actualExerciseData === emergencyExerciseData && actualExerciseData.length > 0) {
-    console.log('🚨 緊急フェッチデータを使用中 - 安定ソートを実行');
     
     // インデックス付きで安定ソート
     const indexedData = actualExerciseData.map((exercise, index) => ({ exercise, originalIndex: index }));
@@ -133,7 +127,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
       const timeB = getTime(b.exercise);
       const comparison = timeA - timeB;
       
-      console.log(`🔄 WSC EMERGENCY SORT: ${a.exercise.name}(${timeA}) vs ${b.exercise.name}(${timeB}) = ${comparison}`);
       
       // 時間が近い場合は記録源で判定
       if (Math.abs(comparison) < 1000) {
@@ -151,7 +144,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     actualExerciseData = sortedData.map(item => item.exercise);
   }
   
-  console.log('💪 WSC RECEIVED DATA ORDER:', actualExerciseData.map((ex, index) => ({
     index,
     name: ex.name,
     time: ex.time,

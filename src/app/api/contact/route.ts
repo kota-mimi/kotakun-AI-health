@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, category, subject, message } = await request.json();
+    const { name, email, category, subject, message, lineUserId } = await request.json();
 
     // バリデーション
     if (!name || !email || !category || !subject || !message) {
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
             <p><strong>件名:</strong> ${subject}</p>
             <p><strong>お名前:</strong> ${name}</p>
             <p><strong>メールアドレス:</strong> ${email}</p>
+            ${lineUserId ? `<p><strong>LINE User ID:</strong> ${lineUserId}</p>` : ''}
           </div>
           
           <div style="background: white; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">

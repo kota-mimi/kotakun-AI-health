@@ -41,35 +41,26 @@ interface CounselingResult {
 }
 
 export function useCounselingData() {
-  console.log('🔥 useCounselingData hook - PRODUCTION VERSION WITH ENHANCED DEBUGGING');
   const { liffUser } = useAuth();
   
   const lineUserId = liffUser?.userId;
-  console.log('🔥 [PRODUCTION] lineUserId:', lineUserId);
-  console.log('🔥 [PRODUCTION] liffUser object:', liffUser);
-  console.log('🔥 [PRODUCTION] Environment:', typeof window !== 'undefined' ? 'browser' : 'server');
   
   const [counselingResult, setCounselingResult] = useState<CounselingResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // useEffectを使用して、完全に安全にデータを取得
   React.useEffect(() => {
-    console.log('🔥 [PRODUCTION] useEffect triggered - starting data fetch');
-    console.log('🔥 [PRODUCTION] Current state:', { lineUserId, isLoading });
     
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        console.log('🔥 [PRODUCTION] Setting loading to true');
         
         if (!lineUserId) {
-          console.log('🔥 [PRODUCTION] No lineUserId detected, falling back to localStorage');
           // lineUserIdがない場合はローカルストレージのみ
           if (typeof window !== 'undefined') {
             const localAnswers = localStorage.getItem('counselingAnswers');
             const localAnalysis = localStorage.getItem('aiAnalysis');
             
-            console.log('🔥 [PRODUCTION] LocalStorage check:', {
               hasAnswers: !!localAnswers,
               hasAnalysis: !!localAnalysis,
               answersLength: localAnswers?.length || 0,
@@ -77,12 +68,10 @@ export function useCounselingData() {
             });
             
             if (localAnswers) {
-              console.log('🔥 [PRODUCTION] Found local counseling data (no lineUserId)');
               const answers = JSON.parse(localAnswers);
               
               // テストデータ「利光湖太郎」を検出して削除
               if (answers.name === '利光湖太郎') {
-                console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage');
                 localStorage.removeItem('counselingAnswers');
                 localStorage.removeItem('aiAnalysis');
                 setCounselingResult(null);
@@ -92,7 +81,6 @@ export function useCounselingData() {
               
               const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
               
-              console.log('🔥 [PRODUCTION] Parsed local data:', {
                 answersKeys: Object.keys(answers),
                 hasAnalysis: !!analysis,
                 analysisKeys: analysis ? Object.keys(analysis) : []
@@ -104,35 +92,28 @@ export function useCounselingData() {
                 userProfile: answers
               });
             } else {
-              console.log('🔥 [PRODUCTION] No local counseling data found');
             }
           } else {
-            console.log('🔥 [PRODUCTION] Window is undefined (server-side)');
           }
           setIsLoading(false);
           return;
         }
 
-        console.log('🔥 [PRODUCTION] Making API call with lineUserId:', lineUserId);
-        console.log('🔥 [PRODUCTION] API endpoint: /api/counseling/status');
         
         // まずローカルストレージをチェック（即座に表示）
         if (typeof window !== 'undefined') {
           const localAnswers = localStorage.getItem('counselingAnswers');
           const localAnalysis = localStorage.getItem('aiAnalysis');
           
-          console.log('🔥 [PRODUCTION] Pre-API localStorage check:', {
             hasAnswers: !!localAnswers,
             hasAnalysis: !!localAnalysis
           });
           
           if (localAnswers) {
-            console.log('🔥 [PRODUCTION] Setting localStorage data first for immediate display');
             const answers = JSON.parse(localAnswers);
             
             // テストデータ「利光湖太郎」を検出して削除
             if (answers.name === '利光湖太郎') {
-              console.log('🔥 [PRODUCTION] Detected test data "利光湖太郎", clearing localStorage (pre-API)');
               localStorage.removeItem('counselingAnswers');
               localStorage.removeItem('aiAnalysis');
               setCounselingResult(null);
@@ -142,7 +123,6 @@ export function useCounselingData() {
             
             const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
             
-            console.log('🔥 [PRODUCTION] LocalStorage data structure:', {
               answers: {
                 keys: Object.keys(answers),
                 hasNutritionData: !!(answers.height && answers.weight),
@@ -161,7 +141,6 @@ export function useCounselingData() {
               userProfile: answers
             });
           } else {
-            console.log('🔥 [PRODUCTION] No localStorage data for immediate display');
           }
         }
         
@@ -173,13 +152,11 @@ export function useCounselingData() {
           // キャッシュチェック
           const cachedCounseling = apiCache.get(cacheKey);
           if (cachedCounseling) {
-            console.log('🎯 [PRODUCTION] カウンセリングデータをキャッシュから取得');
             setCounselingResult(cachedCounseling);
             setIsLoading(false);
             return;
           }
           
-          console.log('🔥 [PRODUCTION] Starting Firestore API call...');
           const startTime = Date.now();
           
           const response = await fetch('/api/counseling/status', {
@@ -189,7 +166,6 @@ export function useCounselingData() {
           });
 
           const responseTime = Date.now() - startTime;
-          console.log('🔥 [PRODUCTION] API response received:', {
             status: response.status,
             statusText: response.statusText,
             responseTime: `${responseTime}ms`,
@@ -198,8 +174,6 @@ export function useCounselingData() {
 
           if (response.ok) {
             const data = await response.json();
-            console.log('🔥 [PRODUCTION] Firestore API SUCCESS! Raw data:', data);
-            console.log('🔥 [PRODUCTION] Response structure:', {
               hasCounselingResult: !!data.counselingResult,
               hasAnswers: !!(data.counselingResult?.answers),
               hasAiAnalysis: !!(data.counselingResult?.aiAnalysis),
@@ -211,20 +185,16 @@ export function useCounselingData() {
             if (data.counselingResult) {
               // Firestoreから取得したデータも「利光湖太郎」なら無視
               if (data.counselingResult.answers?.name === '利光湖太郎' || data.counselingResult.userProfile?.name === '利光湖太郎') {
-                console.log('🔥 [PRODUCTION] Ignoring test data "利光湖太郎" from Firestore');
                 return;
               }
               
               // キャッシュに保存（10分間有効）
               apiCache.set(cacheKey, data.counselingResult, 10 * 60 * 1000);
-              console.log('✅ カウンセリング結果をFirestoreから設定:', data.counselingResult);
               setCounselingResult(data.counselingResult);
             } else {
-              console.log('⚠️ FirestoreレスポンスにcounselingResultがない');
             }
           } else {
             const errorText = await response.text();
-            console.log('🔥 [PRODUCTION] API error:', {
               status: response.status,
               statusText: response.statusText,
               errorBody: errorText
@@ -252,23 +222,19 @@ export function useCounselingData() {
     fetchData();
   }, [lineUserId]);
   
-  console.log('🔥 Current counselingResult:', counselingResult);
 
   // LocalStorageからのデータ取得専用関数
   const refetchLocal = () => {
-    console.log('🔥 LocalStorage refetch実行');
     try {
       if (typeof window !== 'undefined') {
         const localAnswers = localStorage.getItem('counselingAnswers');
         const localAnalysis = localStorage.getItem('aiAnalysis');
         
         if (localAnswers) {
-          console.log('🔥 新しいLocalStorageデータを検出');
           const answers = JSON.parse(localAnswers);
           
           // テストデータ「利光湖太郎」を検出して削除
           if (answers.name === '利光湖太郎') {
-            console.log('🔥 テストデータ検出 - localStorage削除');
             localStorage.removeItem('counselingAnswers');
             localStorage.removeItem('aiAnalysis');
             setCounselingResult(null);
@@ -277,7 +243,6 @@ export function useCounselingData() {
           
           const analysis = localAnalysis ? JSON.parse(localAnalysis) : null;
           
-          console.log('🔥 LocalStorageから最新データ設定:', {
             カロリー: analysis?.nutritionPlan?.dailyCalories,
             PFC: analysis?.nutritionPlan?.macros
           });
@@ -288,7 +253,6 @@ export function useCounselingData() {
             userProfile: answers
           });
         } else {
-          console.log('🔥 LocalStorageにデータなし');
           setCounselingResult(null);
         }
       }
@@ -301,7 +265,6 @@ export function useCounselingData() {
   React.useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'counselingAnswers' || e.key === 'aiAnalysis') {
-        console.log('🔥 LocalStorage変更検出 - 自動refetch実行');
         // 少し遅延させてからrefetch（データの整合性を保つため）
         setTimeout(() => {
           refetchLocal();
@@ -310,7 +273,6 @@ export function useCounselingData() {
     };
 
     const handleCustomRefresh = () => {
-      console.log('🔥 カスタムリフレッシュイベント検出');
       refetchLocal();
     };
 
@@ -328,7 +290,6 @@ export function useCounselingData() {
     counselingResult,
     isLoading,
     refetch: async () => {
-      console.log('🔥 Manual refetch called');
       try {
         setIsLoading(true);
         
@@ -348,14 +309,12 @@ export function useCounselingData() {
               if (data.counselingResult) {
                 // Firestoreから取得したデータも「利光湖太郎」なら無視
                 if (data.counselingResult.answers?.name === '利光湖太郎' || data.counselingResult.userProfile?.name === '利光湖太郎') {
-                  console.log('🔥 [PRODUCTION] Ignoring test data "利光湖太郎" from Firestore (refetch)');
                   return;
                 }
                 setCounselingResult(data.counselingResult);
               }
             }
           } catch (apiError) {
-            console.log('🔥 Refetch API error (ignored):', apiError);
             // エラーは無視、ローカルストレージデータを使用
           }
         }

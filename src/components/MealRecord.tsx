@@ -243,7 +243,6 @@ export function MealRecord({ meals, onAddMeal, onEditMeal, onViewMealDetail }: M
                       <div className="flex-1 space-y-2">
                         {/* 複数食事の場合は個別表示 */}
                         {(() => {
-                          console.log('🔍 MealRecord rendering item:', item.id, 'isMultipleMeals:', item.isMultipleMeals, 'meals:', item.meals);
                           return null;
                         })()}
                         {item.isMultipleMeals && item.meals ? (

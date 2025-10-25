@@ -47,27 +47,22 @@ export function useFirestoreData(selectedDate: Date, lineUserId?: string) {
 
   const fetchFirestoreData = async () => {
     if (!lineUserId) {
-      console.log('useFirestoreData: lineUserId が null のため処理をスキップ');
       setFirestoreData({});
       return;
     }
 
-    console.log('useFirestoreData: データ取得開始', { lineUserId, dateKey });
     setLoading(true);
     setError(null);
 
     try {
       const firestoreService = new FirestoreService();
       const dailyRecord = await firestoreService.getDailyRecord(lineUserId, dateKey);
-      console.log('useFirestoreData: 取得したデイリーレコード', dailyRecord);
 
       if (dailyRecord) {
         // exercise フィールドを exercises に正規化（型定義に合わせる）
         const exercises = dailyRecord.exercise || [];
         const meals = dailyRecord.meals || [];
         
-        console.log('useFirestoreData: exercise データ', exercises);
-        console.log('useFirestoreData: meals データ', meals);
         
         setFirestoreData({
           exercises: exercises.map((ex: any) => ({
@@ -83,7 +78,6 @@ export function useFirestoreData(selectedDate: Date, lineUserId?: string) {
           note: dailyRecord.note
         });
       } else {
-        console.log('useFirestoreData: デイリーレコードが見つかりません');
         setFirestoreData({});
       }
     } catch (err) {

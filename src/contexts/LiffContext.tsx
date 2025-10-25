@@ -58,24 +58,19 @@ export function LiffProvider({ children }: LiffProviderProps) {
         }
 
         // Dynamic import to avoid SSR issues
-        console.log('🔧 LIFF SDKをインポート中...');
         const liff = (await import('@line/liff')).default;
         
-        console.log('🔧 LIFF初期化実行中...', { liffId });
         await liff.init({ liffId });
-        console.log('🔧 LIFF初期化成功');
         
         const isLoggedIn = liff.isLoggedIn();
         const isInClient = liff.isInClient();
         
-        console.log('🔧 LIFF状態確認:', { isLoggedIn, isInClient });
         
         let user: LIFFUser | null = null;
         let context: LIFFContextType | null = null;
 
         if (isLoggedIn) {
           try {
-            console.log('🔧 ユーザープロフィール取得中...');
             const profile = await liff.getProfile();
             user = {
               userId: profile.userId,
@@ -83,7 +78,6 @@ export function LiffProvider({ children }: LiffProviderProps) {
               pictureUrl: profile.pictureUrl,
               statusMessage: profile.statusMessage,
             };
-            console.log('🔧 プロフィール取得成功:', { userId: user.userId, displayName: user.displayName });
           } catch (profileError) {
             console.error('⚠️ プロフィール取得エラー:', profileError);
             // プロフィール取得エラーは致命的でない
@@ -91,7 +85,6 @@ export function LiffProvider({ children }: LiffProviderProps) {
 
           try {
             context = liff.getContext();
-            console.log('🔧 コンテキスト取得成功');
           } catch (contextError) {
             console.error('⚠️ コンテキスト取得エラー:', contextError);
             // コンテキスト取得エラーは致命的でない
@@ -107,7 +100,6 @@ export function LiffProvider({ children }: LiffProviderProps) {
           isInClient,
         });
 
-        console.log('✅ LIFF初期化完了');
 
       } catch (error: any) {
         console.error('❌ LIFF初期化エラー:', error);
@@ -122,7 +114,6 @@ export function LiffProvider({ children }: LiffProviderProps) {
         
         // 本番環境では最低限の機能で続行
         if (process.env.NODE_ENV === 'production') {
-          console.log('🔧 本番環境：LIFF初期化エラーを回復、基本機能で続行');
           setState({
             isReady: true,
             isLoggedIn: false,

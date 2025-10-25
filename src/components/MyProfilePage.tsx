@@ -110,8 +110,6 @@ export function MyProfilePage({
   }
   
   // 本番環境用詳細デバッグ: counselingResultの内容を確認
-  console.log('🔍 [MYPAGE-PROD] MyProfilePage counselingResult:', counselingResult);
-  console.log('🔍 [MYPAGE-PROD] CounselingResult structure:', {
     hasCounselingResult: !!counselingResult,
     hasAnswers: !!(counselingResult?.answers),
     hasAiAnalysis: !!(counselingResult?.aiAnalysis),
@@ -122,7 +120,6 @@ export function MyProfilePage({
   
   // リアクティブなプロフィールデータ計算（refreshKey、latestProfile、counselingResultの変更に反応）
   const { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData } = useMemo(() => {
-    console.log('🔄 プロフィールデータ再計算開始 - refreshKey:', refreshKey);
     
     // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
     // テストデータ「利光湖太郎」を除外
@@ -165,7 +162,6 @@ export function MyProfilePage({
       joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
     };
 
-    console.log('🔄 プロフィールデータ再計算完了:', {
       name: userName,
       calories: finalCalories,
       protein: finalProtein,
@@ -219,7 +215,6 @@ export function MyProfilePage({
     let newTDEE = 0;
 
     try {
-      console.log('🔥 プロフィール保存開始:', editForm);
       
       // ローカルストレージのカウンセリング結果を更新
       let updatedCounselingResult = null;
@@ -227,13 +222,9 @@ export function MyProfilePage({
         const existingAnswers = localStorage.getItem('counselingAnswers');
         const existingAnalysis = localStorage.getItem('aiAnalysis');
         
-        console.log('🔥 既存のローカルストレージ:');
-        console.log('  - counselingAnswers:', existingAnswers);
-        console.log('  - aiAnalysis:', existingAnalysis ? 'exists' : 'null');
         
         if (existingAnswers) {
           const answers = JSON.parse(existingAnswers);
-          console.log('🔥 既存のanswers:', answers);
           
           const updatedAnswers = {
             ...answers,
@@ -247,7 +238,6 @@ export function MyProfilePage({
             primaryGoal: editForm.primaryGoal
           };
           
-          console.log('🔥 更新後のanswers:', updatedAnswers);
           localStorage.setItem('counselingAnswers', JSON.stringify(updatedAnswers));
           
           // aiAnalysisも更新してuserProfileを含める + カロリー・PFC再計算
@@ -277,7 +267,6 @@ export function MyProfilePage({
             newBMR = calculateBMR(newProfile);
             newTDEE = calculateTDEE(newProfile);
             
-            console.log('🔥 カロリー・PFC再計算:', {
               oldCalories: analysis.nutritionPlan?.dailyCalories,
               newCalories: newCalorieTarget,
               oldMacros: analysis.nutritionPlan?.macros,
@@ -302,7 +291,6 @@ export function MyProfilePage({
                 }
               }
             };
-            console.log('🔥 更新後のanalysis:', updatedAnalysis);
             localStorage.setItem('aiAnalysis', JSON.stringify(updatedAnalysis));
           }
           
@@ -326,7 +314,6 @@ export function MyProfilePage({
 
       // Firestoreに保存
       if (updatedCounselingResult && liffUser?.userId) {
-        console.log('🔥 Firestoreに更新されたプロフィールを保存開始');
         try {
           const response = await fetch('/api/counseling/save', {
             method: 'POST',
@@ -338,7 +325,6 @@ export function MyProfilePage({
           });
           
           if (response.ok) {
-            console.log('✅ Firestoreプロフィール保存成功');
           } else {
             console.error('❌ Firestoreプロフィール保存失敗:', response.status);
           }
@@ -353,7 +339,6 @@ export function MyProfilePage({
       // プロフィール履歴をFirebaseに保存
       if (liffUser?.userId) {
         try {
-          console.log('🔥 プロフィール履歴保存開始:', {
             userId: liffUser.userId,
             profileData: {
               name: editForm.name,
@@ -400,7 +385,6 @@ export function MyProfilePage({
           newBMR = calculateBMR(newProfile);
           newTDEE = calculateTDEE(newProfile);
 
-          console.log('🔥 必須計算完了:', {
             newCalorieTarget,
             newMacros,
             newBMR,
@@ -440,10 +424,8 @@ export function MyProfilePage({
           }
           
           const profileHistoryResult = await profileHistoryResponse.json();
-          console.log('✅ プロフィール履歴API保存完了:', profileHistoryResult);
           
           // デバッグ用詳細ログ
-          console.log('🔥 最終計算値確認:', {
             newCalorieTarget,
             newMacros,
             newBMR,
@@ -505,7 +487,6 @@ export function MyProfilePage({
             createdAt: new Date().toISOString()
           }));
           localStorage.setItem('hasCompletedCounseling', 'true');
-          console.log('✅ LocalStorage更新完了（カウンセリング形式）');
           
           // カウンセリング結果APIでFirestoreも更新
           try {
@@ -519,7 +500,6 @@ export function MyProfilePage({
             });
             
             if (counselingResponse.ok) {
-              console.log('✅ カウンセリングデータFirestore更新完了');
             }
           } catch (counselingError) {
             console.error('⚠️ カウンセリングデータ更新エラー（続行）:', counselingError);
@@ -546,7 +526,6 @@ export function MyProfilePage({
               }
             }));
             
-            console.log('🔥 全データ更新完了後にイベント発行');
           }
 
           // 成功アラート
@@ -564,17 +543,14 @@ export function MyProfilePage({
         }
       }
 
-      console.log('🔥 プロフィール更新完了 - リアルタイム反映開始');
       
       // データ更新完了後、少し遅延してからフックのリフレッシュ実行
       setTimeout(async () => {
-        console.log('🔄 フック データリフレッシュ開始');
         try {
           await Promise.all([
             refetch(),
             refetchLatestProfile()
           ]);
-          console.log('✅ フック データリフレッシュ完了');
         } catch (refreshError) {
           console.error('⚠️ フックリフレッシュエラー:', refreshError);
         }
@@ -583,9 +559,7 @@ export function MyProfilePage({
       // 強制リフレッシュでコンポーネント再描画
       setRefreshKey(prev => prev + 1);
       
-      console.log('🔥 プロフィール表示を強制リフレッシュ完了');
       
-      console.log('🔥 プロフィール保存 - リアルタイム反映完了！');
       
       // 4. 編集モーダルを閉じる
       setIsEditModalOpen(false);

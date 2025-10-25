@@ -95,7 +95,6 @@ export function DataManagementPage({
   };
 
   const handleCalendar = () => {
-    console.log("カレンダー表示");
   };
 
   // 体重設定画面の場合

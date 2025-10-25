@@ -63,7 +63,6 @@ export function compressImage(
             currentQuality -= 0.1;
             compress();
           } else {
-            console.log(`Image compressed: ${sizeKB.toFixed(2)}KB (quality: ${currentQuality.toFixed(1)})`);
             resolve(compressedDataUrl);
           }
         };

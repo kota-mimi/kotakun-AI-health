@@ -372,7 +372,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     // 日本時間ベースの日付文字列を取得（重要：UTCではなく日本時間）
     const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-    console.log('🔧 PRODUCTION DEBUG: Update date conversion:', { 
       selectedDate: selectedDate.toString(),
       utcDate: selectedDate.toISOString().split('T')[0],
       japanDate: dateStr
@@ -386,7 +385,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       // EditMealModalで設定された場合
       originalMealId = updatedMeal.originalMealId;
       individualMealIndex = updatedMeal.individualMealIndex;
-      console.log('🔧 Individual meal update detected:', { originalMealId, individualMealIndex });
     } else if (updatedMeal.id.includes('_')) {
       // 仮想IDの場合（originalMealId_index形式）
       const parts = updatedMeal.id.split('_');
@@ -394,12 +392,10 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       if (!isNaN(Number(lastPart)) && parts.length >= 3) {
         originalMealId = parts.slice(0, -1).join('_');
         individualMealIndex = Number(lastPart);
-        console.log('🔧 Virtual ID detected for individual meal:', { originalMealId, individualMealIndex });
       }
     }
     
     try {
-      console.log('🔧 Updating meal via API:', originalMealId);
       const response = await fetch('/api/meals', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -414,7 +410,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       });
 
       if (response.ok) {
-        console.log('🔧 API update successful, updating local state only');
         
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
@@ -466,7 +461,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
   };
 
   const handleDeleteMeal = async (mealId: string) => {
-    console.log('🚨 handleDeleteMeal called with:', { mealId, userId: liffUser?.userId });
     const lineUserId = liffUser?.userId;
     if (!selectedDate || isNaN(selectedDate.getTime())) {
       console.warn('⚠️ Invalid selectedDate in deleteMeal:', selectedDate);
@@ -474,7 +468,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     }
     // 日本時間ベースの日付文字列を取得（重要：UTCではなく日本時間）
     const dateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
-    console.log('🔍 PRODUCTION DEBUG: Date conversion:', { 
       selectedDate: selectedDate.toString(),
       utcDate: selectedDate.toISOString().split('T')[0],
       japanDate: dateStr
@@ -491,15 +484,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       if (!isNaN(Number(lastPart)) && parts.length >= 2 && lastPart.match(/^\d+$/)) {
         originalMealId = parts.slice(0, -1).join('_');
         individualMealIndex = Number(lastPart);
-        console.log('🔍 Virtual ID parsed:', { mealId, originalMealId, individualMealIndex, parts });
       } else {
-        console.log('🔍 Regular meal ID (contains underscore but not virtual):', mealId);
       }
     }
     
     // 本番環境：常にFirestoreを信頼できる情報源とする
     try {
-      console.log('🚨 Production: Deleting meal from Firestore:', { mealId, originalMealId, individualMealIndex });
       
       // 楽観的UI更新：即座にUIから削除
       const currentData = getCurrentDateData();
@@ -538,7 +528,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
       });
 
       if (response.ok) {
-        console.log('🚨 Production: Firestore delete successful, fetching latest data');
         
         // キャッシュをクリア
         const cacheKey = createCacheKey('meals', lineUserId, dateStr);
@@ -557,7 +546,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
             // 新しいデータでキャッシュを更新
             apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
             setFirestoreMealData(data.mealData);
-            console.log('🚨 Production: Data synchronized with Firestore');
           }
         }
       } else {
@@ -573,7 +561,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           const data = await fetchResponse.json();
           if (data.success && data.mealData) {
             setFirestoreMealData(data.mealData);
-            console.log('🚨 Production: Rollback completed');
           }
         }
         throw new Error('Firestore delete failed');
@@ -592,7 +579,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           const data = await fetchResponse.json();
           if (data.success && data.mealData) {
             setFirestoreMealData(data.mealData);
-            console.log('🚨 Production: Data consistency restored');
           }
         }
       } catch (syncError) {
@@ -651,7 +637,6 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
 
   // 食事詳細表示処理
   const handleViewMealDetail = (mealType: MealType, mealId: string) => {
-    console.log('🔥 handleViewMealDetail 呼び出し:', {
       mealType,
       mealId,
       mealData: mealData[mealType],
@@ -659,15 +644,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     });
     
     const meal = mealData[mealType].find(m => m.id === mealId);
-    console.log('🔥 見つかった食事:', meal);
     
     if (meal) {
       setCurrentMealType(mealType);
       setCurrentDetailMeal(meal);
       setIsMealDetailModalOpen(true);
-      console.log('🔥 モーダル開いた!');
     } else {
-      console.log('🔥 食事が見つからない!');
     }
   };
 

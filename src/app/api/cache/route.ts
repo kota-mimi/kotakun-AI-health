@@ -4,7 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const { type, lineUserId, date } = await request.json();
 
-    console.log('🧹 キャッシュクリアAPI:', { type, lineUserId, date });
 
     if (!type || !lineUserId || !date) {
       return NextResponse.json({ 

@@ -104,7 +104,6 @@ export function ExercisePage({
 
   // デバッグ用：運動データをログ出力
   useEffect(() => {
-    console.log('🏋️ ExercisePage 運動データ受信:', {
       dataLength: exerciseData.length,
       data: exerciseData.map(ex => ({
         id: ex.id,
@@ -209,7 +208,6 @@ export function ExercisePage({
   };
 
   const startPlan = (planId: string) => {
-    console.log('プラン開始:', planId);
     // プラン開始ロジックをここに実装
   };
 
@@ -261,7 +259,6 @@ export function ExercisePage({
     if (onAddExerciseToPlan && onDeleteExerciseFromPlan) {
       // 実際の実装では、プラン���状態を更新する必要があります
       // ここでは簡易的な実装として、完了状態をトグルする処理をします
-      console.log('エクササイズ完了切り替え:', planId, exerciseId);
     }
   };
 

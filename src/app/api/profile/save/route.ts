@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📊 プロフィール履歴保存API開始:', { 
       lineUserId, 
       hasProfileData: !!profileData,
       changeDate: profileData.changeDate 
@@ -38,10 +37,8 @@ export async function POST(request: NextRequest) {
       timestamp: Date.now()
     };
     
-    console.log('📊 プロフィール履歴データ:', Object.keys(historyData));
     
     await profileHistoryRef.set(historyData);
-    console.log('✅ プロフィール履歴保存完了');
     
     // メインユーザードキュメントの最終更新日も更新
     const userRef = adminDb.collection('users').doc(lineUserId);
@@ -50,7 +47,6 @@ export async function POST(request: NextRequest) {
       lastProfileUpdateJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
     }, { merge: true });
     
-    console.log('✅ ユーザードキュメント更新完了');
 
     return NextResponse.json({
       success: true,

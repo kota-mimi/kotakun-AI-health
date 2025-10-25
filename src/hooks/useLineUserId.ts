@@ -6,21 +6,17 @@ export function useLineUserId() {
 
   useEffect(() => {
     const getLineUserId = async () => {
-      console.log('useLineUserId: 開始');
       try {
         // LIFF環境かチェック
         if (typeof window !== 'undefined' && window.liff) {
-          console.log('useLineUserId: LIFF環境を検出');
           await window.liff.init({
             liffId: process.env.NEXT_PUBLIC_LIFF_ID || ''
           });
           
           if (window.liff.isLoggedIn()) {
             const profile = await window.liff.getProfile();
-            console.log('useLineUserId: LIFF profile取得成功', profile.userId);
             setLineUserId(profile.userId);
           } else {
-            console.log('useLineUserId: LIFFでログインしていない');
           }
         } else {
           // 本番環境：LIFF環境でない場合はnullのまま
@@ -33,7 +29,6 @@ export function useLineUserId() {
         setLineUserId(null);
       } finally {
         setIsLoading(false);
-        console.log('useLineUserId: 完了');
       }
     };
 

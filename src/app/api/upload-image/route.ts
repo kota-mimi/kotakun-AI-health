@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🔧 API: Starting image upload:', {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // LINEのWebhookと同じフォールバック
     const bucket = storage.bucket(bucketName);
     
-    console.log('🔧 Using bucket name:', bucketName);
     
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     const fileName = `meals/${userId}/${today}/meal_${generateId()}.jpg`;
@@ -49,7 +47,6 @@ export async function POST(request: NextRequest) {
     
     const downloadURL = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
     
-    console.log('✅ API: Image upload successful with Admin SDK:', downloadURL);
     
     return NextResponse.json({
       success: true,

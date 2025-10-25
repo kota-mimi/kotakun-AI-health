@@ -28,26 +28,20 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
   // 設定をAPIから読み込み
   useEffect(() => {
     const loadReminders = async () => {
-      console.log('🔍 loadReminders called, liffUser:', liffUser);
       
       if (!liffUser?.userId) {
-        console.log('❌ No userId, setting loading to false');
         setIsLoading(false);
         return;
       }
 
       try {
-        console.log('📡 Fetching reminders for userId:', liffUser.userId);
         const response = await fetch(`/api/reminders?userId=${liffUser.userId}`);
-        console.log('📡 Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('📡 Response data:', data);
           
           if (data.success) {
             setReminders(data.reminders);
-            console.log('✅ Reminders set:', data.reminders);
           }
         } else {
           console.error('❌ Failed to load reminder settings, status:', response.status);
@@ -55,7 +49,6 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
       } catch (error) {
         console.error('❌ Error loading reminder settings:', error);
       } finally {
-        console.log('✅ Setting loading to false');
         setIsLoading(false);
       }
     };

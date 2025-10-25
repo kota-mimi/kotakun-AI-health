@@ -31,7 +31,6 @@ export class FirestoreService {
         createdAt: userData.createdAt || serverTimestamp(),
       }, { merge: true });
       
-      console.log('ユーザー情報保存完了:', lineUserId);
       return true;
     } catch (error) {
       console.error('ユーザー情報保存エラー:', error);
@@ -100,7 +99,6 @@ export class FirestoreService {
 
       await this.saveUser(lineUserId, { profile });
       
-      console.log('カウンセリング結果保存完了:', lineUserId);
       return true;
     } catch (error) {
       console.error('カウンセリング結果保存エラー:', error);
@@ -142,7 +140,6 @@ export class FirestoreService {
         createdAt: recordData.createdAt || serverTimestamp(),
       }, { merge: true });
       
-      console.log('日次記録保存完了:', { lineUserId, date });
       return true;
     } catch (error) {
       console.error('日次記録保存エラー:', error);
@@ -153,15 +150,12 @@ export class FirestoreService {
   // 日次記録の取得
   async getDailyRecord(lineUserId: string, date: string): Promise<DailyRecord | null> {
     try {
-      console.log('🔍 FirestoreService getDailyRecord 開始:', { lineUserId, date });
       const recordRef = doc(db, 'users', lineUserId, 'dailyRecords', date);
       const recordSnap = await getDoc(recordRef);
       
-      console.log('🔍 FirestoreService recordSnap.exists():', recordSnap.exists());
       
       if (recordSnap.exists()) {
         const data = recordSnap.data();
-        console.log('🔍 FirestoreService getDailyRecord summary:', { 
           lineUserId, 
           date, 
           hasExercises: !!data.exercises,
@@ -174,7 +168,6 @@ export class FirestoreService {
         // Migration: Handle both old 'exercise' and new 'exercises' field names
         let exercises = data.exercises;
         if (!exercises && data.exercise) {
-          console.log('🔄 FirestoreService migrating from exercise to exercises field');
           exercises = data.exercise;
           // Update the data to use the new field name
           data.exercises = exercises;
@@ -186,14 +179,12 @@ export class FirestoreService {
               ...data,
               updatedAt: serverTimestamp()
             });
-            console.log('🔄 FirestoreService migration saved to database');
           } catch (migrationError) {
             console.error('🔄 FirestoreService migration save error:', migrationError);
           }
         }
         
         if (exercises && exercises.length > 0) {
-          console.log('🔍 FirestoreService exercises found:', exercises.length, 'exercises');
         }
         
         return {
@@ -203,7 +194,6 @@ export class FirestoreService {
         } as DailyRecord;
       }
       
-      console.log('🔍 FirestoreService getDailyRecord: No document found for', { lineUserId, date });
       return null;
     } catch (error) {
       console.error('日次記録取得エラー:', error);
@@ -256,7 +246,6 @@ export class FirestoreService {
         meals,
       });
 
-      console.log('食事記録追加完了:', { lineUserId, date });
       return true;
     } catch (error) {
       console.error('食事記録追加エラー:', error);
@@ -267,14 +256,10 @@ export class FirestoreService {
   // 運動記録の追加
   async addExercise(lineUserId: string, date: string, exerciseData: any) {
     try {
-      console.log('🔥 FirestoreService addExercise called:', { lineUserId, date, exerciseData });
       
       const existingRecord = await this.getDailyRecord(lineUserId, date);
-      console.log('🔥 FirestoreService existing record found:', !!existingRecord);
-      console.log('🔥 FirestoreService existing record data keys:', existingRecord ? Object.keys(existingRecord) : 'null');
       
       const exercises = existingRecord?.exercises || [];
-      console.log('🔥 FirestoreService current exercises length:', exercises.length);
       
       const newExercise = {
         ...exerciseData,
@@ -283,16 +268,13 @@ export class FirestoreService {
       };
       
       exercises.push(newExercise);
-      console.log('🔥 FirestoreService exercises after push:', exercises);
 
       const saveData = {
         exercises: exercises,
       };
-      console.log('🔥 FirestoreService saving data:', saveData);
       
       await this.saveDailyRecord(lineUserId, date, saveData);
 
-      console.log('🔥 FirestoreService 運動記録追加完了:', { lineUserId, date, exerciseCount: exercises.length });
       return true;
     } catch (error) {
       console.error('運動記録追加エラー:', error);
@@ -314,7 +296,6 @@ export class FirestoreService {
         await this.saveUser(lineUserId, { profile: user.profile });
       }
 
-      console.log('体重記録更新完了:', { lineUserId, date, weight });
       return true;
     } catch (error) {
       console.error('体重記録更新エラー:', error);
@@ -339,7 +320,6 @@ export class FirestoreService {
         meals: updatedMeals,
       });
 
-      console.log('食事記録削除完了:', { lineUserId, date, mealType, mealId });
       return true;
     } catch (error) {
       console.error('食事記録削除エラー:', error);
@@ -366,7 +346,6 @@ export class FirestoreService {
         lastProfileUpdate: serverTimestamp()
       });
 
-      console.log('プロフィール履歴保存完了:', { lineUserId, changeDate });
       return true;
     } catch (error) {
       console.error('プロフィール履歴保存エラー:', error);
@@ -383,7 +362,6 @@ export class FirestoreService {
         const profileDoc = await getDoc(profileHistoryRef);
         
         if (profileDoc.exists()) {
-          console.log('📅 指定日付のプロフィール取得:', targetDate, profileDoc.data());
           return profileDoc.data();
         }
         
@@ -402,11 +380,9 @@ export class FirestoreService {
         
         if (validProfiles.length > 0) {
           const latestValidProfile = validProfiles.sort((a, b) => b.changeDate.localeCompare(a.changeDate))[0];
-          console.log('📅 指定日付以前の最新プロフィール取得:', targetDate, '→', latestValidProfile.changeDate);
           return latestValidProfile;
         }
         
-        console.log('📅 指定日付以前のプロフィールなし:', targetDate);
         return null;
       }
       
@@ -432,7 +408,6 @@ export class FirestoreService {
       // 既存のFirestoreデータをチェック
       const existingUser = await this.getUser(lineUserId);
       if (existingUser) {
-        console.log('既にFirestoreにデータが存在します');
         return false;
       }
 
@@ -449,7 +424,6 @@ export class FirestoreService {
         // カウンセリング結果を保存
         await this.saveCounselingResult(lineUserId, answers, analysis);
 
-        console.log('ローカルストレージからの移行完了');
         return true;
       }
 

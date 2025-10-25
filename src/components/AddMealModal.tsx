@@ -136,7 +136,6 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
       setIsManualUploading(true);
       
       try {
-        console.log('🔧 Starting manual image upload via API (no AI analysis)');
         
         const formData = new FormData();
         formData.append('file', file);
@@ -156,7 +155,6 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         if (data.success && data.imageUrl) {
           // 手動モードでは画像追加のみ、AI分析は実行しない
           setManualImages(prev => [...prev, data.imageUrl]);
-          console.log('✅ Manual image upload successful (no AI analysis)');
         } else {
           throw new Error('Invalid response');
         }

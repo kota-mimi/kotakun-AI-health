@@ -51,7 +51,6 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       const profile = await firestoreService.getProfileHistory(liffUser.userId, dateString);
       setProfileData(profile);
       
-      console.log('📊 プロフィール履歴取得:', {
         targetDate: dateString,
         userId: liffUser.userId,
         hasProfile: !!profile,
@@ -72,7 +71,6 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
   // プロフィール履歴更新イベントをリスニング（日付ベース用）
   useEffect(() => {
     const handleProfileHistoryUpdate = () => {
-      console.log('📊 プロフィール履歴更新イベント受信 - 日付ベースプロフィール再取得');
       fetchProfileData();
     };
 
@@ -112,7 +110,6 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
       setProfileData(profile);
       
-      console.log('📊 最新プロフィール取得:', {
         userId: liffUser.userId,
         hasProfile: !!profile,
         profileDate: profile?.changeDate
@@ -130,12 +127,10 @@ export function useLatestProfile(): UseProfileHistoryReturn {
     
     // プロフィール更新イベントをリスニング
     const handleProfileUpdate = () => {
-      console.log('📊 プロフィール更新イベント受信 - 最新プロフィール再取得');
       fetchLatestProfile();
     };
 
     const handleProfileHistoryUpdate = () => {
-      console.log('📊 プロフィール履歴更新イベント受信 - 最新プロフィール再取得');
       fetchLatestProfile();
     };
 
@@ -160,7 +155,6 @@ export function useLatestProfile(): UseProfileHistoryReturn {
 
 // プロフィールデータから現在の日付に対応する目標値を取得するユーティリティ
 export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, counselingFallback?: any) {
-  console.log('🎯 目標値取得:', {
     hasProfileData: !!profileData,
     profileDate: profileData?.changeDate,
     hasCounselingFallback: !!counselingFallback,
@@ -177,7 +171,6 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
   // ✅ 正しい優先順位: 日付ベースのプロフィール履歴を最優先
   if (profileData) {
     // プロフィール履歴から取得（日付ベース - 最優先）
-    console.log('✅ プロフィール履歴から目標値取得（日付ベース）:', profileData);
     return {
       targetCalories: profileData.targetCalories,
       bmr: profileData.bmr,
@@ -201,7 +194,6 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
       },
       fromHistory: false
     };
-    console.log('📋 最新aiAnalysisから目標値取得（フォールバック）:', fallbackValues);
     return fallbackValues;
   }
 
@@ -220,14 +212,12 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
         },
         fromHistory: false
       };
-      console.log('📋 カウンセリング結果から目標値取得:', fallbackValues);
       return fallbackValues;
     }
     
     // カウンセリング結果はあるが計算値がない場合は、カウンセリングデータから動的計算
     if (counselingFallback.answers) {
       const dynamicValues = calculateDynamicValues(counselingFallback.answers);
-      console.log('🧮 カウンセリングデータから動的計算:', dynamicValues);
       return {
         ...dynamicValues,
         fromHistory: false
@@ -247,7 +237,6 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
     },
     fromHistory: false
   };
-  console.log('⚠️ デフォルト値を使用:', defaultValues);
   return defaultValues;
 }
 
@@ -311,7 +300,6 @@ function calculateDynamicValues(answers: any) {
     const carbCalories = targetCalories - proteinCalories - fatCalories;
     const carbs = Math.round(carbCalories / 4);
 
-    console.log('🧮 カウンセリング統一計算結果:', { targetCalories: Math.round(targetCalories), bmr: Math.round(bmr), tdee: Math.round(tdee), macros: { protein, fat, carbs } });
 
     return {
       targetCalories: Math.round(targetCalories),

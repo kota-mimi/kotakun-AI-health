@@ -22,10 +22,8 @@ interface DailyRecord {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('🚀🚀🚀 /api/daily-feedback 呼び出し開始！🚀🚀🚀');
   try {
     const { userId, date } = await request.json();
-    console.log('📋 Request data:', { userId, date });
 
     if (!userId || !date) {
       return NextResponse.json({ error: 'userId and date are required' }, { status: 400 });
@@ -45,7 +43,6 @@ export async function POST(request: NextRequest) {
 
     // 体重比較のための前回体重を取得
     const weightComparison = await getWeightComparison(userId, date);
-    console.log('💰 体重比較データ:', weightComparison);
     
     // フィードバック用データを準備
     const feedbackData = {
@@ -81,7 +78,6 @@ export async function POST(request: NextRequest) {
       feedbackCreatedAt: new Date().toISOString()
     }, { merge: true });
 
-    console.log('💾 フィードバックをFirestoreに保存完了:', { userId, date });
 
     return NextResponse.json({
       success: true,
@@ -103,14 +99,12 @@ export async function POST(request: NextRequest) {
 // 1日の記録データを取得（Firebase Admin SDKで直接取得）
 async function getDailyRecords(userId: string, date: string): Promise<DailyRecord> {
   try {
-    console.log('📊 getDailyRecords開始:', { userId, date });
     
     const db = admin.firestore();
     const recordRef = db.doc(`users/${userId}/dailyRecords/${date}`);
     const recordSnap = await recordRef.get();
     
     if (!recordSnap.exists) {
-      console.log('📊 記録データなし - デフォルトデータを返却');
       return {
         meals: [],
         exercises: []
@@ -119,7 +113,6 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     
     const dailyRecord = recordSnap.data();
     
-    console.log('📊 Firebase Admin データ取得成功:', {
       hasMeals: !!dailyRecord?.meals,
       mealsCount: dailyRecord?.meals?.length || 0,
       hasExercises: !!dailyRecord?.exercises,
@@ -129,7 +122,6 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
     
     // Firebase Admin で取得したデータをAI用のフォーマットに変換
     const formattedMeals = (dailyRecord?.meals || []).map((meal: any) => {
-      console.log('📊 Meal データ:', {
         name: meal.name,
         calories: meal.calories,
         protein: meal.protein,
@@ -165,7 +157,6 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
       exercises: formattedExercises
     };
     
-    console.log('📊 フォーマット済みデータ:', {
       mealsCount: result.meals.length,
       exercisesCount: result.exercises.length,
       totalCalories: result.meals.reduce((sum, meal) => sum + meal.calories, 0)
@@ -279,19 +270,16 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
 `;
 
   try {
-    console.log('🤖🤖🤖 AI生成開始 🤖🤖🤖');
     // Gemini APIでフィードバック生成
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    console.log('✅✅✅ AI生成成功！ ✅✅✅');
     return response.text();
     
   } catch (error) {
     console.error('❌❌❌ AI生成エラー:', error);
-    console.log('🚨🚨🚨 フォールバック関数使用中！！！ 🚨🚨🚨');
     // フォールバック: 固定テンプレート
     return generateFallbackFeedback(data, totalCalories, totalProtein, totalFat, totalCarbs, totalExerciseTime);
   }
@@ -369,7 +357,6 @@ async function getTargetValuesForDate(userId: string, date: string) {
     
     if (!snapshot.empty) {
       const profileData = snapshot.docs[0].data();
-      console.log('📊 プロファイル履歴から目標値取得:', {
         date,
         profileDate: profileData.changeDate,
         targetCalories: profileData.targetCalories
@@ -396,7 +383,6 @@ async function getTargetValuesForDate(userId: string, date: string) {
       const aiAnalysis = counselingData?.aiAnalysis?.nutritionPlan;
       
       if (aiAnalysis) {
-        console.log('📊 カウンセリング結果から目標値取得:', {
           dailyCalories: aiAnalysis.dailyCalories,
           bmr: aiAnalysis.bmr,
           tdee: aiAnalysis.tdee
@@ -416,7 +402,6 @@ async function getTargetValuesForDate(userId: string, date: string) {
     }
     
     // 3. デフォルト値
-    console.log('📊 デフォルト値を使用');
     return {
       targetCalories: 2000,
       bmr: 1500,

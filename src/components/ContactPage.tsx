@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLiff } from '@/contexts/LiffContext';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -20,12 +21,23 @@ interface ContactPageProps {
 }
 
 export function ContactPage({ onBack }: ContactPageProps) {
+  const { liff } = useLiff();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [lineUserId, setLineUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (liff?.isLoggedIn()) {
+      const context = liff.getContext();
+      if (context?.userId) {
+        setLineUserId(context.userId);
+      }
+    }
+  }, [liff]);
 
 
   const inquiryCategories = [
@@ -79,11 +91,11 @@ export function ContactPage({ onBack }: ContactPageProps) {
           category: categoryTitle,
           subject,
           message,
+          lineUserId,
         }),
       });
 
       if (response.ok) {
-        console.log('メール送信成功');
         setIsSubmitted(true);
       } else {
         const errorData = await response.json();

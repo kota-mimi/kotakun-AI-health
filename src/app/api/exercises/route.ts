@@ -6,7 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const { lineUserId, date, exercise } = await request.json();
 
-    console.log('🏃 運動データ追加API:', { lineUserId, date, exercise });
 
     if (!lineUserId || !date || !exercise) {
       return NextResponse.json(
@@ -40,7 +39,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('✅ 運動データ追加完了:', exercise.id);
 
     return NextResponse.json({ 
       success: true, 
@@ -66,7 +64,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'lineUserId is required' }, { status: 400 });
     }
 
-    console.log('運動API: データ取得開始', { lineUserId, date });
 
     let adminDb;
     try {
@@ -84,12 +81,10 @@ export async function GET(request: NextRequest) {
     
     if (date) {
       // 特定の日付のデータを取得（Admin SDK）
-      console.log('🔍 API: getDailyRecord呼び出し前:', { lineUserId, date });
       const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
       const recordDoc = await recordRef.get();
       const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
       
-      console.log('🔍 API: getDailyRecord結果:', { 
         hasRecord: !!dailyRecord, 
         hasExercises: !!dailyRecord?.exercises,
         hasExercise: !!dailyRecord?.exercise,
@@ -100,11 +95,9 @@ export async function GET(request: NextRequest) {
       
       const exercises = dailyRecord?.exercises || [];
       
-      console.log('運動API: 特定日付のデータ', { date, exercises });
       
       // 各exerciseのtimestampをログ出力
       exercises.forEach((exercise, index) => {
-        console.log(`🏃 Exercise ${index}: ${exercise.name}, timestamp: ${exercise.timestamp}, time: ${exercise.time}`);
       });
       
       return NextResponse.json({
@@ -133,7 +126,6 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      console.log('運動API: 30日分のデータ', { allExercises: allExercises.length });
       
       return NextResponse.json({
         success: true,
@@ -155,7 +147,6 @@ export async function PUT(request: NextRequest) {
   try {
     const { lineUserId, date, exerciseId, updates } = await request.json();
 
-    console.log('🔄 運動データ更新API:', { exerciseId, lineUserId, date, updates });
 
     if (!lineUserId || !date || !exerciseId || !updates) {
       return NextResponse.json(
@@ -171,11 +162,8 @@ export async function PUT(request: NextRequest) {
     const recordDoc = await recordRef.get();
     const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
     
-    console.log('🔍 PUT dailyRecord:', dailyRecord);
-    console.log('🔍 PUT dailyRecord.exercises:', dailyRecord?.exercises);
     
     if (!dailyRecord || !dailyRecord.exercises) {
-      console.log('🔍 PUT データが見つかりません:', { dailyRecord: !!dailyRecord, exercises: !!dailyRecord?.exercises });
       return NextResponse.json({ error: '運動記録が見つかりません' }, { status: 404 });
     }
 
@@ -190,7 +178,6 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date()
     });
 
-    console.log('✅ 運動データ更新完了:', exerciseId);
 
     return NextResponse.json({ 
       success: true, 
@@ -212,7 +199,6 @@ export async function DELETE(request: NextRequest) {
   try {
     const { lineUserId, date, exerciseId } = await request.json();
 
-    console.log('🗑️ 運動データ削除API:', { exerciseId, lineUserId, date });
 
     if (!lineUserId || !date || !exerciseId) {
       return NextResponse.json(
@@ -228,11 +214,8 @@ export async function DELETE(request: NextRequest) {
     const recordDoc = await recordRef.get();
     const dailyRecord = recordDoc.exists ? recordDoc.data() : null;
     
-    console.log('🔍 DELETE dailyRecord:', dailyRecord);
-    console.log('🔍 DELETE dailyRecord.exercises:', dailyRecord?.exercises);
     
     if (!dailyRecord || !dailyRecord.exercises) {
-      console.log('🔍 DELETE データが見つかりません:', { dailyRecord: !!dailyRecord, exercises: !!dailyRecord?.exercises });
       return NextResponse.json({ error: '運動記録が見つかりません' }, { status: 404 });
     }
 
@@ -247,7 +230,6 @@ export async function DELETE(request: NextRequest) {
       updatedAt: new Date()
     });
 
-    console.log('✅ 運動データ削除完了:', exerciseId);
 
     return NextResponse.json({ 
       success: true, 

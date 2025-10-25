@@ -99,7 +99,6 @@ export function WeightDetailPage({
   const currentBMI = calculateBMI(currentWeight, height);
 
   const handleAddWeight = (data: { weight: number; bodyFat?: number; note?: string }) => {
-    console.log('新しい体重データ:', data);
     // ここで���際のデータ更新処理
   };
 
@@ -108,7 +107,6 @@ export function WeightDetailPage({
   };
 
   const handleCalendar = () => {
-    console.log("カレンダー表示");
   };
 
   const handlePhotoUpload = () => {
