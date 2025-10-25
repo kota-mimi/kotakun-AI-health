@@ -28,6 +28,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   // デバッグ用ログ
   console.log('WeightCard - data:', data);
   console.log('WeightCard - counselingResult:', counselingResult);
+  console.log('WeightCard - selectedDate:', selectedDate);
   
   // データが記録されているかチェック
   const hasData = data.current > 0;
@@ -53,6 +54,8 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   const isToday = selectedDate ? selectedDate.toDateString() === new Date().toDateString() : true;
   const isAppStartDaySelected = isAppStartDay(selectedDate);
   const shouldUseFallback = isToday || isAppStartDaySelected;
+  
+  console.log('WeightCard - isToday:', isToday, 'isAppStartDaySelected:', isAppStartDaySelected, 'shouldUseFallback:', shouldUseFallback);
   
   // 実際の記録データを優先、条件付きでカウンセリング結果をフォールバック
   const currentWeight = hasData ? data.current : (shouldUseFallback && counselingResult?.answers?.weight ? counselingResult.answers.weight : 0);
