@@ -23,7 +23,7 @@ type DataType = 'weight' | 'waist';
 export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('week');
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
   const [isExpanded, setIsExpanded] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -123,7 +123,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       switch (selectedPeriod) {
         case 'week': takeCount = 7; break;
         case 'month': takeCount = 30; break;
-        case '6months': takeCount = 180; break;
+        case '6months': takeCount = 90; break; // 3ヶ月に変更
         case 'year': takeCount = 365; break;
         default: takeCount = 30; break;
       }
@@ -139,8 +139,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
     // 期間に応じてデータを間引く
     let downsampledData = filteredData;
-    if (selectedPeriod === '6months' && filteredData.length > 60) {
-      // 半年の場合：3日に1回のデータを表示
+    if (selectedPeriod === '6months' && filteredData.length > 30) {
+      // 3ヶ月の場合：3日に1回のデータを表示
       downsampledData = filteredData.filter((_, index) => index % 3 === 0);
     } else if (selectedPeriod === 'year' && filteredData.length > 80) {
       // 1年の場合：週1回（7日に1回）のデータを表示
@@ -283,7 +283,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     
     // データが少ない場合は固定幅、多い場合は圧縮
     const actualWidth = Math.min(totalDataWidth, maxGraphWidth);
-    const startX = 5 + (maxGraphWidth - actualWidth) / 2; // 中央揃え
+    const startX = 20; // 左端から開始
     
     return currentData.map((_, index) => {
       if (currentData.length === 1) return svgWidth / 2;
@@ -570,10 +570,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           {/* 期間選択ボタン */}
           <div className="flex bg-slate-100 rounded-lg p-1">
             {[
-              { key: 'week', label: '1週間' },
               { key: 'month', label: '1ヶ月' },
-              { key: '6months', label: '半年' },
-              { key: 'year', label: '1年' },
+              { key: '6months', label: '3ヶ月' },
               { key: 'all', label: '全期間' }
             ].map(({ key, label }) => (
               <button
@@ -765,7 +763,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             } else if (selectedPeriod === 'month') {
               displayInterval = Math.max(1, Math.floor(totalPoints / 6)); // 最大6個
             } else if (selectedPeriod === '6months') {
-              displayInterval = Math.max(1, Math.floor(totalPoints / 8)); // 最大8個
+              displayInterval = Math.max(1, Math.floor(totalPoints / 6)); // 最大6個（3ヶ月用）
             } else if (selectedPeriod === 'year') {
               displayInterval = Math.max(1, Math.floor(totalPoints / 10)); // 最大10個
             } else {
@@ -800,7 +798,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 return `${month}/${day}`;
               } else if (selectedPeriod === 'month') {
                 return `${month}/${day}`;
-              } else if (selectedPeriod === '6months' || selectedPeriod === 'year') {
+              } else if (selectedPeriod === '6months') {
+                return `${month}/${day}`; // 3ヶ月なので日付表示
+              } else if (selectedPeriod === 'year') {
                 return `${month}月`;
               } else {
                 const year = date.getFullYear() % 100; // 2桁年
