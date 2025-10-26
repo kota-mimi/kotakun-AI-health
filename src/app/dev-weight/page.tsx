@@ -9,7 +9,6 @@ import { WeightChart } from '@/components/WeightChart';
 interface WeightEntry {
   date: string;
   weight: number;
-  bodyFat?: number;
   waist?: number;
   morningWeight?: number;
   eveningWeight?: number;
@@ -21,7 +20,6 @@ export default function DevWeightPage() {
   const [newEntry, setNewEntry] = useState({
     date: new Date().toISOString().split('T')[0],
     weight: 70,
-    bodyFat: 20,
     waist: 80,
     note: ''
   });
@@ -31,7 +29,6 @@ export default function DevWeightPage() {
       const entry: WeightEntry = {
         date: newEntry.date,
         weight: newEntry.weight,
-        bodyFat: newEntry.bodyFat || undefined,
         waist: newEntry.waist || undefined,
         note: newEntry.note || undefined
       };
@@ -69,13 +66,11 @@ export default function DevWeightPage() {
       const variation = Math.sin(i / 10) * 2 + Math.random() * 1 - 0.5;
       const weight = Math.round((baseWeight + variation) * 10) / 10;
       
-      const bodyFat = Math.round((20 + Math.random() * 4 - 2) * 10) / 10;
       const waist = Math.round(80 + Math.random() * 6 - 3);
       
       sampleEntries.push({
         date: date.toISOString().split('T')[0],
         weight,
-        bodyFat,
         waist,
         note: i === 0 ? '今日' : ''
       });
@@ -107,13 +102,11 @@ export default function DevWeightPage() {
       
       const weight = Math.round((baseWeight + longTermTrend + monthFactor + shortTermVariation) * 10) / 10;
       
-      const bodyFat = Math.round((22 + Math.random() * 6 - 3) * 10) / 10;
       const waist = Math.round(82 + Math.random() * 8 - 4);
       
       sampleEntries.push({
         date: date.toISOString().split('T')[0],
         weight,
-        bodyFat,
         waist,
         note: i === 0 ? '今日' : (i === -365 ? '1年前' : '')
       });
@@ -135,7 +128,7 @@ export default function DevWeightPage() {
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4">📝 データ入力</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">日付</label>
               <Input
@@ -152,16 +145,6 @@ export default function DevWeightPage() {
                 value={newEntry.weight}
                 onChange={(e) => setNewEntry(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
                 placeholder="70.0"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">体脂肪率 (%)</label>
-              <Input
-                type="number"
-                step="0.1"
-                value={newEntry.bodyFat}
-                onChange={(e) => setNewEntry(prev => ({ ...prev, bodyFat: parseFloat(e.target.value) || 0 }))}
-                placeholder="20.0"
               />
             </div>
             <div>
@@ -231,7 +214,6 @@ export default function DevWeightPage() {
                   <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <span>{entry.date}</span>
                     <span>{entry.weight}kg</span>
-                    {entry.bodyFat && <span>{entry.bodyFat}%</span>}
                     {entry.waist && <span>{entry.waist}cm</span>}
                     {entry.note && <span className="text-gray-600">"{entry.note}"</span>}
                   </div>

@@ -25,7 +25,6 @@ interface WeightDetailPageProps {
   weightData?: Array<{
     date: string;
     weight: number;
-    bodyFat?: number;
     morningWeight?: number;
     eveningWeight?: number;
     note?: string;
@@ -98,7 +97,7 @@ export function WeightDetailPage({
   const progress = calculateProgress();
   const currentBMI = calculateBMI(currentWeight, height);
 
-  const handleAddWeight = (data: { weight: number; bodyFat?: number; note?: string }) => {
+  const handleAddWeight = (data: { weight: number; note?: string }) => {
     // ここで���際のデータ更新処理
   };
 

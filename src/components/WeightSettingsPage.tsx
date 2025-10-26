@@ -9,14 +9,12 @@ interface WeightSettingsPageProps {
 }
 
 interface WeightSettings {
-  bodyFat: boolean;
   morningWeight: boolean;
   eveningWeight: boolean;
 }
 
 export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
   const [settings, setSettings] = useState<WeightSettings>({
-    bodyFat: true,
     morningWeight: false,
     eveningWeight: false
   });
@@ -29,12 +27,6 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
   };
 
   const settingItems = [
-    {
-      key: 'bodyFat' as const,
-      label: '体脂肪率',
-      description: '体脂肪率を記録・表示する',
-      color: '#F59E0B'
-    },
     {
       key: 'morningWeight' as const,
       label: '朝の体重',
@@ -112,16 +104,6 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
               <div className="text-xs text-slate-500">常に記録されます</div>
             </div>
 
-            {settings.bodyFat && (
-              <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-orange-700">体脂肪率</span>
-                  <span className="text-sm text-orange-800">16.0%</span>
-                </div>
-                <div className="text-xs text-orange-600">有効 - グラフに表示されます</div>
-              </div>
-            )}
-
             {settings.morningWeight && (
               <div className="p-3 bg-green-50 rounded-lg border border-green-100">
                 <div className="flex items-center justify-between mb-2">
@@ -148,7 +130,6 @@ export function WeightSettingsPage({ onBack }: WeightSettingsPageProps) {
         <Card className="bg-white shadow-sm border border-gray-200 rounded-xl p-4">
           <h3 className="font-medium text-blue-800 mb-2">💡 使い方のヒント</h3>
           <div className="text-sm text-blue-700 space-y-2">
-            <p>• <strong>体脂肪率</strong>: 体組成計がある場合におすすめ</p>
             <p>• <strong>朝の体重</strong>: より正確な体重変化を把握したい場合</p>
             <p>• <strong>夜の体重</strong>: 1日の体重変動を確認したい場合</p>
           </div>

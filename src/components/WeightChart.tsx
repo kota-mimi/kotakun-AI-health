@@ -7,7 +7,6 @@ interface WeightChartProps {
   data: Array<{
     date: string;
     weight: number;
-    bodyFat?: number;
     waist?: number;
     morningWeight?: number;
     eveningWeight?: number;
@@ -20,7 +19,7 @@ interface WeightChartProps {
   counselingResult?: any;
 }
 
-type DataType = 'weight' | 'bodyFat' | 'waist';
+type DataType = 'weight' | 'waist';
 
 export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
@@ -30,12 +29,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // データの検証とデフォルト値 - 体重または体脂肪のいずれかがあれば有効とする
+  // データの検証とデフォルト値 - 体重があれば有効とする
   const validData = Array.isArray(data) ? data.filter(item => 
-    item && item.date && (
-      (typeof item.weight === 'number' && !isNaN(item.weight) && item.weight > 0) ||
-      (typeof item.bodyFat === 'number' && !isNaN(item.bodyFat) && item.bodyFat > 0)
-    )
+    item && item.date && (typeof item.weight === 'number' && !isNaN(item.weight) && item.weight > 0)
   ) : [];
 
   // クライアントサイドでのみ実行されることを保証
@@ -82,7 +78,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return [{
       date: dateStr,
       weight: counselingResult.answers.weight,
-      bodyFat: 0 // カウンセリングでは体脂肪は取得しないのでデフォルト値
     }];
   };
 
@@ -106,7 +101,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
         return {
           date: formatDate(),
           weight: item.weight || 0,
-          bodyFat: item.bodyFat || 0,
           waist: 80 // 仮の値（実際のデータにwaistがないため）
         };
       });
@@ -158,7 +152,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       downsampledData = filteredData.filter((_, index) => index % interval === 0);
     }
 
-    // データフォーマットを統一（実際のデータはweight/bodyFatのみ、waistは仮の値）
+    // データフォーマットを統一（実際のデータはweightのみ、waistは仮の値）
     const processedData = downsampledData.map(item => {
       // ISO形式の日付（YYYY-MM-DD）を正しく解析
       let itemDate: Date;
@@ -184,7 +178,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       return {
         date: formatDate(),
         weight: item.weight || 0,
-        bodyFat: item.bodyFat || 0,
         waist: 80 // 仮の値（実際のデータにwaistがないため）
       };
     }).filter(item => item !== null); // null値を除外
@@ -209,7 +202,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       // デフォルト値
       switch (dataType) {
         case 'weight': return { min: 70, max: 77 };
-        case 'bodyFat': return { min: 10, max: 25 };
         case 'waist': return { min: 77, max: 87 };
       }
     }
@@ -229,7 +221,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }
     
     // 体脂肪の場合
-    if (dataType === 'bodyFat') {
+    if (false) { // 体脂肪削除のため無効化
       // 単一データポイントの場合の処理
       if (values.length === 1) {
         const singleValue = values[0];
@@ -256,7 +248,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
   const dataTypeConfig = {
     weight: { label: '体重', unit: 'kg', color: '#3B82F6', ...calculateDataRange('weight') },
-    bodyFat: { label: '体脂肪', unit: '%', color: '#F97316', ...calculateDataRange('bodyFat') },
   };
 
   const currentConfig = dataTypeConfig[selectedDataType];
@@ -381,7 +372,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const getTargetValue = () => {
     switch (selectedDataType) {
       case 'weight': return targetWeight;
-      case 'bodyFat': return 15.0; // 体脂肪の目標値
       default: return null;
     }
   };
@@ -531,7 +521,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 onClick={(e) => e.stopPropagation()}
               >
                 <option value="weight">体重グラフ</option>
-                <option value="bodyFat">体脂肪グラフ</option>
               </select>
             </div>
             {isExpanded ? (
@@ -598,7 +587,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
               onClick={(e) => e.stopPropagation()}
             >
               <option value="weight">体重グラフ</option>
-              <option value="bodyFat">体脂肪グラフ</option>
             </select>
           </div>
           {isExpanded ? (

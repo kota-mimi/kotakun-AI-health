@@ -3,7 +3,7 @@ import { admin } from '@/lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const { lineUserId, date, weight, bodyFat, note } = await request.json();
+    const { lineUserId, date, weight, note } = await request.json();
 
     if (!lineUserId) {
       return NextResponse.json(
@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 体重または体脂肪のいずれかが必要
-    if (!weight && !bodyFat) {
+    // 体重が必要
+    if (!weight) {
       return NextResponse.json(
-        { error: '体重または体脂肪率のいずれかを入力してください' },
+        { error: '体重を入力してください' },
         { status: 400 }
       );
     }
@@ -26,9 +26,6 @@ export async function POST(request: NextRequest) {
     const recordData: any = {};
     if (weight !== undefined && weight !== null && weight !== '') {
       recordData.weight = parseFloat(weight);
-    }
-    if (bodyFat !== undefined && bodyFat !== null && bodyFat !== '') {
-      recordData.bodyFat = parseFloat(bodyFat);
     }
     if (note && note.trim()) {
       recordData.note = note.trim();
@@ -117,23 +114,14 @@ export async function GET(request: NextRequest) {
         
         if (recordDoc.exists) {
           const dailyRecord = recordDoc.data();
-          // 体重または体脂肪のデータがあれば含める
-          if (dailyRecord && (dailyRecord.weight || dailyRecord.bodyFat)) {
+          // 体重データがあれば含める
+          if (dailyRecord && dailyRecord.weight) {
             // 体重が0以下の場合は除外（無効なデータとして扱う）
             const weightValue = dailyRecord.weight;
             if (weightValue && weightValue > 0) {
               weightData.push({
                 date: dateStr,
                 weight: weightValue,
-                bodyFat: dailyRecord.bodyFat,
-                note: dailyRecord.note
-              });
-            } else if (dailyRecord.bodyFat && dailyRecord.bodyFat > 0) {
-              // 体脂肪のみの記録の場合
-              weightData.push({
-                date: dateStr,
-                weight: 0, // 体重なしを明示的に示す
-                bodyFat: dailyRecord.bodyFat,
                 note: dailyRecord.note
               });
             }

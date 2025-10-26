@@ -8,7 +8,6 @@ interface WeightEntry {
   id: string;
   date: string; // YYYY-MM-DD format
   weight: number;
-  bodyFat?: number;
   note?: string;
   photo?: string;
   time: string; // HH:MM format
@@ -37,7 +36,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const [isWeightSettingsModalOpen, setIsWeightSettingsModalOpen] = useState(false);
   
   // 実データ取得用のstate
-  const [realWeightData, setRealWeightData] = useState<Array<{date: string; weight: number; bodyFat?: number}>>([]);
+  const [realWeightData, setRealWeightData] = useState<Array<{date: string; weight: number}>>([]);
   const [isClient, setIsClient] = useState(false);
   
   // クライアントサイドでのマウントを確認
@@ -284,7 +283,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   };
 
   // 体重記録を追加
-  const handleAddWeightEntry = async (data: { weight?: number; bodyFat?: number; note?: string; photo?: string }) => {
+  const handleAddWeightEntry = async (data: { weight?: number; note?: string; photo?: string }) => {
     const lineUserId = liffUser?.userId;
     const dateStr = getDateKey(selectedDate);
     
@@ -297,7 +296,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           lineUserId,
           date: dateStr,
           weight: data.weight,
-          bodyFat: data.bodyFat,
           note: data.note
         }),
       });
@@ -311,7 +309,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         id: generateId(),
         date: dateStr,
         weight: data.weight || 0, // 体重が未入力の場合は0
-        bodyFat: data.bodyFat,
         note: data.note,
         photo: data.photo,
         time: new Date().toTimeString().slice(0, 5),
@@ -333,12 +330,11 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         weightData: weightDataUpdate
       });
 
-      // realWeightDataも即座に更新（体重または体脂肪が記録された場合）
-      if (data.weight || data.bodyFat) {
+      // realWeightDataも即座に更新（体重が記録された場合）
+      if (data.weight) {
         const newRealWeightEntry = {
           date: dateStr,
-          weight: data.weight || 0,
-          bodyFat: data.bodyFat
+          weight: data.weight || 0
         };
         
         setRealWeightData(prevData => {
@@ -404,7 +400,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
-    const trendData: { date: string; weight: number; bodyFat?: number }[] = [];
+    const trendData: { date: string; weight: number }[] = [];
     
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dateKey = getDateKey(d);
@@ -414,8 +410,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         const latestEntry = dayData.weightEntries[dayData.weightEntries.length - 1];
         trendData.push({
           date: dateKey,
-          weight: latestEntry.weight,
-          bodyFat: latestEntry.bodyFat
+          weight: latestEntry.weight
         });
       }
     }

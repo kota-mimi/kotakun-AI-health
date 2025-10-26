@@ -1479,7 +1479,7 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
 }
 
 // 体重記録用のFlexメッセージ
-export function createWeightFlexMessage(weight: number, bodyFat?: number) {
+export function createWeightFlexMessage(weight: number) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
   
   const contents = [
@@ -1522,32 +1522,6 @@ export function createWeightFlexMessage(weight: number, bodyFat?: number) {
       ]
     }
   ];
-
-  // 体脂肪率がある場合は追加
-  if (bodyFat !== undefined && bodyFat !== null) {
-    contents.push({
-      type: 'box',
-      layout: 'horizontal',
-      margin: 'sm',
-      contents: [
-        {
-          type: 'text',
-          text: '体脂肪率',
-          size: 'sm',
-          color: '#666666',
-          flex: 1
-        },
-        {
-          type: 'text',
-          text: `${bodyFat}%`,
-          size: 'sm',
-          color: '#4a90e2',
-          weight: 'bold',
-          flex: 0
-        }
-      ]
-    });
-  }
 
   return {
     type: 'flex',

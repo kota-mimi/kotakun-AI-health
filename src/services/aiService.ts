@@ -542,23 +542,19 @@ class AIHealthService {
 {
   "isWeightRecord": boolean,
   "weight": number,
-  "hasBodyFat": boolean,
-  "bodyFat": number,
   "confidence": number
 }
 
 判定基準：
 - 数値＋体重単位：「65kg」「64.5キロ」「63.2」「81.5kg」「80kg」
 - 体重記録の表現：「体重65kg」「今日の体重は64キロ」「体重記録 65.5」
-- 体脂肪率：「体脂肪15%」「体脂肪率20.5%」
-- 複合記録：「体重65kg 体脂肪18%」
 - 質問・相談は除外：「体重どうやって減らす？」「何キロがいい？」
 
 例：
 - 「65kg」→ isWeightRecord: true, weight: 65
 - 「81.5kg」→ isWeightRecord: true, weight: 81.5
 - 「体重64.5キロ」→ isWeightRecord: true, weight: 64.5
-- 「今日の体重は63kg 体脂肪17%」→ isWeightRecord: true, weight: 63, hasBodyFat: true, bodyFat: 17
+- 「今日の体重は63kg」→ isWeightRecord: true, weight: 63
 - 「体重どうやって減らす？」→ isWeightRecord: false
 
 **重要：「81.5kg」「65kg」など数値+単位の単独入力は必ず体重記録として判定してください**
@@ -574,17 +570,13 @@ class AIHealthService {
       // フォールバック: 体重パターンマッチング
       const weightMatch = text.match(/(\d+(?:\.\d+)?)(?:kg|キロ|キログラム)?/);
       const hasWeightKeyword = /体重|kg|キロ|キログラム/.test(text);
-      const hasBodyFatKeyword = /体脂肪|体脂肪率|%/.test(text);
       
       if (weightMatch && hasWeightKeyword) {
         const weight = parseFloat(weightMatch[1]);
-        const bodyFatMatch = text.match(/(\d+(?:\.\d+)?)%/);
         
         return {
           isWeightRecord: true,
           weight: weight,
-          hasBodyFat: hasBodyFatKeyword && bodyFatMatch,
-          bodyFat: bodyFatMatch ? parseFloat(bodyFatMatch[1]) : null,
           confidence: 0.8
         };
       }
@@ -592,8 +584,6 @@ class AIHealthService {
       return {
         isWeightRecord: false,
         weight: null,
-        hasBodyFat: false,
-        bodyFat: null,
         confidence: 0.5
       };
     }

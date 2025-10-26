@@ -974,7 +974,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
 // 体重記録処理
 async function handleWeightRecord(userId: string, weightData: any, replyToken: string) {
   try {
-    console.log('📊 体重記録開始:', { userId, weight: weightData.weight, bodyFat: weightData.bodyFat });
+    console.log('📊 体重記録開始:', { userId, weight: weightData.weight });
     
     // 内部APIを使用（動作確認済みの方法）
     const now = new Date();
@@ -994,7 +994,6 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
         lineUserId: userId,
         date: today,
         weight: weightData.weight,
-        bodyFat: weightData.hasBodyFat ? weightData.bodyFat : undefined,
         note: `LINE記録 ${new Date().toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`
       }),
     });
@@ -1004,7 +1003,7 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     if (response.ok) {
       const weightFlexMessage = createWeightFlexMessage(
         weightData.weight,
-        weightData.hasBodyFat ? weightData.bodyFat : undefined
+        undefined
       );
       
       await replyMessage(replyToken, [{

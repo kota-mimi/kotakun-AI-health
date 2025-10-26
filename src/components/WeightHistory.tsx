@@ -46,7 +46,6 @@ interface WeightHistoryProps {
   data: Array<{
     date: string;
     weight: number;
-    bodyFat?: number;
     note?: string;
     photo?: string;
   }>;
@@ -177,13 +176,6 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
 
                   {/* 右側：追加情報とアクション */}
                   <div className="flex items-center space-x-2">
-                    {/* 体脂肪率 */}
-                    {entry.bodyFat && (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-xs">
-                        {entry.bodyFat}%
-                      </Badge>
-                    )}
-                    
                     {/* メモアイコン */}
                     {entry.note && (
                       <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
@@ -220,13 +212,6 @@ export function WeightHistory({ data, onEdit, onDelete }: WeightHistoryProps) {
                       <span className="text-slate-600">記録日時</span>
                       <span className="font-medium text-slate-800">{formatFullDateTime(entry.date)}</span>
                     </div>
-                    
-                    {entry.bodyFat && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-600">体脂肪率</span>
-                        <span className="font-medium text-amber-700">{entry.bodyFat}%</span>
-                      </div>
-                    )}
                     
                     {entry.note && (
                       <div className="text-sm">

@@ -34,7 +34,6 @@ interface FirestoreDailyData {
   exercises?: FirestoreExercise[];
   meals?: FirestoreMeal[];
   weight?: number;
-  bodyFat?: number;
   note?: string;
 }
 
@@ -74,7 +73,6 @@ export function useFirestoreData(selectedDate: Date, lineUserId?: string) {
             timestamp: meal.timestamp instanceof Date ? meal.timestamp : new Date(meal.timestamp)
           })),
           weight: dailyRecord.weight,
-          bodyFat: dailyRecord.bodyFat,
           note: dailyRecord.note
         });
       } else {

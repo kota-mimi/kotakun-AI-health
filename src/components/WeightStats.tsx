@@ -16,7 +16,6 @@ interface WeightStatsProps {
   data: Array<{
     date: string;
     weight: number;
-    bodyFat?: number;
     note?: string;
   }>;
   currentWeight: number;
