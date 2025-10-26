@@ -56,7 +56,7 @@ export default function PrivacyPolicy() {
                       <ul className="list-disc ml-6 space-y-1 text-sm">
                         <li>身長、体重、BMI、体脂肪率</li>
                         <li>目標体重、目標カロリー支出</li>
-                        <li>食事記録（摘取カロリー、栄養素等）</li>
+                        <li>食事記録（摂取カロリー、栄養素等）</li>
                         <li>運動記録（消費カロリー、運動種目等）</li>
                         <li>健康状態、病歴、アレルギー情報</li>
                         <li>服薬情報、医療機関受診履歴</li>
@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-800 mb-1">サービス利用状況</h4>
                       <ul className="list-disc ml-6 space-y-1 text-sm">
-                        <li>ページ閲覧履歴、滅在時間</li>
+                        <li>ページ閲覧履歴、滞在時間</li>
                         <li>クリック、タップ操作履歴</li>
                         <li>機能利用頻度、エラーログ</li>
                       </ul>
@@ -206,28 +206,54 @@ export default function PrivacyPolicy() {
                 </div>
                 
                 <div>
-                  <h3 className="font-medium mb-2">4.3 共同利用</h3>
+                  <h3 className="font-medium mb-2">4.3 外部サービスとの連携</h3>
+                  <p className="text-sm mb-2">
+                    本サービスは、以下の外部サービスと連携し、サービス提供のために必要な範囲で個人情報を提供します：
+                  </p>
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 p-3 rounded text-sm">
+                      <p className="font-medium">LINE株式会社（LINEプラットフォーム）</p>
+                      <p>提供する情報: LINEユーザーID、メッセージ内容、利用履歴</p>
+                      <p>利用目的: LINE公式アカウントを通じたサービス提供、メッセージ配信</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded text-sm">
+                      <p className="font-medium">Stripe, Inc.（決済サービス）</p>
+                      <p>提供する情報: 決済情報、サブスクリプション情報</p>
+                      <p>利用目的: クレジットカード決済処理、課金管理</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded text-sm">
+                      <p className="font-medium">OpenAI, L.L.C.（AI技術サービス）</p>
+                      <p>提供する情報: 健康データ、相談内容、会話履歴</p>
+                      <p>利用目的: AI分析による健康アドバイス生成、パーソナライズされた提案</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    ※上記外部サービスは、各社のプライバシーポリシーに基づき個人情報を管理します。
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">4.4 共同利用</h3>
                   <p className="text-sm mb-2">
                     以下の範囲内で、個人情報を第三者と共同利用する場合があります：
                   </p>
                   <div className="bg-gray-50 p-3 rounded text-sm">
                     <p><strong>共同利用する個人情報の項目：</strong>ユーザーID、サービス利用状況、技術的ログ情報</p>
                     <p><strong>共同利用する者の範囲：</strong>当社の業務委託先（システム開発・保守業者、カスタマーサポート業者等）</p>
-                    <p><strong>共同利用の目的：</strong>サービスの安定遅用およびカスタマーサポート</p>
+                    <p><strong>共同利用の目的：</strong>サービスの安定運用およびカスタマーサポート</p>
                     <p><strong>管理責任者：</strong>こたくん ヘルスケアサービス 個人情報保護管理者</p>
                   </div>
                 </div>
                 
                 <div>
-                  <h3 className="font-medium mb-2">4.4 業務委託</h3>
+                  <h3 className="font-medium mb-2">4.5 業務委託</h3>
                   <p className="text-sm">
                     当社は、下記の業務を第三者に委託する場合があり、
-                    その場合に限り業務遅行に必要な範囲で個人情報を提供します：
+                    その場合に限り業務遂行に必要な範囲で個人情報を提供します：
                   </p>
                   <ul className="list-disc ml-6 mt-2 space-y-1 text-sm">
                     <li>システム開発・保守業務</li>
                     <li>カスタマーサポート業務</li>
-                    <li>決済処理業務（Stripe等の決済サービスプロバイダー）</li>
                     <li>データバックアップ・セキュリティ業務</li>
                   </ul>
                 </div>
@@ -304,11 +330,11 @@ export default function PrivacyPolicy() {
                       </div>
                       <div className="bg-gray-50 p-3 rounded">
                         <p className="font-medium">決済情報</p>
-                        <p className="text-xs">法令に定める期間（最䥒7年間）</p>
+                        <p className="text-xs">法令に定める期間（最長7年間）</p>
                       </div>
                       <div className="bg-gray-50 p-3 rounded">
                         <p className="font-medium">アクセスログ</p>
-                        <p className="text-xs">最大20日間</p>
+                        <p className="text-xs">最大90日間</p>
                       </div>
                     </div>
                   </div>
@@ -385,7 +411,7 @@ export default function PrivacyPolicy() {
                     上記権利を行使される場合は、以下の方法でご連絡ください：
                   </p>
                   <div className="bg-gray-50 p-3 rounded text-sm">
-                    <p><strong>連絡先：</strong>privacy@kotakun-health.jp</p>
+                    <p><strong>連絡先：</strong>kotakun.health@gmail.com</p>
                     <p><strong>必要書類：</strong>本人確認書類（運転免許証等）の写し</p>
                     <p><strong>回答期限：</strong>要求受付後30日以内（土日祝日を除く）</p>
                   </div>
@@ -400,12 +426,7 @@ export default function PrivacyPolicy() {
                   個人情報の取扱いに関するお問い合わせは、以下までご連絡ください：
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="font-medium">こたくん ヘルスケアサービス 個人情報保護担当</p>
-                  <p>メール: privacy@kotakun-health.jp</p>
-                  <p>受付時間: 平日 9:00-18:00（土日祝日・年末年始を除く）</p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    ※お問い合わせの内容によっては、回答までにお時間をいただく場合があります。
-                  </p>
+                  <p>メール: kotakun.health@gmail.com</p>
                 </div>
               </div>
             </section>
@@ -433,7 +454,7 @@ export default function PrivacyPolicy() {
                   <h3 className="font-medium mb-2">9.3 変更の効力</h3>
                   <p className="text-sm">
                     変更後のプライバシーポリシーは、本ウェブサイトに掲載した時点から効力を生じるものとします。
-                    変曲後もサービスを継続してご利用いただいた場合、
+                    変更後もサービスを継続してご利用いただいた場合、
                     変更後のプライバシーポリシーにご同意いただいたものとみなします。
                   </p>
                 </div>
@@ -446,10 +467,7 @@ export default function PrivacyPolicy() {
                   制定日: 2025年10月20日<br />
                   最終更新日: 2025年10月26日
                 </p>
-                <p className="font-medium text-gray-800">こたくん ヘルスケアサービス</p>
-                <p className="text-xs text-gray-500">
-                  本プライバシーポリシーは、「こたくん」ブランドで提供される健康管理サービスに適用されます。
-                </p>
+                <p className="font-medium text-gray-800">こたくん</p>
               </div>
             </div>
           </div>
