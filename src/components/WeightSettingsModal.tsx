@@ -52,6 +52,11 @@ export function WeightSettingsModal({
     });
 
     onClose();
+    
+    // 設定保存後に強制リロード
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
