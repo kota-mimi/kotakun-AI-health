@@ -150,7 +150,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-orange-50 to-amber-50">
+    <div className="min-h-screen relative bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-100/40 before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] before:backdrop-blur-3xl">
       
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
