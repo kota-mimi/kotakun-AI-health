@@ -80,11 +80,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     };
 
     fetchWeightData();
-    
-    // 10秒ごとにデータを再取得（LINEからの記録を反映するため）
-    const interval = setInterval(fetchWeightData, 10000);
-    
-    return () => clearInterval(interval);
   }, [selectedDate, liffUser?.userId, isClient]);
   
   // 体重設定をlocalStorageで永続化
