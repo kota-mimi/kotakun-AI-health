@@ -143,7 +143,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       {plan.isRecommended && (
         <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 text-xs shadow-lg animate-pulse">
           <Star size={12} className="mr-1" />
-          人気No.1
+          人気のあるプラン
         </Badge>
       )}
       
