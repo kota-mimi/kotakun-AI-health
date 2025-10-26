@@ -14,7 +14,7 @@ export interface FoodData {
 
 export const FOOD_DATABASE: FoodData[] = [
   // === 穀類・主食 ===
-  { id: 'rice_white_cooked', name: 'ご飯（白米）', category: 'grains', calories: 156, protein: 2.5, fat: 0.3, carbs: 35.6, keywords: ['ご飯', '白米', 'めし', 'ごはん'], commonServing: 150 },
+  { id: 'rice_white_cooked', name: 'ご飯（白米）', category: 'grains', calories: 156, protein: 2.5, fat: 0.3, carbs: 35.6, keywords: ['ご飯', '白米', 'めし', 'ごはん'], commonServing: 200 },
   { id: 'rice_brown_cooked', name: 'ご飯（玄米）', category: 'grains', calories: 152, protein: 2.8, fat: 1.0, carbs: 32.1, keywords: ['玄米', 'げんまい', '玄米ご飯'], commonServing: 150 },
   { id: 'bread_white', name: '食パン', category: 'grains', calories: 264, protein: 9.3, fat: 4.4, carbs: 46.7, keywords: ['食パン', 'パン', 'しょくぱん'], commonServing: 60 },
   { id: 'bread_whole_wheat', name: '全粒粉パン', category: 'grains', calories: 247, protein: 13.2, fat: 4.2, carbs: 41.0, keywords: ['全粒粉', 'ぜんりゅうふん', '全粒粉パン'], commonServing: 60 },
@@ -107,11 +107,11 @@ export const FOOD_DATABASE: FoodData[] = [
   { id: 'yakitori', name: '焼き鳥', category: 'prepared', calories: 199, protein: 18.1, fat: 12.2, carbs: 0.1, keywords: ['焼き鳥', 'やきとり', 'ヤキトリ'], commonServing: 60 },
   
   // ラーメン各種
-  { id: 'ramen_tonkotsu', name: 'とんこつラーメン', category: 'prepared', calories: 500, protein: 15.4, fat: 25.8, carbs: 52.7, keywords: ['とんこつ', 'ラーメン', 'らーめん', 'トンコツ', '豚骨'], commonServing: 600 },
-  { id: 'ramen_shoyu', name: '醤油ラーメン', category: 'prepared', calories: 416, protein: 14.8, fat: 8.2, carbs: 65.4, keywords: ['醤油ラーメン', 'しょうゆ', 'ラーメン', 'らーめん'], commonServing: 600 },
-  { id: 'ramen_miso', name: '味噌ラーメン', category: 'prepared', calories: 560, protein: 16.2, fat: 18.5, carbs: 72.1, keywords: ['味噌ラーメン', 'みそ', 'ラーメン', 'らーめん'], commonServing: 600 },
-  { id: 'ramen_shio', name: '塩ラーメン', category: 'prepared', calories: 387, protein: 13.9, fat: 7.1, carbs: 61.8, keywords: ['塩ラーメン', 'しお', 'ラーメン', 'らーめん'], commonServing: 600 },
-  { id: 'ramen_tsukemen', name: 'つけ麺', category: 'prepared', calories: 531, protein: 18.7, fat: 12.4, carbs: 78.9, keywords: ['つけ麺', 'つけめん', 'ツケメン'], commonServing: 400 },
+  { id: 'ramen_tonkotsu', name: 'とんこつラーメン', category: 'prepared', calories: 133, protein: 2.6, fat: 4.3, carbs: 8.8, keywords: ['とんこつ', 'ラーメン', 'らーめん', 'トンコツ', '豚骨'], commonServing: 450 },
+  { id: 'ramen_shoyu', name: '醤油ラーメン', category: 'prepared', calories: 69, protein: 2.5, fat: 1.4, carbs: 10.9, keywords: ['醤油ラーメン', 'しょうゆ', 'ラーメン', 'らーめん'], commonServing: 600 },
+  { id: 'ramen_miso', name: '味噌ラーメン', category: 'prepared', calories: 93, protein: 2.7, fat: 3.1, carbs: 12.0, keywords: ['味噌ラーメン', 'みそ', 'ラーメン', 'らーめん'], commonServing: 600 },
+  { id: 'ramen_shio', name: '塩ラーメン', category: 'prepared', calories: 70, protein: 2.5, fat: 1.3, carbs: 11.1, keywords: ['塩ラーメン', 'しお', 'ラーメン', 'らーめん'], commonServing: 600 },
+  { id: 'ramen_tsukemen', name: 'つけ麺', category: 'prepared', calories: 175, protein: 6.2, fat: 4.1, carbs: 26.3, keywords: ['つけ麺', 'つけめん', 'ツケメン'], commonServing: 400 },
   
   // カレー各種
   { id: 'curry_rice', name: 'カレーライス', category: 'prepared', calories: 124, protein: 2.4, fat: 3.5, carbs: 20.2, keywords: ['カレー', 'カレーライス', 'かれー'], commonServing: 300 },
@@ -122,10 +122,10 @@ export const FOOD_DATABASE: FoodData[] = [
   
   // 丼物
   { id: 'gyudon', name: '牛丼', category: 'prepared', calories: 131, protein: 4.0, fat: 4.4, carbs: 18.8, keywords: ['牛丼', 'ぎゅうどん', 'ギュウドン'], commonServing: 500 },
-  { id: 'oyakodon', name: '親子丼', category: 'prepared', calories: 146, protein: 4.8, fat: 4.2, carbs: 21.0, keywords: ['親子丼', 'おやこどん', 'オヤコドン'], commonServing: 500 },
-  { id: 'katsudon', name: 'カツ丼', category: 'prepared', calories: 178, protein: 5.9, fat: 5.6, carbs: 26.1, keywords: ['カツ丼', 'かつどん', 'カツドン'], commonServing: 500 },
-  { id: 'tendon', name: '天丼', category: 'prepared', calories: 161, protein: 4.1, fat: 4.6, carbs: 24.8, keywords: ['天丼', 'てんどん', 'テンドン'], commonServing: 500 },
-  { id: 'unadon', name: 'うな丼', category: 'prepared', calories: 293, protein: 11.7, fat: 10.8, carbs: 35.2, keywords: ['うな丼', 'うなどん', 'ウナドン', '鰻丼'], commonServing: 400 },
+  { id: 'oyakodon', name: '親子丼', category: 'prepared', calories: 115, protein: 3.8, fat: 3.3, carbs: 16.5, keywords: ['親子丼', 'おやこどん', 'オヤコドン'], commonServing: 500 },
+  { id: 'katsudon', name: 'カツ丼', category: 'prepared', calories: 140, protein: 4.6, fat: 4.4, carbs: 20.5, keywords: ['カツ丼', 'かつどん', 'カツドン'], commonServing: 500 },
+  { id: 'tendon', name: '天丼', category: 'prepared', calories: 130, protein: 3.3, fat: 3.7, carbs: 20.0, keywords: ['天丼', 'てんどん', 'テンドン'], commonServing: 500 },
+  { id: 'unadon', name: 'うな丼', category: 'prepared', calories: 175, protein: 7.0, fat: 6.5, carbs: 21.1, keywords: ['うな丼', 'うなどん', 'ウナドン', '鰻丼'], commonServing: 400 },
   { id: 'kaisendon', name: '海鮮丼', category: 'prepared', calories: 109, protein: 4.9, fat: 0.8, carbs: 19.3, keywords: ['海鮮丼', 'かいせんどん', 'カイセンドン'], commonServing: 500 },
   { id: 'butadon', name: '豚丼', category: 'prepared', calories: 137, protein: 4.2, fat: 4.8, carbs: 18.5, keywords: ['豚丼', 'ぶたどん', 'ブタドン'], commonServing: 500 },
   
@@ -167,7 +167,7 @@ export const FOOD_DATABASE: FoodData[] = [
   { id: 'ebi_chili', name: 'エビチリ', category: 'prepared', calories: 210, protein: 12.5, fat: 11.2, carbs: 14.2, keywords: ['エビチリ', 'えびちり'], commonServing: 150 },
   { id: 'spring_roll', name: '春巻き', category: 'prepared', calories: 124, protein: 4.6, fat: 6.2, carbs: 12.8, keywords: ['春巻き', 'はるまき', 'ハルマキ'], commonServing: 80 },
   { id: 'xiaolongbao', name: '小籠包', category: 'prepared', calories: 167, protein: 7.2, fat: 7.8, carbs: 16.9, keywords: ['小籠包', 'しょうろんぽう', 'ショウロンポウ'], commonServing: 100 },
-  { id: 'dan_dan_noodles', name: '担々麺', category: 'prepared', calories: 224, protein: 6.8, fat: 12.4, carbs: 21.8, keywords: ['担々麺', 'たんたんめん', 'タンタンメン'], commonServing: 500 },
+  { id: 'dan_dan_noodles', name: '担々麺', category: 'prepared', calories: 140, protein: 4.3, fat: 7.8, carbs: 13.6, keywords: ['担々麺', 'たんたんめん', 'タンタンメン'], commonServing: 500 },
   
   // 和食・煮物
   { id: 'nikujaga', name: '肉じゃが', category: 'prepared', calories: 176, protein: 9.8, fat: 6.8, carbs: 19.2, keywords: ['肉じゃが', 'にくじゃが', 'ニクジャガ'], commonServing: 200 },
@@ -202,8 +202,8 @@ export const FOOD_DATABASE: FoodData[] = [
   { id: 'tako_wasabi', name: 'たこわさび', category: 'prepared', calories: 76, protein: 16.4, fat: 0.7, carbs: 0.1, keywords: ['たこわさび', 'タコワサビ'], commonServing: 50 },
   
   // パン・サンドイッチ類
-  { id: 'sandwich_ham', name: 'ハムサンド', category: 'prepared', calories: 177, protein: 7.4, fat: 6.7, carbs: 22.3, keywords: ['サンドイッチ', 'さんどいっち', 'ハムサンド', 'サンド'], commonServing: 150 },
-  { id: 'sandwich_tuna', name: 'ツナサンド', category: 'prepared', calories: 189, protein: 8.2, fat: 7.9, carbs: 21.8, keywords: ['ツナサンド', 'つなさんど', 'サンドイッチ'], commonServing: 150 },
+  { id: 'sandwich_ham', name: 'ハムサンド', category: 'prepared', calories: 177, protein: 7.4, fat: 6.7, carbs: 22.3, keywords: ['サンドイッチ', 'さんどいっち', 'ハムサンド', 'サンド'], commonServing: 175 },
+  { id: 'sandwich_tuna', name: 'ツナサンド', category: 'prepared', calories: 189, protein: 8.2, fat: 7.9, carbs: 21.8, keywords: ['ツナサンド', 'つなさんど', 'サンドイッチ'], commonServing: 175 },
   { id: 'sandwich_egg', name: 'たまごサンド', category: 'prepared', calories: 201, protein: 8.9, fat: 9.2, carbs: 20.4, keywords: ['たまごサンド', 'タマゴサンド', '卵サンド'], commonServing: 150 },
   { id: 'sandwich_katsu', name: 'カツサンド', category: 'prepared', calories: 298, protein: 12.8, fat: 15.4, carbs: 28.9, keywords: ['カツサンド', 'かつさんど'], commonServing: 200 },
   { id: 'hot_dog', name: 'ホットドッグ', category: 'prepared', calories: 290, protein: 10.4, fat: 18.0, carbs: 24.0, keywords: ['ホットドッグ', 'ほっとどっぐ'], commonServing: 100 },
@@ -234,7 +234,7 @@ export const FOOD_DATABASE: FoodData[] = [
   { id: 'nabe_chanko', name: 'ちゃんこ鍋', category: 'prepared', calories: 78, protein: 6.4, fat: 3.2, carbs: 5.9, keywords: ['鍋', 'なべ', 'ちゃんこ', 'チャンコ'], commonServing: 300 },
   
   // お好み焼き・たこ焼き
-  { id: 'okonomiyaki', name: 'お好み焼き', category: 'prepared', calories: 545, protein: 17.0, fat: 30.8, carbs: 50.1, keywords: ['お好み焼き', 'おこのみやき', 'オコノミヤキ'], commonServing: 200 },
+  { id: 'okonomiyaki', name: 'お好み焼き', category: 'prepared', calories: 250, protein: 7.8, fat: 14.1, carbs: 23.0, keywords: ['お好み焼き', 'おこのみやき', 'オコノミヤキ'], commonServing: 200 },
   { id: 'takoyaki', name: 'たこ焼き', category: 'prepared', calories: 417, protein: 12.3, fat: 20.5, carbs: 46.8, keywords: ['たこ焼き', 'たこやき', 'タコヤキ'], commonServing: 120 },
   { id: 'monjayaki', name: 'もんじゃ焼き', category: 'prepared', calories: 89, protein: 3.2, fat: 2.1, carbs: 14.8, keywords: ['もんじゃ', 'モンジャ', 'もんじゃ焼き'], commonServing: 300 },
   
