@@ -6,11 +6,72 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
+import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
 
 // 画像キャッシュ（メモリに一時保存）
 const imageCache = new Map<string, Buffer>();
+
+// 学習済み食事をFirestoreから検索
+async function findLearnedFood(userId: string, text: string) {
+  try {
+    const db = admin.firestore();
+    const userFoodRef = db.collection('learned_foods').doc(userId);
+    const doc = await userFoodRef.get();
+    
+    if (!doc.exists) return null;
+    
+    const learnedFoods = doc.data();
+    const normalizedText = text.toLowerCase().replace(/\s/g, '');
+    
+    // 完全一致をチェック
+    for (const [foodName, foodData] of Object.entries(learnedFoods)) {
+      if (foodName === text || foodName.toLowerCase() === normalizedText) {
+        return { food: foodName, data: foodData, confidence: 'high' };
+      }
+    }
+    
+    // 部分一致をチェック
+    for (const [foodName, foodData] of Object.entries(learnedFoods)) {
+      if (text.includes(foodName) || foodName.includes(text) ||
+          normalizedText.includes(foodName.toLowerCase()) || foodName.toLowerCase().includes(normalizedText)) {
+        return { food: foodName, data: foodData, confidence: 'medium' };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('❌ 学習済み食事の検索エラー:', error);
+    return null;
+  }
+}
+
+// 学習済み食事をFirestoreに保存
+async function addToLearnedFoods(userId: string, mealName: string, nutritionData: any) {
+  try {
+    const db = admin.firestore();
+    const userFoodRef = db.collection('learned_foods').doc(userId);
+    
+    // ユーザー固有の学習済み食事を保存
+    await userFoodRef.set({
+      [mealName]: {
+        calories: nutritionData.calories || 0,
+        protein: nutritionData.protein || 0,
+        fat: nutritionData.fat || 0,
+        carbs: nutritionData.carbs || 0,
+        learnedAt: admin.firestore.FieldValue.serverTimestamp(),
+        usageCount: admin.firestore.FieldValue.increment(1),
+        isPatternMatched: nutritionData.isPatternMatched || false,
+        matchConfidence: nutritionData.matchConfidence || 'ai_analyzed'
+      }
+    }, { merge: true });
+    
+    console.log(`📚 学習済み食事に追加: ${mealName} (ユーザー: ${userId})`);
+  } catch (error) {
+    console.error('❌ 学習済み食事の保存エラー:', error);
+  }
+}
 
 // 画像キャッシュに保存
 function cacheImage(userId: string, imageData: Buffer): string {
@@ -355,9 +416,71 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       console.log('🍽️ 記録モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
       
       if (mealJudgment.isFoodRecord) {
-        console.log('🍽️ 記録モード - 食事として認識、AI分析開始');
-        const mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
-        console.log('🍽️ 記録モード - AI分析結果:', JSON.stringify(mealAnalysis, null, 2));
+        console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
+        
+        // Step 1: 学習済み食事を検索
+        const learnedFood = await findLearnedFood(userId, mealJudgment.foodText || text);
+        let mealAnalysis;
+        
+        if (learnedFood && learnedFood.confidence === 'high') {
+          console.log('🎯 学習済み食事マッチ:', learnedFood.food, '信頼度:', learnedFood.confidence);
+          mealAnalysis = {
+            calories: learnedFood.data.calories,
+            protein: learnedFood.data.protein,
+            fat: learnedFood.data.fat,
+            carbs: learnedFood.data.carbs,
+            foodItems: [learnedFood.food],
+            displayName: learnedFood.food,
+            baseFood: learnedFood.food,
+            isPatternMatched: true,
+            matchConfidence: 'learned_food',
+            source: 'learned'
+          };
+          
+          // 使用回数を増やす
+          await addToLearnedFoods(userId, learnedFood.food, mealAnalysis);
+          
+        } else {
+          // Step 2: 基本データベースでパターンマッチング
+          const foodMatch = findFoodMatch(mealJudgment.foodText || text);
+          
+          if (foodMatch && foodMatch.confidence === 'high') {
+            console.log('✅ パターンマッチング成功:', foodMatch.food.name, '信頼度:', foodMatch.confidence);
+            // パターンマッチングで栄養価を計算
+            const food = foodMatch.food;
+            const servingSize = food.commonServing || 100; // デフォルト100g
+            
+            mealAnalysis = {
+              calories: Math.round((food.calories * servingSize) / 100),
+              protein: Number(((food.protein * servingSize) / 100).toFixed(1)),
+              fat: Number(((food.fat * servingSize) / 100).toFixed(1)),
+              carbs: Number(((food.carbs * servingSize) / 100).toFixed(1)),
+              foodItems: [food.name],
+              displayName: food.name,
+              baseFood: food.name,
+              portion: `${servingSize}g`,
+              isPatternMatched: true,
+              matchConfidence: foodMatch.confidence,
+              source: 'database'
+            };
+            
+            // 学習済み食事としてFirestoreに保存
+            await addToLearnedFoods(userId, food.name, mealAnalysis);
+            
+          } else {
+            console.log('❌ パターンマッチング失敗、AI分析開始');
+            // Step 3: パターンマッチングできない場合はAI分析
+            mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+            
+            // AI分析成功時も学習済み食事として保存
+            if (mealAnalysis && mealAnalysis.foodItems && mealAnalysis.foodItems.length > 0) {
+              mealAnalysis.source = 'ai_analyzed';
+              await addToLearnedFoods(userId, mealAnalysis.foodItems[0], mealAnalysis);
+            }
+          }
+        }
+        
+        console.log('🍽️ 記録モード - 最終分析結果:', JSON.stringify(mealAnalysis, null, 2));
         await storeTempMealAnalysis(userId, mealAnalysis, null, text);
         
         if (mealJudgment.isMultipleMealTimes) {

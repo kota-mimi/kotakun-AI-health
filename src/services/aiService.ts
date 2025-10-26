@@ -614,7 +614,7 @@ class AIHealthService {
 - 明確な記録意図：「記録して」「きろくして」「記録しといて」「記録しとく」「食べた」「たべた」「摂取した」「昼 ラーメン」「夜 カツ丼」
 - **重要：一回のテキストで2つ以上の食事時間が含まれている場合は必ずisMultipleMealTimes: trueにする**
 - 曖昧な表現：「食べた！」「美味しかった」「おいしかった」（確認が必要）
-- 食事時間：「朝」「あさ」「昼」「ひる」「夜」「よる」「朝食」「昼食」「夕食」「間食」「おやつ」
+- 食事時間：「朝」「あさ」「昼」「ひる」「夜」「よる」「朝食」「昼食」「夕食」「朝ごはん」「朝ご飯」「昼ごはん」「昼ご飯」「夜ごはん」「夜ご飯」「晩ごはん」「晩ご飯」「間食」「おやつ」
 - 質問・相談は除外：「～はダイエットに良い？」「～のカロリーは？」
 
 **重要: foodTextには分量を含む食事部分全体を入れる**
@@ -639,6 +639,10 @@ class AIHealthService {
 - 「朝におにぎりと卵焼き 昼にカツ丼とラーメン 夜にヨーグルト」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "おにぎりと卵焼き"}, {"mealTime": "lunch", "foodText": "カツ丼とラーメン"}, {"mealTime": "dinner", "foodText": "ヨーグルト"}]
 - 「昼食でハンバーガー 間食でケーキ記録して」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "lunch", "foodText": "ハンバーガー"}, {"mealTime": "snack", "foodText": "ケーキ"}]
 - 「朝 パン 夜 カツ丼」→ isMultipleMealTimes: true, mealTimes: [{"mealTime": "breakfast", "foodText": "パン"}, {"mealTime": "dinner", "foodText": "カツ丼"}]
+- 「朝ごはんにパン食べた」→ hasSpecificMealTime: true, mealTime: "breakfast", foodText: "パン"
+- 「昼ご飯でラーメン記録して」→ hasSpecificMealTime: true, mealTime: "lunch", foodText: "ラーメン"
+- 「夜ごはんのカツ丼」→ hasSpecificMealTime: true, mealTime: "dinner", foodText: "カツ丼"
+- 「晩ご飯に唐揚げ」→ hasSpecificMealTime: true, mealTime: "dinner", foodText: "唐揚げ"
 `;
 
       const result = await model.generateContent(prompt);
@@ -714,6 +718,12 @@ class AIHealthService {
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
   "fat": 脂質のグラム数（小数点第1位まで）
 }
+
+**重要：材料列挙は一つの料理として認識**
+- 「鍋 白菜 豚肉 きのこ」→ 一つの鍋料理として分析
+- 「カレー 人参 玉ねぎ 豚肉」→ 一つのカレーとして分析
+- 「サラダ レタス トマト きゅうり」→ 一つのサラダとして分析
+- 「ラーメン チャーシュー もやし」→ 一つのラーメンとして分析
 
 注意：
 - 「と」「、」「＋」「&」などで複数の食事が結ばれている場合は複数食事として扱う
@@ -807,6 +817,10 @@ class AIHealthService {
 - 複数の料理が明確に分かれて写っている場合は複数食事として扱う
 - 料理名は具体的に（例：「ラーメン」「チャーハン」「唐揚げ」）
 - 詳細な食材名ではなく、料理の名前で答える
+- **重要：材料列挙は一つの料理として判定する**
+  - 「鍋 白菜 豚肉 きのこ」→ 「鍋料理（白菜、豚肉、きのこ）」として一つの食事
+  - 「カレー 人参 玉ねぎ 豚肉」→ 「カレー（人参、玉ねぎ、豚肉）」として一つの食事
+  - 「サラダ レタス トマト きゅうり」→ 「サラダ（レタス、トマト、きゅうり）」として一つの食事
 - カロリーは整数、PFC（タンパク質・脂質・炭水化物）は小数点第1位まで正確に計算
 - 単位は含めない（例：カロリー350、タンパク質23.4）
 - 推定は一般的な分量で計算
