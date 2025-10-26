@@ -31,7 +31,9 @@ import {
   ChevronRight,
   Calendar,
   BarChart3,
-  Bell
+  Bell,
+  FileText,
+  Shield
 } from 'lucide-react';
 
 
@@ -592,6 +594,18 @@ export function MyProfilePage({
       label: 'お問い合わせ・サポート',
       color: '#6B7280',
       action: onNavigateToContact
+    },
+    {
+      icon: FileText,
+      label: '利用規約',
+      color: '#374151',
+      action: () => window.open('/terms', '_blank')
+    },
+    {
+      icon: Shield,
+      label: 'プライバシーポリシー',
+      color: '#374151',
+      action: () => window.open('/privacy', '_blank')
     }
   ];
 
