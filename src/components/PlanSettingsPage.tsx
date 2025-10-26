@@ -15,7 +15,8 @@ interface PlanSettingsPageProps {
 }
 
 export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
-  const [currentPlan] = useState('free'); // free, monthly, quarterly, biannual
+  const [currentPlan, setCurrentPlan] = useState('free'); // free, monthly, quarterly, biannual
+  const [selectedPlan, setSelectedPlan] = useState('biannual'); // 表示用の選択状態（人気No.1を初期選択）
   const [isProcessing, setIsProcessing] = useState(false);
 
   // 決済処理ハンドラー
@@ -64,6 +65,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       price: 0,
       period: '無料',
       isCurrentPlan: currentPlan === 'free',
+      isSelected: selectedPlan === 'free',
       features: [
         'AI会話：1日5通まで',
         'LINE記録：1日2通まで',
@@ -81,6 +83,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       period: '月額',
       stripePriceId: 'price_monthly_plan', // Stripe価格ID（後で設定）
       isCurrentPlan: currentPlan === 'monthly',
+      isSelected: selectedPlan === 'monthly',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
@@ -97,6 +100,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       discount: '7%OFF',
       stripePriceId: 'price_quarterly_plan', // Stripe価格ID（後で設定）
       isCurrentPlan: currentPlan === 'quarterly',
+      isSelected: selectedPlan === 'quarterly',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
@@ -114,6 +118,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       stripePriceId: 'price_biannual_plan', // Stripe価格ID（後で設定）
       isRecommended: true,
       isCurrentPlan: currentPlan === 'biannual',
+      isSelected: selectedPlan === 'biannual',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
@@ -124,18 +129,28 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   ];
 
   const renderPlanCard = (plan: any) => (
-    <Card key={plan.id} className={`relative p-6 transition-all duration-200 border-2 bg-white/80 backdrop-blur-sm ${
-      plan.isCurrentPlan 
-        ? 'border-blue-500 shadow-xl scale-105' 
-        : plan.isRecommended
-        ? 'border-blue-400 shadow-xl scale-105'
-        : 'border-gray-300 shadow-lg hover:shadow-xl hover:border-gray-400'
-    }`}>
+    <Card 
+      key={plan.id} 
+      className={`relative p-6 transition-all duration-300 border-2 bg-white/80 backdrop-blur-sm cursor-pointer transform hover:scale-102 ${
+        plan.isSelected 
+          ? 'border-blue-500 shadow-xl scale-105 ring-2 ring-blue-200' 
+          : plan.isCurrentPlan
+          ? 'border-green-500 shadow-xl scale-102'
+          : 'border-gray-300 shadow-lg hover:shadow-xl hover:border-blue-300'
+      }`}
+      onClick={() => setSelectedPlan(plan.id)}
+    >
       {plan.isRecommended && (
-        <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-0.5 text-xs">
+        <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1 text-xs shadow-lg animate-pulse">
           <Star size={12} className="mr-1" />
           人気No.1
         </Badge>
+      )}
+      
+      {plan.isSelected && (
+        <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+          <Check size={14} className="text-white" />
+        </div>
       )}
       
       <div className="space-y-6">
@@ -202,15 +217,18 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             </Button>
           ) : (
             <Button 
-              className={`w-full ${
-                plan.isRecommended 
-                  ? 'bg-blue-600 hover:bg-blue-700' 
-                  : 'bg-green-600 hover:bg-green-700'
-              } text-white disabled:opacity-50`}
-              onClick={() => handlePlanChange(plan)}
+              className={`w-full transition-all duration-200 ${
+                plan.isSelected
+                  ? 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300' 
+                  : 'bg-blue-500 hover:bg-blue-600'
+              } text-white disabled:opacity-50 shadow-lg hover:shadow-xl`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePlanChange(plan);
+              }}
               disabled={isProcessing}
             >
-              {isProcessing ? '処理中...' : 'このプランを選択'}
+              {isProcessing ? '処理中...' : plan.isSelected ? '選択中のプラン' : 'このプランを選択'}
             </Button>
           )}
         </div>
