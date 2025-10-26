@@ -11,7 +11,9 @@ import {
   HelpCircle,
   ChevronRight,
   Camera,
-  Heart
+  Heart,
+  FileText,
+  Shield
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,6 +63,11 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
     { icon: Lock, label: "プライバシー", color: "#EF4444", description: "データ管理" },
     { icon: Settings, label: "アプリ設定", color: "#6B7280", description: "表示・操作設定" },
     { icon: HelpCircle, label: "ヘルプ", color: "#8B5CF6", description: "使い方・FAQ" }
+  ];
+
+  const legalMenuItems = [
+    { icon: FileText, label: "利用規約", color: "#374151", description: "サービス利用条件", href: "/terms" },
+    { icon: Shield, label: "プライバシーポリシー", color: "#374151", description: "個人情報保護方針", href: "/privacy" }
   ];
 
   return (
@@ -125,6 +132,38 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
                 variant="ghost"
                 className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
                 onClick={item.label === 'アプリ設定' ? onNavigateToSettings : undefined}
+              >
+                <div className="flex items-center space-x-3 flex-1">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{backgroundColor: `${item.color}15`}}
+                  >
+                    <Icon size={18} style={{color: item.color}} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-medium text-slate-800">{item.label}</p>
+                    <p className="text-xs text-slate-500">{item.description}</p>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-400" />
+                </div>
+              </Button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* 法的情報 */}
+      <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <h3 className="font-semibold text-slate-800 mb-4">法的情報</h3>
+        <div className="space-y-1">
+          {legalMenuItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={index}
+                variant="ghost"
+                className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
+                onClick={() => window.open(item.href, '_blank')}
               >
                 <div className="flex items-center space-x-3 flex-1">
                   <div 
