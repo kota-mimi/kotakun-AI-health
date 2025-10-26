@@ -142,13 +142,13 @@ export function FeedbackCard({
                   {expandedSections.food && (
                     <div className="p-4 space-y-3">
                       <div>
-                        <h4 className="font-medium text-green-700 mb-1">良かった点</h4>
+                        <h4 className="font-medium text-green-700">良かった点</h4>
                         <p className="text-sm text-slate-700 whitespace-pre-line">
                           {feedbackData.foodEvaluation.goodPoints}
                         </p>
                       </div>
                       <div>
-                        <h4 className="font-medium text-orange-700 mb-1">改善点</h4>
+                        <h4 className="font-medium text-orange-700">改善点</h4>
                         <p className="text-sm text-slate-700 whitespace-pre-line">
                           {feedbackData.foodEvaluation.improvements}
                         </p>
@@ -173,13 +173,13 @@ export function FeedbackCard({
                   {expandedSections.exercise && (
                     <div className="p-4 space-y-3">
                       <div>
-                        <h4 className="font-medium text-green-700 mb-1">良かった点</h4>
+                        <h4 className="font-medium text-green-700">良かった点</h4>
                         <p className="text-sm text-slate-700 whitespace-pre-line">
                           {feedbackData.exerciseEvaluation.goodPoints}
                         </p>
                       </div>
                       <div>
-                        <h4 className="font-medium text-orange-700 mb-1">改善提案</h4>
+                        <h4 className="font-medium text-orange-700">改善提案</h4>
                         <p className="text-sm text-slate-700 whitespace-pre-line">
                           {feedbackData.exerciseEvaluation.improvements}
                         </p>
