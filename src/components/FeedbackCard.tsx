@@ -80,7 +80,7 @@ export function FeedbackCard({
   }
 
   return (
-    <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-blue-500/10 overflow-hidden">
       <div className="p-3">
         {/* ヘッダー */}
         <div 
