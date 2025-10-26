@@ -56,7 +56,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </div>
 
         {/* 現在のサブスクリプション状況 */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <CreditCard size={20} className="text-blue-600" />
             <h3 className="font-semibold text-gray-800">現在の契約状況</h3>
@@ -104,8 +104,10 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           </div>
         </Card>
 
+        <div className="h-8"></div>
+
         {/* アクション */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <DollarSign size={20} className="text-green-600" />
             <h3 className="font-semibold text-gray-800">プラン管理</h3>
@@ -133,8 +135,10 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           </div>
         </Card>
 
+        <div className="h-8"></div>
+
         {/* 支払い履歴 */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <FileText size={20} className="text-purple-600" />
             <h3 className="font-semibold text-gray-800">支払い履歴</h3>
@@ -172,8 +176,10 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           )}
         </Card>
 
+        <div className="h-8"></div>
+
         {/* サポート情報 */}
-        <Card className="mb-12 p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">
+        <Card className="p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-3">支払いに関するご注意</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <p>• 支払いはStripeによる安全な決済システムを使用しています</p>
