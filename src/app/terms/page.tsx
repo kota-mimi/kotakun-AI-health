@@ -403,7 +403,7 @@ export default function TermsOfService() {
                   本サービスまたは本規約に関するお問い合わせは、以下までご連絡ください：
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p>メール: kotakun.health@gmail.com</p>
+                  <p>メール: <a href="mailto:kotakun.health@gmail.com" className="text-blue-600 hover:text-blue-800 underline">kotakun.health@gmail.com</a></p>
                 </div>
               </div>
             </section>
