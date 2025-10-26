@@ -156,7 +156,7 @@ export function WeightDetailPage({
       <div className={`relative space-y-4 ${hideHeader ? '' : 'px-4 py-4 pb-20'}`}>{/* ここに残りのコンテンツが続く */}
 
         {/* 体重記録カード */}
-        <Card className="bg-white border border-slate-200/50 rounded-xl p-3">
+        <Card className="bg-white/80 backdrop-blur-xl border border-white/20/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-slate-800">体重記録</h4>
               {onNavigateToSettings && (
