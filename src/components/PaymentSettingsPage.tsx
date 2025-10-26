@@ -104,7 +104,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           </div>
         </Card>
 
-        <div className="h-8"></div>
+        <div className="h-6"></div>
 
         {/* アクション */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
@@ -135,7 +135,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           </div>
         </Card>
 
-        <div className="h-8"></div>
+        <div className="h-6"></div>
 
         {/* 支払い履歴 */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
@@ -176,7 +176,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           )}
         </Card>
 
-        <div className="h-8"></div>
+        <div className="h-6"></div>
 
         {/* サポート情報 */}
         <Card className="p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">

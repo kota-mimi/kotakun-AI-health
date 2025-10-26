@@ -248,7 +248,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
-        <div className="h-20"></div>
+        <div className="h-12"></div>
 
         {/* 注意事項 */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
