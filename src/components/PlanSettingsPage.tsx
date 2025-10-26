@@ -5,13 +5,8 @@ import { Badge } from './ui/badge';
 import { createPaymentSession } from '../lib/payment';
 import { 
   ArrowLeft, 
-  Crown, 
   Check, 
   Star,
-  Zap,
-  MessageCircle,
-  Camera,
-  BarChart3,
   X
 } from 'lucide-react';
 
@@ -91,8 +86,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
-        '詳細な栄養分析',
-        '運動プラン提案',
         'アプリからAI記録機能'
       ]
     },
@@ -109,8 +102,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
-        '詳細な栄養分析',
-        '運動プラン提案',
         'アプリからAI記録機能'
       ]
     },
@@ -128,20 +119,18 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
-        '詳細な栄養分析',
-        '運動プラン提案',
         'アプリからAI記録機能'
       ]
     }
   ];
 
   const renderPlanCard = (plan: any) => (
-    <Card key={plan.id} className={`relative p-6 transition-all duration-200 ${
+    <Card key={plan.id} className={`relative p-6 transition-all duration-200 border-2 ${
       plan.isCurrentPlan 
-        ? 'border-green-500 bg-green-50/50 shadow-lg' 
+        ? 'border-green-500 bg-green-50/50 shadow-xl' 
         : plan.isRecommended
-        ? 'border-blue-500 bg-blue-50/50 shadow-lg scale-105'
-        : 'border-gray-200 bg-white shadow-sm hover:shadow-md'
+        ? 'border-blue-500 bg-blue-50/50 shadow-xl scale-105'
+        : 'border-gray-300 bg-white shadow-lg hover:shadow-xl hover:border-gray-400'
     }`}>
       {plan.isRecommended && (
         <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1">
@@ -153,28 +142,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       <div className="space-y-6">
         {/* プランヘッダー */}
         <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            {plan.id === 'free' && (
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                <Zap size={24} className="text-gray-600" />
-              </div>
-            )}
-            {plan.id === 'monthly' && (
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                <MessageCircle size={24} className="text-green-600" />
-              </div>
-            )}
-            {plan.id === 'quarterly' && (
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <Camera size={24} className="text-blue-600" />
-              </div>
-            )}
-            {plan.id === 'biannual' && (
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <Crown size={24} className="text-purple-600" />
-              </div>
-            )}
-          </div>
           
           <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
           
@@ -274,35 +241,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       <div className="max-w-4xl mx-auto p-4 pb-20">
         {/* 説明セクション */}
         <div className="text-center mb-8 mt-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">あなたに最適なプランを選択</h2>
-          <p className="text-gray-600">健康管理をもっと効果的に。いつでもプラン変更可能です。</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">プランの種類</h2>
         </div>
-
-        {/* 現在の利用状況 */}
-        <Card className="mb-8 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
-          <div className="flex items-center space-x-3 mb-4">
-            <BarChart3 size={20} className="text-green-600" />
-            <h3 className="font-semibold text-gray-800">今月の利用状況</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">AI会話</div>
-              <div className="text-lg font-bold text-gray-800">23/150</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">LINE記録</div>
-              <div className="text-lg font-bold text-gray-800">45/60</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">利用日数</div>
-              <div className="text-lg font-bold text-gray-800">18日</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">継続日数</div>
-              <div className="text-lg font-bold text-gray-800">42日</div>
-            </div>
-          </div>
-        </Card>
 
         {/* プラン一覧 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
