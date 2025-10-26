@@ -125,12 +125,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   ];
 
   const renderPlanCard = (plan: any) => (
-    <Card key={plan.id} className={`relative p-6 transition-all duration-200 border-2 ${
+    <Card key={plan.id} className={`relative p-6 transition-all duration-200 border-2 bg-white/80 backdrop-blur-sm ${
       plan.isCurrentPlan 
-        ? 'border-green-500 bg-green-50/50 shadow-xl' 
+        ? 'border-green-500 shadow-xl' 
         : plan.isRecommended
-        ? 'border-blue-500 bg-blue-50/50 shadow-xl scale-105'
-        : 'border-gray-300 bg-white shadow-lg hover:shadow-xl hover:border-gray-400'
+        ? 'border-blue-500 shadow-xl scale-105'
+        : 'border-gray-300 shadow-lg hover:shadow-xl hover:border-gray-400'
     }`}>
       {plan.isRecommended && (
         <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-0.5 text-xs">
@@ -220,7 +220,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gray-100">
       {/* ヘッダー */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
@@ -245,12 +245,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* プラン一覧 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
         {/* 注意事項 */}
-        <Card className="p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-3">プラン変更について</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <p>• プラン変更は即時反映されます</p>
