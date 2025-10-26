@@ -315,21 +315,35 @@ export const FOOD_DATABASE: FoodData[] = [
 export function findFoodMatch(text: string): { food: FoodData; confidence: 'high' | 'medium' | 'low' } | null {
   const normalizedText = text.toLowerCase().replace(/\s/g, '');
   
-  // 完全一致をチェック
-  for (const food of FOOD_DATABASE) {
-    if (food.keywords.some(keyword => keyword === text || keyword === normalizedText)) {
-      return { food, confidence: 'high' };
+  // 完全一致をチェック（完成品を優先）
+  const exactMatches = FOOD_DATABASE.filter(food => 
+    food.keywords.some(keyword => keyword === text || keyword === normalizedText)
+  );
+  
+  if (exactMatches.length > 0) {
+    // 完成品（prepared）を優先して返す
+    const preparedMatch = exactMatches.find(food => food.category === 'prepared');
+    if (preparedMatch) {
+      return { food: preparedMatch, confidence: 'high' };
     }
+    return { food: exactMatches[0], confidence: 'high' };
   }
   
-  // 部分一致をチェック
-  for (const food of FOOD_DATABASE) {
-    if (food.keywords.some(keyword => 
+  // 部分一致をチェック（完成品を優先）
+  const partialMatches = FOOD_DATABASE.filter(food => 
+    food.keywords.some(keyword => 
       text.includes(keyword) || keyword.includes(text) ||
       normalizedText.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(normalizedText)
-    )) {
-      return { food, confidence: 'medium' };
+    )
+  );
+  
+  if (partialMatches.length > 0) {
+    // 完成品（prepared）を優先して返す
+    const preparedMatch = partialMatches.find(food => food.category === 'prepared');
+    if (preparedMatch) {
+      return { food: preparedMatch, confidence: 'medium' };
     }
+    return { food: partialMatches[0], confidence: 'medium' };
   }
   
   // より柔軟なマッチング
