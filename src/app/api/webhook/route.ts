@@ -5,6 +5,7 @@ import AIHealthService from '@/services/aiService';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
@@ -60,8 +61,8 @@ async function addToLearnedFoods(userId: string, mealName: string, nutritionData
         protein: nutritionData.protein || 0,
         fat: nutritionData.fat || 0,
         carbs: nutritionData.carbs || 0,
-        learnedAt: admin.firestore.FieldValue.serverTimestamp(),
-        usageCount: admin.firestore.FieldValue.increment(1),
+        learnedAt: FieldValue.serverTimestamp(),
+        usageCount: FieldValue.increment(1),
         isPatternMatched: nutritionData.isPatternMatched || false,
         matchConfidence: nutritionData.matchConfidence || 'ai_analyzed'
       }
