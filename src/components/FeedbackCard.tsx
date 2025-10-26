@@ -143,15 +143,19 @@ export function FeedbackCard({
                     <div className="p-4 space-y-3">
                       <div>
                         <h4 className="font-medium text-green-700">良かった点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line m-0 leading-tight">
-                          {feedbackData.foodEvaluation.goodPoints}
-                        </p>
+                        <div className="text-sm text-slate-700">
+                          {feedbackData.foodEvaluation.goodPoints.split('\n').map((line, index) => (
+                            <div key={index} className="leading-none">{line}</div>
+                          ))}
+                        </div>
                       </div>
                       <div>
                         <h4 className="font-medium text-orange-700">改善点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line m-0 leading-tight">
-                          {feedbackData.foodEvaluation.improvements}
-                        </p>
+                        <div className="text-sm text-slate-700">
+                          {feedbackData.foodEvaluation.improvements.split('\n').map((line, index) => (
+                            <div key={index} className="leading-none">{line}</div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -174,15 +178,19 @@ export function FeedbackCard({
                     <div className="p-4 space-y-3">
                       <div>
                         <h4 className="font-medium text-green-700">良かった点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line m-0 leading-tight">
-                          {feedbackData.exerciseEvaluation.goodPoints}
-                        </p>
+                        <div className="text-sm text-slate-700">
+                          {feedbackData.exerciseEvaluation.goodPoints.split('\n').map((line, index) => (
+                            <div key={index} className="leading-none">{line}</div>
+                          ))}
+                        </div>
                       </div>
                       <div>
                         <h4 className="font-medium text-orange-700">改善提案</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line m-0 leading-tight">
-                          {feedbackData.exerciseEvaluation.improvements}
-                        </p>
+                        <div className="text-sm text-slate-700">
+                          {feedbackData.exerciseEvaluation.improvements.split('\n').map((line, index) => (
+                            <div key={index} className="leading-none">{line}</div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
