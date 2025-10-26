@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface WeightChartProps {
   data: Array<{
@@ -523,11 +522,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 <option value="weight">体重グラフ</option>
               </select>
             </div>
-            {isExpanded ? (
-              <ChevronUp size={16} className="text-slate-500" />
-            ) : (
-              <ChevronDown size={16} className="text-slate-500" />
-            )}
           </div>
         </Button>
         
@@ -589,11 +583,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
               <option value="weight">体重グラフ</option>
             </select>
           </div>
-          {isExpanded ? (
-            <ChevronUp size={16} className="text-slate-500" />
-          ) : (
-            <ChevronDown size={16} className="text-slate-500" />
-          )}
         </div>
       </Button>
 
