@@ -141,10 +141,10 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       onClick={() => setSelectedPlan(plan.id)}
     >
       {plan.isRecommended && (
-        <Badge className="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-2 py-1 text-xs shadow-lg">
+        <div className="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-2 py-1 text-xs rounded-md shadow-lg flex items-center">
           <Star size={12} className="mr-1" />
           人気のあるプラン
-        </Badge>
+        </div>
       )}
       
       {plan.isSelected && (
