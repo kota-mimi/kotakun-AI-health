@@ -126,9 +126,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const renderPlanCard = (plan: any) => (
     <Card key={plan.id} className={`relative p-6 transition-all duration-200 border-2 bg-white/80 backdrop-blur-sm ${
       plan.isCurrentPlan 
-        ? 'border-green-500 shadow-xl' 
+        ? 'border-blue-500 shadow-xl scale-105' 
         : plan.isRecommended
-        ? 'border-blue-500 shadow-xl scale-105'
+        ? 'border-blue-400 shadow-xl scale-105'
         : 'border-gray-300 shadow-lg hover:shadow-xl hover:border-gray-400'
     }`}>
       {plan.isRecommended && (
@@ -248,7 +248,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
-        <div className="h-12"></div>
+        <div className="h-6"></div>
 
         {/* 注意事項 */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
