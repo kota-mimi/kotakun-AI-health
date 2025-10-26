@@ -509,18 +509,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
         >
           <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
             <div className="flex items-center space-x-2">
-              <select 
-                value={selectedDataType}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  setSelectedDataType(e.target.value as DataType);
-                  setSelectedPoint(null);
-                }}
-                className="font-semibold text-slate-900 bg-transparent border-none outline-none cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <option value="weight">体重グラフ</option>
-              </select>
+              <h3 className="font-semibold text-slate-900">体重グラフ</h3>
             </div>
           </div>
         </Button>
@@ -570,18 +559,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       >
         <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
-            <select 
-              value={selectedDataType}
-              onChange={(e) => {
-                e.stopPropagation();
-                setSelectedDataType(e.target.value as DataType);
-                setSelectedPoint(null);
-              }}
-              className="font-semibold text-slate-900 bg-transparent border-none outline-none cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="weight">体重グラフ</option>
-            </select>
+            <h3 className="font-semibold text-slate-900">体重グラフ</h3>
           </div>
         </div>
       </Button>
