@@ -1,7 +1,7 @@
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">利用規約</h1>
           
