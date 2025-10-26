@@ -71,8 +71,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       ],
       limitations: [
         'アプリからAI記録は使用不可',
-        '1日のフィードバック機能なし',
-        '詳細分析機能なし'
+        '1日のフィードバック機能なし'
       ]
     },
     {
@@ -245,7 +244,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* プラン一覧 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 

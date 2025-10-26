@@ -56,7 +56,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </div>
 
         {/* 現在のサブスクリプション状況 */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-20 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <CreditCard size={20} className="text-blue-600" />
             <h3 className="font-semibold text-gray-800">現在の契約状況</h3>
@@ -105,7 +105,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </Card>
 
         {/* アクション */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-20 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <DollarSign size={20} className="text-green-600" />
             <h3 className="font-semibold text-gray-800">プラン管理</h3>
@@ -134,7 +134,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </Card>
 
         {/* 支払い履歴 */}
-        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-20 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <FileText size={20} className="text-purple-600" />
             <h3 className="font-semibold text-gray-800">支払い履歴</h3>
