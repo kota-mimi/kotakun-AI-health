@@ -30,7 +30,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gray-100">
       {/* ヘッダー */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
@@ -50,13 +50,13 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
 
       <div className="max-w-4xl mx-auto p-4 pb-20">
         {/* 説明セクション */}
-        <div className="text-center mb-8 mt-6">
+        <div className="text-center mb-12 mt-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-3">支払い情報・履歴</h2>
           <p className="text-gray-600">現在の契約状況と支払い履歴を確認できます。</p>
         </div>
 
         {/* 現在のサブスクリプション状況 */}
-        <Card className="mb-8 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <CreditCard size={20} className="text-blue-600" />
             <h3 className="font-semibold text-gray-800">現在の契約状況</h3>
@@ -105,7 +105,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </Card>
 
         {/* アクション */}
-        <Card className="mb-8 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <DollarSign size={20} className="text-green-600" />
             <h3 className="font-semibold text-gray-800">プラン管理</h3>
@@ -134,7 +134,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </Card>
 
         {/* 支払い履歴 */}
-        <Card className="mb-8 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-12 p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <div className="flex items-center space-x-3 mb-4">
             <FileText size={20} className="text-purple-600" />
             <h3 className="font-semibold text-gray-800">支払い履歴</h3>
@@ -173,7 +173,7 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
         </Card>
 
         {/* サポート情報 */}
-        <Card className="mb-8 p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">
+        <Card className="mb-12 p-6 bg-gray-50/80 backdrop-blur-sm shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-3">支払いに関するご注意</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <p>• 支払いはStripeによる安全な決済システムを使用しています</p>
