@@ -548,7 +548,6 @@ export function MyProfilePage({
 
   const accountMenuItems = [
     {
-      icon: Bell,
       label: 'リマインダー設定',
       color: '#8B5CF6',
       action: onNavigateToCounseling ? withCounselingGuard(
@@ -559,7 +558,6 @@ export function MyProfilePage({
       ) : onNavigateToReminderSettings
     },
     {
-      icon: Trophy,
       label: 'プラン・サブスクリプション',
       color: '#FBBF24',
       action: onNavigateToCounseling ? withCounselingGuard(
@@ -570,7 +568,6 @@ export function MyProfilePage({
       ) : onNavigateToPlanSettings
     },
     {
-      icon: CreditCard,
       label: '支払い設定',
       color: '#EF4444',
       action: onNavigateToCounseling ? withCounselingGuard(
@@ -584,25 +581,21 @@ export function MyProfilePage({
 
   const supportMenuItems = [
     {
-      icon: BookOpen,
       label: '使い方ガイド',
       color: '#10B981',
       action: onNavigateToUserGuide
     },
     {
-      icon: HelpCircle,
       label: 'お問い合わせ・サポート',
       color: '#6B7280',
       action: onNavigateToContact
     },
     {
-      icon: FileText,
       label: '利用規約',
       color: '#374151',
       action: () => window.open('/terms', '_blank')
     },
     {
-      icon: Shield,
       label: 'プライバシーポリシー',
       color: '#374151',
       action: () => window.open('/privacy', '_blank')
@@ -624,7 +617,6 @@ export function MyProfilePage({
         <Card className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
-              const Icon = item.icon;
               return (
                 <Button
                   key={index}
@@ -632,13 +624,7 @@ export function MyProfilePage({
                   className="w-full justify-start p-0 h-auto hover:bg-slate-50 rounded-none"
                   onClick={item.action}
                 >
-                  <div className="flex items-center space-x-4 py-4 px-4 w-full">
-                    <div 
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{backgroundColor: item.color}}
-                    >
-                      <Icon size={16} className="text-white" />
-                    </div>
+                  <div className="flex items-center py-4 px-4 w-full">
                     <div className="flex-1 text-left min-w-0">
                       <p className="font-medium text-slate-900">{item.label}</p>
                     </div>
