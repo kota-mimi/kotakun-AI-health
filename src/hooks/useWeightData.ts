@@ -38,6 +38,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   // 実データ取得用のstate
   const [realWeightData, setRealWeightData] = useState<Array<{date: string; weight: number}>>([]);
   const [isClient, setIsClient] = useState(false);
+  const [isLoadingWeightData, setIsLoadingWeightData] = useState(true);
   
   // クライアントサイドでのマウントを確認
   useEffect(() => {
@@ -60,6 +61,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       if (cachedData) {
         console.log('🎯 体重データをキャッシュから取得');
         setRealWeightData(cachedData);
+        setIsLoadingWeightData(false);
         return;
       }
       
@@ -76,6 +78,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         }
       } catch (error) {
         console.error('体重データ取得エラー:', error);
+      } finally {
+        setIsLoadingWeightData(false);
       }
     };
 
@@ -151,25 +155,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // 今日のデータの場合は、realWeightDataを優先的に確認
-    if (dateKey === today) {
-      const realDataForToday = realWeightData.find(item => item.date === dateKey);
-      
-      if (realDataForToday) {
-        // 前日のデータを取得
-        const previousDate = new Date(date);
-        previousDate.setDate(previousDate.getDate() - 1);
-        const previousWeight = getPreviousWeight(previousDate);
-        
-        return {
-          current: realDataForToday.weight,
-          previous: previousWeight,
-          target: weightSettingsStorage.value.targetWeight || 68.0
-        };
-      }
-    }
-    
-    // その他の日付はrealWeightDataから確認
+    // 最優先: realWeightDataから該当日付のデータを確認
     const realDataForDate = realWeightData.find(item => item.date === dateKey);
     
     if (realDataForDate) {
@@ -188,7 +174,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // fallback: ローカルデータを確認
+    // 2番目の優先順位: ローカルデータを確認
     const dayData = dateBasedData[dateKey];
     
     if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
@@ -207,8 +193,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // カウンセリング日の場合はカウンセリング体重を返す
-    if (isCounselingDate(date) && counselingResult?.answers?.weight) {
+    // 最後のフォールバック: カウンセリング日の場合のみカウンセリング体重を返す
+    // ただし、APIデータがまだ読み込み中で、今日またはカウンセリング日の場合のみ
+    if (isLoadingWeightData && (dateKey === today || isCounselingDate(date)) && counselingResult?.answers?.weight) {
       return {
         current: counselingResult.answers.weight,
         previous: 0, // カウンセリング日は前日比なし
@@ -468,6 +455,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     weightTrendData: getWeightTrendData() || [],
     weightStats: getWeightStats(),
     realWeightData, // 実データを追加
+    isLoadingWeightData, // ローディング状態を追加
     
     // モーダル状態
     isWeightEntryModalOpen,
