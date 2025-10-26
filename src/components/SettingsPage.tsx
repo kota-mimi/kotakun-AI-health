@@ -11,7 +11,9 @@ import {
   Bell,
   AlertTriangle,
   Clock,
-  Volume2
+  Volume2,
+  FileText,
+  Shield
 } from 'lucide-react';
 
 interface SettingsPageProps {
@@ -281,6 +283,59 @@ export function SettingsPage({ onBack, onNavigateToNutritionSettings }: Settings
               </Button>
             );
           })}
+        </div>
+      </Card>
+
+      {/* 法的情報 */}
+      <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
+        <div className="flex items-center space-x-3 mb-4">
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{backgroundColor: 'rgba(55, 65, 81, 0.1)'}}
+          >
+            <FileText size={20} style={{color: '#374151'}} />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-800">法的情報</h2>
+        </div>
+        
+        <div className="space-y-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
+            onClick={() => window.open('/terms', '_blank')}
+          >
+            <div className="flex items-center space-x-3">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{backgroundColor: '#37415115'}}
+              >
+                <FileText size={18} style={{color: '#374151'}} />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-slate-800">利用規約</p>
+                <p className="text-xs text-slate-500">サービス利用条件</p>
+              </div>
+            </div>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
+            onClick={() => window.open('/privacy', '_blank')}
+          >
+            <div className="flex items-center space-x-3">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{backgroundColor: '#37415115'}}
+              >
+                <Shield size={18} style={{color: '#374151'}} />
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-slate-800">プライバシーポリシー</p>
+                <p className="text-xs text-slate-500">個人情報保護方針</p>
+              </div>
+            </div>
+          </Button>
         </div>
       </Card>
 
