@@ -143,13 +143,13 @@ export function FeedbackCard({
                     <div className="p-4 space-y-3">
                       <div>
                         <h4 className="font-medium text-green-700">良かった点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line">
+                        <p className="text-sm text-slate-700 whitespace-pre-line m-0">
                           {feedbackData.foodEvaluation.goodPoints}
                         </p>
                       </div>
                       <div>
                         <h4 className="font-medium text-orange-700">改善点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line">
+                        <p className="text-sm text-slate-700 whitespace-pre-line m-0">
                           {feedbackData.foodEvaluation.improvements}
                         </p>
                       </div>
@@ -174,13 +174,13 @@ export function FeedbackCard({
                     <div className="p-4 space-y-3">
                       <div>
                         <h4 className="font-medium text-green-700">良かった点</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line">
+                        <p className="text-sm text-slate-700 whitespace-pre-line m-0">
                           {feedbackData.exerciseEvaluation.goodPoints}
                         </p>
                       </div>
                       <div>
                         <h4 className="font-medium text-orange-700">改善提案</h4>
-                        <p className="text-sm text-slate-700 whitespace-pre-line">
+                        <p className="text-sm text-slate-700 whitespace-pre-line m-0">
                           {feedbackData.exerciseEvaluation.improvements}
                         </p>
                       </div>
