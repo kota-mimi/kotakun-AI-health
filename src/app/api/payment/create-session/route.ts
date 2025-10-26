@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // 環境変数チェック
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: 'Stripe configuration missing' },
+        { status: 500 }
+      );
+    }
+    
+    // Stripe初期化（関数内で実行）
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-11-20.acacia',
+    });
+    
     const { planId, userId, successUrl, cancelUrl, priceId, amount } = await request.json();
 
     // バリデーション
