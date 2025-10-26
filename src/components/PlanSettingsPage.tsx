@@ -147,56 +147,62 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
       )}
       
-      <div className="space-y-4">
-        {/* プランヘッダー */}
-        <div className="text-center">
-          {plan.isRecommended && (
-            <div className="inline-flex items-center bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-medium mb-1">
+      <div className="space-y-3">
+        {/* 人気バッジ（上部中央） */}
+        {plan.isRecommended && (
+          <div className="text-center">
+            <div className="inline-flex items-center bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-medium">
               <Star size={10} className="mr-1" />
               人気
             </div>
-          )}
-          <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h3>
-          
-          <div className="space-y-0.5">
-            {plan.price === 0 ? (
-              <div className="text-2xl font-bold text-gray-900">無料</div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold text-gray-900">
-                  ¥{plan.price.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {plan.monthlyPrice ? (
-                    <>月額換算 ¥{plan.monthlyPrice}/月</>
-                  ) : (
-                    <>/{plan.period}</>
-                  )}
-                </div>
-                {plan.discount && (
-                  <Badge variant="secondary" className="bg-red-100 text-red-600 text-xs px-1 py-0">
-                    {plan.discount}
-                  </Badge>
-                )}
-              </>
-            )}
           </div>
-        </div>
+        )}
+        
+        {/* メインコンテンツ（左右分割） */}
+        <div className="flex space-x-3">
+          {/* 左側：プラン情報 */}
+          <div className="flex-1 space-y-1">
+            <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+            <div className="space-y-0.5">
+              {plan.price === 0 ? (
+                <div className="text-xl font-bold text-gray-900">無料</div>
+              ) : (
+                <>
+                  <div className="text-xl font-bold text-gray-900">
+                    ¥{plan.price.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {plan.monthlyPrice ? (
+                      <>月額換算 ¥{plan.monthlyPrice}/月</>
+                    ) : (
+                      <>/{plan.period}</>
+                    )}
+                  </div>
+                  {plan.discount && (
+                    <Badge variant="secondary" className="bg-red-100 text-red-600 text-xs px-1 py-0">
+                      {plan.discount}
+                    </Badge>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
 
-        {/* 機能一覧 */}
-        <div className="space-y-2">
-          {plan.features.map((feature, index) => (
-            <div key={index} className="flex items-start space-x-2">
-              <Check size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-xs text-gray-700">{feature}</span>
-            </div>
-          ))}
-          {plan.limitations?.map((limitation, index) => (
-            <div key={`limit-${index}`} className="flex items-start space-x-2 opacity-60">
-              <X size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
-              <span className="text-xs text-gray-500">{limitation}</span>
-            </div>
-          ))}
+          {/* 右側：機能一覧 */}
+          <div className="flex-1 space-y-1">
+            {plan.features.map((feature, index) => (
+              <div key={index} className="flex items-start space-x-1">
+                <Check size={12} className="text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-xs text-gray-700">{feature}</span>
+              </div>
+            ))}
+            {plan.limitations?.map((limitation, index) => (
+              <div key={`limit-${index}`} className="flex items-start space-x-1 opacity-60">
+                <X size={12} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                <span className="text-xs text-gray-500">{limitation}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* アクションボタン */}
