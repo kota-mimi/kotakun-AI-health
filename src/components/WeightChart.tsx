@@ -272,7 +272,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   // データ数に応じて適切な間隔を計算
   const calculateXPositions = () => {
     if (currentData.length === 0) return [];
-    if (currentData.length === 1) return [svgWidth / 2];
+    if (currentData.length === 1) return [20]; // 左端から開始
     
     // 1日あたりの固定幅を設定（40px程度）
     const dayWidth = 40;
@@ -286,7 +286,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     const startX = 20; // 左端から開始
     
     return currentData.map((_, index) => {
-      if (currentData.length === 1) return svgWidth / 2;
+      if (currentData.length === 1) return 20; // 左端から開始
       return startX + (index / (currentData.length - 1)) * actualWidth;
     });
   };
@@ -303,7 +303,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return { x: safeX, y: safeY, value: point.value, date: point.date };
   }) : [];
   
-  // 滑らかなベジェ曲線を生成
+  // より滑らかなCardinal曲線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
     if (points.length < 1) return '';
     if (points.length === 1) {
@@ -312,23 +312,29 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       return `M ${point.x - 2},${point.y} L ${point.x + 2},${point.y}`;
     }
     
-    // 2つ以上のポイントがある場合
-    const allSameValue = points.every(p => Math.abs(p.value - points[0].value) < 0.01);
+    if (points.length === 2) {
+      // 2つのポイントの場合は直線
+      return `M ${points[0].x},${points[0].y} L ${points[1].x},${points[1].y}`;
+    }
+    
+    // Cardinal曲線のテンション（0.3-0.5が自然）
+    const tension = 0.4;
     
     let path = `M ${points[0].x},${points[0].y}`;
     
-    // 常に滑らかなベジェ曲線を使用
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
+      const p0 = i === 1 ? points[0] : points[i - 2];
+      const p1 = points[i - 1];
+      const p2 = points[i];
+      const p3 = i === points.length - 1 ? points[i] : points[i + 1];
       
-      // 制御点を計算して滑らかな曲線を作成
-      const controlX1 = prev.x + (curr.x - prev.x) * 0.5;
-      const controlY1 = prev.y;
-      const controlX2 = curr.x - (curr.x - prev.x) * 0.5;
-      const controlY2 = curr.y;
+      // Cardinal曲線の制御点を計算
+      const cp1x = p1.x + (p2.x - p0.x) * tension / 6;
+      const cp1y = p1.y + (p2.y - p0.y) * tension / 6;
+      const cp2x = p2.x - (p3.x - p1.x) * tension / 6;
+      const cp2y = p2.y - (p3.y - p1.y) * tension / 6;
       
-      path += ` C ${controlX1},${controlY1} ${controlX2},${controlY2} ${curr.x},${curr.y}`;
+      path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
     }
     
     return path;
@@ -648,6 +654,18 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
 
           
+          {/* 影のライン */}
+          <path
+            d={smoothPathData}
+            fill="none"
+            stroke="rgba(0,0,0,0.1)"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            transform="translate(2,2)"
+            className="transition-all duration-700 ease-out"
+          />
+          
           {/* メインライン */}
           <path
             d={smoothPathData}
@@ -657,6 +675,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             strokeLinecap="round"
             strokeLinejoin="round"
             className="transition-all duration-700 ease-out"
+            style={{
+              filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
+            }}
           />
           
           {/* インタラクティブエリア（見えない） */}
