@@ -131,42 +131,42 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const renderPlanCard = (plan: any) => (
     <Card 
       key={plan.id} 
-      className={`relative p-6 transition-all duration-300 border-2 bg-white/80 backdrop-blur-sm cursor-pointer transform hover:scale-102 ${
+      className={`relative p-4 transition-all duration-300 border-2 bg-white/80 backdrop-blur-sm cursor-pointer transform hover:scale-102 ${
         plan.isSelected 
-          ? 'border-blue-500 shadow-xl scale-105 ring-2 ring-blue-200' 
+          ? 'border-blue-500 shadow-lg scale-102 ring-1 ring-blue-200' 
           : plan.isCurrentPlan
-          ? 'border-green-500 shadow-xl scale-102'
-          : 'border-gray-300 shadow-lg hover:shadow-xl hover:border-blue-300'
+          ? 'border-green-500 shadow-lg scale-102'
+          : 'border-gray-300 shadow-sm hover:shadow-lg hover:border-blue-300'
       }`}
       onClick={() => setSelectedPlan(plan.id)}
     >
       
       {plan.isSelected && (
-        <div className="absolute top-2 left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-          <Check size={14} className="text-white" />
+        <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
+          <Check size={12} className="text-white" />
         </div>
       )}
       
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* プランヘッダー */}
         <div className="text-center">
           {plan.isRecommended && (
-            <div className="inline-flex items-center bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium mb-2">
-              <Star size={12} className="mr-1" />
-              人気のあるプラン
+            <div className="inline-flex items-center bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-medium mb-1">
+              <Star size={10} className="mr-1" />
+              人気
             </div>
           )}
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h3>
           
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {plan.price === 0 ? (
-              <div className="text-3xl font-bold text-gray-900">無料</div>
+              <div className="text-2xl font-bold text-gray-900">無料</div>
             ) : (
               <>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-gray-900">
                   ¥{plan.price.toLocaleString()}
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-xs text-gray-500">
                   {plan.monthlyPrice ? (
                     <>月額換算 ¥{plan.monthlyPrice}/月</>
                   ) : (
@@ -174,7 +174,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   )}
                 </div>
                 {plan.discount && (
-                  <Badge variant="secondary" className="bg-red-100 text-red-600 text-xs">
+                  <Badge variant="secondary" className="bg-red-100 text-red-600 text-xs px-1 py-0">
                     {plan.discount}
                   </Badge>
                 )}
@@ -184,31 +184,31 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* 機能一覧 */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {plan.features.map((feature, index) => (
-            <div key={index} className="flex items-start space-x-3">
-              <Check size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">{feature}</span>
+            <div key={index} className="flex items-start space-x-2">
+              <Check size={14} className="text-green-500 flex-shrink-0 mt-0.5" />
+              <span className="text-xs text-gray-700">{feature}</span>
             </div>
           ))}
           {plan.limitations?.map((limitation, index) => (
-            <div key={`limit-${index}`} className="flex items-start space-x-3 opacity-60">
-              <X size={18} className="text-gray-400 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-500">{limitation}</span>
+            <div key={`limit-${index}`} className="flex items-start space-x-2 opacity-60">
+              <X size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+              <span className="text-xs text-gray-500">{limitation}</span>
             </div>
           ))}
         </div>
 
         {/* アクションボタン */}
-        <div className="pt-4">
+        <div className="pt-2">
           {plan.isCurrentPlan ? (
-            <Button variant="outline" className="w-full" disabled>
+            <Button variant="outline" className="w-full h-8 text-xs" disabled>
               現在のプラン
             </Button>
           ) : plan.id === 'free' ? (
             <Button 
               variant="outline" 
-              className="w-full"
+              className="w-full h-8 text-xs"
               onClick={() => handlePlanChange(plan)}
               disabled={isProcessing}
             >
@@ -216,18 +216,18 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             </Button>
           ) : (
             <Button 
-              className={`w-full transition-all duration-200 ${
+              className={`w-full h-8 text-xs transition-all duration-200 ${
                 plan.isSelected
-                  ? 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300' 
+                  ? 'bg-blue-600 hover:bg-blue-700 ring-1 ring-blue-300' 
                   : 'bg-blue-500 hover:bg-blue-600'
-              } text-white disabled:opacity-50 shadow-lg hover:shadow-xl`}
+              } text-white disabled:opacity-50 shadow-sm hover:shadow-md`}
               onClick={(e) => {
                 e.stopPropagation();
                 handlePlanChange(plan);
               }}
               disabled={isProcessing}
             >
-              {isProcessing ? '処理中...' : plan.isSelected ? '選択中のプラン' : 'このプランを選択'}
+              {isProcessing ? '処理中...' : plan.isSelected ? '選択中' : '選択'}
             </Button>
           )}
         </div>
@@ -256,16 +256,16 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
 
       <div className="max-w-4xl mx-auto p-4 pb-20">
         {/* 説明セクション */}
-        <div className="text-center mb-8 mt-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">プランの種類</h2>
+        <div className="text-center mb-6 mt-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">プランの種類</h2>
         </div>
 
         {/* プラン一覧 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
-        <div className="h-6"></div>
+        <div className="h-4"></div>
 
         {/* 注意事項 */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
