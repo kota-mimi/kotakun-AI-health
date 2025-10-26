@@ -140,12 +140,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       }`}
       onClick={() => setSelectedPlan(plan.id)}
     >
-      {plan.isRecommended && (
-        <div className="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-2 py-1 text-xs rounded-md shadow-lg flex items-center">
-          <Star size={12} className="mr-1" />
-          人気のあるプラン
-        </div>
-      )}
       
       {plan.isSelected && (
         <div className="absolute top-2 left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
@@ -156,7 +150,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       <div className="space-y-6">
         {/* プランヘッダー */}
         <div className="text-center">
-          
+          {plan.isRecommended && (
+            <div className="inline-flex items-center bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium mb-2">
+              <Star size={12} className="mr-1" />
+              人気のあるプラン
+            </div>
+          )}
           <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
           
           <div className="space-y-1">
