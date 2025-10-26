@@ -133,8 +133,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         : 'border-gray-300 bg-white shadow-lg hover:shadow-xl hover:border-gray-400'
     }`}>
       {plan.isRecommended && (
-        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1">
-          <Star size={14} className="mr-1" />
+        <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-0.5 text-xs">
+          <Star size={12} className="mr-1" />
           人気No.1
         </Badge>
       )}
