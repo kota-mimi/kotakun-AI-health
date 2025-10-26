@@ -236,7 +236,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       {/* ヘッダー */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">

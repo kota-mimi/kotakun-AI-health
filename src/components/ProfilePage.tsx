@@ -125,7 +125,6 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
         <h3 className="font-semibold text-slate-800 mb-4">設定</h3>
         <div className="space-y-1">
           {menuItems.map((item, index) => {
-            const Icon = item.icon;
             return (
               <Button
                 key={index}
@@ -133,14 +132,8 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
                 className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
                 onClick={item.label === 'アプリ設定' ? onNavigateToSettings : undefined}
               >
-                <div className="flex items-center space-x-3 flex-1">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{backgroundColor: `${item.color}15`}}
-                  >
-                    <Icon size={18} style={{color: item.color}} />
-                  </div>
-                  <div className="flex-1 text-left">
+                <div className="flex items-center justify-between flex-1">
+                  <div className="text-left">
                     <p className="font-medium text-slate-800">{item.label}</p>
                     <p className="text-xs text-slate-500">{item.description}</p>
                   </div>
@@ -157,7 +150,6 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
         <h3 className="font-semibold text-slate-800 mb-4">法的情報</h3>
         <div className="space-y-1">
           {legalMenuItems.map((item, index) => {
-            const Icon = item.icon;
             return (
               <Button
                 key={index}
@@ -165,14 +157,8 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
                 className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
                 onClick={() => window.open(item.href, '_blank')}
               >
-                <div className="flex items-center space-x-3 flex-1">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{backgroundColor: `${item.color}15`}}
-                  >
-                    <Icon size={18} style={{color: item.color}} />
-                  </div>
-                  <div className="flex-1 text-left">
+                <div className="flex items-center justify-between flex-1">
+                  <div className="text-left">
                     <p className="font-medium text-slate-800">{item.label}</p>
                     <p className="text-xs text-slate-500">{item.description}</p>
                   </div>
