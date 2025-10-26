@@ -60,6 +60,18 @@ export function LiffProvider({ children }: LiffProviderProps) {
         // Dynamic import to avoid SSR issues
         const liff = (await import('@line/liff')).default;
         
+        // 開発環境でLIFF IDがないか、LIFF環境外の場合はスキップ
+        if (process.env.NODE_ENV === 'development' && !window.location.href.includes('liff')) {
+          setState(prev => ({
+            ...prev,
+            error: null,
+            isReady: true,
+            isLoggedIn: false,
+            isInClient: true,
+          }));
+          return;
+        }
+        
         await liff.init({ liffId });
         
         const isLoggedIn = liff.isLoggedIn();
@@ -140,6 +152,12 @@ export function LiffProvider({ children }: LiffProviderProps) {
       const liff = (await import('@line/liff')).default;
       
       if (!liff.isLoggedIn()) {
+        // LINEアプリ外での開発環境では自動ログインしない
+        if (process.env.NODE_ENV === 'development' && !window.location.href.includes('liff')) {
+          console.log('Development mode: Skipping LIFF login');
+          return;
+        }
+        
         liff.login({
           redirectUri: window.location.href,
         });

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import Stripe from 'stripe';
+import Stripe from 'stripe';
 
-// TODO: Stripeを有効にする際のコード
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-//   apiVersion: '2023-10-16',
-// });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,38 +17,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Stripe Checkout Session作成
-    // const session = await stripe.checkout.sessions.create({
-    //   mode: 'subscription',
-    //   payment_method_types: ['card'],
-    //   line_items: [
-    //     {
-    //       price: priceId,
-    //       quantity: 1,
-    //     },
-    //   ],
-    //   metadata: {
-    //     userId,
-    //     planId,
-    //   },
-    //   success_url: successUrl,
-    //   cancel_url: cancelUrl,
-    //   customer_email: userEmail, // TODO: ユーザー情報から取得
-    // });
+    // Stripe Checkout Session作成
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId,
+        planId,
+      },
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
+      automatic_tax: { enabled: false },
+      billing_address_collection: 'auto',
+      locale: 'ja',
+      allow_promotion_codes: true,
+    });
 
-    // 現在はモック実装
-    const mockSession = {
-      sessionId: `cs_mock_${Date.now()}`,
+    console.log('Stripe payment session created:', {
+      sessionId: session.id,
       planId,
-      amount,
-      currency: 'jpy',
-      userId,
-      url: `${successUrl}?session_id=cs_mock_${Date.now()}` // モック用URL
-    };
+      userId
+    });
 
-    console.log('Payment session created:', mockSession);
-
-    return NextResponse.json(mockSession);
+    return NextResponse.json({
+      sessionId: session.id,
+      url: session.url,
+      planId,
+      amount: session.amount_total,
+      currency: session.currency,
+      userId
+    });
 
   } catch (error) {
     console.error('Error creating payment session:', error);

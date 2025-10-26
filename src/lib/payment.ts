@@ -48,7 +48,7 @@ export const PLANS: PlanConfig[] = [
     name: '月額プラン',
     price: 890,
     period: '月額',
-    stripePriceId: 'price_monthly_plan',
+    stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SMXAsKMirzoVNsdglrHigMa',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
@@ -63,7 +63,7 @@ export const PLANS: PlanConfig[] = [
     name: '3ヶ月プラン',
     price: 2480,
     period: '3ヶ月',
-    stripePriceId: 'price_quarterly_plan',
+    stripePriceId: process.env.STRIPE_QUARTERLY_PRICE_ID || 'price_1SMXC4KMirzoVNsdVt8h6lNw',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
@@ -78,7 +78,7 @@ export const PLANS: PlanConfig[] = [
     name: '半年プラン',
     price: 3480,
     period: '半年',
-    stripePriceId: 'price_biannual_plan',
+    stripePriceId: process.env.STRIPE_BIANNUAL_PRICE_ID || 'price_1SMXDEKMirzoVNsdlvjXWj1a',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
