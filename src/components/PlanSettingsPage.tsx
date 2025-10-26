@@ -249,7 +249,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* 注意事項 */}
-        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm mt-6">
+        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm mt-12">
           <h4 className="font-semibold text-gray-800 mb-3">プラン変更について</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <p>• プラン変更は即時反映されます</p>
