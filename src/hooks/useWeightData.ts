@@ -369,6 +369,31 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         dayData.weightData.target = updatedSettings.targetWeight;
       }
     });
+    
+    // キャッシュをクリアして最新データを再取得
+    if (liffUser?.userId) {
+      const cacheKey = createCacheKey('weight', liffUser.userId, 'month');
+      apiCache.delete(cacheKey);
+      
+      // 最新データを即座に再取得
+      const fetchWeightData = async () => {
+        try {
+          const response = await fetch(`/api/weight?lineUserId=${liffUser.userId}&period=month`);
+          if (response.ok) {
+            const result = await response.json();
+            const weightData = result.data || [];
+            
+            // キャッシュに保存（5分間有効）
+            apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
+            setRealWeightData(weightData);
+          }
+        } catch (error) {
+          console.error('体重データ再取得エラー:', error);
+        }
+      };
+      
+      fetchWeightData();
+    }
   };
 
   // 体重推移データを取得（グラフ用）

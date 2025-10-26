@@ -53,8 +53,8 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   // 実際の記録データを優先、条件付きでカウンセリング結果をフォールバック
   const currentWeight = hasData ? data.current : (shouldUseFallback && counselingResult?.answers?.weight ? counselingResult.answers.weight : 0);
   const difference = hasData ? (currentWeight - data.previous) : 0;
-  // カウンセリング結果の目標体重があれば優先、なければデータの目標体重を使用
-  const targetWeight = counselingResult?.answers?.targetWeight || data.target;
+  // ユーザーが変更した最新の目標体重を優先、未設定ならカウンセリング結果を使用
+  const targetWeight = data.target || counselingResult?.answers?.targetWeight;
   // 目標体重が設定されているかチェック（0より大きい値）
   const hasTargetWeight = targetWeight && targetWeight > 0;
   const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (shouldUseFallback && counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
