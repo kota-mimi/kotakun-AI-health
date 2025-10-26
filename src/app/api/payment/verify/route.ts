@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Stripe Checkout Sessionns0’Ö—
+    // Stripe Checkout Sessionã®è©³ç´°ã‚’å–å¾—
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items', 'customer', 'subscription']
     });
@@ -29,18 +29,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ×éó’Ö—
+    // ãƒ—ãƒ©ãƒ³åã‚’å–å¾—
     const planMapping: { [key: string]: string } = {
-      [process.env.STRIPE_MONTHLY_PRICE_ID!]: 'M×éó',
-      [process.env.STRIPE_QUARTERLY_PRICE_ID!]: '3ö×éó',
-      [process.env.STRIPE_BIANNUAL_PRICE_ID!]: 'Jt×éó',
+      [process.env.STRIPE_MONTHLY_PRICE_ID!]: 'æœˆé¡ãƒ—ãƒ©ãƒ³',
+      [process.env.STRIPE_QUARTERLY_PRICE_ID!]: '3ãƒ¶æœˆãƒ—ãƒ©ãƒ³',
+      [process.env.STRIPE_BIANNUAL_PRICE_ID!]: 'åŠå¹´ãƒ—ãƒ©ãƒ³',
     };
 
     const lineItem = session.line_items?.data[0];
     const priceId = lineItem?.price?.id;
-    const planName = priceId ? planMapping[priceId] : 'j×éó';
+    const planName = priceId ? planMapping[priceId] : 'ä¸æ˜ãªãƒ—ãƒ©ãƒ³';
 
-    // TODO: SSgæü¶ün×éóÅ1’Çü¿Ùü¹kİX
+    // TODO: ã“ã“ã§ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®ãƒ—ãƒ©ãƒ³æƒ…å ±ã‚’ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ä¿å­˜
     const userId = session.metadata?.userId;
     const planId = session.metadata?.planId;
 
