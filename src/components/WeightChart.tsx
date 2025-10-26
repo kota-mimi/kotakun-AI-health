@@ -654,30 +654,15 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
 
 
           
-          {/* 影のライン */}
-          <path
-            d={smoothPathData}
-            fill="none"
-            stroke="rgba(0,0,0,0.1)"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            transform="translate(2,2)"
-            className="transition-all duration-700 ease-out"
-          />
-          
           {/* メインライン */}
           <path
             d={smoothPathData}
             fill="none"
-            stroke={currentConfig.color}
-            strokeWidth="4"
+            stroke="#3B82F6"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             className="transition-all duration-700 ease-out"
-            style={{
-              filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
-            }}
           />
           
           {/* インタラクティブエリア（見えない） */}
