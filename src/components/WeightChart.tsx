@@ -494,7 +494,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   // サーバーサイドレンダリング時の表示
   if (!mounted) {
     return (
-      <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 p-4">
+      <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
         <div className="animate-pulse">
           <div className="h-4 bg-slate-200 rounded mb-4"></div>
           <div className="h-40 bg-slate-200 rounded"></div>
@@ -507,7 +507,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   if (currentData.length === 0 || pathPoints.length === 0) {
     const dataTypeText = selectedDataType === 'weight' ? '体重' : '体脂肪';
     return (
-      <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 overflow-hidden">
+      <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
         <Button
           onClick={() => setIsExpanded(!isExpanded)}
           variant="ghost"
@@ -557,7 +557,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   }
 
   return (
-    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 overflow-hidden">
+    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
       <Button
         onClick={() => setIsExpanded(!isExpanded)}
         variant="ghost"

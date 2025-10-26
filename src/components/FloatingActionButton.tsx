@@ -91,7 +91,7 @@ export function FloatingActionButton({
                   <IconComponent size={24} className="text-white" />
                   
                   {/* ツールチップ */}
-                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2 bg-white text-slate-800 text-sm font-medium px-3 py-2 rounded-xl shadow-2xl shadow-sky-500/10 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2 bg-white text-slate-800 text-sm font-medium px-3 py-2 rounded-xl shadow-2xl shadow-sky-400/30 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
                     {action.label}
                     <div className="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-r-0 border-t-4 border-b-4 border-l-white/95 border-t-transparent border-b-transparent" />
                   </div>

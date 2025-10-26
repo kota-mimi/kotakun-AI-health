@@ -42,7 +42,7 @@ export function AIAdviceCard({ onNavigateToProfile, onViewAllAdvices, counseling
   const Icon = todayAdvice.icon;
 
   return (
-    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 overflow-hidden">
+    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
       <Button
         onClick={() => setIsCollapsed(!isCollapsed)}
         variant="ghost"
