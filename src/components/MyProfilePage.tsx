@@ -93,7 +93,7 @@ export function MyProfilePage({
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
-        <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-blue-500/10 p-6">
+        <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
             <div className="flex-1">
@@ -614,7 +614,7 @@ export function MyProfilePage({
       
       {/* メニューカード - iOS風 */}
       <div className="mx-4">
-        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-blue-500/10 overflow-hidden">
+        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               return (
@@ -644,7 +644,7 @@ export function MyProfilePage({
     <div key={refreshKey} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-blue-500/10 p-3">
+        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 p-3">
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">

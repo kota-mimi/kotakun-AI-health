@@ -67,7 +67,7 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   const isDecrease = difference < 0;
 
   return (
-    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-blue-500/10 overflow-hidden">
+    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-500/10 overflow-hidden">
       <div className="p-3">
         <div className="grid grid-cols-3 gap-2">
           {/* 現在の体重 */}
