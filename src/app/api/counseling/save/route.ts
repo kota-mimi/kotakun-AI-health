@@ -190,8 +190,18 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     
     const flexMessage = createCounselingResultFlexMessage(mockAnalysis, userProfile);
     
-    console.log('送信中 - カウンセリング結果（AI分析なし）');
-    await pushMessage(lineUserId, [flexMessage]);
+    // カウンセリング完了メッセージ
+    const completionMessage = {
+      type: 'text',
+      text: `${userName}、カウンセリングお疲れ様！
+
+下のカウンセリング結果をタップしたらアプリで君の詳細な情報が見れるよ
+
+これから一緒に頑張ろうね！`
+    };
+    
+    console.log('送信中 - カウンセリング結果（完了メッセージ + Flex）');
+    await pushMessage(lineUserId, [completionMessage, flexMessage]);
 
     console.log('LINEメッセージ送信完了:', userName);
 
