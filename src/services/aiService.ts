@@ -735,6 +735,17 @@ class AIHealthService {
 - **nameには基本的な食品名のみ（「(3個)」「(1人前)」などの分量表記は追加しない）**
 - baseFoodは基本的な食品名、portionは分量部分を分離
 
+**重要: 現実的なカロリー計算を行う**
+- ご飯1杯(150g): 約250kcal
+- ラーメン1杯: 約400-600kcal（具材により変動）
+- 唐揚げ3個: 約150kcal
+- 食パン1枚: 約160kcal
+- バナナ1本: 約90kcal
+- おにぎり1個: 約180kcal
+- カツ丼1杯: 約800kcal
+- サラダ(野菜のみ): 約20-50kcal
+- 過大評価しない: 1000kcal超えは大盛り・高カロリー食品のみ
+
 分量指定の例：
 - 「ご飯100g」→ displayName: "ご飯100g", baseFood: "ご飯", portion: "100g"
 - 「餃子5個」→ displayName: "餃子5個", baseFood: "餃子", portion: "5個"
@@ -748,16 +759,16 @@ class AIHealthService {
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('食事テキスト分析エラー:', error);
-      // フォールバック値を返す
+      // フォールバック値を返す（現実的な値に設定）
       return {
         foodItems: [mealText],
         displayName: mealText,
         baseFood: mealText,
         portion: "",
-        calories: 400,
-        protein: 20.0,
-        carbs: 50.0,
-        fat: 15.0
+        calories: 250, // 一般的な1食分（ご飯1杯程度）
+        protein: 8.0,  // 控えめなタンパク質
+        carbs: 45.0,   // 主食中心
+        fat: 5.0       // 低脂質
       };
     }
   }
@@ -825,6 +836,20 @@ class AIHealthService {
 - 単位は含めない（例：カロリー350、タンパク質23.4）
 - 推定は一般的な分量で計算
 
+**重要: 現実的なカロリー計算を行う**
+- ご飯1杯(150g): 約250kcal
+- ラーメン1杯: 約400-600kcal（具材により変動）
+- 唐揚げ3個: 約150kcal
+- 食パン1枚: 約160kcal
+- バナナ1本: 約90kcal
+- おにぎり1個: 約180kcal
+- カツ丼1杯: 約800kcal
+- サラダ(野菜のみ): 約20-50kcal
+- ハンバーガー1個: 約500kcal
+- パスタ1人前: 約400-600kcal
+- 過大評価しない: 1000kcal超えは大盛り・高カロリー食品のみ
+- 小鉢・副菜: 50-150kcal程度
+
 食事・料理・食べ物ではない場合（風景、人物、物など）：
 {
   "isFoodImage": false,
@@ -851,13 +876,13 @@ class AIHealthService {
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('食事画像分析エラー:', error);
-      // フォールバック値を返す
+      // フォールバック値を返す（現実的な値に設定）
       return {
         foodItems: ['食事'],
-        calories: 400,
-        protein: 20.0,
-        carbs: 50.0,
-        fat: 15.0
+        calories: 300, // 一般的な1食分
+        protein: 12.0, // 控えめなタンパク質
+        carbs: 45.0,   // 主食中心
+        fat: 8.0       // 適度な脂質
       };
     }
   }
