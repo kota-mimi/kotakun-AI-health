@@ -193,9 +193,11 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     // カウンセリング完了メッセージ
     const completionMessage = {
       type: 'text',
-      text: `${userName}、カウンセリングお疲れ様！
+      text: `${userName}さん、カウンセリングありがとう！
 
-下のカウンセリング結果をタップしたらアプリで君の詳細な情報が見れるよ
+こちらがあなたの目標に向けた目安のカロリー・たんぱく質・脂質・炭水化物だよ！
+
+カウンセリング結果をタップしたらアプリにあなたの情報が見れるよ！
 
 これから一緒に頑張ろうね！`
     };
