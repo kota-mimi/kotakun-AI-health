@@ -55,9 +55,10 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   const difference = hasData ? (currentWeight - data.previous) : 0;
   // ユーザーが変更した最新の目標体重を優先、未設定ならカウンセリング結果を使用
   const targetWeight = data.target || counselingResult?.answers?.targetWeight;
-  // 目標体重が設定されているかチェック（0より大きい値）
-  const hasTargetWeight = targetWeight && targetWeight > 0;
-  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (shouldUseFallback && counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
+  // 目標体重が設定されているかチェック（0より大きい値、かつ健康維持モードでない）
+  const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
+  const hasTargetWeight = targetWeight && targetWeight > 0 && !isMaintenanceMode;
+  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (shouldUseFallback && counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight && !isMaintenanceMode ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
   
   // 記録があるか、条件付きでカウンセリング結果がある場合は表示
   const shouldShowWeight = hasData || (shouldUseFallback && counselingResult?.answers?.weight && counselingResult.answers.weight > 0);

@@ -193,13 +193,13 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // 最後のフォールバック: カウンセリング日の場合のみカウンセリング体重を返す
-    // ただし、APIデータがまだ読み込み中で、今日またはカウンセリング日の場合のみ
-    if (isLoadingWeightData && (dateKey === today || isCounselingDate(date)) && counselingResult?.answers?.weight) {
+    // 最後のフォールバック: 今日またはカウンセリング日の場合のみカウンセリング体重を返す
+    // APIデータのロード状態に関係なく、実際の記録がない場合はカウンセリング体重をフォールバック
+    if ((dateKey === today || isCounselingDate(date)) && counselingResult?.answers?.weight) {
       return {
         current: counselingResult.answers.weight,
         previous: 0, // カウンセリング日は前日比なし
-        target: weightSettingsStorage.value.targetWeight || 68.0
+        target: weightSettingsStorage.value.targetWeight || counselingResult.answers.targetWeight || 0
       };
     }
     
