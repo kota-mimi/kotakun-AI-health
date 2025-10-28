@@ -4,12 +4,13 @@ import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { ArrowLeft, Bell, Clock, Utensils } from 'lucide-react';
+import { ArrowLeft, Bell, Clock, Utensils, Scale, Dumbbell, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ReminderSetting {
   id: string;
   name: string;
+  category: 'meal' | 'weight' | 'exercise' | 'custom';
   enabled: boolean;
   time: string;
   message: string;
@@ -24,6 +25,36 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
   const [reminders, setReminders] = useState<ReminderSetting[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newReminderName, setNewReminderName] = useState('');
+  const [newReminderCategory, setNewReminderCategory] = useState<'meal' | 'weight' | 'exercise' | 'custom'>('custom');
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'meal': return <Utensils className="w-5 h-5 text-orange-600" />;
+      case 'weight': return <Scale className="w-5 h-5 text-blue-600" />;
+      case 'exercise': return <Dumbbell className="w-5 h-5 text-green-600" />;
+      default: return <Bell className="w-5 h-5 text-purple-600" />;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'meal': return 'bg-orange-100';
+      case 'weight': return 'bg-blue-100';
+      case 'exercise': return 'bg-green-100';
+      default: return 'bg-purple-100';
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'meal': return '食事';
+      case 'weight': return '体重記録';
+      case 'exercise': return '運動';
+      default: return 'カスタム';
+    }
+  };
 
   // 設定をAPIから読み込み
   useEffect(() => {
@@ -78,6 +109,31 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
         reminder.id === id ? { ...reminder, message } : reminder
       )
     );
+  };
+
+  const handleAddReminder = () => {
+    if (!newReminderName.trim()) {
+      alert('リマインダー名を入力してください');
+      return;
+    }
+
+    const newReminder: ReminderSetting = {
+      id: Date.now().toString(),
+      name: newReminderName.trim(),
+      category: newReminderCategory,
+      enabled: true,
+      time: '08:00',
+      message: `${newReminderName}の時間です！`
+    };
+
+    setReminders(prev => [...prev, newReminder]);
+    setNewReminderName('');
+    setNewReminderCategory('custom');
+    setShowAddForm(false);
+  };
+
+  const handleDeleteReminder = (id: string) => {
+    setReminders(prev => prev.filter(reminder => reminder.id !== id));
   };
 
   const handleSave = async () => {
@@ -159,12 +215,92 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
           <div className="flex items-start space-x-3">
             <Bell className="w-5 h-5 text-blue-600 mt-1" />
             <div>
-              <h3 className="font-medium text-blue-800 mb-1">食事リマインダーについて</h3>
+              <h3 className="font-medium text-blue-800 mb-1">リマインダーについて</h3>
               <p className="text-sm text-blue-700">
-                設定した時間にLINEに通知メッセージが届きます。通知メッセージは自由にカスタマイズできます。
+                設定した時間にLINEに通知メッセージが届きます。食事・体重・運動などのカテゴリから選択するか、カスタムリマインダーを作成できます。
               </p>
             </div>
           </div>
+        </Card>
+
+        {/* 新しいリマインダー追加ボタン */}
+        <Card className="p-4">
+          {!showAddForm ? (
+            <Button
+              onClick={() => setShowAddForm(true)}
+              variant="outline"
+              className="w-full h-12 border-dashed border-2 border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600"
+            >
+              <Plus size={20} className="mr-2" />
+              新しいリマインダーを追加
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-gray-800">新しいリマインダー</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewReminderName('');
+                    setNewReminderCategory('custom');
+                  }}
+                  className="text-gray-500"
+                >
+                  キャンセル
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm font-medium">カテゴリ</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {[
+                      { value: 'meal', label: '食事', icon: Utensils, color: 'orange' },
+                      { value: 'weight', label: '体重記録', icon: Scale, color: 'blue' },
+                      { value: 'exercise', label: '運動', icon: Dumbbell, color: 'green' },
+                      { value: 'custom', label: 'カスタム', icon: Bell, color: 'purple' }
+                    ].map((category) => (
+                      <button
+                        key={category.value}
+                        onClick={() => setNewReminderCategory(category.value as any)}
+                        className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
+                          newReminderCategory === category.value
+                            ? `border-${category.color}-500 bg-${category.color}-50`
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <category.icon size={16} className={`text-${category.color}-600`} />
+                        <span className="text-sm font-medium">{category.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="new-reminder-name" className="text-sm font-medium">
+                    リマインダー名
+                  </Label>
+                  <Input
+                    id="new-reminder-name"
+                    value={newReminderName}
+                    onChange={(e) => setNewReminderName(e.target.value)}
+                    placeholder="例: 朝食、ジョギング、薬を飲む"
+                    className="mt-2"
+                  />
+                </div>
+                
+                <Button
+                  onClick={handleAddReminder}
+                  className="w-full"
+                  style={{ backgroundColor: '#4682B4' }}
+                >
+                  追加
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* リマインダー設定リスト */}
@@ -173,20 +309,35 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
             <Card key={reminder.id} className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <Utensils className="w-5 h-5 text-orange-600" />
+                  <div className={`w-10 h-10 rounded-full ${getCategoryColor(reminder.category)} flex items-center justify-center`}>
+                    {getCategoryIcon(reminder.category)}
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-800">{reminder.name}のリマインダー</h4>
+                    <div className="flex items-center space-x-2">
+                      <h4 className="font-medium text-gray-800">{reminder.name}のリマインダー</h4>
+                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                        {getCategoryLabel(reminder.category)}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-500">
                       {reminder.enabled ? `${reminder.time} に通知` : '無効'}
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={reminder.enabled}
-                  onCheckedChange={(enabled) => handleToggle(reminder.id, enabled)}
-                />
+                <div className="flex items-center space-x-3">
+                  <Switch
+                    checked={reminder.enabled}
+                    onCheckedChange={(enabled) => handleToggle(reminder.id, enabled)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteReminder(reminder.id)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    削除
+                  </Button>
+                </div>
               </div>
 
               {reminder.enabled && (
