@@ -1036,12 +1036,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
   };
 
   return (
-    <div 
-      className="h-screen bg-white flex flex-col overflow-hidden"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* 固定ヘッダー */}
       <div className="bg-white border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between p-4">
@@ -1091,12 +1086,19 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
         </div>
       </div>
 
-      {/* 固定サイズのメインコンテンツ */}
-      <div className="flex-1 overflow-hidden">
+      {/* メインコンテンツ */}
+      <div className="flex-1">
         <div 
           ref={contentRef}
-          className="h-full overflow-y-auto p-4 pb-32"
-          style={{ paddingBottom: '8rem' }}
+          className="overflow-y-auto p-4"
+          style={{ 
+            height: 'calc(100vh - 200px)',
+            paddingBottom: '120px',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           {/* アクティブタブの説明 */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
