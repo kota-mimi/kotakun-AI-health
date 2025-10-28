@@ -59,20 +59,20 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       // キャッシュチェック
       const cachedData = apiCache.get(cacheKey);
       
-      // 今日の日付でかつローカルデータで最新記録がありそうな場合のみキャッシュを無視
+      // 今日の日付の場合は常にキャッシュを無視して最新データを取得
       const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const selectedKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-      const hasLocalDataForToday = selectedKey === today && dateBasedData[selectedKey]?.weightEntries?.length > 0;
+      const isTodaySelected = selectedKey === today;
       
-      if (cachedData && !hasLocalDataForToday) {
-        console.log('🎯 体重データをキャッシュから取得');
+      if (cachedData && !isTodaySelected) {
+        console.log('🎯 体重データをキャッシュから取得（過去日付）');
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
         return;
       }
       
-      if (hasLocalDataForToday) {
-        console.log('🔄 今日の新しい記録のため体重キャッシュを更新');
+      if (isTodaySelected) {
+        console.log('🔄 今日の日付のため体重キャッシュを強制更新');
         apiCache.delete(cacheKey);
       }
       
