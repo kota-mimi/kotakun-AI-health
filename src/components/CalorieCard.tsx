@@ -99,13 +99,13 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   };
 
   return (
-    <Card className="bg-white/10 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl shadow-purple-500/20 overflow-hidden backdrop-saturate-150 bg-gradient-to-br from-white/20 via-white/5 to-transparent">
+    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
       <Button
         onClick={() => setIsCollapsed(!isCollapsed)}
         variant="ghost"
         className="w-full justify-start p-0 h-auto hover:bg-transparent"
       >
-        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-white/10 hover:bg-white/5 transition-colors duration-200">
+        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
           <div className="flex items-center space-x-2">
             <h3 className="font-semibold text-slate-900">カロリー</h3>
           </div>
@@ -121,13 +121,13 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
         <div className="space-y-0">
           {/* セグメントコントロール - iOS風 */}
           <div className="p-4 pb-0">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-1 flex border border-white/10">
+            <div className="bg-slate-100/80 rounded-xl p-1 flex">
               <button
                 onClick={() => setCurrentView('intake')}
                 className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
                   currentView === 'intake'
-                    ? 'bg-white/20 backdrop-blur-md text-slate-900 shadow-lg border border-white/20'
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/5'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
                 <span>摂取カロリー</span>
@@ -136,8 +136,8 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                 onClick={() => setCurrentView('burn')}
                 className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
                   currentView === 'burn'
-                    ? 'bg-white/20 backdrop-blur-md text-slate-900 shadow-lg border border-white/20'
-                    : 'text-slate-600 hover:text-slate-800 hover:bg-white/5'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
                 <span>消費カロリー</span>
