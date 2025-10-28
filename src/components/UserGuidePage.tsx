@@ -138,7 +138,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 1. 友だち追加
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 LINEで「こたくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
               </p>
             </div>
@@ -150,7 +150,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 2. 基本情報を入力
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 年齢、身長、体重、目標体重、活動量などの基本情報を入力します。この情報をもとに、あなた専用の目安カロリーとPFCバランスが計算されます
               </p>
             </div>
@@ -162,7 +162,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 3. カウンセリング結果が届く
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 LINEにあなたの目標に向けての1日の目安カロリーとPFCバランス（タンパク質・脂質・炭水化物）が表示されます。これがあなたの健康管理の基準になります
               </p>
             </div>
@@ -174,7 +174,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 4. あなた専用のページへ
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 カウンセリング結果をタップすると、あなた専用のページに移動します。ここでは目安カロリーやPFCバランスがグラフで表示され、毎日の食事・運動・体重を記録できます。記録したデータは自動で集計され、目標達成をサポートします
               </p>
             </div>
@@ -203,7 +203,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 LINEでこたくんと会話できる
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 フィットネスなどに詳しいこたくんにいろいろなことを相談できます
               </p>
             </div>
@@ -216,7 +216,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 こんなことが聞けます
               </h2>
               
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>唐揚げのカロリー教えて</span>
@@ -244,7 +244,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 他にもたくさん聞けます
               </h2>
               
-              <div className="space-y-3 text-gray-700 mb-8">
+              <div className="space-y-3 text-gray-700 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>運動のやり方やメニュー</span>
@@ -275,7 +275,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 使い方
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 LINEで普通にメッセージを送るだけ
               </p>
             </div>
@@ -324,7 +324,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>通常モードに戻る</span>
                 </div>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg mb-8">
+              <div className="bg-yellow-50 p-4 rounded-lg mb-12">
                 <p className="font-semibold text-gray-800 mb-2">注意</p>
                 <p className="text-gray-700 text-sm">
                   記録モード中は記録しかできません。こたくんと会話したい場合は「通常モードに戻る」を押して戻ってください
@@ -356,7 +356,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>計算された結果が表示される</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-8">
+              <p className="text-gray-500 text-sm mb-12">
                 ※写真は1枚ずつ記録できます
               </p>
             </div>
@@ -386,7 +386,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>朝にヨーグルト 昼にカツ丼と味噌汁 夜に餃子5個とご飯 おやつにクッキー2枚！</span>
                 </div>
               </div>
-              <div className="bg-blue-50 p-4 rounded-lg mb-8">
+              <div className="bg-blue-50 p-4 rounded-lg mb-12">
                 <p className="font-semibold text-gray-800 mb-2">記録のコツ</p>
                 <p className="text-gray-700 text-sm">
                   料理の中身も記録したい場合は、例：お鍋（豚肉 白菜 えのき）のように記録すると、うまく分析されます
@@ -404,7 +404,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-4">
                 記録したい食事のフレームをタップすると、4つの記録方法が選べます
               </p>
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>カメラで記録（LINEと同じ）</span>
@@ -445,7 +445,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>78（体重の文字があれば数字だけでもOK）</span>
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 アプリの体重フレームからも記録・編集できます
               </p>
             </div>
@@ -483,7 +483,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>野球したー！</span>
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 アプリの運動フレームからも記録・編集できます
               </p>
             </div>
@@ -512,7 +512,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>目安カロリーと比較できる</span>
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 LINEのリッチメニューのマイページからも確認できます
               </p>
             </div>
@@ -541,7 +541,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 フィードバックとは
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面・運動面についての良かった点や改善点などの素晴らしいフィードバックが返ってきます
               </p>
             </div>
@@ -553,7 +553,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 使い方
               </h2>
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">1.</span>
                   <span>リッチメニューの「フィードバック」ボタンを押す</span>
@@ -580,7 +580,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 フィードバックの内容
               </h2>
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>食事面の良かった点・改善点</span>
@@ -603,7 +603,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 アプリでの確認
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 返ってきたフィードバックをタップすると、アプリに飛んでフィードバックが確認できます。アプリにもフィードバックが反映されています
               </p>
             </div>
@@ -645,7 +645,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-4">
                 ホームにあるフレームをタップすると記録できます
               </p>
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>体重フレーム → 体重を記録</span>
@@ -689,7 +689,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>フィードバック → その日のフィードバックが表示される</span>
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed mb-8">
+              <p className="text-gray-700 leading-relaxed mb-12">
                 カロリーのグラフには、記録されたカロリーやPFCがリアルタイムで反映され、目安カロリーと比較できます
               </p>
             </div>
@@ -704,7 +704,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-4">
                 アプリから記録の編集や追加ができます
               </p>
-              <div className="space-y-3 text-gray-800 mb-8">
+              <div className="space-y-3 text-gray-800 mb-12">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>記録された食事をタップ → カロリー・PFC・画像を編集</span>
@@ -730,7 +730,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-4">
                 マイページからプロフィールを編集できます
               </p>
-              <p className="text-gray-800 mb-8">
+              <p className="text-gray-800 mb-12">
                 プロフィールを編集すると、自動でカロリーやPFCが再分析されて、ホームのグラフなどに反映されます
               </p>
             </div>
@@ -755,7 +755,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span>通知の時間を自由に設定できる</span>
                 </div>
               </div>
-              <p className="text-gray-700 mb-8">
+              <p className="text-gray-700 mb-12">
                 例：「朝食の時間だよ！」を朝7時に設定
               </p>
             </div>
@@ -789,7 +789,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 記録モードから通常モードに戻れません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. クイックリプライに表示される「通常モードに戻る」ボタンを押してください。記録モード中は、このボタンを押さない限り記録専用モードのままです。
                 </p>
               </div>
@@ -798,7 +798,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. こたくんが反応しません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 記録モード中ではありませんか？記録モード中は記録のみ受け付けます。通常モードに戻ってから、もう一度メッセージを送ってください。
                 </p>
               </div>
@@ -807,7 +807,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. LINEとアプリのどちらから記録すればいいですか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. どちらからでも記録できます。LINEは外出先での手軽な記録に、アプリは詳細な編集や確認に便利です。お好きな方をご利用ください。
                 </p>
               </div>
@@ -825,7 +825,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-green-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 写真で記録したカロリーが正確ではありません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. AIによる分析は目安です。より正確に記録したい場合は、アプリから手動で編集してください。カロリーやPFCを自由に変更できます。
                 </p>
               </div>
@@ -834,7 +834,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-green-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 写真を複数枚送りたいのですが</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 写真での記録は1回につき1枚です。複数の料理を記録したい場合は、1枚ずつ分けて送るか、テキストでまとめて記録してください。
                 </p>
               </div>
@@ -843,7 +843,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-green-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 料理の中身まで細かく記録したいです</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. テキスト記録で「お鍋（豚肉 白菜 えのき）」のように、カッコ内に具材を入れると、より正確に分析されます。
                 </p>
               </div>
@@ -852,7 +852,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-green-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 朝・昼・夜をまとめて記録できますか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. できます。「朝にヨーグルト 昼にカツ丼 夜に餃子5個」のように、1つのメッセージにまとめて送ってください。
                 </p>
               </div>
@@ -870,7 +870,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-purple-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 目安カロリーを変更したいです</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. マイページから「プロフィール編集」を開き、目標設定や体重などを変更してください。自動で再計算されます。
                 </p>
               </div>
@@ -879,7 +879,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-purple-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. カロリーの計算が合いません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 記録された食事の内容を確認してください。AIの分析が不正確な場合は、アプリから手動で修正できます。
                 </p>
               </div>
@@ -888,7 +888,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-purple-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. PFCバランスとは何ですか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. タンパク質（Protein）、脂質（Fat）、炭水化物（Carbohydrate）のバランスです。健康的な体作りには、このバランスが重要です。
                 </p>
               </div>
@@ -906,7 +906,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-orange-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 体重が記録されません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 「体重」という文字と数字を含めて送ってください。例：「体重 78kg」または「78」（記録モード中）
                 </p>
               </div>
@@ -915,7 +915,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-orange-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 運動の記録方法がわかりません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 自然な言葉で記録できます。「ランニング 3km」「腹筋100回」「ヨガ20分」など、自由に記録してください。
                 </p>
               </div>
@@ -924,7 +924,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-orange-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 目標体重を変更したいです</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. マイページの「プロフィール編集」から目標体重を変更できます。
                 </p>
               </div>
@@ -942,7 +942,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-pink-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. フィードバックが返ってきません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. その日の記録が少ない場合、フィードバックが生成されないことがあります。食事や運動を記録してから、もう一度試してください。
                 </p>
               </div>
@@ -951,7 +951,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-pink-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. フィードバックはいつでも見返せますか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. はい。アプリのホーム画面にある「フィードバック」フレームから、過去のフィードバックも確認できます。
                 </p>
               </div>
@@ -969,7 +969,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-gray-100 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 過去の記録を編集・削除できますか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. できます。アプリのホーム画面から該当の記録をタップして、編集または削除してください。
                 </p>
               </div>
@@ -978,7 +978,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-gray-100 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. データが消えてしまいました</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. アプリとLINEのデータは同期されています。アプリを再起動するか、LINEから再度アクセスしてみてください。それでも解決しない場合は、サポートにお問い合わせください。
                 </p>
               </div>
@@ -987,7 +987,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-gray-100 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. リマインダーの通知が来ません</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. スマートフォンの通知設定を確認してください。また、アプリのリマインダー設定が正しく保存されているかご確認ください。
                 </p>
               </div>
@@ -996,7 +996,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-gray-100 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 退会したいです</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. LINEのブロックまたは友達削除で、サービスの利用を停止できます。データを完全に削除したい場合は、サポートにお問い合わせください。
                 </p>
               </div>
@@ -1014,7 +1014,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-yellow-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 利用料金はかかりますか？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. 基本機能は無料でご利用いただけます。
                 </p>
               </div>
@@ -1023,7 +1023,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="bg-yellow-50 p-4 rounded-lg mb-3">
                   <h3 className="font-bold text-gray-800">Q. 問題が解決しない場合は？</h3>
                 </div>
-                <p className="text-gray-700 pl-3 mb-8">
+                <p className="text-gray-700 pl-3 mb-12">
                   A. LINEのメニューから「お問い合わせ」を選択するか、公式サイトのサポートページからお問い合わせください。
                 </p>
               </div>
