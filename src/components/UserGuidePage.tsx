@@ -31,23 +31,23 @@ interface UserGuidePageProps {
 }
 
 export function UserGuidePage({ onBack }: UserGuidePageProps) {
-  // CSS for hiding scrollbar
-  const scrollbarHideStyle = `
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    .scrollbar-hide {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-  `;
+  // CSS for hiding scrollbar - TEMPORARILY DISABLED FOR TESTING
+  // const scrollbarHideStyle = `
+  //   .scrollbar-hide::-webkit-scrollbar {
+  //     display: none;
+  //   }
+  //   .scrollbar-hide {
+  //     -ms-overflow-style: none;
+  //     scrollbar-width: none;
+  //   }
+  // `;
   
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = scrollbarHideStyle;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
+  // useEffect(() => {
+  //   const style = document.createElement('style');
+  //   style.textContent = scrollbarHideStyle;
+  //   document.head.appendChild(style);
+  //   return () => document.head.removeChild(style);
+  // }, []);
   
   const [activeTab, setActiveTab] = useState('getting-started');
   const contentRef = useRef<HTMLDivElement>(null);
