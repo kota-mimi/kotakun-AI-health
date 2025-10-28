@@ -736,35 +736,21 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
       contents.push({
         type: 'box',
         layout: 'vertical',
-        margin: 'sm',
-        paddingAll: '12px',
+        margin: 'xs',
+        paddingAll: '8px',
         borderWidth: '1px',
         borderColor: '#e0e0e0',
         cornerRadius: '8px',
         spacing: 'xs',
         contents: [
           {
-            type: 'box',
-            layout: 'horizontal',
-            contents: [
-              {
-                type: 'text',
-                text: meal.displayName || meal.name,
-                size: 'md',
-                weight: 'bold',
-                color: '#333333',
-                flex: 1
-              },
-              {
-                type: 'text',
-                text: `${meal.calories || 0}kcal`,
-                size: 'md',
-                color: '#4a90e2',
-                flex: 0
-              }
-            ]
+            type: 'text',
+            text: meal.displayName || meal.name,
+            size: 'md',
+            weight: 'bold',
+            color: '#333333',
+            wrap: true
           },
-          // PFC表示（既存の複数食事スタイルに合わせてテキストのみ）
           {
             type: 'box',
             layout: 'horizontal',
@@ -772,29 +758,39 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
             margin: 'xs',
             contents: [
               {
-                type: 'text',
-                text: ' ',
-                flex: 1
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'sm',
+                flex: 1,
+                contents: [
+                  {
+                    type: 'text',
+                    text: `P: ${meal.protein || 0}g`,
+                    size: 'xs',
+                    color: '#cc0000',
+                    flex: 0
+                  },
+                  {
+                    type: 'text',
+                    text: `F: ${meal.fat || 0}g`,
+                    size: 'xs',
+                    color: '#ff8800',
+                    flex: 0
+                  },
+                  {
+                    type: 'text',
+                    text: `C: ${meal.carbs || 0}g`,
+                    size: 'xs',
+                    color: '#00aa00',
+                    flex: 0
+                  }
+                ]
               },
               {
                 type: 'text',
-                text: `P: ${meal.protein || 0}g`,
-                size: 'xs',
-                color: '#cc0000',
-                flex: 0
-              },
-              {
-                type: 'text',
-                text: `F: ${meal.fat || 0}g`,
-                size: 'xs',
-                color: '#ff8800',
-                flex: 0
-              },
-              {
-                type: 'text',
-                text: `C: ${meal.carbs || 0}g`,
-                size: 'xs',
-                color: '#00aa00',
+                text: `${meal.calories || 0}kcal`,
+                size: 'md',
+                color: '#4a90e2',
                 flex: 0
               }
             ]
