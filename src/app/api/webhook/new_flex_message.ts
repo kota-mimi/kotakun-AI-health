@@ -800,26 +800,43 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     });
   });
 
-  // 合計セクション（コンパクト化）
+  // 合計セクション（複数食事アイテムと同じ形式に統一）
   contents.push({
     type: 'separator',
-    margin: 'sm'
+    margin: 'md',
+    color: '#e0e0e0'
   });
   
-  contents.push({
-    type: 'text',
-    text: '合計',
-    size: 'md',
-    weight: 'bold',
-    color: '#333333',
-    margin: 'sm'
-  });
-
-  // 合計PFC表示（コンパクト化）
+  // 合計ラベル + カロリー（横並び）
   contents.push({
     type: 'box',
     layout: 'horizontal',
-    spacing: 'sm',
+    margin: 'md',
+    contents: [
+      {
+        type: 'text',
+        text: '合計',
+        size: 'lg',
+        weight: 'bold',
+        color: '#333333',
+        flex: 1
+      },
+      {
+        type: 'text',
+        text: `${Math.round(totalCalories)}kcal`,
+        size: 'xl',
+        weight: 'bold',
+        color: '#4a90e2',
+        flex: 0
+      }
+    ]
+  });
+
+  // 合計PFC表示（下の行）
+  contents.push({
+    type: 'box',
+    layout: 'horizontal',
+    spacing: 'md',
     margin: 'sm',
     contents: [
       {
@@ -877,17 +894,6 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
         ]
       }
     ]
-  });
-
-  // カロリー表示（コンパクト化）
-  contents.push({
-    type: 'text',
-    text: `${Math.round(totalCalories)}kcal`,
-    size: 'lg',
-    weight: 'bold',
-    color: '#4a90e2',
-    align: 'end',
-    margin: 'sm'
   });
 
   return {
