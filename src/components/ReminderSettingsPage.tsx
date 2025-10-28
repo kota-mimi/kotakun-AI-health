@@ -267,11 +267,19 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
                         onClick={() => setNewReminderCategory(category.value as any)}
                         className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
                           newReminderCategory === category.value
-                            ? `border-${category.color}-500 bg-${category.color}-50`
+                            ? category.value === 'meal' ? 'border-orange-500 bg-orange-50'
+                              : category.value === 'weight' ? 'border-blue-500 bg-blue-50'
+                              : category.value === 'exercise' ? 'border-green-500 bg-green-50'
+                              : 'border-purple-500 bg-purple-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <category.icon size={16} className={`text-${category.color}-600`} />
+                        <category.icon size={16} className={
+                          category.value === 'meal' ? 'text-orange-600'
+                          : category.value === 'weight' ? 'text-blue-600'
+                          : category.value === 'exercise' ? 'text-green-600'
+                          : 'text-purple-600'
+                        } />
                         <span className="text-sm font-medium">{category.label}</span>
                       </button>
                     ))}
