@@ -178,41 +178,26 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // 最優先: realWeightDataから該当日付のデータを確認
+    // 優先順位1: APIから取得した実データ（realWeightData）- 最も信頼できる
     const realDataForDate = realWeightData.find(item => item.date === dateKey);
     
     if (realDataForDate) {
-      // 前日のデータを取得（realWeightDataまたはlocalDataから）
+      // 前日のデータを取得（APIデータのみから）
       const previousDate = new Date(date);
       previousDate.setDate(previousDate.getDate() - 1);
       const previousKey = getDateKey(previousDate);
-      
       const previousRealData = realWeightData.find(item => item.date === previousKey);
-      const previousWeight = previousRealData?.weight || getPreviousWeight(previousDate);
+      const previousWeight = previousRealData?.weight || 0;
+      
+      // 健康維持モード判定で目標体重を決定
+      const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
+      const targetWeight = weightSettingsStorage.value.targetWeight || 
+                          (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 0;
       
       return {
         current: realDataForDate.weight,
         previous: previousWeight,
-        target: weightSettingsStorage.value.targetWeight || 68.0
-      };
-    }
-    
-    // 2番目の優先順位: ローカルデータを確認
-    const dayData = dateBasedData[dateKey];
-    
-    if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
-      // その日の最新の記録を使用
-      const latestEntry = dayData.weightEntries[dayData.weightEntries.length - 1];
-      
-      // 前日のデータを取得
-      const previousDate = new Date(date);
-      previousDate.setDate(previousDate.getDate() - 1);
-      const previousWeight = getPreviousWeight(previousDate);
-      
-      return {
-        current: latestEntry.weight,
-        previous: previousWeight,
-        target: weightSettingsStorage.value.targetWeight || 68.0
+        target: targetWeight
       };
     }
     
@@ -310,31 +295,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         throw new Error('記録の保存に失敗しました');
       }
 
-      // ローカルデータも更新
-      const newEntry: WeightEntry = {
-        id: generateId(),
-        date: dateStr,
-        weight: data.weight || 0, // 体重が未入力の場合は0
-        note: data.note,
-        photo: data.photo,
-        time: new Date().toTimeString().slice(0, 5),
-        timestamp: Date.now()
-      };
-
-      const currentData = getCurrentDateData();
-      const existingEntries = currentData.weightEntries || [];
-      
-      // 体重データの更新（体重が記録された場合のみ更新）
-      const weightDataUpdate = data.weight ? {
-        current: data.weight,
-        previous: getPreviousWeight(selectedDate),
-        target: weightSettingsStorage.value.targetWeight
-      } : getCurrentDateData().weightData;
-
-      updateDateData({
-        weightEntries: [...existingEntries, newEntry],
-        weightData: weightDataUpdate
-      });
+      // ローカル保存はせず、APIが真実の源となる
 
       // realWeightDataも即座に更新（体重が記録された場合）
       if (data.weight) {
@@ -391,13 +352,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const updatedSettings = { ...weightSettingsStorage.value, ...newSettings };
     weightSettingsStorage.setValue(updatedSettings);
     
-    // 全日付のtargetWeightを更新
-    Object.keys(dateBasedData).forEach(dateKey => {
-      const dayData = dateBasedData[dateKey];
-      if (dayData.weightData) {
-        dayData.weightData.target = updatedSettings.targetWeight;
-      }
-    });
+    // 過去の記録は変更せず、設定のみ更新（表示時に動的計算）
     
     // キャッシュをクリアして最新データを再取得
     if (liffUser?.userId) {
