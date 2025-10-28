@@ -161,7 +161,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
     borderWidth: '1px',
     borderColor: '#e0e0e0',
     cornerRadius: '8px',
-    spacing: 'xxs',
+    spacing: 'xs',
     contents: [
       {
         type: 'text',
@@ -175,7 +175,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
         type: 'box',
         layout: 'horizontal',
         spacing: 'sm',
-        margin: 'xxs',
+        margin: 'xs',
         contents: [
           {
             type: 'box',
