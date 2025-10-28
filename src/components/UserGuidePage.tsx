@@ -133,48 +133,48 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* 1. 友だち追加 */}
-          <div className="mb-12">
+          <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 1. 友だち追加
               </h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed mb-8">
                 LINEで「こたくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
               </p>
             </div>
           </div>
 
           {/* 2. 基本情報を入力 */}
-          <div className="mb-12">
+          <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 2. 基本情報を入力
               </h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed mb-8">
                 年齢、身長、体重、目標体重、活動量などの基本情報を入力します。この情報をもとに、あなた専用の目安カロリーとPFCバランスが計算されます
               </p>
             </div>
           </div>
 
           {/* 3. カウンセリング結果が届く */}
-          <div className="mb-12">
+          <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 3. カウンセリング結果が届く
               </h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed mb-8">
                 LINEにあなたの目標に向けての1日の目安カロリーとPFCバランス（タンパク質・脂質・炭水化物）が表示されます。これがあなたの健康管理の基準になります
               </p>
             </div>
           </div>
 
           {/* 4. あなた専用のページへ */}
-          <div className="mb-12">
+          <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 4. あなた専用のページへ
               </h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed mb-8">
                 カウンセリング結果をタップすると、あなた専用のページに移動します。ここでは目安カロリーやPFCバランスがグラフで表示され、毎日の食事・運動・体重を記録できます。記録したデータは自動で集計され、目標達成をサポートします
               </p>
             </div>
@@ -641,7 +641,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
       <div className="flex-1 overflow-hidden">
         <div 
           ref={contentRef}
-          className="h-full overflow-y-auto p-4"
+          className="h-full overflow-y-auto p-4 pb-20"
         >
           {/* アクティブタブの説明 */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
@@ -664,33 +664,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             )}
           </div>
 
-          {/* お問い合わせボタン */}
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <MessageCircle size={20} className="text-blue-600" />
-                <h4 className="font-semibold text-gray-800">困ったときは</h4>
-              </div>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start border-blue-300 text-blue-700 hover:bg-blue-50" 
-                onClick={() => {
-                  // メール送信またはLINEで問い合わせ
-                  const subject = 'kotakun使い方に関するお問い合わせ';
-                  const body = 'お問い合わせ内容をご記入ください。\n\n【使用環境】\n- 端末：\n- OS：\n- 問題が発生した機能：\n\n【問題の詳細】\n';
-                  const mailtoLink = `mailto:support@kotakun-ai.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                  window.open(mailtoLink, '_blank');
-                }}
-              >
-                <MessageCircle size={16} className="mr-2" />
-                お問い合わせフォーム
-              </Button>
-              <div className="text-xs text-gray-500 px-2">
-                <p>• LINE直接メッセージ：「ヘルプ」「困った」と送信</p>
-                <p>• 回答時間：平日24時間以内</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
