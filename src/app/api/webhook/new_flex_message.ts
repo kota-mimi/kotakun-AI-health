@@ -81,13 +81,13 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 layout: 'vertical',
                 backgroundColor: '#ffe6e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `P: ${analysis.protein || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#cc0000',
                     align: 'center'
@@ -99,13 +99,13 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 layout: 'vertical',
                 backgroundColor: '#fff2e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `F: ${analysis.fat || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#ff8800',
                     align: 'center'
@@ -117,13 +117,13 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 layout: 'vertical',
                 backgroundColor: '#e6f7e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `C: ${analysis.carbs || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#00aa00',
                     align: 'center'
@@ -262,7 +262,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
           {
             type: 'text',
             text: currentTime,
-            size: 'sm',
+            size: 'xs',
             color: '#999999',
             align: 'end',
             margin: 'md'
@@ -311,13 +311,13 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 layout: 'vertical',
                 backgroundColor: '#ffe6e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `P: ${analysis.totalProtein || analysis.protein || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#cc0000',
                     align: 'center'
@@ -329,13 +329,13 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 layout: 'vertical',
                 backgroundColor: '#fff2e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `F: ${analysis.totalFat || analysis.fat || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#ff8800',
                     align: 'center'
@@ -347,13 +347,13 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 layout: 'vertical',
                 backgroundColor: '#e6f7e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `C: ${analysis.totalCarbs || analysis.carbs || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#00aa00',
                     align: 'center'
@@ -423,13 +423,13 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
                 layout: 'vertical',
                 backgroundColor: '#ffe6e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `P: ${analysis.protein || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#cc0000',
                     align: 'center'
@@ -441,13 +441,13 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
                 layout: 'vertical',
                 backgroundColor: '#fff2e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `F: ${analysis.fat || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#ff8800',
                     align: 'center'
@@ -459,13 +459,13 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
                 layout: 'vertical',
                 backgroundColor: '#e6f7e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `C: ${analysis.carbs || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#00aa00',
                     align: 'center'
@@ -622,13 +622,13 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 layout: 'vertical',
                 backgroundColor: '#ffe6e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `P: ${analysis.totalProtein || analysis.protein || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#cc0000',
                     align: 'center'
@@ -640,13 +640,13 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 layout: 'vertical',
                 backgroundColor: '#fff2e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `F: ${analysis.totalFat || analysis.fat || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#ff8800',
                     align: 'center'
@@ -658,13 +658,13 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 layout: 'vertical',
                 backgroundColor: '#e6f7e6',
                 cornerRadius: '8px',
-                paddingAll: '8px',
+                paddingAll: '6px',
                 flex: 1,
                 contents: [
                   {
                     type: 'text',
                     text: `C: ${analysis.totalCarbs || analysis.carbs || 0}g`,
-                    size: 'sm',
+                    size: 'xs',
                     weight: 'bold',
                     color: '#00aa00',
                     align: 'center'
@@ -737,7 +737,7 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
         type: 'box',
         layout: 'vertical',
         margin: 'xs',
-        paddingAll: '8px',
+        paddingAll: '6px',
         borderWidth: '1px',
         borderColor: '#e0e0e0',
         cornerRadius: '8px',
@@ -800,40 +800,40 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     });
   });
 
-  // 合計セクション
+  // 合計セクション（コンパクト化）
   contents.push({
     type: 'separator',
-    margin: 'md'
+    margin: 'sm'
   });
   
   contents.push({
     type: 'text',
     text: '合計',
-    size: 'lg',
+    size: 'md',
     weight: 'bold',
     color: '#333333',
-    margin: 'md'
+    margin: 'sm'
   });
 
-  // 合計PFC表示（既存スタイルに合わせて横一列のボックス）
+  // 合計PFC表示（コンパクト化）
   contents.push({
     type: 'box',
     layout: 'horizontal',
-    spacing: 'md',
-    margin: 'md',
+    spacing: 'sm',
+    margin: 'sm',
     contents: [
       {
         type: 'box',
         layout: 'vertical',
         backgroundColor: '#ffe6e6',
         cornerRadius: '8px',
-        paddingAll: '8px',
+        paddingAll: '6px',
         flex: 1,
         contents: [
           {
             type: 'text',
             text: `P: ${Math.round(totalProtein)}g`,
-            size: 'sm',
+            size: 'xs',
             weight: 'bold',
             color: '#cc0000',
             align: 'center'
@@ -845,13 +845,13 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
         layout: 'vertical',
         backgroundColor: '#fff2e6',
         cornerRadius: '8px',
-        paddingAll: '8px',
+        paddingAll: '6px',
         flex: 1,
         contents: [
           {
             type: 'text',
             text: `F: ${Math.round(totalFat)}g`,
-            size: 'sm',
+            size: 'xs',
             weight: 'bold',
             color: '#ff8800',
             align: 'center'
@@ -863,13 +863,13 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
         layout: 'vertical',
         backgroundColor: '#e6f7e6',
         cornerRadius: '8px',
-        paddingAll: '8px',
+        paddingAll: '6px',
         flex: 1,
         contents: [
           {
             type: 'text',
             text: `C: ${Math.round(totalCarbs)}g`,
-            size: 'sm',
+            size: 'xs',
             weight: 'bold',
             color: '#00aa00',
             align: 'center'
@@ -879,15 +879,15 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
     ]
   });
 
-  // カロリー表示（既存スタイルに合わせて右端配置）
+  // カロリー表示（コンパクト化）
   contents.push({
     type: 'text',
     text: `${Math.round(totalCalories)}kcal`,
-    size: 'xl',
+    size: 'lg',
     weight: 'bold',
     color: '#4a90e2',
     align: 'end',
-    margin: 'md'
+    margin: 'sm'
   });
 
   return {
@@ -1310,14 +1310,14 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
           {
             type: 'text',
             text: '時間',
-            size: 'sm',
+            size: 'xs',
             color: '#666666',
             flex: 1
           },
           {
             type: 'text',
             text: `${exercise.duration}分`,
-            size: 'sm',
+            size: 'xs',
             color: '#333333',
             flex: 0
           }
@@ -1336,14 +1336,14 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
             {
               type: 'text',
               text: `セット${index + 1}`,
-              size: 'sm',
+              size: 'xs',
               color: '#666666',
               flex: 1
             },
             {
               type: 'text',
               text: `${weightSet.weight && weightSet.weight > 0 ? `${weightSet.weight}kg × ` : ''}${weightSet.reps}回${weightSet.sets && weightSet.sets > 1 ? ` × ${weightSet.sets}セット` : ''}`,
-              size: 'sm',
+              size: 'xs',
               color: '#333333',
               flex: 0
             }
@@ -1360,14 +1360,14 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
           {
             type: 'text',
             text: 'セット',
-            size: 'sm',
+            size: 'xs',
             color: '#666666',
             flex: 1
           },
           {
             type: 'text',
             text: `${exercise.sets}セット × ${exercise.reps}回`,
-            size: 'sm',
+            size: 'xs',
             color: '#333333',
             flex: 0
           }
@@ -1385,14 +1385,14 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
           {
             type: 'text',
             text: '重量',
-            size: 'sm',
+            size: 'xs',
             color: '#666666',
             flex: 1
           },
           {
             type: 'text',
             text: `${exercise.weight}kg`,
-            size: 'sm',
+            size: 'xs',
             color: '#333333',
             flex: 0
           }
