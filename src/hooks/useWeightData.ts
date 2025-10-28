@@ -56,6 +56,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       // キャッシュキー生成
       const cacheKey = createCacheKey('weight', lineUserId, 'month');
       
+      // 選択日が今日の場合は強制的にキャッシュをクリア（最新データを保証）
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const selectedKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      if (selectedKey === today) {
+        apiCache.delete(cacheKey);
+        console.log('🔄 今日の日付のため体重キャッシュを強制更新');
+      }
+      
       // キャッシュチェック
       const cachedData = apiCache.get(cacheKey);
       if (cachedData) {
@@ -327,6 +335,11 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
             new Date(a.date).getTime() - new Date(b.date).getTime()
           );
         });
+        
+        // アプリから記録した場合はキャッシュも強制更新
+        const cacheKey = createCacheKey('weight', lineUserId, 'month');
+        apiCache.delete(cacheKey);
+        console.log('🔄 アプリ記録後に体重キャッシュを強制更新');
       }
 
       console.log('記録が正常に保存されました');
