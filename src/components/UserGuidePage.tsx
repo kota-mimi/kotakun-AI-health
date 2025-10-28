@@ -183,70 +183,107 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
         </div>
       </div>
     ),
-    'ai-chat': `
-## 🤖 こたくんと会話
+    'ai-chat': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              こたくんとの会話
+            </h1>
+            <p className="text-gray-600">
+              フィットネスなどに詳しいこたくんがあなたの悩みをサポート
+            </p>
+          </div>
 
-### 📱 リッチメニューの使い方
-**画面下部に常時表示される6つのボタン**
+          {/* AIについて */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                LINEでこたくんと会話できる
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                フィットネスなどに詳しいこたくんにいろいろなことを相談できます
+              </p>
+            </div>
+          </div>
 
-🍽️ **食事記録**　→　写真やテキストで食事を記録  
-🏃 **運動記録**　→　運動内容と時間を入力  
-⚖️ **体重記録**　→　体重・体脂肪率を記録  
-🤖 **AIアドバイス**　→　健康アドバイスを受け取り  
-📊 **データ確認**　→　Webアプリでグラフ確認  
-⚙️ **設定変更**　→　目標値や個人情報の変更  
+          {/* 相談例 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                こんなことが聞けます
+              </h2>
+              
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>唐揚げのカロリー教えて</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>お腹の脂肪を減らしたいけどどうしたらいい？</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>つい食べ過ぎてしまう</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>痩せる料理教えて！</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-### 🍽️ 食事記録の方法
+          {/* その他 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                他にもたくさん聞けます
+              </h2>
+              
+              <div className="space-y-3 text-gray-700 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>運動のやり方やメニュー</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>食材の栄養素や効果</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>健康的な生活習慣のアドバイス</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>モチベーションの保ち方</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>体調管理のコツ</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-#### 📸 写真で記録（推奨・最も正確）
-**🔥 たった3ステップで完了！**
+          {/* 使い方 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                使い方
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                LINEで普通にメッセージを送るだけ
+              </p>
+            </div>
+          </div>
 
-1. 📸 **撮影**：食事全体が写るように真上から撮影
-2. 📤 **送信**：LINEトークに写真を送信
-3. ⏳ **待機**：約10-30秒でAI分析結果が返信
-
-**✨ AI分析の内容：**
-- 🧮 **正確なカロリー計算**
-- 📊 **PFC値分析**（タンパク質・脂質・炭水化物）
-- 🥗 **食材の自動識別**
-- 💡 **栄養バランス評価**
-- 🎯 **改善アドバイス**
-
-#### ✏️ テキストで記録（外食時に便利）
-**記録例：**
-- 「ランチ：ハンバーガーとポテト」
-- 「朝食：ご飯、味噌汁、焼き魚、サラダ」
-- 「間食：チョコレート3個」
-
-**🤖 こたくんが理解する表現：**
-- 食事時間：朝食、昼食、夕食、間食、おやつ
-- 分量：大盛り、少なめ、○個、○枚、○杯
-- 調理法：焼き、揚げ、蒸し、生
-
-### 🎯 AIアドバイスの活用
-
-#### 📬 アドバイスが届くタイミング
-- **即座**：食事記録直後（カロリー・栄養分析）
-- **1日の終わり**：全記録を総合評価
-- **週1回**：週間データの傾向分析
-- **目標達成時**：褒め・励ましメッセージ
-
-#### 💬 こんなアドバイスが届きます
-- 「タンパク質がもう少し欲しいです！卵や魚を追加しましょう」
-- 「今日はカロリー収支がバッチリ！この調子です」
-- 「野菜不足気味です。サラダを1品追加してみませんか？」
-- 「水分補給を忘れずに！あと500ml飲みましょう」
-
-### 💬 日常会話も大歓迎！
-**気軽に話しかけてください：**
-- 「おはよう」「お疲れ様」
-- 「今日の調子はどう？」
-- 「ダイエットのコツ教えて」
-- 「筋トレメニュー考えて」
-- 「疲れた」「体調悪い」
-
-**🤖 こたくんは健康の専門家！何でも相談OK**
-    `,
+        </div>
+      </div>
+    ),
     'recording': `
 ## 📝 記録方法
 
