@@ -86,6 +86,18 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
           setRealWeightData(weightData);
+          
+          // APIから取得したデータと重複するローカルデータを削除
+          if (hasLocalDataForToday && weightData.length > 0) {
+            const todayApiData = weightData.find(item => item.date === selectedKey);
+            if (todayApiData) {
+              // 今日のローカルエントリを削除（APIデータがあるため）
+              updateDateData({
+                weightEntries: []
+              });
+              console.log('🔄 APIデータと重複するローカル体重記録を削除');
+            }
+          }
         }
       } catch (error) {
         console.error('体重データ取得エラー:', error);
