@@ -264,7 +264,10 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
                     ].map((category) => (
                       <button
                         key={category.value}
-                        onClick={() => setNewReminderCategory(category.value as 'meal' | 'weight' | 'exercise' | 'custom')}
+                        onClick={() => {
+                          console.log('Button clicked:', category.value);
+                          setNewReminderCategory(category.value as 'meal' | 'weight' | 'exercise' | 'custom');
+                        }}
                         className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
                           newReminderCategory === category.value
                             ? category.value === 'meal' ? 'border-orange-500 bg-orange-50'
