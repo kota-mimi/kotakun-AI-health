@@ -118,106 +118,71 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
   }, [activeTab, tabs]);
 
   const guideContent = {
-    'getting-started': `
-## 🎉 kotakunへようこそ！
+    'getting-started': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              こたくんの使い方
+            </h1>
+            <p className="text-gray-600">
+              LINEで健康管理を始めよう
+            </p>
+          </div>
 
-### ✨ LINEで始める新感覚AI健康管理
-kotakunは、LINEで簡単に記録できるAI健康管理アプリです。  
-**たった3分の設定で、あなた専用の健康パートナーが完成！**
+          {/* 1. 友だち追加 */}
+          <div className="mb-12">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                1. 友だち追加
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                LINEで「こたくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
+              </p>
+            </div>
+          </div>
 
----
+          {/* 2. 基本情報を入力 */}
+          <div className="mb-12">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                2. 基本情報を入力
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                年齢、身長、体重、目標体重、活動量などの基本情報を入力します。この情報をもとに、あなた専用の目安カロリーとPFCバランスが計算されます
+              </p>
+            </div>
+          </div>
 
-## 📱 STEP1: LINE友達追加
+          {/* 3. カウンセリング結果が届く */}
+          <div className="mb-12">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                3. カウンセリング結果が届く
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                LINEにあなたの目標に向けての1日の目安カロリーとPFCバランス（タンパク質・脂質・炭水化物）が表示されます。これがあなたの健康管理の基準になります
+              </p>
+            </div>
+          </div>
 
-### 🔍 2つの方法で簡単追加
+          {/* 4. あなた専用のページへ */}
+          <div className="mb-12">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                4. あなた専用のページへ
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                カウンセリング結果をタップすると、あなた専用のページに移動します。ここでは目安カロリーやPFCバランスがグラフで表示され、毎日の食事・運動・体重を記録できます。記録したデータは自動で集計され、目標達成をサポートします
+              </p>
+            </div>
+          </div>
 
-**方法1：QRコードで追加（推奨）**
-1. 📱 LINEアプリを開く
-2. 右上の「+」ボタン → 「QRコード」を選択
-3. 🎯 QRコードを読み取り
-4. ✅ 「追加」をタップして完了
-
-**方法2：ID検索で追加**
-1. 👥 LINEの「友だち追加」を開く
-2. 🔍 「ID/電話番号」で検索
-3. ⌨️ 「@kotakun-ai」を入力
-4. ✅ 検索結果から追加
-
----
-
-## 💬 STEP2: カウンセリング設定（重要！）
-
-### 🤖 友達追加後、AIが自動でカウンセリングを開始
-
-**📝 入力項目（約2-3分で完了）**
-
-🏷️ **基本情報**
-- **お名前（ニックネーム）**：こたくんがあなたを呼ぶ名前
-- **年齢・性別**：基礎代謝の正確な計算に必要
-- **身長・現在の体重**：BMI・目標設定の基準値
-
-🎯 **目標設定**
-- **目標体重**：理想の体重を設定
-- **主な目標**：ダイエット・筋肉増加・健康維持・体力向上から選択
-- **期間**：目標達成までの希望期間
-
-🏃‍♀️ **ライフスタイル**
-- **活動レベル**：普段の運動頻度（週0-7回）
-- **食事習慣**：現在の食事パターンと好み
-- **睡眠・生活習慣**：平均睡眠時間と生活リズム
-
-**⚡ AIが即座に自動計算**
-- 🔥 **1日の目標カロリー**：あなた専用の数値
-- 📊 **PFC値**：タンパク質・脂質・炭水化物の理想バランス
-- 💪 **推奨運動量**：無理のない運動プラン
-- 💡 **個別アドバイス**：専門的なサポート
-
----
-
-## ✅ STEP3: 設定完了の確認
-
-**🎉 カウンセリング完了後に表示される画面**
-
-✨ **あなた専用ダッシュボードが完成**
-- 🎯 **目標カロリー表示**：毎日の目安が一目でわかる
-- 📊 **PFC目標値設定完了**：栄養バランスの指針
-- 🍽️ **リッチメニュー登場**：LINEトーク画面下部に6つのボタン
-- 🤖 **こたくんからの初回アドバイス**：専用メッセージでお出迎え
-
----
-
-## 🔥 はじめての記録（今すぐ試してみよう！）
-
-### 📱 簡単4ステップで健康管理スタート
-
-1. **👋「おはよう」と挨拶**
-   - AIとの会話でウォーミングアップ
-   - 今日の体調や気分を伝えてみよう
-
-2. **⚖️ 朝の体重記録**
-   - 「65.5kg」のように数値を送信
-   - 体脂肪率も一緒に送ってもOK
-
-3. **📸 朝食の写真撮影**
-   - カメラで料理を撮影して送信
-   - 真上から撮ると分析精度UP！
-
-4. **🧠 AI分析結果を確認**
-   - カロリー・栄養素が自動で詳細分析
-   - 改善ポイントのアドバイスも受け取り
-
----
-
-## 🎊 設定完了！あなたの健康パートナー準備万端
-
-**🚀 今日から健康管理が変わります**
-- 📱 LINEで気軽に記録
-- 🤖 AIが24時間サポート
-- 📊 詳細データで成果を実感
-- 💪 無理なく続けられる仕組み
-
-**✨ さあ、新しい健康習慣を始めましょう！**
-    `,
+        </div>
+      </div>
+    ),
     'ai-chat': `
 ## 🤖 こたくんと会話
 
@@ -690,9 +655,13 @@ kotakunは、LINEで簡単に記録できるAI健康管理アプリです。
 
           {/* コンテンツ表示 */}
           <div className="prose prose-gray max-w-none">
-            <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-              {guideContent[activeTab as keyof typeof guideContent]}
-            </div>
+            {typeof guideContent[activeTab as keyof typeof guideContent] === 'string' ? (
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
+                {guideContent[activeTab as keyof typeof guideContent]}
+              </div>
+            ) : (
+              guideContent[activeTab as keyof typeof guideContent]
+            )}
           </div>
 
           {/* お問い合わせボタン */}
