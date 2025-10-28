@@ -169,7 +169,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* 4. あなた専用のページへ */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 4. あなた専用のページへ
@@ -270,7 +270,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* 使い方 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 使い方
@@ -490,7 +490,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* 記録の確認・編集 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 記録の確認・編集
@@ -610,7 +610,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* 注意 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="bg-yellow-50 p-4 rounded-lg">
               <p className="font-semibold text-gray-800 mb-2">注意</p>
               <p className="text-gray-700 text-sm">
@@ -737,7 +737,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* リマインダー設定 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 リマインダー設定
@@ -1004,7 +1004,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* その他 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-6">
                 その他
@@ -1095,7 +1095,8 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
       <div className="flex-1 overflow-hidden">
         <div 
           ref={contentRef}
-          className="h-full overflow-y-auto p-4 pb-20"
+          className="h-full overflow-y-auto p-4 pb-32"
+          style={{ paddingBottom: '8rem' }}
         >
           {/* アクティブタブの説明 */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
