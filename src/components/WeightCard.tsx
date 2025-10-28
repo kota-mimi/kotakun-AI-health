@@ -25,47 +25,26 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ data, onNavigateToWeight, counselingResult, selectedDate }: WeightCardProps) {
-  // データが記録されているかチェック
-  const hasData = data.current > 0;
+  // シンプルな表示ロジック
+  const hasCurrentData = data.current > 0;
+  const hasPreviousData = data.previous > 0;
+  const hasTargetData = data.target > 0;
   
-  // アプリ開始日を取得
-  const getAppStartDate = () => {
-    if (!counselingResult) return null;
-    const counselingDateRaw = counselingResult.firstCompletedAt || 
-                             counselingResult.createdAt || 
-                             counselingResult.completedAt;
-    return counselingDateRaw ? new Date(counselingDateRaw) : null;
-  };
-  
-  // 選択日がアプリ開始日かチェック
-  const isAppStartDay = (checkDate?: Date) => {
-    const appStartDate = getAppStartDate();
-    if (!appStartDate) return false;
-    const targetDate = checkDate || new Date();
-    return targetDate.toDateString() === appStartDate.toDateString();
-  };
-  
-  // 今日またはカウンセリング日のみフォールバックを使用
-  const isToday = selectedDate ? selectedDate.toDateString() === new Date().toDateString() : true;
-  const isAppStartDaySelected = isAppStartDay(selectedDate);
-  const shouldUseFallback = isToday || isAppStartDaySelected;
-  
-  // 実際の記録データを優先、条件付きでカウンセリング結果をフォールバック
-  const currentWeight = hasData ? data.current : (shouldUseFallback && counselingResult?.answers?.weight ? counselingResult.answers.weight : 0);
-  const difference = hasData ? (currentWeight - data.previous) : 0;
-  // ユーザーが変更した最新の目標体重を優先、未設定ならカウンセリング結果を使用
-  const targetWeight = data.target || counselingResult?.answers?.targetWeight;
-  // 目標体重が設定されているかチェック（0より大きい値、かつ健康維持モードでない）
+  // 健康維持モードチェック
   const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-  const hasTargetWeight = targetWeight && targetWeight > 0 && !isMaintenanceMode;
-  const remaining = hasData && hasTargetWeight ? Math.abs(currentWeight - targetWeight) : (shouldUseFallback && counselingResult?.answers?.weight && counselingResult?.answers?.targetWeight && !isMaintenanceMode ? Math.abs(counselingResult.answers.weight - counselingResult.answers.targetWeight) : 0);
+  const shouldShowTarget = hasTargetData && !isMaintenanceMode;
   
-  // 記録があるか、条件付きでカウンセリング結果がある場合は表示
-  const shouldShowWeight = hasData || (shouldUseFallback && counselingResult?.answers?.weight && counselingResult.answers.weight > 0);
+  // 現在の体重表示
+  const currentWeight = hasCurrentData ? data.current : 0;
+  const shouldShowWeight = hasCurrentData;
   
-  // 前日比を表示するかチェック（アプリ開始日や未記録日は「--」）
-  const shouldShowDifference = hasData && data.previous > 0 && !isAppStartDay(selectedDate);
+  // 前日比計算
+  const difference = hasCurrentData && hasPreviousData ? (currentWeight - data.previous) : 0;
+  const shouldShowDifference = hasCurrentData && hasPreviousData;
   const isDecrease = difference < 0;
+  
+  // 目標までの計算
+  const remaining = hasCurrentData && shouldShowTarget ? Math.abs(currentWeight - data.target) : 0;
 
   return (
     <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
@@ -112,10 +91,10 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
           >
             <div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">目標まで</div>
             <div className="text-lg font-bold">
-              {shouldShowWeight && hasTargetWeight ? (
-                currentWeight === targetWeight ? (
+              {shouldShowWeight && shouldShowTarget ? (
+                currentWeight === data.target ? (
                   <span className="text-green-600">🎉 達成</span>
-                ) : currentWeight > targetWeight ? (
+                ) : currentWeight > data.target ? (
                   <span className="text-red-600">
                     -{remaining.toFixed(1)}
                     <span className="text-sm font-medium text-slate-600 ml-1">kg</span>

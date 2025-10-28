@@ -155,14 +155,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return checkDate.toDateString() === counselingDate.toDateString();
   };
 
-  // 特定の日付の体重データを取得
+  // 特定の日付の体重データを取得（シンプルなロジック）
   const getWeightDataForDate = (date: Date): WeightData => {
     // クライアントサイドでない場合はデフォルト値を返す
     if (!isClient) {
       return {
         current: 0,
         previous: 0,
-        target: 68.0
+        target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
     
@@ -172,51 +172,32 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     // 未来の日付の場合は体重を表示しない
     if (dateKey > today) {
       return {
-        current: 0, // 未来の日付は体重を表示しない
-        previous: 0, // 未来なので前日比は表示しない
+        current: 0,
+        previous: 0,
         target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
     
-    // 優先順位1: APIから取得した実データ（realWeightData）- 最も信頼できる
-    const realDataForDate = realWeightData.find(item => item.date === dateKey);
+    // 目標体重を設定（健康維持モード判定）
+    const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
+    const targetWeight = weightSettingsStorage.value.targetWeight || 
+                        (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 0;
     
-    if (realDataForDate) {
-      // 前日のデータを取得（APIデータのみから）
-      const previousDate = new Date(date);
-      previousDate.setDate(previousDate.getDate() - 1);
-      const previousKey = getDateKey(previousDate);
-      const previousRealData = realWeightData.find(item => item.date === previousKey);
-      const previousWeight = previousRealData?.weight || 0;
-      
-      // 健康維持モード判定で目標体重を決定
-      const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-      const targetWeight = weightSettingsStorage.value.targetWeight || 
-                          (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 0;
-      
-      return {
-        current: realDataForDate.weight,
-        previous: previousWeight,
-        target: targetWeight
-      };
-    }
+    // その日の体重記録を取得（APIデータから）
+    const currentDayData = realWeightData.find(item => item.date === dateKey);
+    const currentWeight = currentDayData?.weight || 0;
     
-    // 最後のフォールバック: 今日またはカウンセリング日の場合のみカウンセリング体重を返す
-    // APIデータのロード状態に関係なく、実際の記録がない場合はカウンセリング体重をフォールバック
-    if ((dateKey === today || isCounselingDate(date)) && counselingResult?.answers?.weight) {
-      const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-      return {
-        current: counselingResult.answers.weight,
-        previous: 0, // カウンセリング日は前日比なし
-        target: weightSettingsStorage.value.targetWeight || (isMaintenanceMode ? 0 : counselingResult.answers.targetWeight) || 0
-      };
-    }
+    // 前日の体重記録を取得（前日比計算用）
+    const previousDate = new Date(date);
+    previousDate.setDate(previousDate.getDate() - 1);
+    const previousKey = getDateKey(previousDate);
+    const previousDayData = realWeightData.find(item => item.date === previousKey);
+    const previousWeight = previousDayData?.weight || 0;
     
-    // デフォルトデータを返す（記録がない日は0を返す）
     return {
-      current: 0, // 記録がない日は体重を表示しない
-      previous: 0, // 記録がない日は前日比なし
-      target: weightSettingsStorage.value.targetWeight || 68.0
+      current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
+      previous: previousWeight, // 前日記録がない場合は0（WeightCardで--表示）
+      target: targetWeight
     };
   };
 
