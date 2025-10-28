@@ -284,338 +284,755 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
         </div>
       </div>
     ),
-    'recording': `
-## 📝 記録方法
-
-### 🏃 運動記録の方法
-**💪 どんな運動でもOK！日常の活動もすべて記録**
-
-#### ✍️ 簡単な入力例
-- 「ウォーキング 30分」→ 約120kcal消費
-- 「腕立て伏せ 20回 3セット」→ 約50kcal消費
-- 「ランニング 5km 25分」→ 約350kcal消費
-- 「階段昇降 10分」→ 約60kcal消費
-- 「掃除機かけ 15分」→ 約40kcal消費
-
-#### 🤖 AI自動処理
-- 💥 **消費カロリー自動計算**（あなたの体重基準）
-- 📊 **運動強度判定**（軽い・普通・激しい）
-- 🎯 **週間目標達成度**
-- 📈 **継続日数カウント**
-
-### ⚖️ 体重記録の方法
-**📏 数値を送るだけで詳細分析！**
-
-#### 📤 送信方法
-1. **数値のみ**：「65.5」「67kg」
-2. **体脂肪率も**：「65.5kg 20%」
-3. **メモ付き**：「65.2kg 生理前でむくんでる」
-
-#### 📊 自動表示内容
-- 📈 **前日比**：+0.2kg ↗️ / -0.5kg ↘️
-- 🎯 **目標まで**：あと2.3kg
-- 📐 **BMI値**：22.1（標準）
-- 📅 **変化グラフ**：過去30日の推移
-
-### 📸 食事写真撮影のコツ
-
-#### ✅ **完璧な写真の撮り方**
-- 🔝 **真上から撮影**：料理全体が見える角度
-- ☀️ **明るい場所**：自然光または明るい照明下
-- 🍽️ **食器込み**：サイズ感が分かるように
-- 📏 **手も一緒に**：量感の参考になる
-- 🥗 **複数品目**：全部まとめて1枚でOK
-
-#### ❌ **避けたい撮影パターン**
-- 📐 斜めから撮影（量が分からない）
-- 🌃 暗い場所（色が分からない）
-- ✂️ 一部が切れている
-- 🔍 近すぎる・遠すぎる
-
-### 🔥 記録を習慣化するコツ
-
-#### 📅 毎日の記録ルーチン
-1. **朝起きたら**：体重測定→「おはよう」とメッセージ
-2. **食事前**：写真撮影→そのまま食事
-3. **運動後**：「○○した」と報告
-4. **寝る前**：「今日お疲れ様」で1日終了
-
-#### 🎯 継続のための工夫
-- 🍬 **飴1個でも記録**：小さなことも大切
-- 🚶 **歩いただけでも記録**：「歩いた」だけでもOK
-- 🛌 **休息日も記録**：「今日は休養日」
-- 💬 **体調も記録**：「調子いい」「疲れてる」
-
-**🏆 記録は完璧じゃなくてOK！継続が一番大切です**
-    `,
-    'feedback': `
-## 📊 フィードバック・データ活用
-
-### 📈 1日の振り返り機能
-**🤖 毎日夜9時頃、AIが自動で分析レポート送信**
-
-#### 📝 日次レポート内容
-- 🧮 **今日のカロリー収支**：摂取1800kcal / 消費2000kcal = -200kcal
-- 🥗 **栄養バランス評価**：タンパク質〇 / 炭水化物△ / 脂質〇
-- 💪 **運動量評価**：目標120分 → 今日90分（あと30分！）
-- 💡 **明日への改善提案**：「朝食にプロテインを追加しましょう」
-
-#### 🎯 こんな時に特別メッセージ
-- 🏆 **目標達成時**：「完璧な1日でした！」
-- 📈 **記録更新時**：「過去最高の記録です！」
-- 🤗 **励ましが必要な時**：「明日は新しい日！一緒に頑張りましょう」
-
-### 📊 週間データ活用法
-**📅 毎週日曜日に1週間の総まとめ**
-
-#### 🔍 週間分析ポイント
-- 📉 **体重変化トレンド**：順調に-0.5kg減少中
-- 🍽️ **カロリー収支傾向**：平日良好、週末オーバー気味
-- 🏃 **運動習慣パターン**：月水金は◎、土日は△
-- 🥦 **栄養バランス**：野菜不足が3日間、改善必要
-
-#### 💪 成功パターンの発見
-- **調子良い日の共通点**：朝食をしっかり食べた日
-- **失敗パターン**：夜遅い食事の翌日は体重増加
-- **運動効果**：筋トレ後は基礎代謝UP
-
-### 🎯 改善ポイントの見つけ方
-
-#### 🔴 要注意サイン
-1. **カロリーオーバー連続**：3日以上赤字→食事量見直し
-2. **運動ゼロ連続**：3日以上→軽いウォーキングから再開
-3. **体重増加傾向**：1週間で+1kg→食事内容チェック
-4. **栄養偏り**：タンパク質不足が続く→意識的に摂取
-
-#### ✅ 改善アクション例
-- 🥗 **野菜不足**：コンビニサラダを1品追加
-- 💪 **運動不足**：エレベーターを階段に変更
-- 🍖 **タンパク質不足**：おやつをプロテインバーに変更
-- 💧 **水分不足**：500mlペットボトルを持ち歩く
-
-### 🏆 モチベーション維持システム
-
-#### 🎖️ 達成バッジ機能
-- 📅 **継続バッジ**：7日、30日、100日連続記録
-- 🎯 **目標達成バッジ**：週間カロリー目標クリア
-- 💪 **運動バッジ**：週3回運動達成
-- 📈 **体重管理バッジ**：月間目標体重達成
-
-#### 🚀 習慣化のステップガイド
-
-**🌱 第1週：基礎固め**
-- 記録方法をマスター
-- こたくんとの会話に慣れる
-- 1日3回の記録を習慣化
-
-**🌿 第2-3週：安定期**
-- 記録忘れを週1回以下に
-- データの見方を理解
-- 改善ポイントを1つ実行
-
-**🌳 第4週以降：成長期**
-- 自分の傾向を把握
-- 効果的な改善策を発見
-- 長期目標に向けて調整
-
-**💎 3ヶ月後：習慣完成**
-- 無意識に健康的な選択
-- 体重管理が自然にできる
-- 健康習慣が人生の一部に
-    `,
-    'web-app': `
-## 💻 Webアプリ活用
-
-### 🚀 アクセス方法
-**📊 データの詳細確認や詳細設定はWebアプリで！**
-
-#### 🔗 開き方（3つの方法）
-1. **LINEから**：リッチメニュー「📊 データ確認」をタップ
-2. **ブックマーク**：ブラウザでブックマーク登録
-3. **直接アクセス**：kotakun-ai.com（例）
-
-#### 📱 対応環境
-- **スマホ**：iPhone Safari、Android Chrome
-- **PC**：Chrome、Edge、Firefox
-- **タブレット**：iPad Safari、Android Chrome
-
-### 📊 ダッシュボード完全ガイド
-
-#### 🔝 上部サマリーカード
-- 🧮 **今日のカロリー**：摂取1,650 / 消費1,850 / 収支-200kcal
-- ⚖️ **今日の体重**：65.2kg（昨日比-0.3kg）🎉
-- 🏃 **今日の運動**：45分（目標60分まであと15分）
-- 🥗 **栄養バランス**：P:25% F:30% C:45%（理想的！）
-
-#### 📈 メイングラフエリア
-- 📉 **体重推移グラフ**：過去30日、3ヶ月、1年
-- 📊 **カロリー推移**：日別、週平均、月平均
-- 🌈 **栄養バランス円グラフ**：PFC比率の変化
-- 💪 **運動グラフ**：種類別消費カロリー
-
-### ✏️ 詳細データ編集機能
-
-#### 🍽️ 食事記録の詳細編集
-1. **記録選択**：日付をクリック→食事を選択
-2. **AI分析確認**：自動認識結果を確認
-3. **手動修正**：
-   - 🥗 食材の追加・削除・変更
-   - 📏 分量の微調整（g単位）
-   - 🧮 カロリー・栄養素の手動入力
-   - ⏰ 食事時間の変更
-   - 📝 メモ追加（「外食」「手作り」など）
-
-#### 🏃 運動記録の詳細編集
-- ⏱️ **正確な時間設定**：分単位で調整
-- 💪 **強度調整**：軽い・普通・激しい
-- 📍 **場所記録**：ジム、公園、自宅など
-- 👥 **運動タイプ**：一人・グループ・レッスン
-
-### ⚙️ 高度な設定・カスタマイズ
-
-#### 🎯 目標設定カスタマイズ
-- **段階的目標**：3ヶ月で-5kg → 月次目標に分割
-- **活動レベル微調整**：生活スタイルに合わせて
-- **目標カロリー手動設定**：専門家の指導がある場合
-- **PFC比率個別設定**：アスリート向け高タンパク質など
-
-#### 📊 分析期間設定
-- **短期分析**：3日、1週間の詳細
-- **中期分析**：1ヶ月、3ヶ月のトレンド
-- **長期分析**：半年、1年の変化
-
-### 💾 データ管理・バックアップ
-
-#### 📤 エクスポート機能
-- **CSV形式**：Excel等で詳細分析
-- **PDF形式**：医師への相談資料
-- **画像形式**：SNSシェア用グラフ
-
-#### 🔒 セキュリティ・プライバシー
-- **クラウド自動保存**：データ消失防止
-- **暗号化保存**：個人情報保護
-- **データ削除権**：完全削除も可能
-- **機種変更対応**：アカウント引き継ぎ
-
-#### 👥 共有機能（オプション）
-- **家族共有**：お互いの健康状況を見守り
-- **トレーナー共有**：専門家との連携
-- **医師共有**：定期健診時の資料として
-
-**💡 WebアプリはLINEの記録を補完する詳細分析ツール！**
-    `,
-    'troubleshooting': `
-## ❓ よくある質問・トラブル対応
-
-### 🚨 記録機能のトラブルシューティング
-
-#### Q: 📸 食事写真を送ったのに反応がない！
-**⏰ 正常反応時間：10-30秒以内**
-
-**🔧 対処法（順番に試してください）：**
-1. **📶 ネット接続確認**：Wi-Fi・4G電波状況をチェック
-2. **📱 LINE再起動**：アプリを完全終了→再起動
-3. **🖼️ 画像サイズ確認**：5MB以下に圧縮してリトライ
-4. **💬 再送依頼**：「写真をもう一度分析して」と送信
-5. **📋 テキスト記録**：とりあえず「朝食：○○」で記録
-
-**🚩 1分以上反応がない場合：サーバー混雑中、時間をおいて再試行**
-
-#### Q: 🤖 AI分析結果が全然違う！
-**例：ラーメン → サラダと認識された**
-
-**✅ 即座に修正する方法：**
-1. **訂正メッセージ**：「ラーメンでした」「豚骨ラーメン大盛り」
-2. **詳細追加**：「ラーメン、チャーシュー、煮卵、のり」
-3. **Webアプリ編集**：完全手動修正が可能
-4. **学習効果**：修正すればAIが学習して次回改善
-
-**💡 分析精度向上のコツ：**
-- 📸 料理全体が映るように撮影
-- ☀️ 明るい場所で撮影
-- 🍽️ 食器も一緒に写す（サイズ感のため）
-
-#### Q: 🏃 運動記録が認識されない
-**❌ 認識されない例：「運動した」「頑張った」**
-**✅ 認識される例：「ウォーキング 30分」「腕立て伏せ 20回」**
-
-**📝 正しい入力パターン：**
-- **有酸素運動**：「ランニング 5km 30分」「階段昇降 15分」
-- **筋トレ**：「腕立て伏せ 20回 3セット」「スクワット 30回」
-- **日常活動**：「掃除機 20分」「買い物 1時間」
-
-### 📊 データ・アプリのトラブル
-
-#### Q: 💻 Webアプリでデータが見えない
-**🔧 確実な解決手順：**
-1. **🔄 ページ更新**：F5またはブラウザの更新ボタン
-2. **🗑️ キャッシュクリア**：設定→閲覧データ削除
-3. **📱 LINEから再アクセス**：リッチメニュー→データ確認
-4. **🌐 ブラウザ変更**：Chrome、Safari、Edgeで試行
-5. **⏰ 時間を置く**：サーバー同期に5-10分かかる場合あり
-
-#### Q: 📱 リッチメニューが消えた！
-**👀 確認ポイント：**
-1. **画面下部確認**：kotakunトーク画面の一番下
-2. **LINE更新**：アプリストアでLINE最新版に更新
-3. **友達状態確認**：誤ってブロックしていないか
-4. **トーク画面リセット**：一度他のトークを開いて戻る
-
-**🔧 リセット方法：**
-1. kotakunをブロック→即座にブロック解除
-2. 「設定」「スタート」「はじめる」などのメッセージ送信
-
-### 💡 機能・用語の説明
-
-#### Q: 🔤 PFC値って何のこと？
-**🍖 P（Protein/タンパク質）**
-- 💪 筋肉、肌、髪の材料
-- 🎯 目安：体重(kg) × 1.2-2.0g/日
-- 🥩 多い食品：肉、魚、卵、豆腐
-
-**🥑 F（Fat/脂質）**
-- ⚡ 効率的なエネルギー源
-- 🎯 目安：総カロリーの20-30%
-- 🥜 多い食品：油、ナッツ、アボカド
-
-**🍚 C（Carbohydrate/炭水化物）**
-- 🧠 脳の主要エネルギー源
-- 🎯 目安：総カロリーの50-65%
-- 🍞 多い食品：米、パン、麺類
-
-#### Q: 📈 基礎代謝って何？
-**🔥 何もしなくても消費されるカロリー**
-- 😴 寝ているだけでも燃焼
-- 💓 心臓、呼吸、体温維持に必要
-- 📊 年齢・性別・体重・筋肉量で決まる
-- 🎯 ダイエットの基準値になる
-
-### 🆘 サポート・お問い合わせ
-
-#### 📧 緊急時・重要な問題
-**🌐 お問い合わせフォーム**
-- Webアプリ → 設定 → お問い合わせ
-- 📝 症状、端末、状況を詳しく記載
-
-**⏰ 回答時間**
-- 🗓️ 平日：24時間以内
-- 🗓️ 土日祝：48時間以内
-- 🚨 緊急時：数時間以内（データ消失等）
-
-#### 💬 ちょっとした質問
-**📱 LINE直接メッセージ**
-- 「ヘルプ」「困った」「質問」と送信
-- 🤖 自動回答システムで即座に解決
-- 📚 よくある質問の90%をカバー
-
-#### 🎓 使い方がわからない時
-1. **📖 このガイド**：まずは該当セクションを確認
-2. **💬 こたくんに聞く**：「使い方教えて」と送信
-3. **🎥 動画ガイド**：公式YouTubeチャンネル
-4. **👥 コミュニティ**：ユーザー同士の情報交換
-
-**🤝 私たちは全力でサポートします！遠慮なくご連絡ください**
-    `
+    'recording': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              記録のやり方
+            </h1>
+            <p className="text-gray-600">
+              LINEとアプリで簡単に記録できます
+            </p>
+          </div>
+
+          {/* 記録モードについて */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                記録モードで記録する
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                LINEの下にあるリッチメニューから記録ボタンを押すと記録モードに入り、体重・運動・食事の記録が手軽にできます
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                記録方法は3つから選べます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-4">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>テキストで記録</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>カメラで記録</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>通常モードに戻る</span>
+                </div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg mb-8">
+                <p className="font-semibold text-gray-800 mb-2">注意</p>
+                <p className="text-gray-700 text-sm">
+                  記録モード中は記録しかできません。こたくんと会話したい場合は「通常モードに戻る」を押して戻ってください
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 食事記録（カメラ） */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                食事記録（カメラで記録）
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                食事の写真を送るだけで、AIがカロリーを分析してくれます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-4">
+                <div className="flex items-start">
+                  <span className="mr-3">1.</span>
+                  <span>食事の写真を撮って送る</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">2.</span>
+                  <span>朝食・昼食・夕食・間食から選ぶ</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">3.</span>
+                  <span>計算された結果が表示される</span>
+                </div>
+              </div>
+              <p className="text-gray-500 text-sm mb-8">
+                ※写真は1枚ずつ記録できます
+              </p>
+            </div>
+          </div>
+
+          {/* 食事記録（テキスト） */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                食事記録（テキストで記録）
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                自由にテキストで記録できます。1食ずつでも、まとめてでもOK
+              </p>
+              <div className="space-y-3 text-gray-700 mb-4">
+                <p className="font-semibold">記録例</p>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>朝にヨーグルト</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>昼に唐揚げとご飯100g食べた！</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>朝にヨーグルト 昼にカツ丼と味噌汁 夜に餃子5個とご飯 おやつにクッキー2枚！</span>
+                </div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg mb-8">
+                <p className="font-semibold text-gray-800 mb-2">記録のコツ</p>
+                <p className="text-gray-700 text-sm">
+                  料理の中身も記録したい場合は、例：お鍋（豚肉 白菜 えのき）のように記録すると、うまく分析されます
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 食事記録（アプリから） */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                食事記録（アプリから）
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                記録したい食事のフレームをタップすると、4つの記録方法が選べます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>カメラで記録（LINEと同じ）</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>テキストで記録（LINEと同じ）</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>過去から記録（過去の記録から選ぶ）</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>手動で記録（食事名・カロリー・PFCを自分で入力）</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 体重記録 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                体重記録
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                記録モードで体重を記録できます
+              </p>
+              <div className="space-y-3 text-gray-700 mb-4">
+                <p className="font-semibold">記録例</p>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>体重 78kg</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>78（体重の文字があれば数字だけでもOK）</span>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                アプリの体重フレームからも記録・編集できます
+              </p>
+            </div>
+          </div>
+
+          {/* 運動記録 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                運動記録
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                自然な言葉で運動を記録できます。有酸素運動・筋トレ・スポーツなど、すべての運動が記録できます
+              </p>
+              <div className="space-y-3 text-gray-700 mb-4">
+                <p className="font-semibold">記録例</p>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>ランニング 3km 20分</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>ベンチプレス 80kg 10回 90kg 10回</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>腹筋100回 3セット</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>今日は、ヨガ20分したよ！</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>野球したー！</span>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                アプリの運動フレームからも記録・編集できます
+              </p>
+            </div>
+          </div>
+
+          {/* 記録の確認・編集 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                記録の確認・編集
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                記録すると返事が返ってきます。その返事をタップするとアプリに飛んで、詳しく確認・編集できます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-4">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>食事記録をタップ → カロリー・PFC・画像を編集</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>ホームのカロリーグラフ → 今どのくらい摂取しているか確認</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>目安カロリーと比較できる</span>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                LINEのリッチメニューのマイページからも確認できます
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    ),
+    'feedback': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              フィードバック機能
+            </h1>
+            <p className="text-gray-600">
+              その日の記録から、あなたへのアドバイスが届きます
+            </p>
+          </div>
+
+          {/* フィードバックとは */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                フィードバックとは
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面・運動面についての良かった点や改善点などの素晴らしいフィードバックが返ってきます
+              </p>
+            </div>
+          </div>
+
+          {/* 使い方 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                使い方
+              </h2>
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">1.</span>
+                  <span>リッチメニューの「フィードバック」ボタンを押す</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">2.</span>
+                  <span>その日の記録が分析される</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">3.</span>
+                  <span>フィードバックが返ってくる</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">4.</span>
+                  <span>返ってきたフィードバックをタップするとアプリに飛ぶ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* フィードバックの内容 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                フィードバックの内容
+              </h2>
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>食事面の良かった点・改善点</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>運動面の良かった点・改善点</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>目標達成に向けたアドバイス</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* アプリでの確認 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                アプリでの確認
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                返ってきたフィードバックをタップすると、アプリに飛んでフィードバックが確認できます。アプリにもフィードバックが反映されています
+              </p>
+            </div>
+          </div>
+
+          {/* 注意 */}
+          <div className="mb-20">
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p className="font-semibold text-gray-800 mb-2">注意</p>
+              <p className="text-gray-700 text-sm">
+                記録が少ない場合、アドバイスがない場合があります。できるだけ記録をした状態でこの機能を使うことをおすすめします
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    ),
+    'web-app': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              アプリの使い方
+            </h1>
+            <p className="text-gray-600">
+              アプリからも記録・編集・確認ができます
+            </p>
+          </div>
+
+          {/* ホームから記録 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                ホームから記録する
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                ホームにあるフレームをタップすると記録できます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>体重フレーム → 体重を記録</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>食事フレーム（朝食・昼食・夕食・間食）→ 食事を記録</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>運動フレーム → 運動を記録</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* フレームの開閉 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                フレームの開閉
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                ホームには4つのフレームがあります。各フレームの上部をタップすると、開いたり閉じたりできます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-4">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>カロリーのグラフ → 今日取ったカロリーやPFCが確認できる</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>今日の食事記録 → 記録された食事が表示される</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>今日の運動 → 記録された運動が表示される</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>フィードバック → その日のフィードバックが表示される</span>
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-8">
+                カロリーのグラフには、記録されたカロリーやPFCがリアルタイムで反映され、目安カロリーと比較できます
+              </p>
+            </div>
+          </div>
+
+          {/* 記録の編集・追加 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                記録の編集・追加
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                アプリから記録の編集や追加ができます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-8">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>記録された食事をタップ → カロリー・PFC・画像を編集</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>体重フレームをタップ → 体重の追加・編集</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>運動フレームをタップ → 運動の追加・編集</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* プロフィール編集 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                プロフィール編集
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                マイページからプロフィールを編集できます
+              </p>
+              <p className="text-gray-800 mb-8">
+                プロフィールを編集すると、自動でカロリーやPFCが再分析されて、ホームのグラフなどに反映されます
+              </p>
+            </div>
+          </div>
+
+          {/* リマインダー設定 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                リマインダー設定
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                リマインダー設定から、好きな時間に通知を受け取れます
+              </p>
+              <div className="space-y-3 text-gray-800 mb-4">
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>通知の内容を自由に設定できる</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>通知の時間を自由に設定できる</span>
+                </div>
+              </div>
+              <p className="text-gray-700 mb-8">
+                例：「朝食の時間だよ！」を朝7時に設定
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    ),
+    'troubleshooting': (
+      <div className="bg-white px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          
+          {/* ヘッダー */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-800 mb-3">
+              よくある質問
+            </h1>
+            <p className="text-gray-600">
+              困ったときはこちらをご確認ください
+            </p>
+          </div>
+
+          {/* 基本的な使い方 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                基本的な使い方
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 記録モードから通常モードに戻れません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. クイックリプライに表示される「通常モードに戻る」ボタンを押してください。記録モード中は、このボタンを押さない限り記録専用モードのままです。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. こたくんが反応しません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 記録モード中ではありませんか？記録モード中は記録のみ受け付けます。通常モードに戻ってから、もう一度メッセージを送ってください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. LINEとアプリのどちらから記録すればいいですか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. どちらからでも記録できます。LINEは外出先での手軽な記録に、アプリは詳細な編集や確認に便利です。お好きな方をご利用ください。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 食事記録について */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                食事記録について
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-green-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 写真で記録したカロリーが正確ではありません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. AIによる分析は目安です。より正確に記録したい場合は、アプリから手動で編集してください。カロリーやPFCを自由に変更できます。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-green-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 写真を複数枚送りたいのですが</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 写真での記録は1回につき1枚です。複数の料理を記録したい場合は、1枚ずつ分けて送るか、テキストでまとめて記録してください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-green-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 料理の中身まで細かく記録したいです</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. テキスト記録で「お鍋（豚肉 白菜 えのき）」のように、カッコ内に具材を入れると、より正確に分析されます。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-green-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 朝・昼・夜をまとめて記録できますか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. できます。「朝にヨーグルト 昼にカツ丼 夜に餃子5個」のように、1つのメッセージにまとめて送ってください。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* カロリー・PFCについて */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                カロリー・PFCについて
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-purple-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 目安カロリーを変更したいです</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. マイページから「プロフィール編集」を開き、目標設定や体重などを変更してください。自動で再計算されます。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-purple-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. カロリーの計算が合いません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 記録された食事の内容を確認してください。AIの分析が不正確な場合は、アプリから手動で修正できます。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-purple-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. PFCバランスとは何ですか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. タンパク質（Protein）、脂質（Fat）、炭水化物（Carbohydrate）のバランスです。健康的な体作りには、このバランスが重要です。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 体重・運動記録について */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                体重・運動記録について
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-orange-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 体重が記録されません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 「体重」という文字と数字を含めて送ってください。例：「体重 78kg」または「78」（記録モード中）
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-orange-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 運動の記録方法がわかりません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 自然な言葉で記録できます。「ランニング 3km」「腹筋100回」「ヨガ20分」など、自由に記録してください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-orange-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 目標体重を変更したいです</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. マイページの「プロフィール編集」から目標体重を変更できます。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* フィードバックについて */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                フィードバックについて
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-pink-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. フィードバックが返ってきません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. その日の記録が少ない場合、フィードバックが生成されないことがあります。食事や運動を記録してから、もう一度試してください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-pink-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. フィードバックはいつでも見返せますか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. はい。アプリのホーム画面にある「フィードバック」フレームから、過去のフィードバックも確認できます。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* アプリ・データについて */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                アプリ・データについて
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-gray-100 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 過去の記録を編集・削除できますか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. できます。アプリのホーム画面から該当の記録をタップして、編集または削除してください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-gray-100 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. データが消えてしまいました</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. アプリとLINEのデータは同期されています。アプリを再起動するか、LINEから再度アクセスしてみてください。それでも解決しない場合は、サポートにお問い合わせください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-gray-100 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. リマインダーの通知が来ません</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. スマートフォンの通知設定を確認してください。また、アプリのリマインダー設定が正しく保存されているかご確認ください。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-gray-100 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 退会したいです</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. LINEのブロックまたは友達削除で、サービスの利用を停止できます。データを完全に削除したい場合は、サポートにお問い合わせください。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* その他 */}
+          <div className="mb-20">
+            <div className="section">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                その他
+              </h2>
+
+              <div className="mb-6">
+                <div className="bg-yellow-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 利用料金はかかりますか？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. 基本機能は無料でご利用いただけます。
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-yellow-50 p-4 rounded-lg mb-3">
+                  <h3 className="font-bold text-gray-800">Q. 問題が解決しない場合は？</h3>
+                </div>
+                <p className="text-gray-700 pl-3 mb-8">
+                  A. LINEのメニューから「お問い合わせ」を選択するか、公式サイトのサポートページからお問い合わせください。
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    )
   };
 
   return (
