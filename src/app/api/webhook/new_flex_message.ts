@@ -164,25 +164,12 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
     spacing: 'xs',
     contents: [
       {
-        type: 'box',
-        layout: 'horizontal',
-        contents: [
-          {
-            type: 'text',
-            text: meal.displayName || meal.name,
-            size: 'md',
-            weight: 'bold',
-            color: '#333333',
-            flex: 1
-          },
-          {
-            type: 'text',
-            text: `${meal.calories}kcal`,
-            size: 'md',
-            color: '#4a90e2',
-            flex: 0
-          }
-        ]
+        type: 'text',
+        text: meal.displayName || meal.name,
+        size: 'md',
+        weight: 'bold',
+        color: '#333333',
+        wrap: true
       },
       {
         type: 'box',
@@ -191,29 +178,39 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
         margin: 'xs',
         contents: [
           {
-            type: 'text',
-            text: ' ',
-            flex: 1
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'sm',
+            flex: 1,
+            contents: [
+              {
+                type: 'text',
+                text: `P: ${meal.protein}g`,
+                size: 'xs',
+                color: '#cc0000',
+                flex: 0
+              },
+              {
+                type: 'text',
+                text: `F: ${meal.fat}g`,
+                size: 'xs',
+                color: '#ff8800',
+                flex: 0
+              },
+              {
+                type: 'text',
+                text: `C: ${meal.carbs}g`,
+                size: 'xs',
+                color: '#00aa00',
+                flex: 0
+              }
+            ]
           },
           {
             type: 'text',
-            text: `P: ${meal.protein}g`,
-            size: 'xs',
-            color: '#cc0000',
-            flex: 0
-          },
-          {
-            type: 'text',
-            text: `F: ${meal.fat}g`,
-            size: 'xs',
-            color: '#ff8800',
-            flex: 0
-          },
-          {
-            type: 'text',
-            text: `C: ${meal.carbs}g`,
-            size: 'xs',
-            color: '#00aa00',
+            text: `${meal.calories}kcal`,
+            size: 'md',
+            color: '#4a90e2',
             flex: 0
           }
         ]
