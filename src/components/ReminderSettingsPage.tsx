@@ -255,52 +255,16 @@ export function ReminderSettingsPage({ onBack }: ReminderSettingsPageProps) {
               <div className="space-y-3">
                 <div>
                   <Label className="text-sm font-medium">カテゴリ</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="mt-2">
                     <button
-                      onClick={() => setNewReminderCategory('meal')}
-                      className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
-                        newReminderCategory === 'meal'
-                          ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <Utensils size={16} className="text-orange-600" />
-                      <span className="text-sm font-medium">食事</span>
-                    </button>
-
-                    <button
-                      onClick={() => setNewReminderCategory('weight')}
-                      className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
-                        newReminderCategory === 'weight'
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <Scale size={16} className="text-blue-600" />
-                      <span className="text-sm font-medium">体重記録</span>
-                    </button>
-
-                    <button
-                      onClick={() => setNewReminderCategory('exercise')}
-                      className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
-                        newReminderCategory === 'exercise'
+                      onClick={() => setNewReminderCategory('custom')}
+                      className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors w-full ${
+                        newReminderCategory === 'custom'
                           ? 'border-green-500 bg-green-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <Dumbbell size={16} className="text-green-600" />
-                      <span className="text-sm font-medium">運動</span>
-                    </button>
-
-                    <button
-                      onClick={() => setNewReminderCategory('custom')}
-                      className={`p-3 rounded-lg border-2 flex items-center space-x-2 transition-colors ${
-                        newReminderCategory === 'custom'
-                          ? 'border-purple-500 bg-purple-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <Bell size={16} className="text-purple-600" />
                       <span className="text-sm font-medium">カスタム</span>
                     </button>
                   </div>
