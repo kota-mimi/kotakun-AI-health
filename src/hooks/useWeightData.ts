@@ -315,7 +315,10 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         // アプリから記録した場合はキャッシュも強制更新
         const cacheKey = createCacheKey('weight', lineUserId, 'month');
         apiCache.delete(cacheKey);
-        console.log('🔄 アプリ記録後に体重キャッシュを強制更新');
+        
+        // UI即座反映のため強制的にローディング状態をリセット
+        setIsLoadingWeightData(false);
+        console.log('🔄 アプリ記録後に体重キャッシュを強制更新&UI即座反映');
       }
 
       console.log('記録が正常に保存されました');
