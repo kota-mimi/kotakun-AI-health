@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 
@@ -25,38 +25,32 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // データの検証とデフォルト値 - 体重があれば有効とする
-  const validData = Array.isArray(data) ? data.filter(item => 
-    item && item.date && (typeof item.weight === 'number' && !isNaN(item.weight) && item.weight > 0)
-  ) : [];
+  // データの検証とデフォルト値 - メモ化で最適化
+  const validData = useMemo(() => 
+    Array.isArray(data) ? data.filter(item => 
+      item && item.date && (typeof item.weight === 'number' && !isNaN(item.weight) && item.weight > 0)
+    ) : [], [data]);
 
-  // クライアントサイドでのみ実行されることを保証
+  // マウント状態の管理 - 遅延なし
   useEffect(() => {
-    setIsClient(true);
     setMounted(true);
   }, []);
   
   // 実際のデータがある場合はそれを使用、ない場合でもカウンセリング結果があれば初期データを作成
-  const hasRealData = validData.length > 0;
-  const hasCounselingData = counselingResult?.answers?.weight && counselingResult.answers.weight > 0;
-  
-  // 実際のデータとカウンセリングデータを組み合わせて返す
-  const getAllChartData = () => {
-    return getRealChartData();
-  };
+  const hasRealData = useMemo(() => validData.length > 0, [validData]);
+  const hasCounselingData = useMemo(() => 
+    counselingResult?.answers?.weight && counselingResult.answers.weight > 0, 
+    [counselingResult]);
 
-  // カウンセリング結果から初期データポイントを作成
-  const createCounselingInitialData = () => {
+  // カウンセリング初期データの生成をメモ化
+  const counselingInitialData = useMemo(() => {
     if (!hasCounselingData) return [];
     
-    // カウンセリング完了日を使用（フォールバック：作成日、最後のフォールバック：今日）
     const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
     let counselingDate;
     
-    // Firestoreのタイムスタンプオブジェクトかチェック
     if (counselingDateRaw?.seconds) {
       counselingDate = new Date(counselingDateRaw.seconds * 1000);
     } else if (counselingDateRaw) {
@@ -65,12 +59,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       counselingDate = new Date();
     }
     
-    // 日付が無効な場合のフォールバック
     if (isNaN(counselingDate.getTime())) {
-      console.warn('⚠️ Invalid counseling date in WeightChart:', counselingDateRaw);
-      counselingDate = new Date(); // 現在の日付を使用
+      counselingDate = new Date();
     }
-    
     
     const dateStr = `${counselingDate.getMonth() + 1}/${counselingDate.getDate()}`;
     
@@ -78,16 +69,14 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       date: dateStr,
       weight: counselingResult.answers.weight,
     }];
-  };
+  }, [hasCounselingData, counselingResult]);
 
-  // 実際のデータを使用するか、カウンセリングデータを使用するかを決定
-  const getRealChartData = () => {
+  // チャートデータ処理をメモ化で最適化
+  const chartData = useMemo(() => {
     if (!hasRealData && !hasCounselingData) return [];
-    if (!hasRealData && hasCounselingData) return createCounselingInitialData();
+    if (!hasRealData && hasCounselingData) return counselingInitialData;
     
-    
-    // クライアントサイドでのみ日付フィルタリングを実行（hydration issues を避けるため）
-    if (!isClient) {
+    if (!mounted) {
       const processedData = validData.map(item => {
         const itemDate = new Date(item.date);
         const formatDate = () => {
@@ -182,12 +171,11 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }).filter(item => item !== null); // null値を除外
     
     return processedData;
-  };
+  }, [hasRealData, hasCounselingData, counselingInitialData, validData, selectedPeriod, mounted]);
 
-  const chartData = getRealChartData();
-
-  // データから適切な範囲を計算（動的スケーリング対応）
-  const calculateDataRange = (dataType: DataType) => {
+  // データから適切な範囲を計算（動的スケーリング対応）- メモ化
+  const dataRange = useMemo(() => {
+    const dataType = selectedDataType;
     const values = chartData.map(item => item[dataType]).filter(val => {
       // 体重の場合は0より大きい値のみ、体脂肪の場合は0以上の値を許可
       if (dataType === 'weight') {
@@ -243,24 +231,26 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       min: Math.max(0, center - fixedRange / 2),
       max: center + fixedRange / 2
     };
-  };
+  }, [chartData, selectedDataType]);
 
-  const dataTypeConfig = {
-    weight: { label: '体重', unit: 'kg', color: '#3B82F6', ...calculateDataRange('weight') },
-  };
+  const dataTypeConfig = useMemo(() => ({
+    weight: { label: '体重', unit: 'kg', color: '#3B82F6', ...dataRange },
+  }), [dataRange]);
 
   const currentConfig = dataTypeConfig[selectedDataType];
-  const currentData = chartData.map(item => ({
-    date: item.date,
-    value: item[selectedDataType]
-  })).filter(item => {
-    // 体重の場合は0より大きい値のみ、体脂肪の場合は0以上の値を許可
-    if (selectedDataType === 'weight') {
-      return item.value != null && item.value > 0;
-    } else {
-      return item.value != null && item.value >= 0;
-    }
-  });
+  
+  const currentData = useMemo(() => 
+    chartData.map(item => ({
+      date: item.date,
+      value: item[selectedDataType]
+    })).filter(item => {
+      // 体重の場合は0より大きい値のみ、体脂肪の場合は0以上の値を許可
+      if (selectedDataType === 'weight') {
+        return item.value != null && item.value > 0;
+      } else {
+        return item.value != null && item.value >= 0;
+      }
+    }), [chartData, selectedDataType]);
   
 
   const chartRange = currentConfig.max - currentConfig.min;
@@ -291,8 +281,12 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     });
   };
   
-  const xPositions = calculateXPositions();
-  const pathPoints = currentData.length > 0 ? currentData.map((point, index) => {
+  // SVGパス計算をメモ化
+  const pathPoints = useMemo(() => {
+    if (currentData.length === 0) return [];
+    
+    const xPositions = calculateXPositions();
+    return currentData.map((point, index) => {
     const x = xPositions[index];
     const y = 10 + (svgHeight - 25) - ((point.value - currentConfig.min) / chartRange) * (svgHeight - 25);
     
@@ -301,7 +295,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     const safeY = isNaN(y) ? svgHeight / 2 : y;
     
     return { x: safeX, y: safeY, value: point.value, date: point.date };
-  }) : [];
+    });
+  }, [currentData, currentConfig, svgHeight]);
   
   // より滑らかなCardinal曲線を生成
   const createSmoothPath = (points: typeof pathPoints) => {
@@ -340,7 +335,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return path;
   };
 
-  const smoothPathData = createSmoothPath(pathPoints);
+  const smoothPathData = useMemo(() => createSmoothPath(pathPoints), [pathPoints]);
 
   // グラデーション用のエリアパス
   const createAreaPath = (points: typeof pathPoints) => {
@@ -371,7 +366,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return path;
   };
 
-  const areaPathData = createAreaPath(pathPoints);
+  const areaPathData = useMemo(() => createAreaPath(pathPoints), [pathPoints]);
 
   // 目標ライン（各データタイプに応じて）
   const getTargetValue = () => {
@@ -409,9 +404,9 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     return ticks;
   };
 
-  const yAxisTicks = generateYAxisTicks();
+  const yAxisTicks = useMemo(() => generateYAxisTicks(), [currentConfig]);
 
-  const handleMouseMove = (event: React.MouseEvent<SVGElement>) => {
+  const handleMouseMove = useCallback((event: React.MouseEvent<SVGElement>) => {
     const svgRect = event.currentTarget.getBoundingClientRect();
     const mouseX = event.clientX - svgRect.left;
     const relativeX = (mouseX / svgRect.width) * (svgWidth + 40);
@@ -448,7 +443,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     });
   };
 
-  const handleTouchMove = (event: React.TouchEvent<SVGElement>) => {
+  const handleTouchMove = useCallback((event: React.TouchEvent<SVGElement>) => {
     event.preventDefault();
     const touch = event.touches[0];
     const svgRect = event.currentTarget.getBoundingClientRect();
@@ -485,23 +480,13 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       value: interpolatedValue,
       date: t < 0.5 ? startPoint.date : endPoint.date
     });
-  };
+  }, [pathPoints]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setSelectedPoint(null);
-  };
+  }, []);
 
-  // サーバーサイドレンダリング時の表示
-  if (!mounted) {
-    return (
-      <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
-        <div className="animate-pulse">
-          <div className="h-4 bg-slate-200 rounded mb-4"></div>
-          <div className="h-40 bg-slate-200 rounded"></div>
-        </div>
-      </Card>
-    );
-  }
+  // 初期マウント時は即座に表示（ローディング削除）
 
   // データが何もない場合の表示
   if (currentData.length === 0 || pathPoints.length === 0) {
