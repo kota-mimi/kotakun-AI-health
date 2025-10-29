@@ -37,13 +37,12 @@
 - Bot基本設定で「あいさつメッセージ」を`有効`
 - あいさつメッセージでLIFF URLを含むメッセージを設定
 
-## 2. 環境変数の設定
+
 
 `.env.local` ファイルに以下を追加：
 
-```env
-# LINE Bot Configuration
-LINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token_here
+
+```envLINE_CHANNEL_ACCESS_TOKEN=your_channel_access_token_here
 LINE_CHANNEL_SECRET=your_channel_secret_here
 NEXT_PUBLIC_LIFF_ID=your_liff_id_here
 
@@ -61,4 +60,5 @@ WEBHOOK_SECRET=your_random_webhook_secret
 
 1. Vercelにデプロイ
 2. 本番URLでLIFF設定を更新
+
 

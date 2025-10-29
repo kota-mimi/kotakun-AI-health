@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -18,16 +19,53 @@ interface PaymentSettingsPageProps {
 }
 
 export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
-  const [currentSubscription] = useState({
+  const { liffUser } = useAuth();
+  const [currentSubscription, setCurrentSubscription] = useState({
     status: 'free', // free, active, expired, canceled
     plan: '無料プラン',
     nextBilling: null,
     amount: 0
   });
 
-  const [paymentHistory] = useState([
-    // モックデータ - 実際のデータはAPIから取得
-  ]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 支払い履歴を取得
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      if (!liffUser?.userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/payment/history?userId=${liffUser.userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setPaymentHistory(data.payments);
+            
+            // 最新の支払いからサブスクリプション状態を判定
+            if (data.payments.length > 0) {
+              const latestPayment = data.payments[0];
+              setCurrentSubscription({
+                status: 'active',
+                plan: latestPayment.planName,
+                nextBilling: null, // TODO: 次回請求日の計算
+                amount: latestPayment.amount
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch payment history:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [liffUser?.userId]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -144,7 +182,12 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
             <h3 className="font-semibold text-gray-800">支払い履歴</h3>
           </div>
           
-          {paymentHistory.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-600">支払い履歴を読み込み中...</p>
+            </div>
+          ) : paymentHistory.length === 0 ? (
             <div className="text-center py-8">
               <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
               <p className="text-gray-500">支払い履歴はありません</p>
@@ -154,12 +197,12 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {paymentHistory.map((payment, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              {paymentHistory.map((payment: any, index) => (
+                <div key={payment.id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <CheckCircle size={16} className="text-green-500" />
                     <div>
-                      <div className="font-medium text-gray-900">{payment.plan}</div>
+                      <div className="font-medium text-gray-900">{payment.planName}</div>
                       <div className="text-sm text-gray-500">{payment.date}</div>
                     </div>
                   </div>
