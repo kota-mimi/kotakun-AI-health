@@ -36,19 +36,28 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('📊 Payment data:', data);
+          console.log('📊 Payment API response:', data);
           
           if (data.success && data.payments.length > 0) {
             const latestPayment = data.payments[0];
-            console.log('💳 Latest payment:', latestPayment);
+            console.log('💳 Latest payment found:', latestPayment);
+            console.log('📝 Plan name from payment:', latestPayment.planName);
             
             // プラン名からプランIDを判定
             if (latestPayment.planName === '月額プラン') {
+              console.log('✅ Setting current plan to monthly');
               setCurrentPlan('monthly');
             } else if (latestPayment.planName === '3ヶ月プラン') {
+              console.log('✅ Setting current plan to quarterly');
               setCurrentPlan('quarterly');
+            } else {
+              console.log('❓ Unknown plan name:', latestPayment.planName);
             }
+          } else {
+            console.log('📭 No payments found, staying on free plan');
           }
+        } else {
+          console.log('❌ Payment API failed with status:', response.status);
         }
       } catch (error) {
         console.error('Failed to fetch current plan:', error);
@@ -270,6 +279,17 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       </div>
     </Card>
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">プラン情報を読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
