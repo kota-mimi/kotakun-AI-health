@@ -5,6 +5,8 @@ export interface PlanConfig {
   name: string;
   price: number;
   period: string;
+  originalPrice?: number;
+  discount?: string;
   stripePriceId?: string;
   features: string[];
   limitations?: string[];
@@ -61,24 +63,11 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'quarterly',
     name: '3ヶ月プラン',
-    price: 2480,
+    price: 1869,
     period: '3ヶ月',
+    originalPrice: 2670,
+    discount: '30%OFF',
     stripePriceId: process.env.STRIPE_QUARTERLY_PRICE_ID || 'price_1SMXC4KMirzoVNsdVt8h6lNw',
-    features: [
-      'すべての機能が無制限',
-      'AI会話・記録が使い放題',
-      '1日のフィードバック機能',
-      '詳細な栄養分析',
-      '運動プラン提案',
-      'アプリからAI記録機能'
-    ]
-  },
-  {
-    id: 'biannual',
-    name: '半年プラン',
-    price: 3480,
-    period: '半年',
-    stripePriceId: process.env.STRIPE_BIANNUAL_PRICE_ID || 'price_1SMXDEKMirzoVNsdlvjXWj1a',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
