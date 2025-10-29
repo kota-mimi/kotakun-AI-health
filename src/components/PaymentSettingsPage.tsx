@@ -39,11 +39,17 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
       }
 
       try {
+        console.log('🔍 Fetching payment history for userId:', liffUser.userId);
         const response = await fetch(`/api/payment/history?userId=${liffUser.userId}`);
+        console.log('📡 Payment history API response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('📊 Payment history data:', data);
+          
           if (data.success) {
             setPaymentHistory(data.payments);
+            console.log('💳 Setting payment history:', data.payments);
             
             // 最新の支払いからサブスクリプション状態を判定
             if (data.payments.length > 0) {
@@ -56,6 +62,8 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
               });
             }
           }
+        } else {
+          console.error('❌ Payment history API failed:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch payment history:', error);
