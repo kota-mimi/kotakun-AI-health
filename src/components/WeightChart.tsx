@@ -23,7 +23,12 @@ type DataType = 'weight' | 'waist';
 export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    return oneMonthAgo.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [isExpanded, setIsExpanded] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -93,48 +98,29 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       return processedData;
     }
     
-    // 実際のデータを期間でフィルタリング
-    let filteredData;
-    if (selectedPeriod === 'all') {
-      filteredData = validData;
-    } else {
-      // 日付順にソート（最新が最後） - ISO形式の日付を正しく解析
-      const sortedData = validData.sort((a, b) => {
-        const dateA = new Date(a.date + 'T00:00:00');
-        const dateB = new Date(b.date + 'T00:00:00');
-        return dateA.getTime() - dateB.getTime();
-      });
-      
-      // 期間に応じて最新のN件を取得
-      let takeCount;
-      switch (selectedPeriod) {
-        case 'week': takeCount = 7; break;
-        case 'month': takeCount = 30; break;
-        case '6months': takeCount = 90; break; // 3ヶ月に変更
-        case 'year': takeCount = 365; break;
-        default: takeCount = 30; break;
-      }
-      
-      // 最新のN件を取得
-      filteredData = sortedData.slice(-takeCount);
-    }
+    // 日付範囲でフィルタリング
+    const startDateTime = new Date(startDate + 'T00:00:00');
+    const endDateTime = new Date(endDate + 'T23:59:59');
+    
+    const filteredData = validData.filter(item => {
+      const itemDate = new Date(item.date + 'T00:00:00');
+      return itemDate >= startDateTime && itemDate <= endDateTime;
+    }).sort((a, b) => {
+      const dateA = new Date(a.date + 'T00:00:00');
+      const dateB = new Date(b.date + 'T00:00:00');
+      return dateA.getTime() - dateB.getTime();
+    });
 
     // データがない場合は空配列を返す
     if (filteredData.length === 0) {
       return [];
     }
 
-    // 期間に応じてデータを間引く
+    // データ量に応じて自動間引き（シンプル化）
     let downsampledData = filteredData;
-    if (selectedPeriod === '6months' && filteredData.length > 30) {
-      // 3ヶ月の場合：3日に1回のデータを表示
-      downsampledData = filteredData.filter((_, index) => index % 3 === 0);
-    } else if (selectedPeriod === 'year' && filteredData.length > 80) {
-      // 1年の場合：週1回（7日に1回）のデータを表示
-      downsampledData = filteredData.filter((_, index) => index % 7 === 0);
-    } else if (selectedPeriod === 'all' && filteredData.length > 100) {
-      // 全期間の場合：データ量に応じて間引く
-      const interval = Math.ceil(filteredData.length / 100);
+    if (filteredData.length > 50) {
+      // 50件以上の場合は適切に間引く
+      const interval = Math.ceil(filteredData.length / 50);
       downsampledData = filteredData.filter((_, index) => index % interval === 0);
     }
 
@@ -169,7 +155,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }).filter(item => item !== null); // null値を除外
     
     return processedData;
-  }, [hasRealData, hasCounselingData, counselingInitialData, validData, selectedPeriod, mounted]);
+  }, [hasRealData, hasCounselingData, counselingInitialData, validData, startDate, endDate, mounted]);
 
   // データから適切な範囲を計算（動的スケーリング対応）- メモ化
   const dataRange = useMemo(() => {
@@ -556,28 +542,33 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       {/* グラフ内容 - 開閉可能 */}
       {isExpanded && (
         <div className="p-4 space-y-4">
-          {/* 期間選択ボタン */}
-          <div className="flex bg-slate-100 rounded-lg p-1">
-            {[
-              { key: 'month', label: '1ヶ月' },
-              { key: '6months', label: '3ヶ月' },
-              { key: 'all', label: '全期間' }
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => {
-                  setSelectedPeriod(key as any);
+          {/* 日付範囲選択 */}
+          <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-2">
+            <div className="flex items-center gap-1">
+              <label className="text-xs text-slate-600">開始日:</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
                   setSelectedPoint(null);
                 }}
-                className={`flex-1 px-1 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
-                  selectedPeriod === key
-                    ? 'bg-white text-slate-800 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+                className="text-xs px-2 py-1 rounded border border-slate-300 bg-white"
+              />
+            </div>
+            <span className="text-slate-400">〜</span>
+            <div className="flex items-center gap-1">
+              <label className="text-xs text-slate-600">終了日:</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setSelectedPoint(null);
+                }}
+                className="text-xs px-2 py-1 rounded border border-slate-300 bg-white"
+              />
+            </div>
           </div>
 
           {/* グラフエリア */}
@@ -717,56 +708,24 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             const filteredPoints = pathPoints.filter(point => !isNaN(point.x) && !isNaN(point.y));
             const totalPoints = filteredPoints.length;
             
-            // 期間に応じて表示する日付の数を決定
-            let displayInterval;
-            if (selectedPeriod === 'week') {
-              displayInterval = 1; // 毎日表示
-            } else if (selectedPeriod === 'month') {
-              displayInterval = Math.max(1, Math.floor(totalPoints / 6)); // 最大6個
-            } else if (selectedPeriod === '6months') {
-              displayInterval = Math.max(1, Math.floor(totalPoints / 6)); // 最大6個（3ヶ月用）
-            } else if (selectedPeriod === 'year') {
-              displayInterval = Math.max(1, Math.floor(totalPoints / 10)); // 最大10個
-            } else {
-              displayInterval = Math.max(1, Math.floor(totalPoints / 12)); // 最大12個
-            }
+            // データ量に応じて表示間隔を自動調整
+            const displayInterval = Math.max(1, Math.floor(totalPoints / 8)); // 最大8個の日付を表示
             
-            // 日付フォーマット関数
+            // 日付フォーマット関数（シンプル化）
             const formatDate = (dateStr: string) => {
-              // ISO形式の日付（YYYY-MM-DD）を正しく解析
-              let date: Date;
-              if (typeof dateStr === 'string') {
-                // MM/DD形式の場合はそのまま表示（開発環境用）
-                if (dateStr.includes('/') && !dateStr.includes('-')) {
-                  return dateStr;
-                }
-                // ISO形式の日付文字列を直接解析
-                date = new Date(dateStr + 'T00:00:00');
-              } else {
-                date = new Date(dateStr);
+              // MM/DD形式の場合はそのまま表示
+              if (dateStr.includes('/') && !dateStr.includes('-')) {
+                return dateStr;
               }
               
-              // 日付が無効な場合はそのまま返す
+              const date = new Date(dateStr + 'T00:00:00');
               if (isNaN(date.getTime())) {
-                console.warn('⚠️ Invalid date in formatDate:', dateStr);
                 return dateStr;
               }
               
               const month = date.getMonth() + 1;
               const day = date.getDate();
-              
-              if (selectedPeriod === 'week') {
-                return `${month}/${day}`;
-              } else if (selectedPeriod === 'month') {
-                return `${month}/${day}`;
-              } else if (selectedPeriod === '6months') {
-                return `${month}/${day}`; // 3ヶ月なので日付表示
-              } else if (selectedPeriod === 'year') {
-                return `${month}月`;
-              } else {
-                const year = date.getFullYear() % 100; // 2桁年
-                return `${year}/${month}`;
-              }
+              return `${month}/${day}`;
             };
             
             return filteredPoints
