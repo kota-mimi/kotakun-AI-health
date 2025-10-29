@@ -484,6 +484,16 @@ export function MyProfilePage({
           // 成功アラート
           alert('プロフィールを保存しました！');
           
+          // カウンセリングデータ更新イベント発火（リアルタイム反映用）
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
+              detail: { type: 'profile_update', timestamp: new Date().toISOString() }
+            }));
+          }
+          
+          // 強制ページ更新（ユーザー要望）
+          window.location.reload();
+          
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
             error: error.message,
