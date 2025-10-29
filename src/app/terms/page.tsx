@@ -1,8 +1,7 @@
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-lg p-8">
+    <div className="min-h-screen bg-white">
+      <div className="w-full px-6 py-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">利用規約</h1>
           
           <div className="space-y-6 text-gray-700">
@@ -147,8 +146,7 @@ export default function TermsOfService() {
                   <h3 className="font-medium mb-2">6.1 料金体系</h3>
                   <ul className="list-disc ml-6 space-y-1">
                     <li>月額プラン：月額890円（税込）</li>
-                    <li>3ヶ月プラン：2,480円（税込）【月額換算827円・7%OFF】</li>
-                    <li>半年プラン：3,480円（税込）【月額換算580円・35%OFF】</li>
+                    <li>3ヶ月プラン：1,800円（税込）【月額換算600円・32%OFF】</li>
                     <li>料金は事前通知により変更される場合があります</li>
                   </ul>
                 </div>
@@ -418,7 +416,6 @@ export default function TermsOfService() {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
