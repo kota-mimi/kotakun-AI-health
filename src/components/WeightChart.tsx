@@ -39,10 +39,8 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
   }, []);
   
   // 実際のデータがある場合はそれを使用、ない場合でもカウンセリング結果があれば初期データを作成
-  const hasRealData = useMemo(() => validData.length > 0, [validData]);
-  const hasCounselingData = useMemo(() => 
-    counselingResult?.answers?.weight && counselingResult.answers.weight > 0, 
-    [counselingResult]);
+  const hasRealData = validData.length > 0;
+  const hasCounselingData = counselingResult?.answers?.weight && counselingResult.answers.weight > 0;
 
   // カウンセリング初期データの生成をメモ化
   const counselingInitialData = useMemo(() => {
@@ -596,31 +594,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           className="cursor-crosshair touch-none"
           style={{ touchAction: 'none' }}
         >
-          {/* グラデーション定義 */}
-          <defs>
-            <linearGradient id={`gradient-${selectedDataType}`} x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={currentConfig.color} stopOpacity="0.3" />
-              <stop offset="100%" stopColor={currentConfig.color} stopOpacity="0.05" />
-            </linearGradient>
-            <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-              <feOffset dx="0" dy="2" result="offset" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.2"/>
-              </feComponentTransfer>
-              <feMerge> 
-                <feMergeNode/>
-                <feMergeNode in="SourceGraphic"/> 
-              </feMerge>
-            </filter>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
+          {/* 軽量化: グラデーション・フィルター削除 */}
 
           {/* グリッドライン */}
           {yAxisTicks.map((tick, index) => (
@@ -647,7 +621,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="transition-all duration-700 ease-out"
           />
           
           {/* インタラクティブエリア（見えない） */}
@@ -684,7 +657,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 fill="white"
                 stroke={currentConfig.color}
                 strokeWidth="3"
-                filter="url(#dropshadow)"
               />
               <circle
                 cx={pathPoints[0].x}
@@ -714,7 +686,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 fill={currentConfig.color}
                 stroke="white"
                 strokeWidth="3"
-                filter="url(#dropshadow)"
               />
               <circle
                 cx={selectedPoint.x}
@@ -724,7 +695,6 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
                 fillOpacity="0.2"
                 stroke={currentConfig.color}
                 strokeWidth="1"
-                className="animate-pulse"
               />
             </>
           )}
@@ -822,8 +792,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             style={{
               left: selectedPoint.x - 30,
               top: selectedPoint.y - 65,
-              transform: 'translateX(-50%)',
-              animation: 'fadeInScale 0.2s ease-out'
+              transform: 'translateX(-50%)'
             }}
           >
             <div className="font-bold text-base" style={{ color: currentConfig.color }}>
@@ -844,36 +813,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
           </div>
         </div>
 
-        {/* CSSアニメーション */}
-        <style jsx>{`
-          @keyframes drawLine {
-            to {
-              stroke-dashoffset: 0;
-            }
-          }
-          
-          @keyframes fadeInPoint {
-            from {
-              opacity: 0;
-              transform: scale(0);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-          
-          @keyframes fadeInScale {
-            from {
-              opacity: 0;
-              transform: translateX(-50%) scale(0.8);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(-50%) scale(1);
-            }
-          }
-        `}</style>
+        {/* CSSアニメーション削除で軽量化 */}
         </div>
       )}
     </Card>
