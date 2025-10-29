@@ -34,9 +34,10 @@ export function WeightCard({ data, onNavigateToWeight, counselingResult, selecte
   const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
   const shouldShowTarget = hasTargetData && !isMaintenanceMode;
   
-  // 現在の体重表示
-  const currentWeight = hasCurrentData ? data.current : 0;
-  const shouldShowWeight = hasCurrentData;
+  // 現在の体重表示（カウンセリング結果を優先）
+  const counselingWeight = counselingResult?.answers?.weight;
+  const currentWeight = hasCurrentData ? data.current : (counselingWeight || 0);
+  const shouldShowWeight = hasCurrentData || (counselingWeight && counselingWeight > 0);
   
   // 前日比計算
   const difference = hasCurrentData && hasPreviousData ? (currentWeight - data.previous) : 0;

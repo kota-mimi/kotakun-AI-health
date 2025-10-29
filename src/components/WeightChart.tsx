@@ -23,12 +23,7 @@ type DataType = 'weight' | 'waist';
 export function WeightChart({ data = [], period, height, targetWeight = 68.0, currentWeight = 0, counselingResult }: WeightChartProps) {
   const [selectedDataType, setSelectedDataType] = useState<DataType>('weight');
   const [selectedPoint, setSelectedPoint] = useState<{x: number, y: number, value: number, date: string} | null>(null);
-  const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-    return oneMonthAgo.toISOString().split('T')[0];
-  });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '6months' | 'year' | 'all'>('month');
   const [isExpanded, setIsExpanded] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -98,18 +93,24 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       return processedData;
     }
     
-    // 日付範囲でフィルタリング
-    const startDateTime = new Date(startDate + 'T00:00:00');
-    const endDateTime = new Date(endDate + 'T23:59:59');
-    
-    const filteredData = validData.filter(item => {
-      const itemDate = new Date(item.date + 'T00:00:00');
-      return itemDate >= startDateTime && itemDate <= endDateTime;
-    }).sort((a, b) => {
+    // 期間に応じた簡単なフィルタリング（最新データから指定件数）
+    const sortedData = validData.sort((a, b) => {
       const dateA = new Date(a.date + 'T00:00:00');
       const dateB = new Date(b.date + 'T00:00:00');
       return dateA.getTime() - dateB.getTime();
     });
+    
+    let takeCount;
+    switch (selectedPeriod) {
+      case 'week': takeCount = 7; break;
+      case 'month': takeCount = 30; break;
+      case '6months': takeCount = 90; break;
+      case 'year': takeCount = 365; break;
+      case 'all': takeCount = sortedData.length; break;
+      default: takeCount = 30; break;
+    }
+    
+    const filteredData = selectedPeriod === 'all' ? sortedData : sortedData.slice(-takeCount);
 
     // データがない場合は空配列を返す
     if (filteredData.length === 0) {
@@ -155,7 +156,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
     }).filter(item => item !== null); // null値を除外
     
     return processedData;
-  }, [hasRealData, hasCounselingData, counselingInitialData, validData, startDate, endDate, mounted]);
+  }, [hasRealData, hasCounselingData, counselingInitialData, validData, selectedPeriod, mounted]);
 
   // データから適切な範囲を計算（動的スケーリング対応）- メモ化
   const dataRange = useMemo(() => {
@@ -542,33 +543,28 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       {/* グラフ内容 - 開閉可能 */}
       {isExpanded && (
         <div className="p-4 space-y-4">
-          {/* 日付範囲選択 */}
-          <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-2">
-            <div className="flex items-center gap-1">
-              <label className="text-xs text-slate-600">開始日:</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
+          {/* 期間選択ボタン（元に戻す） */}
+          <div className="flex bg-slate-100 rounded-lg p-1">
+            {[
+              { key: 'month', label: '1ヶ月' },
+              { key: '6months', label: '3ヶ月' },
+              { key: 'all', label: '全期間' }
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setSelectedPeriod(key as any);
                   setSelectedPoint(null);
                 }}
-                className="text-xs px-2 py-1 rounded border border-slate-300 bg-white"
-              />
-            </div>
-            <span className="text-slate-400">〜</span>
-            <div className="flex items-center gap-1">
-              <label className="text-xs text-slate-600">終了日:</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setSelectedPoint(null);
-                }}
-                className="text-xs px-2 py-1 rounded border border-slate-300 bg-white"
-              />
-            </div>
+                className={`flex-1 px-1 py-1 text-xs font-medium rounded-md ${
+                  selectedPeriod === key
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {/* グラフエリア */}
@@ -638,34 +634,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
             />
           )}
 
-          {/* 記録開始ポイント（カウンセリングデータのみの場合のみ表示） */}
-          {pathPoints.length > 0 && !hasRealData && hasCounselingData && (
-            <>
-              <circle
-                cx={pathPoints[0].x}
-                cy={pathPoints[0].y}
-                r="5"
-                fill="white"
-                stroke={currentConfig.color}
-                strokeWidth="3"
-              />
-              <circle
-                cx={pathPoints[0].x}
-                cy={pathPoints[0].y}
-                r="2"
-                fill={currentConfig.color}
-              />
-              {/* スタートラベル */}
-              <text
-                x={pathPoints[0].x}
-                y={pathPoints[0].y - 15}
-                textAnchor="middle"
-                className="text-xs font-bold fill-blue-600"
-              >
-                記録開始
-              </text>
-            </>
-          )}
+          {/* 記録開始ポイント削除 - パフォーマンス向上のため */}
 
           {/* 選択されたポイントのみ表示 */}
           {selectedPoint && (
