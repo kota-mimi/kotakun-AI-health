@@ -41,7 +41,6 @@ interface MyProfilePageProps {
   onNavigateToSettings?: () => void;
   onNavigateToData?: () => void;
   onNavigateToPlanSettings?: () => void;
-  onNavigateToPaymentSettings?: () => void;
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
   onNavigateToReminderSettings?: () => void;
@@ -52,7 +51,6 @@ export function MyProfilePage({
   onNavigateToSettings, 
   onNavigateToData,
   onNavigateToPlanSettings,
-  onNavigateToPaymentSettings,
   onNavigateToUserGuide,
   onNavigateToContact,
   onNavigateToReminderSettings,
@@ -566,16 +564,6 @@ export function MyProfilePage({
         'プラン設定',
         onNavigateToPlanSettings || (() => {})
       ) : onNavigateToPlanSettings
-    },
-    {
-      label: '支払い設定',
-      color: '#EF4444',
-      action: onNavigateToCounseling ? withCounselingGuard(
-        counselingResult,
-        onNavigateToCounseling,
-        '支払い設定',
-        onNavigateToPaymentSettings || (() => {})
-      ) : onNavigateToPaymentSettings
     }
   ];
 

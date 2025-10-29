@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -20,6 +20,45 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const [currentPlan, setCurrentPlan] = useState('free'); // free, monthly, quarterly
   const [selectedPlan, setSelectedPlan] = useState('quarterly'); // 表示用の選択状態（3ヶ月プランを初期選択）
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 現在のプラン情報を取得
+  useEffect(() => {
+    const fetchCurrentPlan = async () => {
+      if (!liffUser?.userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('🔍 Fetching current plan for userId:', liffUser.userId);
+        const response = await fetch(`/api/payment/history?userId=${liffUser.userId}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('📊 Payment data:', data);
+          
+          if (data.success && data.payments.length > 0) {
+            const latestPayment = data.payments[0];
+            console.log('💳 Latest payment:', latestPayment);
+            
+            // プラン名からプランIDを判定
+            if (latestPayment.planName === '月額プラン') {
+              setCurrentPlan('monthly');
+            } else if (latestPayment.planName === '3ヶ月プラン') {
+              setCurrentPlan('quarterly');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch current plan:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCurrentPlan();
+  }, [liffUser?.userId]);
 
   // 決済処理ハンドラー
   const handlePlanChange = async (selectedPlan: any) => {

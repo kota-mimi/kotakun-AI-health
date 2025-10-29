@@ -25,7 +25,6 @@ import { MyProfilePage } from '@/components/MyProfilePage';
 import { SettingsPage } from '@/components/SettingsPage';
 import { NutritionSettingsPage } from '@/components/NutritionSettingsPage';
 import { PlanSettingsPage } from '@/components/PlanSettingsPage';
-import { PaymentSettingsPage } from '@/components/PaymentSettingsPage';
 import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
 import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
@@ -155,13 +154,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
         <>
-          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showPaymentSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showReminderSettings ? (
+          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showReminderSettings ? (
             <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
                 onNavigateToData={() => {}} // 削除：データページはもうない
                 onNavigateToPlanSettings={navigation.handleNavigateToPlanSettings}
-                onNavigateToPaymentSettings={navigation.handleNavigateToPaymentSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
                 onNavigateToReminderSettings={navigation.handleNavigateToReminderSettings}
@@ -186,10 +184,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
           ) : navigation.showPlanSettings ? (
             <PlanSettingsPage 
               onBack={navigation.handleBackFromPlanSettings}
-            />
-          ) : navigation.showPaymentSettings ? (
-            <PaymentSettingsPage 
-              onBack={navigation.handleBackFromPaymentSettings}
             />
           ) : navigation.showUserGuide ? (
             <UserGuidePage 
