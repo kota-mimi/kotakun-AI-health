@@ -180,8 +180,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     // 目標体重を設定（健康維持モード判定）
     const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-    const targetWeight = weightSettingsStorage.value.targetWeight || 
-                        (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 0;
+    const targetWeight = (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 
+                        weightSettingsStorage.value.targetWeight || 0;
     
     // その日の体重記録を取得（APIデータから）
     const currentDayData = realWeightData.find(item => item.date === dateKey);
