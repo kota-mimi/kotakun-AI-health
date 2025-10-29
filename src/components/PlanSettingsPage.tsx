@@ -15,8 +15,8 @@ interface PlanSettingsPageProps {
 }
 
 export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
-  const [currentPlan, setCurrentPlan] = useState('free'); // free, monthly, quarterly, biannual
-  const [selectedPlan, setSelectedPlan] = useState('biannual'); // 表示用の選択状態（人気No.1を初期選択）
+  const [currentPlan, setCurrentPlan] = useState('free'); // free, monthly, quarterly
+  const [selectedPlan, setSelectedPlan] = useState('quarterly'); // 表示用の選択状態（3ヶ月プランを初期選択）
   const [isProcessing, setIsProcessing] = useState(false);
 
   // 決済処理ハンドラー
@@ -94,31 +94,14 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     {
       id: 'quarterly',
       name: '3ヶ月プラン',
-      price: 2480,
+      price: 1869,
       period: '3ヶ月',
-      monthlyPrice: 827,
-      discount: '7%OFF',
+      monthlyPrice: 623,
+      discount: '30%OFF',
       stripePriceId: 'price_quarterly_plan', // Stripe価格ID（後で設定）
+      isRecommended: true,
       isCurrentPlan: currentPlan === 'quarterly',
       isSelected: selectedPlan === 'quarterly',
-      features: [
-        'すべての機能が無制限',
-        'AI会話・記録が使い放題',
-        '1日のフィードバック機能',
-        'アプリからAI記録機能'
-      ]
-    },
-    {
-      id: 'biannual',
-      name: '半年プラン',
-      price: 3480,
-      period: '半年',
-      monthlyPrice: 580,
-      discount: '35%OFF',
-      stripePriceId: 'price_biannual_plan', // Stripe価格ID（後で設定）
-      isRecommended: true,
-      isCurrentPlan: currentPlan === 'biannual',
-      isSelected: selectedPlan === 'biannual',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
@@ -267,7 +250,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* プラン一覧 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
