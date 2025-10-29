@@ -63,10 +63,10 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'quarterly',
     name: '3ヶ月プラン',
-    price: 1869,
+    price: 1800,
     period: '3ヶ月',
     originalPrice: 2670,
-    discount: '30%OFF',
+    discount: '32%OFF',
     stripePriceId: process.env.STRIPE_QUARTERLY_PRICE_ID || 'price_1SMXC4KMirzoVNsdVt8h6lNw',
     features: [
       'すべての機能が無制限',
