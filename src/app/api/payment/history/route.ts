@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { admin } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,14 +13,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Firestoreから支払い履歴を取得
-    const paymentsRef = collection(db, 'payments');
-    const q = query(
-      paymentsRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
+    // Firestoreから支払い履歴を取得（Admin SDK）
+    const paymentsRef = admin.firestore().collection('payments');
+    const snapshot = await paymentsRef
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .get();
 
     const payments = snapshot.docs.map(doc => {
       const data = doc.data();

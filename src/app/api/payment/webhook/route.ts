@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { admin } from '@/lib/firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -68,14 +67,14 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date()
       };
 
-      await addDoc(collection(db, 'payments'), paymentRecord);
+      await admin.firestore().collection('payments').add(paymentRecord);
       
       console.log('✅ Payment record saved to Firestore:', paymentRecord);
 
       // ユーザーのサブスクリプション状態を更新
       if (paymentRecord.userId !== 'unknown') {
-        const userRef = doc(db, 'users', paymentRecord.userId);
-        await updateDoc(userRef, {
+        const userRef = admin.firestore().collection('users').doc(paymentRecord.userId);
+        await userRef.update({
           subscriptionStatus: 'active',
           currentPlan: planName,
           subscriptionStartDate: new Date(),
