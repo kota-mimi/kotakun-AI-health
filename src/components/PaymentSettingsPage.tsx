@@ -39,18 +39,10 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
       }
 
       try {
-        // テスト: unknown ユーザーIDでも試してみる
-        const testUserId = 'unknown';
         console.log('🔍 Fetching payment history for userId:', liffUser.userId);
-        console.log('🧪 Also testing with unknown userId for debugging');
-        
         const response = await fetch(`/api/payment/history?userId=${liffUser.userId}`);
-        const testResponse = await fetch(`/api/payment/history?userId=${testUserId}`);
-        
         console.log('📡 Payment history API response status:', response.status);
-        console.log('📡 Test (unknown) API response status:', testResponse.status);
         
-        // メインのレスポンスをチェック
         if (response.ok) {
           const data = await response.json();
           console.log('📊 Payment history data:', data);
@@ -72,26 +64,6 @@ export function PaymentSettingsPage({ onBack }: PaymentSettingsPageProps) {
           }
         } else {
           console.error('❌ Payment history API failed:', response.status, response.statusText);
-        }
-        
-        // テストレスポンスもチェック
-        if (testResponse.ok) {
-          const testData = await testResponse.json();
-          console.log('🧪 Test (unknown) payment history data:', testData);
-          
-          // もし unknown ユーザーIDにデータがあれば、それを表示（デバッグ用）
-          if (testData.success && testData.payments.length > 0) {
-            console.log('🎯 Found payments for unknown user - using this data for now');
-            setPaymentHistory(testData.payments);
-            
-            const latestPayment = testData.payments[0];
-            setCurrentSubscription({
-              status: 'active',
-              plan: latestPayment.planName,
-              nextBilling: null,
-              amount: latestPayment.amount
-            });
-          }
         }
       } catch (error) {
         console.error('Failed to fetch payment history:', error);

@@ -3,6 +3,7 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { createPaymentSession } from '../lib/payment';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   ArrowLeft, 
   Check, 
@@ -15,6 +16,7 @@ interface PlanSettingsPageProps {
 }
 
 export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
+  const { liffUser } = useAuth();
   const [currentPlan, setCurrentPlan] = useState('free'); // free, monthly, quarterly
   const [selectedPlan, setSelectedPlan] = useState('quarterly'); // 表示用の選択状態（3ヶ月プランを初期選択）
   const [isProcessing, setIsProcessing] = useState(false);
@@ -35,9 +37,15 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         console.log('決済フローを開始:', selectedPlan);
         
         // 決済セッション作成
+        if (!liffUser?.userId) {
+          alert('ユーザー情報が取得できません。LINEからアクセスしてください。');
+          return;
+        }
+        
+        console.log('💳 Creating payment session for userId:', liffUser.userId);
         const session = await createPaymentSession(
           selectedPlan.id,
-          'current_user_id', // TODO: 実際のユーザーIDを取得
+          liffUser.userId, // 実際のLINEユーザーIDを使用
           `${window.location.origin}/payment/success`,
           `${window.location.origin}/payment/cancel`
         );
