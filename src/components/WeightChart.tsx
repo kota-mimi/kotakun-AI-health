@@ -441,7 +441,7 @@ export function WeightChart({ data = [], period, height, targetWeight = 68.0, cu
       value: interpolatedValue,
       date: t < 0.5 ? startPoint.date : endPoint.date
     });
-  };
+  }, [pathPoints]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<SVGElement>) => {
     event.preventDefault();
