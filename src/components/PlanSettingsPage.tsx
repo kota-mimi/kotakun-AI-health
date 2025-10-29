@@ -98,7 +98,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       period: '3ヶ月',
       monthlyPrice: 600,
       discount: '32%OFF',
-      stripePriceId: 'price_quarterly_plan', // Stripe価格ID（後で設定）
+      stripePriceId: 'price_1SNPADKMirzoVNsdLmsBPZ3o', // 新しいStripe価格ID (¥1,800)
       isRecommended: true,
       isCurrentPlan: currentPlan === 'quarterly',
       isSelected: selectedPlan === 'quarterly',
