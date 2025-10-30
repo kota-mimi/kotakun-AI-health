@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useSwipeable } from 'react-swipeable';
 
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useNavigationState } from '@/hooks/useNavigationState';
@@ -147,6 +148,30 @@ function DashboardContent({ onError }: { onError: () => void }) {
     return 'dinner'; // 19:00-4:59 夕食
   };
 
+  // スワイプで日付移動する関数
+  const handleSwipeLeft = () => {
+    // 左スワイプ = 翌日へ
+    const nextDay = new Date(navigation.selectedDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    navigation.handleDateSelect(nextDay);
+  };
+
+  const handleSwipeRight = () => {
+    // 右スワイプ = 前日へ
+    const prevDay = new Date(navigation.selectedDate);
+    prevDay.setDate(prevDay.getDate() - 1);
+    navigation.handleDateSelect(prevDay);
+  };
+
+  // スワイプハンドラーを設定
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: handleSwipeLeft,
+    onSwipedRight: handleSwipeRight,
+    trackMouse: true, // マウスドラッグでもテスト可能
+    preventScrollOnSwipe: false, // 縦スクロールは維持
+    delta: 50, // 50px以上のスワイプで発動
+  });
+
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-orange-50 to-amber-50">
@@ -218,7 +243,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
             )}
           </div>
 
-          <div className="relative px-4 py-4 pb-24 space-y-4">
+          <div {...swipeHandlers} className="relative px-4 py-4 pb-24 space-y-4">
             {/* 体重カード - クリックで体重入力モーダル */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
               {weightManager?.weightData && (
