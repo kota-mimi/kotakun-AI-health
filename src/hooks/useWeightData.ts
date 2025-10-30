@@ -39,6 +39,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const [realWeightData, setRealWeightData] = useState<Array<{date: string; weight: number}>>([]);
   const [isClient, setIsClient] = useState(false);
   const [isLoadingWeightData, setIsLoadingWeightData] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // クライアントサイドでのマウントを確認
   useEffect(() => {
@@ -65,10 +66,11 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const isTodaySelected = selectedKey === today;
       
       // キャッシュがあれば常に即座に表示（アプリ起動時の高速化）
-      if (cachedData) {
+      if (cachedData && Array.isArray(cachedData)) {
         console.log('⚡ 体重データをキャッシュから即座に取得');
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
+        setIsInitialized(true);
         
         // 今日の日付の場合のみ、バックグラウンドでAPI取得して更新チェック
         if (!isTodaySelected) {
@@ -113,19 +115,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
           
-          // 今日の場合、既にキャッシュデータを表示済みなら、差分がある場合のみ更新
-          if (isTodaySelected && cachedData) {
-            const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(weightData);
-            if (hasChanges) {
-              console.log('🔄 最新データに差分があるため更新');
-              setRealWeightData(weightData);
-            } else {
-              console.log('✅ キャッシュと最新データが同じため更新不要');
-            }
-          } else {
-            // キャッシュがない場合や過去日付の場合は通常通り更新
-            setRealWeightData(weightData);
-          }
+          setRealWeightData(weightData);
+          setIsInitialized(true);
           
           // APIから取得したデータと重複するローカルデータを削除
           const currentDateData = dateBasedData[selectedKey];
@@ -219,6 +210,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           
           apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
           setRealWeightData(weightData);
+          setIsInitialized(true);
         }
       } catch (error) {
         console.error('手動体重データ取得エラー:', error);
@@ -230,8 +222,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
   // 特定の日付の体重データを取得（シンプルなロジック）
   const getWeightDataForDate = (date: Date): WeightData => {
-    // クライアントサイドでない場合はデフォルト値を返す
-    if (!isClient) {
+    // クライアントサイドでない場合、または初期化前はデフォルト値を返す
+    if (!isClient || !isInitialized) {
       return {
         current: 0,
         previous: 0,
@@ -239,40 +231,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
-    // realWeightDataが空の場合、キャッシュから直接取得を試行
+    // realWeightDataが空でキャッシュもない場合のみ手動取得をトリガー
     if (realWeightData.length === 0 && liffUser?.userId) {
       const cacheKey = createCacheKey('weight', liffUser.userId, 'month');
       const cachedData = apiCache.get(cacheKey);
-      if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
-        // キャッシュがあるが、まだrealWeightDataに反映されていない場合
-        // 一時的にキャッシュデータを使用
-        console.log('⚡ キャッシュから一時的にデータを取得');
-        const tempRealWeightData = cachedData;
-        const dateKey = getDateKey(date);
-        const currentDayData = tempRealWeightData.find(item => item.date === dateKey);
-        const currentWeight = currentDayData?.weight || 0;
-        
-        // 前日データも取得
-        const previousDate = new Date(date);
-        previousDate.setDate(previousDate.getDate() - 1);
-        const previousKey = getDateKey(previousDate);
-        const previousDayData = tempRealWeightData.find(item => item.date === previousKey);
-        const previousWeight = previousDayData?.weight || 0;
-        
-        const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-        const targetWeight = (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 
-                            weightSettingsStorage.value.targetWeight || 0;
-        
-        return {
-          current: currentWeight,
-          previous: previousWeight,
-          target: targetWeight
-        };
+      if (!cachedData) {
+        ensureWeightDataLoaded();
       }
     }
-    
-    // キャッシュがない場合は手動取得をトリガー
-    ensureWeightDataLoaded();
     
     const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
