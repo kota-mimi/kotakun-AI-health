@@ -185,7 +185,18 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     // その日の体重記録を取得（APIデータから）
     const currentDayData = realWeightData.find(item => item.date === dateKey);
-    const currentWeight = currentDayData?.weight || 0;
+    let currentWeight = currentDayData?.weight || 0;
+    
+    // 今日の日付で体重記録がない場合、前日の体重を使用（日付が変わった時の表示用）
+    if (currentWeight === 0 && dateKey === today) {
+      const previousDate = new Date(date);
+      previousDate.setDate(previousDate.getDate() - 1);
+      const previousKey = getDateKey(previousDate);
+      const previousDayData = realWeightData.find(item => item.date === previousKey);
+      if (previousDayData?.weight) {
+        currentWeight = previousDayData.weight;
+      }
+    }
     
     // 前日の体重記録を取得（前日比計算用）
     const previousDate = new Date(date);
