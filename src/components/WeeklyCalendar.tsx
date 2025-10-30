@@ -11,12 +11,12 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
   const [selectedWeek, setSelectedWeek] = useState(0);
 
   const getWeekDates = (weekOffset: number = 0) => {
-    const today = new Date();
-    const startOfWeek = new Date(today);
+    const baseDate = new Date(currentDate);
+    const startOfWeek = new Date(baseDate);
     // 月曜日を週の始まりとする（日本標準）
-    const dayOfWeek = today.getDay();
+    const dayOfWeek = baseDate.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 日曜日の場合は-6、それ以外は1-dayOfWeek
-    startOfWeek.setDate(today.getDate() + mondayOffset + weekOffset * 7);
+    startOfWeek.setDate(baseDate.getDate() + mondayOffset + weekOffset * 7);
     
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -59,7 +59,7 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
               className="h-14 flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 text-slate-600 hover:bg-gray-100 border border-transparent hover:border-gray-200"
             >
               <span className="text-xs mb-2 text-slate-500">
-                {dayNames[date.getDay()]}
+                {dayNames[(date.getDay() + 6) % 7]}
               </span>
               <div className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
                 isSameDate(date, currentDate)
