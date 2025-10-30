@@ -239,6 +239,38 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       };
     }
     
+    // realWeightDataが空の場合、キャッシュから直接取得を試行
+    if (realWeightData.length === 0 && liffUser?.userId) {
+      const cacheKey = createCacheKey('weight', liffUser.userId, 'month');
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+        // キャッシュがあるが、まだrealWeightDataに反映されていない場合
+        // 一時的にキャッシュデータを使用
+        console.log('⚡ キャッシュから一時的にデータを取得');
+        const tempRealWeightData = cachedData;
+        const dateKey = getDateKey(date);
+        const currentDayData = tempRealWeightData.find(item => item.date === dateKey);
+        const currentWeight = currentDayData?.weight || 0;
+        
+        // 前日データも取得
+        const previousDate = new Date(date);
+        previousDate.setDate(previousDate.getDate() - 1);
+        const previousKey = getDateKey(previousDate);
+        const previousDayData = tempRealWeightData.find(item => item.date === previousKey);
+        const previousWeight = previousDayData?.weight || 0;
+        
+        const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
+        const targetWeight = (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 
+                            weightSettingsStorage.value.targetWeight || 0;
+        
+        return {
+          current: currentWeight,
+          previous: previousWeight,
+          target: targetWeight
+        };
+      }
+    }
+    
     // キャッシュがない場合は手動取得をトリガー
     ensureWeightDataLoaded();
     
