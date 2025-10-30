@@ -254,8 +254,24 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     // 目標体重を設定（健康維持モード判定）
     const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-    const targetWeight = (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 
-                        weightSettingsStorage.value.targetWeight || 0;
+    // キャッシュからもカウンセリング結果を取得を試行
+    let targetWeight = 0;
+    
+    if (counselingResult?.answers?.targetWeight && !isMaintenanceMode) {
+      targetWeight = counselingResult.answers.targetWeight;
+    } else if (!counselingResult && liffUser?.userId) {
+      // カウンセリング結果がまだ取得されていない場合、キャッシュから確認
+      const counselingCacheKey = createCacheKey('counseling', liffUser.userId);
+      const cachedCounseling = apiCache.get(counselingCacheKey);
+      if (cachedCounseling?.answers?.targetWeight && cachedCounseling.answers.primaryGoal !== 'maintenance') {
+        targetWeight = cachedCounseling.answers.targetWeight;
+      }
+    }
+    
+    // フォールバック：weightSettingsStorage
+    if (targetWeight === 0) {
+      targetWeight = weightSettingsStorage.value.targetWeight || 0;
+    }
     
     // その日の体重記録を取得（APIデータから）
     const currentDayData = realWeightData.find(item => item.date === dateKey);
