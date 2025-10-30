@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
+import { useProfileHistory, getTargetValuesForDate } from './useProfileHistory';
 
 interface FoodItem {
   id: string;
@@ -57,6 +58,8 @@ interface CounselingResult {
 }
 
 export function useMealData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: CounselingResult | null) {
+  // 日付ベースのプロフィール履歴を取得
+  const { profileData } = useProfileHistory(selectedDate);
   const { liffUser } = useAuth();
   const [isAddMealModalOpen, setIsAddMealModalOpen] = useState(false);
   const [isEditMealModalOpen, setIsEditMealModalOpen] = useState(false);
@@ -229,11 +232,12 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
     const totalFat = Math.round(allMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0) * 10) / 10;
     const totalCarbs = Math.round(allMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0) * 10) / 10;
 
-    // カウンセリング結果があればそれを使用、なければデフォルト値
-    const targetCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || 2000;
-    const proteinTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || 120;
-    const fatTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 60;
-    const carbsTarget = counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 250;
+    // 日付ベースのプロフィール履歴から目標値を取得（CalorieCardと同じロジック）
+    const targetValues = getTargetValuesForDate(profileData, counselingResult);
+    const targetCalories = targetValues.targetCalories;
+    const proteinTarget = targetValues.macros.protein;
+    const fatTarget = targetValues.macros.fat;
+    const carbsTarget = targetValues.macros.carbs;
 
 
     return {
