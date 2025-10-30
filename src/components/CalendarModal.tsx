@@ -54,20 +54,24 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, cou
     return date.toDateString() === selectedDate.toDateString();
   };
 
-  // カウンセリング日以前かチェック（カウンセリング日以前は無効）
+  // カウンセリング開始日以前かチェック（カウンセリング開始日以前は選択不可）
   const isBeforeCounselingDate = (date: Date) => {
     if (!counselingResult) return false;
     
-    const counselingDateRaw = counselingResult.completedAt || counselingResult.createdAt;
+    // CompactHeaderと同じロジックで統一
+    const counselingDateRaw = counselingResult.firstCompletedAt || 
+                             counselingResult.createdAt || 
+                             counselingResult.completedAt;
     if (!counselingDateRaw) return false;
     
     const counselingDate = new Date(counselingDateRaw);
+    if (isNaN(counselingDate.getTime())) return false;
     
     // 日付のみで比較（時間は無視）
     const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const counselingDateOnly = new Date(counselingDate.getFullYear(), counselingDate.getMonth(), counselingDate.getDate());
     
-    return checkDate < counselingDateOnly;
+    return checkDate.getTime() < counselingDateOnly.getTime();
   };
 
   const getDaysInMonth = () => {

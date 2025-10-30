@@ -199,6 +199,35 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return checkDate.toDateString() === counselingDate.toDateString();
   };
 
+  // キャッシュがない場合の手動データ取得
+  const ensureWeightDataLoaded = async () => {
+    const lineUserId = liffUser?.userId;
+    if (!lineUserId || !isClient) return;
+    
+    const cacheKey = createCacheKey('weight', lineUserId, 'month');
+    const cachedData = apiCache.get(cacheKey);
+    
+    if (!cachedData && !isLoadingWeightData) {
+      console.log('🔄 キャッシュなし：手動でAPI取得');
+      setIsLoadingWeightData(true);
+      
+      try {
+        const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
+        if (response.ok) {
+          const result = await response.json();
+          const weightData = result.data || [];
+          
+          apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
+          setRealWeightData(weightData);
+        }
+      } catch (error) {
+        console.error('手動体重データ取得エラー:', error);
+      } finally {
+        setIsLoadingWeightData(false);
+      }
+    }
+  };
+
   // 特定の日付の体重データを取得（シンプルなロジック）
   const getWeightDataForDate = (date: Date): WeightData => {
     // クライアントサイドでない場合はデフォルト値を返す
@@ -209,6 +238,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         target: weightSettingsStorage.value.targetWeight || 68.0
       };
     }
+    
+    // キャッシュがない場合は手動取得をトリガー
+    ensureWeightDataLoaded();
     
     const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
