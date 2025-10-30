@@ -13,12 +13,23 @@ interface CompactHeaderProps {
 }
 
 export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult }: CompactHeaderProps) {
-  // currentDateから今日までの週オフセットを計算
+  // currentDateから今日までの週オフセットを計算（日曜日始まりの週で計算）
   const calculateWeekOffset = () => {
     const today = new Date();
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const daysDiff = Math.floor((currentDate.getTime() - today.getTime()) / msPerDay);
-    return Math.floor(daysDiff / 7);
+    
+    // 今日を含む週の開始日（日曜日）を計算
+    const todayWeekStart = new Date(today);
+    todayWeekStart.setDate(today.getDate() - today.getDay());
+    
+    // currentDateを含む週の開始日（日曜日）を計算
+    const currentWeekStart = new Date(currentDate);
+    currentWeekStart.setDate(currentDate.getDate() - currentDate.getDay());
+    
+    // 週の差を計算
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekDiff = Math.round((currentWeekStart.getTime() - todayWeekStart.getTime()) / msPerWeek);
+    
+    return weekDiff;
   };
   
   const selectedWeek = calculateWeekOffset();
