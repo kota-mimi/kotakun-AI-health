@@ -1125,6 +1125,19 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
     await stopLoadingAnimation(userId);
     
     if (response.ok) {
+      // キャッシュ更新（アプリからの記録と同様に）
+      const cacheKey = createCacheKey('weight', userId, 'month');
+      const cachedData = apiCache.get(cacheKey);
+      if (cachedData && Array.isArray(cachedData)) {
+        const newEntry = { date: today, weight: weightData.weight };
+        const filteredData = cachedData.filter(item => item.date !== today);
+        const updatedData = [...filteredData, newEntry].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        apiCache.set(cacheKey, updatedData, 5 * 60 * 1000);
+        console.log('⚡ LINE記録後：キャッシュも即座に更新');
+      }
+      
       const weightFlexMessage = createWeightFlexMessage(
         weightData.weight,
         undefined
