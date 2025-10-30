@@ -27,7 +27,7 @@ export function WeeklyCalendar({ currentDate, onDateSelect }: WeeklyCalendarProp
     return dates;
   };
 
-  const weekDates = getWeekDates(selectedWeek);
+  const weekDates = getWeekDates(0);
   const dayNames = ['月', '火', '水', '木', '金', '土', '日'];
   
   const isToday = (date: Date) => {
