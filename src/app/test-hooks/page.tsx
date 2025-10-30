@@ -21,7 +21,7 @@ export default function TestHooksPage() {
   // Hooksをテスト
   const counselingHook = useCounselingData();
   const mealHook = useMealData(testDate, mockDateBasedData, mockUpdateDateData, counselingHook.counselingResult);
-  const weightHook = useWeightData(testDate, mockDateBasedData, mockUpdateDateData);
+  const weightHook = useWeightData(testDate, mockDateBasedData, mockUpdateDateData, counselingHook.counselingResult);
   const exerciseHook = useExerciseData(testDate, mockDateBasedData, mockUpdateDateData);
 
   const testAllHooks = async () => {
