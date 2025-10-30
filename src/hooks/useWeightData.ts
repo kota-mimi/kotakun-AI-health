@@ -64,7 +64,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const selectedKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const isTodaySelected = selectedKey === today;
       
-      // キャッシュがあれば常に即座に表示（日付変更時の高速化）
+      // キャッシュがあれば常に即座に表示（アプリ起動時の高速化）
       if (cachedData) {
         console.log('⚡ 体重データをキャッシュから即座に取得');
         setRealWeightData(cachedData);
@@ -75,7 +75,30 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           return; // 過去日付は更新不要
         }
         console.log('🔄 今日の日付：バックグラウンドで最新データをチェック');
-        // 下に続いてAPI取得
+        
+        // バックグラウンドでAPIチェック（キャッシュ優先で即座表示済み）
+        setTimeout(async () => {
+          try {
+            const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
+            if (response.ok) {
+              const result = await response.json();
+              const latestData = result.data || [];
+              
+              const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(latestData);
+              if (hasChanges) {
+                console.log('🔄 バックグラウンド：最新データで更新');
+                apiCache.set(cacheKey, latestData, 5 * 60 * 1000);
+                setRealWeightData(latestData);
+              } else {
+                console.log('✅ バックグラウンド：データ変更なし');
+              }
+            }
+          } catch (error) {
+            console.log('バックグラウンド取得エラー:', error);
+          }
+        }, 100); // 100ms後にバックグラウンド取得
+        
+        return; // メインのAPI取得はスキップ
       } else {
         console.log('🔄 キャッシュなし：API取得');
       }
