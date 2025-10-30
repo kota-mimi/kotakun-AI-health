@@ -151,47 +151,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     fetchWeightData();
   }, [liffUser?.userId, isClient]); // selectedDateを依存関係から除去（月データ使い回しのため）
   
-  // 今日の日付が選択された場合のみ最新データチェック
-  useEffect(() => {
-    if (!isClient || !liffUser?.userId) return;
-    
-    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const selectedKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const isTodaySelected = selectedKey === today;
-    
-    if (isTodaySelected) {
-      const cacheKey = createCacheKey('weight', liffUser.userId, 'month');
-      const cachedData = apiCache.get(cacheKey);
-      
-      if (cachedData) {
-        console.log('📅 今日の日付選択：キャッシュから即座に表示');
-        setRealWeightData(cachedData);
-        setIsLoadingWeightData(false);
-        
-        // バックグラウンドで最新チェック（軽量）
-        const checkLatestData = async () => {
-          try {
-            const response = await fetch(`/api/weight?lineUserId=${liffUser.userId}&period=month`);
-            if (response.ok) {
-              const result = await response.json();
-              const weightData = result.data || [];
-              
-              const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(weightData);
-              if (hasChanges) {
-                console.log('🔄 今日のデータに更新があるため反映');
-                apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
-                setRealWeightData(weightData);
-              }
-            }
-          } catch (error) {
-            console.log('バックグラウンド更新チェックエラー:', error);
-          }
-        };
-        
-        checkLatestData();
-      }
-    }
-  }, [selectedDate, liffUser?.userId, isClient]); // 今日選択時のみの軽量チェック
+  // 削除：selectedDateの変更による不要なAPI呼び出しを完全に排除
   
   // 体重設定をlocalStorageで永続化
   const weightSettingsStorage = useLocalStorage<WeightSettings>('healthApp_weightSettings', {
