@@ -13,7 +13,15 @@ interface CompactHeaderProps {
 }
 
 export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult }: CompactHeaderProps) {
-  const [selectedWeek, setSelectedWeek] = useState(0);
+  // currentDateから今日までの週オフセットを計算
+  const calculateWeekOffset = () => {
+    const today = new Date();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const daysDiff = Math.floor((currentDate.getTime() - today.getTime()) / msPerDay);
+    return Math.floor(daysDiff / 7);
+  };
+  
+  const selectedWeek = calculateWeekOffset();
 
   // アプリ開始日を取得（最初のカウンセリング完了日）
   const getAppStartDate = () => {
@@ -132,7 +140,11 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSelectedWeek(selectedWeek - 1)}
+            onClick={() => {
+              const prevWeek = new Date(currentDate);
+              prevWeek.setDate(currentDate.getDate() - 7);
+              onDateSelect(prevWeek);
+            }}
             disabled={!canGoPrevious()}
             className={`w-8 h-8 p-0 rounded-lg ${
               canGoPrevious() 
@@ -183,7 +195,11 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSelectedWeek(selectedWeek + 1)}
+            onClick={() => {
+              const nextWeek = new Date(currentDate);
+              nextWeek.setDate(currentDate.getDate() + 7);
+              onDateSelect(nextWeek);
+            }}
             className="w-8 h-8 p-0 rounded-lg hover:bg-slate-100/80 text-slate-600"
           >
             <ChevronRight size={16} />
