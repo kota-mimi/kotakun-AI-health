@@ -71,9 +71,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         return;
       }
       
-      if (isTodaySelected) {
-        console.log('🔄 今日の日付のため体重キャッシュを強制更新');
-        apiCache.delete(cacheKey);
+      // 今日の日付でもキャッシュがあれば一旦表示（速度改善）
+      if (cachedData && isTodaySelected) {
+        console.log('⚡ 今日の日付：キャッシュを一旦表示してからAPI取得');
+        setRealWeightData(cachedData);
+        setIsLoadingWeightData(false);
+        // バックグラウンドでAPIから最新データを取得（下に続く）
+      } else if (isTodaySelected) {
+        console.log('🔄 今日の日付：キャッシュなしのためAPI取得');
       }
       
       try {
@@ -85,9 +90,24 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           
           // キャッシュに保存（5分間有効）
           apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
-          setRealWeightData(weightData);
+          
+          // 今日の場合、既にキャッシュデータを表示済みなら、差分がある場合のみ更新
+          if (isTodaySelected && cachedData) {
+            const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(weightData);
+            if (hasChanges) {
+              console.log('🔄 最新データに差分があるため更新');
+              setRealWeightData(weightData);
+            } else {
+              console.log('✅ キャッシュと最新データが同じため更新不要');
+            }
+          } else {
+            // キャッシュがない場合や過去日付の場合は通常通り更新
+            setRealWeightData(weightData);
+          }
           
           // APIから取得したデータと重複するローカルデータを削除
+          const currentDateData = dateBasedData[selectedKey];
+          const hasLocalDataForToday = currentDateData?.weightEntries && currentDateData.weightEntries.length > 0;
           if (hasLocalDataForToday && weightData.length > 0) {
             const todayApiData = weightData.find(item => item.date === selectedKey);
             if (todayApiData) {
