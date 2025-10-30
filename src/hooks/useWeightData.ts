@@ -227,7 +227,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: 0,
         previous: 0,
-        target: weightSettingsStorage.value.targetWeight || 68.0
+        target: 0
       };
     }
     
