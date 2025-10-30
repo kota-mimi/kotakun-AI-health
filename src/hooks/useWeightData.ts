@@ -319,14 +319,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         setRealWeightData(prevData => {
           // 既存の同じ日付のデータを削除して新しいデータを追加
           const filteredData = prevData.filter(item => item.date !== dateStr);
-          return [...filteredData, newRealWeightEntry].sort((a, b) => 
+          const updatedData = [...filteredData, newRealWeightEntry].sort((a, b) => 
             new Date(a.date).getTime() - new Date(b.date).getTime()
           );
+          
+          // キャッシュも同時に更新（重要：削除ではなく更新）
+          const cacheKey = createCacheKey('weight', lineUserId, 'month');
+          apiCache.set(cacheKey, updatedData, 5 * 60 * 1000);
+          console.log('⚡ 体重記録後：キャッシュも即座に更新');
+          
+          return updatedData;
         });
-        
-        // アプリから記録した場合はキャッシュも強制更新
-        const cacheKey = createCacheKey('weight', lineUserId, 'month');
-        apiCache.delete(cacheKey);
         
         // UI即座反映のため強制的にローディング状態をリセット
         setIsLoadingWeightData(false);
