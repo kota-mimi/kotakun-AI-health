@@ -81,8 +81,8 @@ async function createRichMenu(accessToken: string) {
           height: 632
         },
         action: {
-          type: "postback",
-          data: "action=open_dashboard"
+          type: "uri",
+          uri: "https://liff.line.me/2007945061-DEEaglg8/dashboard"
         }
       },
       {
