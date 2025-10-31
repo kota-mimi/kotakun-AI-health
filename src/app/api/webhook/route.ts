@@ -809,35 +809,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
 
   switch (action) {
     case 'open_dashboard':
-      // カウンセリング完了チェック
-      const isDashboardCounselingCompleted = await isCounselingCompleted(userId);
-      if (!isDashboardCounselingCompleted) {
-        console.log('⚠️ カウンセリング未完了: ダッシュボードアクセスをブロック');
-        await sendCounselingPrompt(replyToken, 'マイページ');
-        return;
-      }
-      
-      // カウンセリング完了済みならダッシュボードに遷移
-      const dashboardUrl = process.env.NEXT_PUBLIC_LIFF_ID 
-        ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard`
-        : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
-        
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'マイページを開きます',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'uri',
-                label: 'マイページを開く',
-                uri: dashboardUrl
-              }
-            }
-          ]
-        }
-      }]);
+      // リッチメニューは直接URIアクションを使用するため、この処理は無効化
+      console.log('🚫 open_dashboard postbackは使用されません（直接URI遷移）');
       break;
     case 'meal_breakfast':
     case 'meal_lunch':
