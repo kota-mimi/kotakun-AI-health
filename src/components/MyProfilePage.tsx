@@ -350,8 +350,8 @@ export function MyProfilePage({
           newBMR = calculateBMR(newProfile);
           newTDEE = calculateTDEE(newProfile);
           
-          // プロフィール履歴をAPIで保存
-          const profileHistoryResponse = await fetch('/api/profile/save', {
+          // プロフィール履歴をAPIで保存（Promise化）
+          const profileHistoryPromise = fetch('/api/profile/save', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -375,14 +375,13 @@ export function MyProfilePage({
                 changeDate: new Date().toISOString().split('T')[0]
               }
             })
+          }).then(async response => {
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(`プロフィール履歴保存失敗: ${errorData.error}`);
+            }
+            return response.json();
           });
-          
-          if (!profileHistoryResponse.ok) {
-            const errorData = await profileHistoryResponse.json();
-            throw new Error(`プロフィール履歴保存失敗: ${errorData.error}`);
-          }
-          
-          const profileHistoryResult = await profileHistoryResponse.json();
           
           // デバッグ用詳細ログ
 
@@ -441,22 +440,21 @@ export function MyProfilePage({
           }));
           localStorage.setItem('hasCompletedCounseling', 'true');
           
-          // カウンセリング結果APIでFirestoreも更新
-          try {
-            const counselingResponse = await fetch('/api/counseling/save', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                lineUserId: liffUser.userId,
-                counselingResult: updatedCounselingData
-              })
-            });
-            
-            if (counselingResponse.ok) {
-            }
-          } catch (counselingError) {
-            console.error('⚠️ カウンセリングデータ更新エラー（続行）:', counselingError);
-          }
+          // カウンセリング結果APIでFirestoreも更新（並列実行）
+          const counselingUpdatePromise = fetch('/api/counseling/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lineUserId: liffUser.userId,
+              counselingResult: updatedCounselingData
+            })
+          }).catch(error => {
+            console.error('⚠️ カウンセリングデータ更新エラー（続行）:', error);
+            return null;
+          });
+
+          // 両方のAPI呼び出しを並列実行
+          await Promise.all([profileHistoryPromise, counselingUpdatePromise]);
 
           // Firestore書き込み完了後にイベントを発行
           if (typeof window !== 'undefined') {
@@ -491,8 +489,15 @@ export function MyProfilePage({
             }));
           }
           
-          // 強制ページ更新（ユーザー要望）
-          window.location.reload();
+          // データ更新を反映するためモーダルを閉じてリフレッシュキーを更新
+          setIsEditModalOpen(false);
+          setRefreshKey(prev => prev + 1);
+          
+          // 各データソースを手動リフレッシュ
+          refetch();
+          refetchLatestProfile();
+          mealManager.refetch();
+          weightManager.refetch();
           
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
@@ -763,14 +768,14 @@ export function MyProfilePage({
 
       {/* プロフィール編集モーダル */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="w-full max-w-md mx-auto">
+        <DialogContent className="max-w-sm mx-auto my-8">
           <DialogHeader>
             <DialogTitle className="text-center">プロフィール編集</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-3 py-2">
+          <div className="space-y-2 py-1">
             {/* 名前 */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700">名前</label>
               <Input
                 value={editForm.name}
@@ -782,7 +787,7 @@ export function MyProfilePage({
 
             {/* 年齢 */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">年齢</label>
+              <label className="text-xs font-medium text-slate-700">年齢</label>
               <Input
                 type="number"
                 inputMode="numeric"
@@ -791,15 +796,15 @@ export function MyProfilePage({
                 onChange={(e) => handleEditFormChange('age', parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder="年齢を入力"
-                className="text-center"
+                className="text-center text-sm h-8"
               />
             </div>
 
             {/* 性別 */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">性別</label>
+              <label className="text-xs font-medium text-slate-700">性別</label>
               <Select value={editForm.gender} onValueChange={(value) => handleEditFormChange('gender', value)}>
-                <SelectTrigger className="">
+                <SelectTrigger className="text-sm h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
@@ -812,7 +817,7 @@ export function MyProfilePage({
 
             {/* 身長 */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">身長 (cm)</label>
+              <label className="text-xs font-medium text-slate-700">身長 (cm)</label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -821,13 +826,13 @@ export function MyProfilePage({
                 onChange={(e) => handleEditFormChange('height', parseFloat(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder="身長を入力"
-                className="text-center"
+                className="text-center text-sm h-8"
               />
             </div>
 
             {/* 現在の体重 */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">現在の体重 (kg)</label>
+              <label className="text-xs font-medium text-slate-700">現在の体重 (kg)</label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -837,13 +842,13 @@ export function MyProfilePage({
                 onChange={(e) => handleEditFormChange('currentWeight', parseFloat(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder="体重を入力"
-                className="text-center"
+                className="text-center text-sm h-8"
               />
             </div>
 
             {/* 目標体重 */}
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">目標体重 (kg)</label>
+              <label className="text-xs font-medium text-slate-700">目標体重 (kg)</label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -853,16 +858,16 @@ export function MyProfilePage({
                 onChange={(e) => handleEditFormChange('targetWeight', parseFloat(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder="目標体重を入力"
-                className="text-center"
+                className="text-center text-sm h-8"
               />
             </div>
           </div>
 
           {/* 運動量レベル */}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">運動量レベル</label>
+            <label className="text-xs font-medium text-slate-700">運動量レベル</label>
             <Select value={editForm.activityLevel} onValueChange={(value) => handleEditFormChange('activityLevel', value)}>
-              <SelectTrigger>
+              <SelectTrigger className="text-sm h-8">
                 <SelectValue placeholder="運動量を選択" />
               </SelectTrigger>
               <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
@@ -875,9 +880,9 @@ export function MyProfilePage({
 
           {/* 目的 */}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">目的</label>
+            <label className="text-xs font-medium text-slate-700">目的</label>
             <Select value={editForm.primaryGoal} onValueChange={(value) => handleEditFormChange('primaryGoal', value)}>
-              <SelectTrigger>
+              <SelectTrigger className="text-sm h-8">
                 <SelectValue placeholder="目的を選択" />
               </SelectTrigger>
               <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
@@ -889,7 +894,7 @@ export function MyProfilePage({
           </div>
 
           {/* ボタン */}
-          <div className="flex space-x-2 pt-2">
+          <div className="flex space-x-2 pt-1">
             <DialogClose asChild>
               <Button variant="outline" className="flex-1" size="sm">
                 キャンセル
