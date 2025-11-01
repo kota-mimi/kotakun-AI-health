@@ -10,6 +10,7 @@ import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeight
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
+import { checkUsageLimit, recordUsage } from '@/utils/usageLimits';
 
 // 画像キャッシュ（メモリに一時保存）
 const imageCache = new Map<string, Buffer>();
@@ -318,13 +319,36 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   try {
+    // 記録モード中かチェック
+    const isInRecordMode = await isRecordMode(userId);
+    
+    // 利用制限チェック（記録モードと通常モードで分ける）
+    if (isInRecordMode) {
+      // 記録モード中は記録制限をチェック
+      const recordLimit = await checkUsageLimit(userId, 'record');
+      if (!recordLimit.allowed) {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: recordLimit.reason || '記録の制限に達しました。'
+        }]);
+        return;
+      }
+    } else {
+      // 通常モード中はAI会話制限をチェック
+      const aiLimit = await checkUsageLimit(userId, 'ai');
+      if (!aiLimit.allowed) {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: aiLimit.reason || 'AI会話の制限に達しました。'
+        }]);
+        return;
+      }
+    }
+    
     // Loading Animation開始（AIが考え中）
     await startLoadingAnimation(userId, 15);
     
     const aiService = new AIHealthService();
-    
-    // 記録モード中かチェック
-    const isInRecordMode = await isRecordMode(userId);
     
     // 記録モード中の場合、絶対にreturnすることを保証
     if (isInRecordMode) {
@@ -341,6 +365,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 会話履歴を保存
       if (aiResponse) {
         await aiService.saveConversation(userId, text, aiResponse);
+        // AI応答成功時に使用回数を記録
+        await recordUsage(userId, 'ai');
       }
       
       await stopLoadingAnimation(userId);
@@ -380,6 +406,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       console.log('📊 記録モード - 体重判定結果:', JSON.stringify(weightJudgment, null, 2));
       if (weightJudgment.isWeightRecord) {
         await handleWeightRecord(userId, weightJudgment, replyToken);
+        // 記録成功時に使用回数を記録
+        await recordUsage(userId, 'record');
         // 体重記録後もクイックリプライで記録モード継続（食事記録と同様）
         return;
       }
@@ -403,6 +431,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             console.log('🔄 記録モード - 単一運動記録処理');
             await handleRecordModeSingleExercise(userId, exerciseJudgment, replyToken, text);
           }
+          // 記録成功時に使用回数を記録
+          await recordUsage(userId, 'record');
           return;
         } else {
           console.log('❌ 記録モード - 運動記録として認識されませんでした');
@@ -487,11 +517,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         if (mealJudgment.isMultipleMealTimes) {
           // 複数食事時間の処理
           await handleMultipleMealTimesRecord(userId, mealJudgment.mealTimes, replyToken);
+          // 記録成功時に使用回数を記録
+          await recordUsage(userId, 'record');
           // 記録後もクイックリプライで記録モード継続
           return;
         } else if (mealJudgment.hasSpecificMealTime) {
           const mealType = mealJudgment.mealTime;
           await saveMealRecord(userId, mealType, replyToken);
+          // 記録成功時に使用回数を記録
+          await recordUsage(userId, 'record');
           // 記録後もクイックリプライで記録モード継続
           return;
         } else {
@@ -558,6 +592,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     // 会話履歴を保存
     if (aiResponse) {
       await aiService.saveConversation(userId, text, aiResponse);
+      // AI応答成功時に使用回数を記録
+      await recordUsage(userId, 'ai');
     }
     
     await stopLoadingAnimation(userId);
