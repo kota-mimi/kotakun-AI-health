@@ -984,6 +984,12 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         return;
       }
       
+      // 記録確認メッセージを送信
+      await sendRecordConfirmation(replyToken);
+      break;
+    
+    case 'feedback_with_records':
+      // 記録ありでフィードバック実行
       // フィードバック生成中かチェック
       const isFeedbackProcessing = isProcessing(userId);
       if (isFeedbackProcessing) {
@@ -999,6 +1005,11 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       } finally {
         setProcessing(userId, false);
       }
+      break;
+    
+    case 'feedback_no_records':
+      // 記録なしの場合は何もしない（通常モードに戻る）
+      console.log('📝 記録なしでフィードバックをキャンセル:', { userId });
       break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
@@ -4500,4 +4511,36 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
       }
     }
   };
+}
+
+// 記録確認メッセージを送信
+async function sendRecordConfirmation(replyToken: string) {
+  const message = {
+    type: 'text',
+    text: 'フィードバックしますか？
+
+記録がないとちゃんとしたフィードバックができません。今日の食事や運動は記録しましたか？',
+    quickReply: {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: 'はい（記録済み）',
+            data: 'action=feedback_with_records'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: 'いいえ（記録なし）',
+            data: 'action=feedback_no_records'
+          }
+        }
+      ]
+    }
+  };
+
+  await replyMessage(replyToken, [message]);
 }
