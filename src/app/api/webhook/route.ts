@@ -3995,6 +3995,14 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
       // フィードバック送信後、記録モードを解除して通常モードに戻す
       await setRecordMode(userId, false);
       console.log('🔄 フィードバック送信後、通常モードに自動切替:', userId);
+    } else if (response.status === 403) {
+      // 利用制限エラーの場合
+      const errorData = await response.json();
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: errorData.error || 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。'
+      }]);
+      console.log('🚫 フィードバック利用制限:', userId);
     } else {
       throw new Error(`API呼び出し失敗: ${response.status}`);
     }
