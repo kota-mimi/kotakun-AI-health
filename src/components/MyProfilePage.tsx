@@ -179,16 +179,12 @@ export function MyProfilePage({
     // 🚀 即座にUI更新（サイレント保存）
     setIsEditModalOpen(false);
     
-    // 変数を関数の先頭で定義（スコープエラー回避）
-    let newCalorieTarget = 0;
-    let newMacros = { protein: 0, fat: 0, carbs: 0 };
-    let newBMR = 0;
-    let newTDEE = 0;
+    // 少し遅延してからページリロード（モーダルが閉じるのを待つ）
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
 
-    // 即座にローカル状態も更新（リロード前に表示更新）
-    setRefreshKey(prev => prev + 1);
-
-    // バックグラウンドで保存処理実行
+    // バックグラウンドで保存処理実行（リロードで処理が中断されても問題なし）
     try {
       
       // ローカルストレージのカウンセリング結果を更新
