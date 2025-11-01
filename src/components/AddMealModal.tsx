@@ -197,6 +197,9 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         const file = files[0];
         const formData = new FormData();
         formData.append('image', file);
+        if (liffUser?.userId) {
+          formData.append('userId', liffUser.userId);
+        }
         
         const response = await fetch('/api/analyze/image', {
           method: 'POST',
@@ -285,7 +288,10 @@ export function AddMealModal({ isOpen, onClose, mealType, onAddMeal, onAddMultip
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: textInput }),
+        body: JSON.stringify({ 
+          text: textInput,
+          userId: liffUser?.userId
+        }),
       });
       
       if (response.ok) {
