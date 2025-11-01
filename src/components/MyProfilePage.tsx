@@ -178,8 +178,12 @@ export function MyProfilePage({
   const handleSaveProfile = async () => {
     // 🚀 即座にUI更新（ユーザー体験向上）
     setIsEditModalOpen(false);
-    setRefreshKey(prev => prev + 1);
     alert('プロフィールを保存しました！');
+    
+    // ページ全体をリロードして最新データを確実に反映
+    setTimeout(() => {
+      window.location.reload();
+    }, 100); // 少し遅延してアラートが表示されてからリロード
     
     // 変数を関数の先頭で定義（スコープエラー回避）
     let newCalorieTarget = 0;

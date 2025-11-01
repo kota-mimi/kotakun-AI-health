@@ -172,8 +172,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               // 日付のみで比較（時間は無視）
               const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
               const appStartDateOnly = new Date(appStartDate.getFullYear(), appStartDate.getMonth(), appStartDate.getDate());
-              // カウンセリング開始日より前の日付は選択不可（テスト用に一時的に無効化）
-              const isBeforeAppStart = false; // dateOnly.getTime() < appStartDateOnly.getTime();
+              // カウンセリング開始日より前の日付は選択不可
+              const isBeforeAppStart = dateOnly.getTime() < appStartDateOnly.getTime();
               
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
