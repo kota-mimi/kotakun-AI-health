@@ -4475,27 +4475,23 @@ ${dataText}
 // 利用制限時のFlexメッセージを作成
 function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
   const hashedUserId = hashUserId(userId);
-  const planPageUrl = `https://kotakun-ai-health.vercel.app/plan?luid=${hashedUserId}`;
+  const dashboardUrl = `https://kotakun-ai-health.vercel.app/dashboard?luid=${hashedUserId}&tab=plan`;
   
   let title = '';
   let description = '';
-  let emoji = '';
   
   switch (limitType) {
     case 'ai':
       title = 'AI会話の制限';
-      description = '無料プランでは1日5回までAI会話をご利用いただけます。';
-      emoji = '🤖';
+      description = '無料プランでは1日5回まで';
       break;
     case 'record':
       title = '記録の制限';
-      description = '無料プランでは1日2回まで記録をご利用いただけます。';
-      emoji = '📝';
+      description = '無料プランでは1日2回まで';
       break;
     case 'feedback':
       title = 'フィードバック機能の制限';
-      description = 'フィードバック機能は有料プランの機能です。';
-      emoji = '📊';
+      description = '有料プランの機能です';
       break;
   }
   
@@ -4504,54 +4500,26 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
     altText: `${title}に達しました`,
     contents: {
       type: 'bubble',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: emoji,
-            size: 'xxl',
-            align: 'center'
-          },
-          {
-            type: 'text',
-            text: title,
-            weight: 'bold',
-            size: 'lg',
-            align: 'center',
-            margin: 'md'
-          }
-        ],
-        backgroundColor: '#FFF4E6',
-        paddingAll: 'lg'
-      },
+      size: 'nano',
       body: {
         type: 'box',
         layout: 'vertical',
         contents: [
           {
             type: 'text',
-            text: description,
-            wrap: true,
-            size: 'md',
-            color: '#666666'
-          },
-          {
-            type: 'separator',
-            margin: 'lg'
+            text: title,
+            weight: 'bold',
+            size: 'md'
           },
           {
             type: 'text',
-            text: '有料プランにアップグレードすると無制限でご利用いただけます！',
-            wrap: true,
+            text: description,
             size: 'sm',
-            color: '#FF6B35',
-            weight: 'bold',
-            margin: 'lg'
+            color: '#666666',
+            margin: 'xs'
           }
         ],
-        paddingAll: 'lg'
+        paddingAll: 'md'
       },
       footer: {
         type: 'box',
@@ -4562,13 +4530,13 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
             action: {
               type: 'uri',
               label: 'プランをアップグレード',
-              uri: planPageUrl
+              uri: dashboardUrl
             },
             style: 'primary',
-            color: '#FF6B35'
+            height: 'sm'
           }
         ],
-        paddingAll: 'lg'
+        paddingAll: 'sm'
       }
     }
   };

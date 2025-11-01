@@ -91,6 +91,15 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const navigation = useNavigationState();
   const dateBasedDataManager = useDateBasedData();
   
+  // URLパラメータに基づいてプラン設定ページを開く
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'plan') {
+      navigation.handleNavigateToPlanSettings();
+    }
+  }, []);
+  
   const [isDataManagementModalOpen, setIsDataManagementModalOpen] = React.useState(false);
   const [isMealMenuOpen, setIsMealMenuOpen] = React.useState(false);
   const [isExerciseEntryModalOpen, setIsExerciseEntryModalOpen] = React.useState(false);
