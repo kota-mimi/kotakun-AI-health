@@ -146,9 +146,14 @@ export function useLatestProfile(): UseProfileHistoryReturn {
 
 // プロフィールデータから現在の日付に対応する目標値を取得するユーティリティ
 export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, counselingFallback?: any) {
+  console.log('🔍 getTargetValuesForDate:', { 
+    hasProfileData: !!profileData, 
+    hasCounselingFallback: !!counselingFallback,
+    counselingCalories: counselingFallback?.aiAnalysis?.nutritionPlan?.dailyCalories
+  });
 
   // ✅ 正しい優先順位: 日付ベースのプロフィール履歴を最優先
-  if (profileData) {
+  if (profileData && profileData.targetCalories) {
     // プロフィール履歴から取得（日付ベース - 最優先）
     return {
       targetCalories: profileData.targetCalories,
