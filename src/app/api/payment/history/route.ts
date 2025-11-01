@@ -13,6 +13,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // まずusersコレクションから現在のプラン情報を取得
+    let currentPlan = 'free';
+    try {
+      const userRef = admin.firestore().collection('users').doc(userId);
+      const userDoc = await userRef.get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData?.currentPlan) {
+          currentPlan = userData.currentPlan;
+          console.log('✅ Current plan from users collection:', currentPlan);
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Failed to fetch user plan, falling back to payment history');
+    }
+
     // Firestoreから支払い履歴を取得（Admin SDK）
     const paymentsRef = admin.firestore().collection('payments');
     const snapshot = await paymentsRef
@@ -36,6 +52,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      currentPlan, // 現在のプラン情報を追加
       payments
     });
 

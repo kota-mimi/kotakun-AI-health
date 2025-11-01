@@ -38,23 +38,35 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           const data = await response.json();
           console.log('📊 Payment API response:', data);
           
-          if (data.success && data.payments.length > 0) {
-            const latestPayment = data.payments[0];
-            console.log('💳 Latest payment found:', latestPayment);
-            console.log('📝 Plan name from payment:', latestPayment.planName);
-            
-            // プラン名からプランIDを判定
-            if (latestPayment.planName === '月額プラン') {
-              console.log('✅ Setting current plan to monthly');
-              setCurrentPlan('monthly');
-            } else if (latestPayment.planName === '3ヶ月プラン') {
-              console.log('✅ Setting current plan to quarterly');
-              setCurrentPlan('quarterly');
+          if (data.success) {
+            // 優先1: usersコレクションのcurrentPlanを使用
+            if (data.currentPlan) {
+              console.log('✅ Using current plan from users collection:', data.currentPlan);
+              
+              if (data.currentPlan === '月額プラン') {
+                setCurrentPlan('monthly');
+              } else if (data.currentPlan === '3ヶ月プラン') {
+                setCurrentPlan('quarterly');
+              } else {
+                setCurrentPlan('free');
+              }
+            } 
+            // フォールバック: 決済履歴から判定
+            else if (data.payments.length > 0) {
+              const latestPayment = data.payments[0];
+              console.log('💳 Fallback: Using latest payment:', latestPayment.planName);
+              
+              if (latestPayment.planName === '月額プラン') {
+                setCurrentPlan('monthly');
+              } else if (latestPayment.planName === '3ヶ月プラン') {
+                setCurrentPlan('quarterly');
+              } else {
+                setCurrentPlan('free');
+              }
             } else {
-              console.log('❓ Unknown plan name:', latestPayment.planName);
+              console.log('📭 No plan data found, staying on free plan');
+              setCurrentPlan('free');
             }
-          } else {
-            console.log('📭 No payments found, staying on free plan');
           }
         } else {
           console.log('❌ Payment API failed with status:', response.status);
