@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import FirestoreService from '@/services/firestoreService';
 import { calculateCalorieTarget, calculateMacroTargets, calculateBMR, calculateTDEE } from '@/utils/calculations';
 import type { UserProfile, HealthGoal } from '@/types';
 
@@ -46,10 +45,19 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       setError(null);
       
       const dateString = targetDate.toISOString().split('T')[0];
-      const firestoreService = new FirestoreService();
+      const response = await fetch(`/api/profile/history?lineUserId=${liffUser.userId}&targetDate=${dateString}`);
       
-      const profile = await firestoreService.getProfileHistory(liffUser.userId, dateString);
-      setProfileData(profile);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setProfileData(result.data);
+      } else {
+        throw new Error(result.error || 'プロフィール履歴の取得に失敗しました');
+      }
       
     } catch (err) {
       console.error('❌ プロフィール履歴取得エラー:', err);
@@ -100,10 +108,21 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       setLoading(true);
       setError(null);
       
-      const firestoreService = new FirestoreService();
-      const profiles = await firestoreService.getProfileHistory(liffUser.userId);
-      const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
-      setProfileData(profile);
+      const response = await fetch(`/api/profile/history?lineUserId=${liffUser.userId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        const profiles = result.data;
+        const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
+        setProfileData(profile);
+      } else {
+        throw new Error(result.error || '最新プロフィール履歴の取得に失敗しました');
+      }
       
     } catch (err) {
       console.error('❌ 最新プロフィール取得エラー:', err);
@@ -164,9 +183,24 @@ export function getTargetValuesForDate(profileData: ProfileHistoryEntry | null, 
     };
   }
 
-  // 📅 プロフィール履歴がない場合のフォールバック: 最新のaiAnalysis
+  // 📅 プロフィール履歴がない場合のフォールバック: カウンセリング結果
+  if (counselingFallback?.results?.targetCalories) {
+    const fallbackValues = {
+      targetCalories: counselingFallback.results.targetCalories,
+      bmr: counselingFallback.results.bmr || 0,
+      tdee: counselingFallback.results.tdee || 0,
+      macros: counselingFallback.results.pfc || {
+        protein: Math.round((counselingFallback.results.targetCalories * 0.25) / 4),
+        fat: Math.round((counselingFallback.results.targetCalories * 0.30) / 9),
+        carbs: Math.round((counselingFallback.results.targetCalories * 0.45) / 4)
+      },
+      fromHistory: false
+    };
+    return fallbackValues;
+  }
+  
+  // 旧形式のaiAnalysisもチェック
   if (counselingFallback?.aiAnalysis?.nutritionPlan?.dailyCalories) {
-    // BMRとTDEEが存在する場合は使用、なければ動的計算用の値は後で設定
     const fallbackValues = {
       targetCalories: counselingFallback.aiAnalysis.nutritionPlan.dailyCalories,
       bmr: counselingFallback.aiAnalysis.nutritionPlan.bmr || 0,
