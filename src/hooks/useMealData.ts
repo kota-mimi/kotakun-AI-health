@@ -303,6 +303,11 @@ export function useMealData(selectedDate: Date, dateBasedData: any, updateDateDa
           [currentMealType]: [...prev[currentMealType], newMeal]
         }));
         
+      } else if (response.status === 403) {
+        // 利用制限エラーの場合
+        const errorData = await response.json();
+        alert(errorData.error || '記録の制限に達しました。有料プランにアップグレードしてください。');
+        return;
       } else {
         console.error('食事保存に失敗しました');
       }
