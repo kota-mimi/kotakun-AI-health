@@ -68,6 +68,8 @@ export function calculateCalorieTarget(profile: UserProfile, goals: HealthGoal[]
       return Math.round(tdee + 500);
     case 'muscle_gain':
       return Math.round(tdee + 300);
+    case 'maintenance':
+      return Math.round(tdee); // 健康維持：現在の消費カロリーと同じ
     default:
       return Math.round(tdee);
   }

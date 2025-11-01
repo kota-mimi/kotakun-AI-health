@@ -166,7 +166,7 @@ export function MyProfilePage({
     height: userProfile.height,
     currentWeight: userProfile.currentWeight,
     targetWeight: userProfile.targetWeight,
-    activityLevel: counselingResult?.answers?.activityLevel || 'normal',
+    activityLevel: counselingResult?.answers?.activityLevel || 'moderate',
     primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
   });
 
@@ -179,7 +179,7 @@ export function MyProfilePage({
       height: userProfile.height,
       currentWeight: userProfile.currentWeight,
       targetWeight: userProfile.targetWeight,
-      activityLevel: counselingResult?.answers?.activityLevel || 'normal',
+      activityLevel: counselingResult?.answers?.activityLevel || 'moderate',
       primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
     });
     setIsEditModalOpen(true);
@@ -232,43 +232,11 @@ export function MyProfilePage({
           if (existingAnalysis) {
             const analysis = JSON.parse(existingAnalysis);
             
-            // 新しいプロフィールでカロリー・PFC再計算
-            const newProfile = {
-              name: editForm.name,
-              age: editForm.age,
-              gender: editForm.gender,
-              height: editForm.height,
-              weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight,
-              activityLevel: editForm.activityLevel
-            };
-            
-            // 目標に基づいてカロリー計算（HealthGoal型に準拠）
-            const goals: HealthGoal[] = [{
-              type: editForm.primaryGoal as HealthGoal['type'],
-              targetValue: editForm.targetWeight
-            }];
-            
-            newCalorieTarget = calculateCalorieTarget(newProfile, goals);
-            newMacros = calculateMacroTargets(newCalorieTarget);
-            newBMR = calculateBMR(newProfile);
-            newTDEE = calculateTDEE(newProfile);
+            // 新しいプロフィールでカロリー・PFC再計算は後で一括実行
             
             
-            updatedAnalysis = {
-              ...analysis,
-              userProfile: newProfile,
-              nutritionPlan: {
-                ...analysis.nutritionPlan,
-                dailyCalories: newCalorieTarget,
-                macros: {
-                  protein: newMacros.protein,
-                  carbs: newMacros.carbohydrates,
-                  fat: newMacros.fat
-                }
-              }
-            };
-            localStorage.setItem('aiAnalysis', JSON.stringify(updatedAnalysis));
+            // 一時的にanalysisを保持（計算値は後で更新）
+            updatedAnalysis = analysis;
           }
           
           // Firestoreに保存するためのデータを準備
