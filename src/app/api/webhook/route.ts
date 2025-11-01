@@ -4485,7 +4485,7 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
             text: '有料プランにアップグレードすると無制限でご利用いただけます！',
             wrap: true,
             size: 'sm',
-            color: '#FF6B35',
+            color: '#1E90FF',
             weight: 'bold',
             margin: 'lg'
           }
@@ -4504,7 +4504,7 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
               uri: liffUrl
             },
             style: 'primary',
-            color: '#FF6B35'
+            color: '#1E90FF'
           }
         ],
         paddingAll: 'lg'
