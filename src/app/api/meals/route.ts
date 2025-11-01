@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
+import { checkUsageLimit, recordUsage } from '@/utils/usageLimits';
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,6 +81,20 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // プラン制限チェック：Webアプリからの記録も制限対象
+    try {
+      const recordLimit = await checkUsageLimit(lineUserId, 'record');
+      if (!recordLimit.allowed) {
+        return NextResponse.json({ 
+          error: recordLimit.reason || '記録の制限に達しました。',
+          needsUpgrade: true 
+        }, { status: 403 });
+      }
+    } catch (limitError) {
+      console.error('❌ Webアプリ記録制限チェックエラー:', limitError);
+      // エラーの場合は制限なしで続行
+    }
+
     const adminDb = admin.firestore();
     
     // 複数食事の一括保存（LINEと同じ方式）
@@ -156,6 +171,9 @@ export async function PUT(request: NextRequest) {
         updatedAt: new Date()
       }, { merge: true });
 
+      // 記録成功時に使用回数をカウント
+      await recordUsage(lineUserId, 'record');
+
       return NextResponse.json({ success: true });
     }
 
@@ -227,6 +245,9 @@ export async function PUT(request: NextRequest) {
       lineUserId,
       updatedAt: new Date()
     }, { merge: true });
+
+    // 記録成功時に使用回数をカウント
+    await recordUsage(lineUserId, 'record');
 
     return NextResponse.json({ success: true });
 
