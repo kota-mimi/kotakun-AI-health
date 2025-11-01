@@ -96,6 +96,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
     if (tab === 'plan') {
+      // プロフィールタブに切り替えてからプラン設定ページを開く
+      navigation.setActiveTab('profile');
       navigation.handleNavigateToPlanSettings();
     }
   }, []);
