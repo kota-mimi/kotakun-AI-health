@@ -213,20 +213,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
   };
 
-  // 体重履歴を取得（全期間）
-  const getAllWeightEntries = (): WeightEntry[] => {
-    const allEntries: WeightEntry[] = [];
-    
-    Object.keys(dateBasedData).forEach(dateKey => {
-      const dayData = dateBasedData[dateKey];
-      if (dayData.weightEntries && dayData.weightEntries.length > 0) {
-        allEntries.push(...dayData.weightEntries);
-      }
-    });
-    
-    // 日付順でソート（新しい順）
-    return allEntries.sort((a, b) => b.timestamp - a.timestamp);
-  };
 
   // カウンセリング日かどうかをチェック
   const isCounselingDate = (checkDate: Date): boolean => {
@@ -462,89 +448,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     }
   };
 
-  // 体重推移データを取得（グラフ用）
-  const getWeightTrendData = (days: number = 30) => {
-    // dateBasedDataがnullまたはundefinedの場合は空配列を返す
-    if (!dateBasedData) {
-      return [];
-    }
-    
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    
-    const trendData: { date: string; weight: number }[] = [];
-    
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateKey = getDateKey(d);
-      const dayData = dateBasedData[dateKey];
-      
-      if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
-        const latestEntry = dayData.weightEntries[dayData.weightEntries.length - 1];
-        trendData.push({
-          date: dateKey,
-          weight: latestEntry.weight
-        });
-      }
-    }
-    
-    return trendData;
-  };
 
-  // 体重統計を計算
-  const getWeightStats = () => {
-    const allEntries = getAllWeightEntries();
-    
-    if (allEntries.length === 0) {
-      return {
-        totalEntries: 0,
-        averageWeight: 0,
-        weightLoss: 0,
-        daysTracked: 0,
-        streak: 0
-      };
-    }
-
-    const weights = allEntries.map(entry => entry.weight);
-    const averageWeight = weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
-    const firstEntry = allEntries[allEntries.length - 1];
-    const latestEntry = allEntries[0];
-    const weightLoss = firstEntry.weight - latestEntry.weight;
-    
-    // 連続記録日数を計算
-    let streak = 0;
-    const today = new Date();
-    for (let i = 0; i < 365; i++) {
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateKey = getDateKey(checkDate);
-      const dayData = dateBasedData[dateKey];
-      
-      if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-
-    return {
-      totalEntries: allEntries.length,
-      averageWeight: Math.round(averageWeight * 10) / 10,
-      weightLoss: Math.round(weightLoss * 10) / 10,
-      daysTracked: Object.keys(dateBasedData).filter(dateKey => 
-        dateBasedData[dateKey].weightEntries && dateBasedData[dateKey].weightEntries.length > 0
-      ).length,
-      streak
-    };
-  };
 
   return {
     // データ
     weightData: getWeightDataForDate(selectedDate),
-    weightEntries: getAllWeightEntries(),
     weightSettings: weightSettingsStorage.value,
-    weightTrendData: getWeightTrendData() || [],
-    weightStats: getWeightStats(),
     realWeightData, // 実データを追加
     isLoadingWeightData, // ローディング状態を追加
     
@@ -563,9 +472,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     setIsWeightSettingsModalOpen,
     
     // ユーティリティ
-    getWeightDataForDate,
-    getAllWeightEntries,
-    getWeightTrendData,
-    getWeightStats
+    getWeightDataForDate
   };
 }
