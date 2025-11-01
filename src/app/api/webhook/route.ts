@@ -327,20 +327,14 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中は記録制限をチェック
       const recordLimit = await checkUsageLimit(userId, 'record');
       if (!recordLimit.allowed) {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: recordLimit.reason || '記録の制限に達しました。'
-        }]);
+        await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
         return;
       }
     } else {
       // 通常モード中はAI会話制限をチェック
       const aiLimit = await checkUsageLimit(userId, 'ai');
       if (!aiLimit.allowed) {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: aiLimit.reason || 'AI会話の制限に達しました。'
-        }]);
+        await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
         return;
       }
     }
@@ -641,10 +635,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     try {
       const recordLimit = await checkUsageLimit(userId, 'record');
       if (!recordLimit.allowed) {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: recordLimit.reason || '記録の制限に達しました。'
-        }]);
+        await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
         return;
       }
     } catch (limitError) {
@@ -3997,11 +3988,7 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
       console.log('🔄 フィードバック送信後、通常モードに自動切替:', userId);
     } else if (response.status === 403) {
       // 利用制限エラーの場合
-      const errorData = await response.json();
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: errorData.error || 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。'
-      }]);
+      await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
       console.log('🚫 フィードバック利用制限:', userId);
     } else {
       throw new Error(`API呼び出し失敗: ${response.status}`);
@@ -4483,4 +4470,106 @@ ${dataText}
     console.error('🤖 AIコメント生成エラー:', error);
     return 'お疲れさま！';
   }
+}
+
+// 利用制限時のFlexメッセージを作成
+function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
+  const hashedUserId = hashUserId(userId);
+  const planPageUrl = `https://kotakun-ai-health.vercel.app/plan?luid=${hashedUserId}`;
+  
+  let title = '';
+  let description = '';
+  let emoji = '';
+  
+  switch (limitType) {
+    case 'ai':
+      title = 'AI会話の制限';
+      description = '無料プランでは1日5回までAI会話をご利用いただけます。';
+      emoji = '🤖';
+      break;
+    case 'record':
+      title = '記録の制限';
+      description = '無料プランでは1日2回まで記録をご利用いただけます。';
+      emoji = '📝';
+      break;
+    case 'feedback':
+      title = 'フィードバック機能の制限';
+      description = 'フィードバック機能は有料プランの機能です。';
+      emoji = '📊';
+      break;
+  }
+  
+  return {
+    type: 'flex',
+    altText: `${title}に達しました`,
+    contents: {
+      type: 'bubble',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: emoji,
+            size: 'xxl',
+            align: 'center'
+          },
+          {
+            type: 'text',
+            text: title,
+            weight: 'bold',
+            size: 'lg',
+            align: 'center',
+            margin: 'md'
+          }
+        ],
+        backgroundColor: '#FFF4E6',
+        paddingAll: 'lg'
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: description,
+            wrap: true,
+            size: 'md',
+            color: '#666666'
+          },
+          {
+            type: 'separator',
+            margin: 'lg'
+          },
+          {
+            type: 'text',
+            text: '有料プランにアップグレードすると無制限でご利用いただけます！',
+            wrap: true,
+            size: 'sm',
+            color: '#FF6B35',
+            weight: 'bold',
+            margin: 'lg'
+          }
+        ],
+        paddingAll: 'lg'
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'button',
+            action: {
+              type: 'uri',
+              label: 'プランをアップグレード',
+              uri: planPageUrl
+            },
+            style: 'primary',
+            color: '#FF6B35'
+          }
+        ],
+        paddingAll: 'lg'
+      }
+    }
+  };
 }
