@@ -464,8 +464,6 @@ export function MyProfilePage({
           // 各データソースを手動リフレッシュ
           refetch();
           refetchLatestProfile();
-          mealManager.refetch();
-          weightManager.refetch();
           
         } catch (error) {
           console.error('❌ プロフィール履歴保存エラー詳細:', {
