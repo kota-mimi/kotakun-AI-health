@@ -176,12 +176,18 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
+    // 🚀 即座にUI更新（ユーザー体験向上）
+    setIsEditModalOpen(false);
+    setRefreshKey(prev => prev + 1);
+    alert('プロフィールを保存しました！');
+    
     // 変数を関数の先頭で定義（スコープエラー回避）
     let newCalorieTarget = 0;
     let newMacros = { protein: 0, fat: 0, carbs: 0 };
     let newBMR = 0;
     let newTDEE = 0;
 
+    // バックグラウンドで保存処理実行
     try {
       
       // ローカルストレージのカウンセリング結果を更新
@@ -422,12 +428,7 @@ export function MyProfilePage({
             
           }
 
-          // 成功アラート
-          alert('プロフィールを保存しました！');
-          
-          // データ更新を反映するためモーダルを閉じてリフレッシュキーを更新
-          setIsEditModalOpen(false);
-          setRefreshKey(prev => prev + 1);
+          // 保存完了（UIは既に更新済み）
           
           // 各データソースを手動リフレッシュ
           refetch();
