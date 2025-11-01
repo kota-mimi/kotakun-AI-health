@@ -4517,9 +4517,7 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
 async function sendRecordConfirmation(replyToken: string) {
   const message = {
     type: 'text',
-    text: 'フィードバックしますか？
-
-記録がないとちゃんとしたフィードバックができません。今日の食事や運動は記録しましたか？',
+    text: 'フィードバックしますか？\n\n記録がないとちゃんとしたフィードバックができません。今日の食事や運動は記録しましたか？',
     quickReply: {
       items: [
         {
