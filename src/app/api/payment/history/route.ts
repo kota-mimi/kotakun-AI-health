@@ -13,6 +13,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 開発環境でFirebaseが初期化されていない場合はモックデータを返す
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 開発環境：月額プランのモックデータを返却');
+      return NextResponse.json({
+        success: true,
+        currentPlan: '月額プラン', // テスト用に月額プランを返す
+        payments: [
+          {
+            id: 'mock_payment',
+            planName: '月額プラン',
+            amount: 890,
+            currency: 'JPY',
+            status: 'completed',
+            date: new Date().toLocaleDateString('ja-JP')
+          }
+        ]
+      });
+    }
+
     // まずusersコレクションから現在のプラン情報を取得
     let currentPlan = 'free';
     try {
