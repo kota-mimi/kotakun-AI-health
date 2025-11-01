@@ -176,9 +176,8 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
-    // 🚀 即座にUI更新（ユーザー体験向上）
+    // 🚀 即座にUI更新（サイレント保存）
     setIsEditModalOpen(false);
-    alert('プロフィールを保存しました！');
     
     // 変数を関数の先頭で定義（スコープエラー回避）
     let newCalorieTarget = 0;
