@@ -637,6 +637,21 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
   try {
     console.log('🔥 シンプル画像処理開始:', { userId, messageId });
     
+    // 利用制限チェック（画像記録も記録制限に含める）
+    try {
+      const recordLimit = await checkUsageLimit(userId, 'record');
+      if (!recordLimit.allowed) {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: recordLimit.reason || '記録の制限に達しました。'
+        }]);
+        return;
+      }
+    } catch (limitError) {
+      console.error('❌ 画像記録制限チェックエラー:', limitError);
+      // エラーの場合は制限なしで続行
+    }
+    
     // 処理中チェック（重複画像処理防止）
     if (isProcessing(userId)) {
       console.log('⏳ 処理中: 画像処理を無視');
@@ -730,6 +745,9 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       // 4. 食事画像の場合：画像をキャッシュに保存し、分析結果を一時保存
       const imageCacheKey = cacheImage(userId, imageContent);
       await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
+      
+      // 画像記録として使用回数をカウント
+      await recordUsage(userId, 'record');
       
       // 5. 食事タイプ選択のクイックリプライ表示
       await showMealTypeSelection(replyToken);
