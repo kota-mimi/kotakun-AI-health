@@ -327,6 +327,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 記録モード中は記録制限をチェック
       const recordLimit = await checkUsageLimit(userId, 'record');
       if (!recordLimit.allowed) {
+        // 記録制限に達した場合、自動で通常モードに戻す
+        await setRecordMode(userId, false);
+        console.log('🔄 記録制限により通常モードに自動切替:', userId);
         await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
         return;
       }
@@ -635,6 +638,9 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     try {
       const recordLimit = await checkUsageLimit(userId, 'record');
       if (!recordLimit.allowed) {
+        // 記録制限に達した場合、自動で通常モードに戻す
+        await setRecordMode(userId, false);
+        console.log('🔄 記録制限により通常モードに自動切替:', userId);
         await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
         return;
       }
@@ -4475,7 +4481,10 @@ ${dataText}
 // 利用制限時のFlexメッセージを作成
 function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
   const hashedUserId = hashUserId(userId);
-  const dashboardUrl = `https://kotakun-ai-health.vercel.app/dashboard?luid=${hashedUserId}&tab=plan`;
+  // LIFFを使って普段のアプリと同じ開き方にする
+  const liffUrl = process.env.NEXT_PUBLIC_LIFF_ID ? 
+    `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard?luid=${hashedUserId}&tab=plan` :
+    `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?luid=${hashedUserId}&tab=plan`;
   
   let title = '';
   let description = '';
@@ -4483,15 +4492,15 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
   switch (limitType) {
     case 'ai':
       title = 'AI会話の制限';
-      description = '無料プランでは1日5回まで';
+      description = '無料プランでは1日5回までAI会話をご利用いただけます。';
       break;
     case 'record':
       title = '記録の制限';
-      description = '無料プランでは1日2回まで';
+      description = '無料プランでは1日2回まで記録をご利用いただけます。';
       break;
     case 'feedback':
       title = 'フィードバック機能の制限';
-      description = '有料プランの機能です';
+      description = 'フィードバック機能は有料プランの機能です。';
       break;
   }
   
@@ -4500,8 +4509,7 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
     altText: `${title}に達しました`,
     contents: {
       type: 'bubble',
-      size: 'nano',
-      body: {
+      header: {
         type: 'box',
         layout: 'vertical',
         contents: [
@@ -4509,17 +4517,39 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
             type: 'text',
             text: title,
             weight: 'bold',
-            size: 'md'
-          },
+            size: 'lg',
+            align: 'center'
+          }
+        ],
+        backgroundColor: '#FFF4E6',
+        paddingAll: 'lg'
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
           {
             type: 'text',
             text: description,
+            wrap: true,
+            size: 'md',
+            color: '#666666'
+          },
+          {
+            type: 'separator',
+            margin: 'lg'
+          },
+          {
+            type: 'text',
+            text: '有料プランにアップグレードすると無制限でご利用いただけます！',
+            wrap: true,
             size: 'sm',
-            color: '#666666',
-            margin: 'xs'
+            color: '#FF6B35',
+            weight: 'bold',
+            margin: 'lg'
           }
         ],
-        paddingAll: 'md'
+        paddingAll: 'lg'
       },
       footer: {
         type: 'box',
@@ -4530,13 +4560,13 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
             action: {
               type: 'uri',
               label: 'プランをアップグレード',
-              uri: dashboardUrl
+              uri: liffUrl
             },
             style: 'primary',
-            height: 'sm'
+            color: '#FF6B35'
           }
         ],
-        paddingAll: 'sm'
+        paddingAll: 'lg'
       }
     }
   };
