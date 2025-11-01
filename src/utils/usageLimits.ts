@@ -24,6 +24,11 @@ export const USAGE_LIMITS = {
 // ユーザーの現在のプランを取得
 export async function getUserPlan(userId: string): Promise<string> {
   try {
+    // 特定ユーザーを有料プランに復旧
+    if (userId === 'U7fd12476d6263912e0d9c99fc3a6bef9') {
+      return 'monthly';
+    }
+    
     const db = admin.firestore();
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
