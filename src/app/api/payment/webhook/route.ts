@@ -44,6 +44,23 @@ export async function POST(request: NextRequest) {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       const priceId = lineItems.data[0]?.price?.id;
       
+      // サブスクリプション情報を取得
+      let subscriptionInfo = null;
+      if (session.subscription) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          subscriptionInfo = {
+            id: subscription.id,
+            status: subscription.status,
+            current_period_start: subscription.current_period_start,
+            current_period_end: subscription.current_period_end,
+          };
+          console.log('📅 Subscription info:', subscriptionInfo);
+        } catch (subError) {
+          console.error('❌ Failed to retrieve subscription:', subError);
+        }
+      }
+      
       // プラン名を決定
       let planName = 'Unknown Plan';
       if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
@@ -81,23 +98,41 @@ export async function POST(request: NextRequest) {
           
           if (userDoc.exists) {
             // 既存ユーザーの場合は更新
-            await userRef.update({
+            const updateData: any = {
               subscriptionStatus: 'active',
               currentPlan: planName,
               subscriptionStartDate: new Date(),
               updatedAt: new Date()
-            });
+            };
+            
+            // サブスクリプション情報があれば追加
+            if (subscriptionInfo) {
+              updateData.stripeSubscriptionId = subscriptionInfo.id;
+              updateData.currentPeriodEnd = new Date(subscriptionInfo.current_period_end * 1000);
+              updateData.currentPeriodStart = new Date(subscriptionInfo.current_period_start * 1000);
+            }
+            
+            await userRef.update(updateData);
             console.log('✅ User subscription status updated (existing user)');
           } else {
             // ユーザードキュメントが存在しない場合は新規作成
-            await userRef.set({
+            const createData: any = {
               userId: paymentRecord.userId,
               subscriptionStatus: 'active',
               currentPlan: planName,
               subscriptionStartDate: new Date(),
               createdAt: new Date(),
               updatedAt: new Date()
-            });
+            };
+            
+            // サブスクリプション情報があれば追加
+            if (subscriptionInfo) {
+              createData.stripeSubscriptionId = subscriptionInfo.id;
+              createData.currentPeriodEnd = new Date(subscriptionInfo.current_period_end * 1000);
+              createData.currentPeriodStart = new Date(subscriptionInfo.current_period_start * 1000);
+            }
+            
+            await userRef.set(createData);
             console.log('✅ User subscription status created (new user)');
           }
         } catch (error) {

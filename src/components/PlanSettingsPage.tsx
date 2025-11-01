@@ -19,7 +19,9 @@ interface PlanSettingsPageProps {
 interface PlanInfo {
   plan: 'free' | 'monthly' | 'quarterly';
   planName: string;
-  status: 'active' | 'inactive' | 'cancelled';
+  status: 'active' | 'inactive' | 'cancelled' | 'cancel_at_period_end';
+  currentPeriodEnd?: Date;
+  stripeSubscriptionId?: string;
 }
 
 export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
@@ -54,7 +56,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             setCurrentPlan({
               plan: data.plan,
               planName: data.planName,
-              status: data.status
+              status: data.status,
+              currentPeriodEnd: data.currentPeriodEnd ? new Date(data.currentPeriodEnd) : undefined,
+              stripeSubscriptionId: data.stripeSubscriptionId
             });
           } else {
             setError('プラン情報の取得に失敗しました');
@@ -229,10 +233,14 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           )}
           
           {/* 現在のプランバッジ */}
-          {isCurrentPlan && currentPlan.status === 'active' && (
+          {isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
             <div className="text-center">
-              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
-                現在のプラン
+              <Badge variant="outline" className={
+                currentPlan.status === 'active' 
+                  ? "bg-green-100 text-green-700 border-green-300"
+                  : "bg-orange-100 text-orange-700 border-orange-300"
+              }>
+                {currentPlan.status === 'active' ? '現在のプラン' : '解約予定'}
               </Badge>
             </div>
           )}
@@ -286,12 +294,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
 
           {/* アクションボタン */}
           <div className="pt-2">
-            {isCurrentPlan && currentPlan.status === 'active' ? (
+            {isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') ? (
               <div className="space-y-2">
                 <Button variant="outline" className="w-full h-8 text-xs" disabled>
                   現在のプラン
                 </Button>
-                {plan.id !== 'free' && (
+                {plan.id !== 'free' && currentPlan.status === 'active' && (
                   <Button 
                     variant="destructive" 
                     className="w-full h-8 text-xs"
@@ -302,6 +310,15 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                     disabled={isProcessing}
                   >
                     {isProcessing ? '処理中...' : 'プラン解約'}
+                  </Button>
+                )}
+                {plan.id !== 'free' && currentPlan.status === 'cancel_at_period_end' && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-8 text-xs"
+                    disabled
+                  >
+                    解約予定（{currentPlan.currentPeriodEnd?.toLocaleDateString('ja-JP')}まで利用可能）
                   </Button>
                 )}
               </div>
@@ -373,15 +390,33 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         {/* 現在のプラン状況 */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">現在のプラン状況</h3>
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className={
-              currentPlan.status === 'active' ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-700'
-            }>
-              {currentPlan.planName}
-            </Badge>
-            <span className="text-sm text-blue-700">
-              {currentPlan.status === 'active' ? '有効' : '無効'}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className={
+                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' 
+                  ? 'bg-green-100 text-green-700 border-green-300' 
+                  : 'bg-gray-100 text-gray-700'
+              }>
+                {currentPlan.planName}
+              </Badge>
+              <span className="text-sm text-blue-700">
+                {currentPlan.status === 'active' && '有効'}
+                {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
+                {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
+              </span>
+            </div>
+            
+            {/* 有効期限表示 */}
+            {currentPlan.currentPeriodEnd && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
+              <div className="text-sm text-blue-600">
+                {currentPlan.status === 'active' && (
+                  <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                )}
+                {currentPlan.status === 'cancel_at_period_end' && (
+                  <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
