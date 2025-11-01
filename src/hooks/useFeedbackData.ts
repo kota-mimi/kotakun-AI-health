@@ -184,6 +184,13 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
         // キャッシュに保存（30分間有効）
         apiCache.set(cacheKey, feedbackData, 30 * 60 * 1000);
         setFeedbackData(feedbackData);
+      } else if (response.status === 403) {
+        // 利用制限エラーの場合
+        const errorData = await response.json();
+        alert(errorData.error || 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。');
+        console.error('フィードバック制限エラー:', errorData.error);
+      } else {
+        console.error('フィードバック取得に失敗しました');
       }
     } catch (error) {
       console.error('フィードバック取得エラー:', error);
