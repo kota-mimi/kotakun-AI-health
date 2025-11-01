@@ -14,27 +14,8 @@ import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
 import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
 import { withCounselingGuard } from '@/utils/counselingGuard';
-import type { HealthGoal } from '@/types';
+import type { HealthGoal, UserProfile } from '@/types';
 import { WeightChart } from './WeightChart';
-import { 
-  User,
-  Scale,
-  Utensils,
-  Activity,
-  MessageCircle,
-  Brain,
-  Settings,
-  CreditCard,
-  BookOpen,
-  HelpCircle,
-  Trophy,
-  ChevronRight,
-  Calendar,
-  BarChart3,
-  Bell,
-  FileText,
-  Shield
-} from 'lucide-react';
 
 
 interface MyProfilePageProps {
@@ -232,10 +213,7 @@ export function MyProfilePage({
           if (existingAnalysis) {
             const analysis = JSON.parse(existingAnalysis);
             
-            // 新しいプロフィールでカロリー・PFC再計算は後で一括実行
-            
-            
-            // 一時的にanalysisを保持（計算値は後で更新）
+            // カロリー・PFC再計算は後で一括実行
             updatedAnalysis = analysis;
           }
           
@@ -269,8 +247,7 @@ export function MyProfilePage({
             }),
           });
           
-          if (response.ok) {
-          } else {
+          if (!response.ok) {
             console.error('❌ Firestoreプロフィール保存失敗:', response.status);
           }
         } catch (error) {
@@ -351,8 +328,6 @@ export function MyProfilePage({
             return response.json();
           });
           
-          // デバッグ用詳細ログ
-
           // LocalStorageとFirestoreのカウンセリングデータも更新（同期保持）
           const updatedCounselingData = {
             answers: {
@@ -450,13 +425,6 @@ export function MyProfilePage({
           // 成功アラート
           alert('プロフィールを保存しました！');
           
-          // カウンセリングデータ更新イベント発火（リアルタイム反映用）
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
-              detail: { type: 'profile_update', timestamp: new Date().toISOString() }
-            }));
-          }
-          
           // データ更新を反映するためモーダルを閉じてリフレッシュキーを更新
           setIsEditModalOpen(false);
           setRefreshKey(prev => prev + 1);
@@ -519,11 +487,7 @@ export function MyProfilePage({
   const bmiStatus = getBMIStatus(userProfile.bmi);
 
   // メニューアイテム - iOS設定風に整理（データページ削除済み）
-  const healthMenuItems = [
-    // データページは削除されたので、健康情報は全てホーム画面で完結
-  ];
 
-  const analysisMenuItems = [];
 
   const accountMenuItems = [
     {
@@ -571,7 +535,6 @@ export function MyProfilePage({
     }
   ];
 
-  const dataMenuItems = [];
 
   // iOS風のセクションレンダラー
   const renderSection = (title: string, items: any[]) => (
