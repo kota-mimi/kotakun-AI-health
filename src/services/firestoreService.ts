@@ -13,8 +13,6 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-// Firebase Admin SDK はサーバーサイドでのみ使用
-// import { admin } from '@/lib/firebase-admin';
 import { generateId } from '@/lib/utils';
 import type { User, UserProfile, CounselingAnswer, DailyRecord } from '@/types';
 
