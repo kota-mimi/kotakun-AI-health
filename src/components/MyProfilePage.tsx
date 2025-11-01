@@ -607,52 +607,6 @@ export function MyProfilePage({
             </div>
           </div>
 
-          {/* 1日の目安 - カロリー・PFC */}
-          <div className="mt-3 space-y-2">
-            <div className="text-xs font-medium text-slate-600">1日の目安</div>
-            
-            {/* データがある時のみ表示 */}
-            {finalCalories && finalProtein && finalFat && finalCarbs ? (
-              <>
-                {/* カロリーセクション - BMRがあれば横並び */}
-                {bmrData ? (
-                  <div className="flex space-x-1.5">
-                    <div className="flex-1 text-center p-2 bg-blue-50 rounded border border-blue-100">
-                      <div className="text-xs text-blue-600">摂取カロリー</div>
-                      <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
-                    </div>
-                    <div className="flex-1 text-center p-2 bg-orange-50 rounded border border-orange-100" style={{backgroundColor: '#fff7ed', borderColor: '#fed7aa'}}>
-                      <div className="text-xs text-orange-600">基礎代謝</div>
-                      <div className="font-bold text-orange-900 text-sm">{Math.round(bmrData)}kcal</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center p-2 bg-blue-50 rounded border border-blue-100">
-                    <div className="text-xs text-blue-600">摂取カロリー</div>
-                    <div className="font-bold text-blue-900 text-sm">{finalCalories}kcal</div>
-                  </div>
-                )}
-                
-                {/* PFC */}
-                <div className="flex space-x-1.5">
-                  <div className="flex-1 text-center p-1.5 bg-red-50 rounded border border-red-100">
-                    <div className="text-xs text-red-600">タンパク質</div>
-                    <div className="font-bold text-red-900 text-sm">{finalProtein}g</div>
-                  </div>
-                  <div className="flex-1 text-center p-1.5 bg-yellow-50 rounded border border-yellow-100" style={{backgroundColor: '#fefce8', borderColor: '#fef3c7'}}>
-                    <div className="text-xs text-yellow-600">脂質</div>
-                    <div className="font-bold text-yellow-900 text-sm">{finalFat}g</div>
-                  </div>
-                  <div className="flex-1 text-center p-1.5 bg-green-50 rounded border border-green-100">
-                    <div className="text-xs text-green-600">炭水化物</div>
-                    <div className="font-bold text-green-900 text-sm">{finalCarbs}g</div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center p-2 text-slate-500 text-sm">読み込み中...</div>
-            )}
-          </div>
           
           {/* アクションボタン */}
           <div className="mt-3 pt-2 border-t border-slate-200">
