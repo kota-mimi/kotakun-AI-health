@@ -77,7 +77,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         console.log('🔄 今日の日付：バックグラウンドで最新データをチェック');
         
         // バックグラウンドでAPIチェック（キャッシュ優先で即座表示済み）
-        setTimeout(async () => {
+        (async () => {
           try {
             const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
             if (response.ok) {
@@ -96,7 +96,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           } catch (error) {
             console.log('バックグラウンド取得エラー:', error);
           }
-        }, 100); // 100ms後にバックグラウンド取得
+        })(); // 即座にバックグラウンド取得
         
         return; // メインのAPI取得はスキップ
       } else {
