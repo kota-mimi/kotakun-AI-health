@@ -74,14 +74,35 @@ export async function POST(request: NextRequest) {
       // ユーザーのサブスクリプション状態を更新
       if (paymentRecord.userId !== 'unknown') {
         const userRef = admin.firestore().collection('users').doc(paymentRecord.userId);
-        await userRef.update({
-          subscriptionStatus: 'active',
-          currentPlan: planName,
-          subscriptionStartDate: new Date(),
-          updatedAt: new Date()
-        });
         
-        console.log('✅ User subscription status updated');
+        try {
+          // ユーザードキュメントの存在確認
+          const userDoc = await userRef.get();
+          
+          if (userDoc.exists) {
+            // 既存ユーザーの場合は更新
+            await userRef.update({
+              subscriptionStatus: 'active',
+              currentPlan: planName,
+              subscriptionStartDate: new Date(),
+              updatedAt: new Date()
+            });
+            console.log('✅ User subscription status updated (existing user)');
+          } else {
+            // ユーザードキュメントが存在しない場合は新規作成
+            await userRef.set({
+              userId: paymentRecord.userId,
+              subscriptionStatus: 'active',
+              currentPlan: planName,
+              subscriptionStartDate: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date()
+            });
+            console.log('✅ User subscription status created (new user)');
+          }
+        } catch (error) {
+          console.error('❌ Failed to update user subscription:', error);
+        }
       }
     }
 
