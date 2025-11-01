@@ -1,5 +1,6 @@
 // 利用制限チェック機能
 import { admin } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // プラン別の制限設定
 export const USAGE_LIMITS = {
@@ -85,8 +86,8 @@ export async function recordUsage(userId: string, type: 'ai' | 'record'): Promis
       .doc(today);
     
     await usageRef.set({
-      [type]: admin.firestore.FieldValue.increment(1),
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      [type]: FieldValue.increment(1),
+      lastUpdated: FieldValue.serverTimestamp()
     }, { merge: true });
     
     console.log(`📊 使用回数記録: ${userId} - ${type} +1 (${today})`);
