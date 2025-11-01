@@ -180,11 +180,6 @@ export function MyProfilePage({
     setIsEditModalOpen(false);
     alert('プロフィールを保存しました！');
     
-    // ページ全体をリロードして最新データを確実に反映
-    setTimeout(() => {
-      window.location.reload();
-    }, 100); // 少し遅延してアラートが表示されてからリロード
-    
     // 変数を関数の先頭で定義（スコープエラー回避）
     let newCalorieTarget = 0;
     let newMacros = { protein: 0, fat: 0, carbs: 0 };
@@ -432,21 +427,15 @@ export function MyProfilePage({
             
           }
 
-          // 保存完了（UIは既に更新済み）
-          
-          // 各データソースを手動リフレッシュ
-          refetch();
-          refetchLatestProfile();
+          // 保存完了 - ページをリロードして確実に反映
+          window.location.reload();
           
         } catch (error) {
-          console.error('❌ プロフィール履歴保存エラー詳細:', {
-            error: error.message,
-            name: error.name,
-            stack: error.stack
-          });
+          console.error('❌ プロフィール保存エラー:', error.message);
           
-          // エラーアラート表示
-          alert(`プロフィール履歴保存エラー: ${error.message}`);
+          // エラー時も画面をリフレッシュ（部分的に保存されている可能性があるため）
+          alert('保存中にエラーが発生しましたが、一部データは保存されている可能性があります。画面を更新します。');
+          window.location.reload();
         }
       }
 
