@@ -110,7 +110,43 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     }
   };
 
-  // プラン解約処理
+  // Stripe Billing Portal処理
+  const handleBillingPortal = async () => {
+    setIsProcessing(true);
+    setError(null);
+    
+    try {
+      if (!liffUser?.userId) {
+        setError('ユーザー情報が取得できません');
+        return;
+      }
+
+      console.log('🔄 Billing Portal開始');
+      const response = await fetch('/api/stripe/billing-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: liffUser.userId }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.url) {
+        // Stripe Billing Portalにリダイレクト
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'プラン管理画面の作成に失敗しました');
+      }
+    } catch (err) {
+      console.error('Billing Portalエラー:', err);
+      setError('プラン管理画面の作成でエラーが発生しました');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // プラン解約処理（Legacy - Billing Portalで代替）
   const handleCancel = async () => {
     if (!confirm('本当にプランを解約しますか？')) {
       return;
@@ -301,15 +337,15 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 </Button>
                 {plan.id !== 'free' && currentPlan.status === 'active' && (
                   <Button 
-                    variant="destructive" 
-                    className="w-full h-8 text-xs"
+                    variant="outline" 
+                    className="w-full h-8 text-xs text-blue-600 border-blue-600"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCancel();
+                      handleBillingPortal();
                     }}
                     disabled={isProcessing}
                   >
-                    {isProcessing ? '処理中...' : 'プラン解約'}
+                    {isProcessing ? '処理中...' : '🔧 プラン管理'}
                   </Button>
                 )}
                 {plan.id !== 'free' && currentPlan.status === 'cancel_at_period_end' && (
@@ -417,6 +453,19 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 )}
               </div>
             )}
+            
+            {/* Billing Portalボタン（有料プランの場合のみ） */}
+            {(currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && currentPlan.plan !== 'free' && (
+              <div className="mt-3">
+                <Button 
+                  onClick={handleBillingPortal}
+                  disabled={isProcessing}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                >
+                  {isProcessing ? '処理中...' : '🔧 プラン管理・変更・解約'}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -436,10 +485,11 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-3">プラン管理について</h4>
           <div className="space-y-2 text-sm text-gray-600">
-            <p>• プラン変更は即時反映されます</p>
-            <p>• 有料プランの解約はいつでも可能です</p>
-            <p>• 解約後は無料プランの機能のみ利用可能になります</p>
-            <p>• 次回更新日前日まで現在のプランが継続されます</p>
+            <p>• <strong>🔧 プラン管理</strong>ボタンで、プラン変更・解約・請求書確認が可能です</p>
+            <p>• プラン変更は即時反映されます（月額↔3ヶ月プラン）</p>
+            <p>• 解約は期間終了まで利用可能（即座解約ではありません）</p>
+            <p>• 請求履歴・次回請求日もStripe管理画面で確認できます</p>
+            <p>• 全ての変更はセキュアなStripe公式システムで処理されます</p>
           </div>
         </Card>
       </div>
