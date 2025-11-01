@@ -186,6 +186,9 @@ export function MyProfilePage({
     let newBMR = 0;
     let newTDEE = 0;
 
+    // 即座にローカル状態も更新（リロード前に表示更新）
+    setRefreshKey(prev => prev + 1);
+
     // バックグラウンドで保存処理実行
     try {
       
@@ -427,8 +430,9 @@ export function MyProfilePage({
             
           }
 
-          // 保存完了 - ページをリロードして確実に反映
-          window.location.reload();
+          // 保存完了 - データリフレッシュのみ（ページリロードなし）
+          refetch();
+          refetchLatestProfile();
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
