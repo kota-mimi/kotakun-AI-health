@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { admin } from '@/lib/firebase-admin';
 import { createDailyFeedbackFlexMessage } from '@/services/flexMessageTemplates';
+import { getUserPlan } from '@/utils/usageLimits';
 
 interface DailyRecord {
   weight?: { value: number; date: string };
@@ -27,6 +28,15 @@ export async function POST(request: NextRequest) {
 
     if (!userId || !date) {
       return NextResponse.json({ error: 'userId and date are required' }, { status: 400 });
+    }
+
+    // プラン制限チェック：無料プランはフィードバック機能なし
+    const userPlan = await getUserPlan(userId);
+    if (userPlan === 'free') {
+      return NextResponse.json({ 
+        error: 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。',
+        needsUpgrade: true 
+      }, { status: 403 });
     }
 
     // 1日の記録データを取得
