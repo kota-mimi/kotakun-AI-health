@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
-import { checkUsageLimit, recordUsage } from '@/utils/usageLimits';
+// 削除: import { checkUsageLimit, recordUsage } from '@/utils/usageLimits'; - WebアプリのAI使用しない記録は制限対象外
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,19 +81,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // プラン制限チェック：Webアプリからの記録も制限対象
-    try {
-      const recordLimit = await checkUsageLimit(lineUserId, 'record');
-      if (!recordLimit.allowed) {
-        return NextResponse.json({ 
-          error: recordLimit.reason || '記録の制限に達しました。',
-          needsUpgrade: true 
-        }, { status: 403 });
-      }
-    } catch (limitError) {
-      console.error('❌ Webアプリ記録制限チェックエラー:', limitError);
-      // エラーの場合は制限なしで続行
-    }
+    // Webアプリからの手動記録は制限対象外（AI使用しないため）
+    console.log('📝 Webアプリ手動記録 - 制限チェックスキップ (AIなし):', lineUserId);
 
     const adminDb = admin.firestore();
     
@@ -171,8 +160,8 @@ export async function PUT(request: NextRequest) {
         updatedAt: new Date()
       }, { merge: true });
 
-      // 記録成功時に使用回数をカウント
-      await recordUsage(lineUserId, 'record');
+      // Webアプリ手動記録は使用回数カウント対象外（AI使用しないため）
+      console.log('📝 Webアプリ手動記録完了 - 使用回数カウントなし:', lineUserId);
 
       return NextResponse.json({ success: true });
     }
@@ -246,8 +235,8 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date()
     }, { merge: true });
 
-    // 記録成功時に使用回数をカウント
-    await recordUsage(lineUserId, 'record');
+    // Webアプリ手動記録は使用回数カウント対象外（AI使用しないため）
+    console.log('📝 Webアプリ過去記録完了 - 使用回数カウントなし:', lineUserId);
 
     return NextResponse.json({ success: true });
 
