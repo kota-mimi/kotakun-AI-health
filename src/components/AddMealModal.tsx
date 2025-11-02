@@ -238,22 +238,6 @@ export function AddMealModal({
 				if (response.ok) {
 					const data = await response.json();
 					const analysis = data.analysis;
-				} else if (response.status === 403) {
-					// 利用制限エラーの場合
-					const errorData = await response.json();
-					alert(
-						errorData.error ||
-							"この機能は有料プランの機能です。プランをアップグレードしてください。",
-					);
-					setIsAnalyzing(false);
-					return;
-				} else {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-
-				if (response.ok) {
-					const data = await response.json();
-					const analysis = data.analysis;
 
 					if (analysis.isMultipleMeals && analysis.meals) {
 						// 複数食事の場合
@@ -291,6 +275,15 @@ export function AddMealModal({
 						// 合計値も計算して設定
 						setTimeout(calculateTotals, 100);
 					}
+				} else if (response.status === 403) {
+					// 利用制限エラーの場合
+					const errorData = await response.json();
+					alert(
+						errorData.error ||
+							"この機能は有料プランの機能です。プランをアップグレードしてください。",
+					);
+					setIsAnalyzing(false);
+					return;
 				} else {
 					throw new Error("API解析失敗");
 				}
@@ -355,22 +348,6 @@ export function AddMealModal({
 			if (response.ok) {
 				const data = await response.json();
 				const analysis = data.analysis;
-			} else if (response.status === 403) {
-				// 利用制限エラーの場合
-				const errorData = await response.json();
-				alert(
-					errorData.error ||
-						"この機能は有料プランの機能です。プランをアップグレードしてください。",
-				);
-				setIsTextAnalyzing(false);
-				return;
-			} else {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			if (response.ok) {
-				const data = await response.json();
-				const analysis = data.analysis;
 
 				if (analysis.isMultipleMeals && analysis.meals) {
 					// 複数食事の場合
@@ -404,6 +381,15 @@ export function AddMealModal({
 						},
 					]);
 				}
+			} else if (response.status === 403) {
+				// 利用制限エラーの場合
+				const errorData = await response.json();
+				alert(
+					errorData.error ||
+						"この機能は有料プランの機能です。プランをアップグレードしてください。",
+				);
+				setIsTextAnalyzing(false);
+				return;
 			} else {
 				throw new Error("API解析失敗");
 			}
