@@ -176,15 +176,10 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
-    // 🚀 即座にUI更新（サイレント保存）
+    // モーダルを閉じる
     setIsEditModalOpen(false);
-    
-    // 少し遅延してからページリロード（モーダルが閉じるのを待つ）
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
 
-    // バックグラウンドで保存処理実行（リロードで処理が中断されても問題なし）
+    // 保存処理を完了してからページリロード
     try {
       
       // ローカルストレージのカウンセリング結果を更新
@@ -425,9 +420,9 @@ export function MyProfilePage({
             
           }
 
-          // 保存完了 - データリフレッシュのみ（ページリロードなし）
-          refetch();
-          refetchLatestProfile();
+          // 保存完了 - ページリロードで最新データを反映
+          alert('プロフィールを保存しました！');
+          window.location.reload();
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
