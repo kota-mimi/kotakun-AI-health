@@ -113,7 +113,10 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
   };
 
   const isSameDate = (date1: Date, date2: Date) => {
-    return date1.toDateString() === date2.toDateString();
+    if (!date1 || !date2) return false;
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
   };
 
   const currentMonth = currentDate.toLocaleDateString('ja-JP', { 
@@ -182,12 +185,13 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                 <Button
                   key={dateKey}
                   variant="ghost"
-                  onClick={() => !isBeforeAppStart && onDateSelect(date)}
-                  disabled={isBeforeAppStart}
+                  onClick={() => onDateSelect(date)}
                   className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
-                    isBeforeAppStart
-                      ? 'text-slate-300 cursor-not-allowed'
-                      : 'bg-health-primary text-white shadow-sm'
+                    isSameDate(date, currentDate)
+                      ? 'bg-health-primary text-white shadow-sm'
+                      : isBeforeAppStart
+                      ? 'text-slate-400 hover:bg-slate-100/40'
+                      : 'text-slate-600 hover:bg-slate-100/60'
                   }`}
                 >
                 <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
