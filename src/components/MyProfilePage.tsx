@@ -421,7 +421,6 @@ export function MyProfilePage({
           }
 
           // 保存完了 - ページリロードで最新データを反映
-          alert('プロフィールを保存しました！');
           window.location.reload();
           
         } catch (error) {
