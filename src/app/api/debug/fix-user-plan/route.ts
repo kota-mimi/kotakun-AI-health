@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
       subscriptionStatus: 'active',
       currentPlan: planName,
       subscriptionStartDate: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30日後
+      currentPeriodEnd: plan === 'quarterly' 
+        ? new Date(Date.now() + 92 * 24 * 60 * 60 * 1000) // 3ヶ月後（約92日）
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 1ヶ月後
       stripeSubscriptionId: 'sub_1SP1c9KMirzoVNsd6QpLRZ20', // 実際のサブスクリプションID
       updatedAt: new Date()
     };
