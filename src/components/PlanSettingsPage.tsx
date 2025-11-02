@@ -330,12 +330,16 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
 
           {/* アクションボタン */}
           <div className="pt-2">
-            {isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') ? (
+            {plan.id === 'free' ? (
+              <Button variant="outline" className="w-full h-8 text-xs" disabled>
+                無料プラン
+              </Button>
+            ) : isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') ? (
               <div className="space-y-2">
                 <Button variant="outline" className="w-full h-8 text-xs" disabled>
                   現在のプラン
                 </Button>
-                {plan.id !== 'free' && currentPlan.status === 'active' && (
+                {currentPlan.status === 'active' && (
                   <Button 
                     variant="outline" 
                     className="w-full h-8 text-xs text-blue-600 border-blue-600"
@@ -348,7 +352,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                     {isProcessing ? '処理中...' : '🔧 プラン管理'}
                   </Button>
                 )}
-                {plan.id !== 'free' && currentPlan.status === 'cancel_at_period_end' && (
+                {currentPlan.status === 'cancel_at_period_end' && (
                   <Button 
                     variant="outline" 
                     className="w-full h-8 text-xs"
@@ -358,10 +362,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   </Button>
                 )}
               </div>
-            ) : plan.id === 'free' ? (
-              <Button variant="outline" className="w-full h-8 text-xs" disabled>
-                無料プラン
-              </Button>
             ) : (
               <Button 
                 className={`w-full h-8 text-xs transition-all duration-200 ${
@@ -375,7 +375,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 }}
                 disabled={isProcessing}
               >
-                {isProcessing ? '処理中...' : '購入する'}
+                {isProcessing ? '処理中...' : (currentPlan.status === 'active' ? 'プラン変更' : '購入する')}
               </Button>
             )}
           </div>
