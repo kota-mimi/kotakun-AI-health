@@ -187,9 +187,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                   className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
                     isBeforeAppStart
                       ? 'text-slate-300 cursor-not-allowed'
-                      : isSameDate(date, currentDate)
-                      ? 'bg-health-primary text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100/60'
+                      : 'bg-health-primary text-white shadow-sm'
                   }`}
                 >
                 <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
