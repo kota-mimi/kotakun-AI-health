@@ -601,6 +601,20 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
   } catch (error) {
     console.error('テキストメッセージ処理エラー:', error);
+    
+    // 記録モード中にエラーが発生した場合は自動で通常モードに戻す
+    const isInRecordMode = await isRecordMode(userId);
+    if (isInRecordMode) {
+      console.log('🔄 記録モード中エラー発生 - 自動で通常モードに戻します:', userId);
+      await setRecordMode(userId, false);
+      
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'エラーが発生したため、通常モードに戻りました。\n\nもう一度記録したい場合は「記録」ボタンを押してください。'
+      }]);
+      return;
+    }
+    
     // エラー時は一般会話で応答（AIアドバイスモードを考慮）
     const aiService = new AIHealthService();
     const wasAdviceMode = aiAdviceModeUsers.has(userId); // タイムアウト前の状態
@@ -755,38 +769,51 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     } catch (error) {
       console.error('🔥 画像処理エラー:', error);
       await stopLoadingAnimation(userId);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: 'テキストで記録',
-                data: 'action=open_keyboard',
-                inputOption: 'openKeyboard'
+      
+      // 記録モード中にエラーが発生した場合は自動で通常モードに戻す
+      const isInRecordMode = await isRecordMode(userId);
+      if (isInRecordMode) {
+        console.log('🔄 記録モード中画像エラー発生 - 自動で通常モードに戻します:', userId);
+        await setRecordMode(userId, false);
+        
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '画像処理でエラーが発生したため、通常モードに戻りました。\n\nもう一度記録したい場合は「記録」ボタンを押してください。'
+        }]);
+      } else {
+        await replyMessage(replyToken, [{
+          type: 'text',
+          text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
+          quickReply: {
+            items: [
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: 'テキストで記録',
+                  data: 'action=open_keyboard',
+                  inputOption: 'openKeyboard'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'camera',
+                  label: 'カメラで記録'
+                }
+              },
+              {
+                type: 'action',
+                action: {
+                  type: 'postback',
+                  label: '通常モードに戻る',
+                  data: 'action=exit_record_mode'
+                }
               }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'camera',
-                label: 'カメラで記録'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '通常モードに戻る',
-                data: 'action=exit_record_mode'
-              }
-            }
-          ]
-        }
-      }]);
+            ]
+          }
+        }]);
+      }
     } finally {
       // 処理完了フラグをクリア
       setProcessing(userId, false);
