@@ -24,11 +24,6 @@ export const USAGE_LIMITS = {
 // ユーザーの現在のプランを取得
 export async function getUserPlan(userId: string): Promise<string> {
   try {
-    // 特定ユーザーを有料プランに復旧
-    if (userId === 'U7fd12476d6263912e0d9c99fc3a6bef9') {
-      return 'monthly';
-    }
-    
     const db = admin.firestore();
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -106,11 +101,12 @@ export async function checkUsageLimit(
   userId: string, 
   type: 'ai' | 'record'
 ): Promise<{ allowed: boolean; reason?: string; usage?: number; limit?: number }> {
-  // 一時的に全ての利用制限を無効化
+  /* 一時的に全ての利用制限を無効化
   console.log('🔓 利用制限一時無効化中 - 全ユーザー無制限アクセス');
   return { allowed: true };
+  */
   
-  /* 元のコード（後で復活用）
+  // 元のコード（復活）
   try {
     // 1. ユーザーのプランを取得
     const userPlan = await getUserPlan(userId);
@@ -149,5 +145,4 @@ export async function checkUsageLimit(
     // エラー時は制限なしで通す（サービス継続性を重視）
     return { allowed: true };
   }
-  */
 }
