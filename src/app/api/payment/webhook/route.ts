@@ -97,13 +97,25 @@ export async function POST(request: NextRequest) {
           const userDoc = await userRef.get();
           
           if (userDoc.exists) {
-            // 既存ユーザーの場合は更新
+            // 既存ユーザーの場合は更新（プラン変更の可能性があるため、常に最新情報で上書き）
             const updateData: any = {
               subscriptionStatus: 'active',
               currentPlan: planName,
               subscriptionStartDate: new Date(),
               updatedAt: new Date()
             };
+            
+            // プラン変更の場合、古いサブスクリプション情報をクリア
+            const existingData = userDoc.data();
+            if (existingData?.stripeSubscriptionId && subscriptionInfo?.id && 
+                existingData.stripeSubscriptionId !== subscriptionInfo.id) {
+              console.log('🔄 Detected plan change:', {
+                oldSubscription: existingData.stripeSubscriptionId,
+                newSubscription: subscriptionInfo.id,
+                oldPlan: existingData.currentPlan,
+                newPlan: planName
+              });
+            }
             
             // サブスクリプション情報があれば追加
             if (subscriptionInfo) {
@@ -113,7 +125,12 @@ export async function POST(request: NextRequest) {
             }
             
             await userRef.update(updateData);
-            console.log('✅ User subscription status updated (existing user)');
+            console.log('✅ User subscription status updated (existing user):', {
+              userId: paymentRecord.userId,
+              planName,
+              subscriptionId: subscriptionInfo?.id,
+              updateData
+            });
           } else {
             // ユーザードキュメントが存在しない場合は新規作成
             const createData: any = {
