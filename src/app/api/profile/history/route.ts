@@ -16,6 +16,18 @@ export async function GET(request: NextRequest) {
 
     const adminDb = admin.firestore();
 
+    // ユーザードキュメントが存在するかチェック
+    const userRef = adminDb.collection('users').doc(lineUserId);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      // ユーザードキュメントが存在しない場合、空の履歴を返す
+      return NextResponse.json({
+        success: true,
+        data: targetDate ? null : []
+      });
+    }
+
     if (targetDate) {
       // 指定日付の履歴を取得
       const profileHistoryRef = adminDb
