@@ -105,6 +105,12 @@ export async function POST(request: NextRequest) {
               updatedAt: new Date()
             };
             
+            // 実際のStripeサブスクリプション期限を使用
+            if (subscriptionInfo) {
+              updateData.currentPeriodEnd = new Date(subscriptionInfo.current_period_end * 1000);
+              updateData.currentPeriodStart = new Date(subscriptionInfo.current_period_start * 1000);
+            }
+            
             // プラン変更の場合、古いサブスクリプション情報をクリア
             const existingData = userDoc.data();
             if (existingData?.stripeSubscriptionId && subscriptionInfo?.id && 
@@ -120,8 +126,6 @@ export async function POST(request: NextRequest) {
             // サブスクリプション情報があれば追加
             if (subscriptionInfo) {
               updateData.stripeSubscriptionId = subscriptionInfo.id;
-              updateData.currentPeriodEnd = new Date(subscriptionInfo.current_period_end * 1000);
-              updateData.currentPeriodStart = new Date(subscriptionInfo.current_period_start * 1000);
             }
             
             await userRef.update(updateData);
