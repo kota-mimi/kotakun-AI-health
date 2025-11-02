@@ -288,10 +288,10 @@ export function MyProfilePage({
             targetValue: editForm.targetWeight
           }];
           
-          newCalorieTarget = calculateCalorieTarget(newProfile, goals);
-          newMacros = calculateMacroTargets(newCalorieTarget);
-          newBMR = calculateBMR(newProfile);
-          newTDEE = calculateTDEE(newProfile);
+          const newCalorieTarget = calculateCalorieTarget(newProfile, goals);
+          const newMacros = calculateMacroTargets(newCalorieTarget);
+          const newBMR = calculateBMR(newProfile);
+          const newTDEE = calculateTDEE(newProfile);
           
           // プロフィール履歴をAPIで保存（Promise化）
           const profileHistoryPromise = fetch('/api/profile/save', {
