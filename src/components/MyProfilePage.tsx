@@ -433,7 +433,6 @@ export function MyProfilePage({
           console.error('❌ プロフィール保存エラー:', error.message);
           
           // エラー時も画面をリフレッシュ（部分的に保存されている可能性があるため）
-          alert('保存中にエラーが発生しましたが、一部データは保存されている可能性があります。画面を更新します。');
           window.location.reload();
         }
       }
