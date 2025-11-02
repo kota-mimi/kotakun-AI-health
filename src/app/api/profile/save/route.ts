@@ -15,6 +15,22 @@ export async function POST(request: NextRequest) {
 
     const adminDb = admin.firestore();
     
+    // ユーザードキュメントが存在するかチェック、なければ作成
+    const userRef = adminDb.collection('users').doc(lineUserId);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      // ユーザードキュメントを作成（基本情報のみ）
+      await userRef.set({
+        userId: lineUserId,
+        createdAt: new Date(),
+        createdAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+        subscriptionStatus: 'inactive',
+        currentPlan: null
+      });
+      console.log(`✅ ユーザードキュメント作成: ${lineUserId}`);
+    }
+    
     // プロフィール履歴をサブコレクションに保存
     const changeDate = profileData.changeDate || new Date().toISOString().split('T')[0];
     const profileHistoryRef = adminDb
@@ -37,7 +53,6 @@ export async function POST(request: NextRequest) {
     await profileHistoryRef.set(historyData);
     
     // メインユーザードキュメントの最終更新日も更新
-    const userRef = adminDb.collection('users').doc(lineUserId);
     await userRef.set({
       lastProfileUpdate: new Date(),
       lastProfileUpdateJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
