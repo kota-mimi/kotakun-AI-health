@@ -179,7 +179,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
         '詳細な栄養分析',
-        '運動プラン提案',
         'アプリからAI記録機能'
       ]
     }
@@ -192,12 +191,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     return (
       <Card 
         key={plan.id} 
-        className={`relative p-4 transition-all duration-300 border-2 bg-white/80 backdrop-blur-sm cursor-pointer transform hover:scale-102 ${
+        className={`relative p-6 transition-all duration-300 border-2 bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm cursor-pointer transform hover:scale-102 rounded-xl ${
           isSelected 
-            ? 'border-blue-500 shadow-lg scale-102 ring-1 ring-blue-200' 
+            ? 'border-blue-500 shadow-xl scale-102 ring-2 ring-blue-200/50' 
             : isCurrentPlan && currentPlan.status === 'active'
-            ? 'border-green-500 shadow-lg scale-102'
-            : 'border-gray-300 shadow-sm hover:shadow-lg hover:border-blue-300'
+            ? 'border-emerald-500 shadow-xl scale-102 ring-2 ring-emerald-200/50 bg-gradient-to-br from-emerald-50 to-white'
+            : 'border-gray-200 shadow-md hover:shadow-xl hover:border-blue-300 hover:ring-1 hover:ring-blue-100'
         }`}
         onClick={() => setSelectedPlan(plan.id)}
       >
@@ -224,8 +223,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             <div className="text-center">
               <Badge variant="outline" className={
                 currentPlan.status === 'active' 
-                  ? "bg-green-100 text-green-700 border-green-300"
-                  : "bg-orange-100 text-orange-700 border-orange-300"
+                  ? "bg-emerald-100 text-emerald-700 border-emerald-300 font-medium"
+                  : "bg-orange-100 text-orange-700 border-orange-300 font-medium"
               }>
                 {currentPlan.status === 'active' || currentPlan.plan === 'free' ? '現在のプラン' : '解約予定'}
               </Badge>
@@ -286,33 +285,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 無料プラン
               </Button>
             ) : isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') ? (
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full h-8 text-xs" disabled>
-                  現在のプラン
-                </Button>
-                {currentPlan.status === 'active' && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-8 text-xs text-red-600 border-red-600 hover:bg-red-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancel();
-                    }}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? '処理中...' : '❌ 解約する'}
-                  </Button>
-                )}
-                {currentPlan.status === 'cancel_at_period_end' && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-8 text-xs"
-                    disabled
-                  >
-                    解約予定（{currentPlan.currentPeriodEnd?.toLocaleDateString('ja-JP')}まで利用可能）
-                  </Button>
-                )}
-              </div>
+              <Button variant="outline" className="w-full h-8 text-xs" disabled>
+                現在のプラン
+              </Button>
             ) : (
               <Button 
                 className={`w-full h-8 text-xs transition-all duration-200 ${
