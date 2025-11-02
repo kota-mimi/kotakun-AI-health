@@ -61,12 +61,10 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // プラン名を決定
+      // プラン名を決定（月額プランのみ）
       let planName = 'Unknown Plan';
       if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
         planName = '月額プラン';
-      } else if (priceId === process.env.STRIPE_QUARTERLY_PRICE_ID) {
-        planName = '3ヶ月プラン';
       }
 
       // 支払い記録をFirestoreに保存
@@ -196,14 +194,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      // プラン名を決定
+      // プラン名を決定（月額プランのみ）
       let planName = 'Unknown Plan';
       const priceId = subscription.items.data[0]?.price?.id;
       
       if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
         planName = '月額プラン';
-      } else if (priceId === process.env.STRIPE_QUARTERLY_PRICE_ID) {
-        planName = '3ヶ月プラン';
       }
 
       // ユーザーのサブスクリプション情報を更新

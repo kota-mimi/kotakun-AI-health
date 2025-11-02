@@ -208,27 +208,14 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       name: '月額プラン',
       price: 890,
       period: '月額',
-      stripePriceId: 'price_monthly_plan',
-      features: [
-        'すべての機能が無制限',
-        'AI会話・記録が使い放題',
-        '1日のフィードバック機能',
-        'アプリからAI記録機能'
-      ]
-    },
-    {
-      id: 'quarterly',
-      name: '3ヶ月プラン',
-      price: 1800,
-      period: '3ヶ月',
-      monthlyPrice: 600,
-      discount: '32%OFF',
-      stripePriceId: 'price_1SNPADKMirzoVNsdLmsBPZ3o',
+      stripePriceId: 'price_1SMXAsKMirzoVNsdglrHigMa',
       isRecommended: true,
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
+        '詳細な栄養分析',
+        '運動プラン提案',
         'アプリからAI記録機能'
       ]
     }
@@ -475,7 +462,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* プラン一覧 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <div className="space-y-4 max-w-lg mx-auto">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 

@@ -27,7 +27,7 @@ export const STRIPE_CONFIG = {
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || ''
 };
 
-// プラン定義（PlanSettingsPageと同期）
+// プラン定義（月額プランのみ）
 export const PLANS: PlanConfig[] = [
   {
     id: 'free',
@@ -51,23 +51,6 @@ export const PLANS: PlanConfig[] = [
     price: 890,
     period: '月額',
     stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SMXAsKMirzoVNsdglrHigMa',
-    features: [
-      'すべての機能が無制限',
-      'AI会話・記録が使い放題',
-      '1日のフィードバック機能',
-      '詳細な栄養分析',
-      '運動プラン提案',
-      'アプリからAI記録機能'
-    ]
-  },
-  {
-    id: 'quarterly',
-    name: '3ヶ月プラン',
-    price: 1800,
-    period: '3ヶ月',
-    originalPrice: 2670,
-    discount: '32%OFF',
-    stripePriceId: process.env.STRIPE_QUARTERLY_PRICE_ID || 'price_1SNPADKMirzoVNsdLmsBPZ3o',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
