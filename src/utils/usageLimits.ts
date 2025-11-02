@@ -101,11 +101,16 @@ export async function recordUsage(userId: string, type: 'ai' | 'record'): Promis
   }
 }
 
-// 利用制限チェック
+// 利用制限チェック（一時的に無効化）
 export async function checkUsageLimit(
   userId: string, 
   type: 'ai' | 'record'
 ): Promise<{ allowed: boolean; reason?: string; usage?: number; limit?: number }> {
+  // 一時的に全ての利用制限を無効化
+  console.log('🔓 利用制限一時無効化中 - 全ユーザー無制限アクセス');
+  return { allowed: true };
+  
+  /* 元のコード（後で復活用）
   try {
     // 1. ユーザーのプランを取得
     const userPlan = await getUserPlan(userId);
@@ -144,4 +149,5 @@ export async function checkUsageLimit(
     // エラー時は制限なしで通す（サービス継続性を重視）
     return { allowed: true };
   }
+  */
 }
