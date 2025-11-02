@@ -979,6 +979,21 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       }
       break;
     case 'daily_feedback':
+      // 利用制限チェック（フィードバック機能）
+      try {
+        const feedbackLimit = await checkUsageLimit(userId, 'record'); // フィードバックは記録制限と同様
+        if (!feedbackLimit.allowed) {
+          // 利用制限に達した場合、自動で通常モードに戻す
+          await setRecordMode(userId, false);
+          console.log('🔄 フィードバック制限により通常モードに自動切替:', userId);
+          await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
+          return;
+        }
+      } catch (limitError) {
+        console.error('❌ フィードバック制限チェックエラー:', limitError);
+        // エラーの場合は制限なしで続行
+      }
+
       // カウンセリング完了チェック
       const isFeedbackCounselingCompleted = await isCounselingCompleted(userId);
       if (!isFeedbackCounselingCompleted) {
