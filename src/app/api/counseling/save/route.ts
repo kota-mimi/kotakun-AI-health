@@ -207,6 +207,21 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
 
     console.log('LINEメッセージ送信完了:', userName);
 
+    // カウンセリング完了後、通常モードに設定
+    try {
+      const adminDb = admin.firestore();
+      const userStateRef = adminDb.collection('userStates').doc(lineUserId);
+      await userStateRef.set({
+        recordMode: false,
+        lastActivity: new Date(),
+        conversationMode: 'normal'
+      }, { merge: true });
+      
+      console.log('✅ カウンセリング完了後、通常モードに設定:', lineUserId);
+    } catch (error) {
+      console.error('❌ 通常モード設定エラー:', error);
+    }
+
   } catch (error) {
     console.error('LINEカウンセリング結果送信エラー:', error);
     throw error;

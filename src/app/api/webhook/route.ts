@@ -337,6 +337,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       // 通常モード中はAI会話制限をチェック
       const aiLimit = await checkUsageLimit(userId, 'ai');
       if (!aiLimit.allowed) {
+        // AI制限に達した場合、自動で通常モードに戻す
+        await setRecordMode(userId, false);
+        console.log('🔄 AI制限により通常モードに自動切替:', userId);
         await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
         return;
       }
@@ -3934,7 +3937,9 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
       await setRecordMode(userId, false);
       console.log('🔄 フィードバック送信後、通常モードに自動切替:', userId);
     } else if (response.status === 403) {
-      // 利用制限エラーの場合
+      // 利用制限エラーの場合、自動で通常モードに戻す
+      await setRecordMode(userId, false);
+      console.log('🔄 フィードバック制限により通常モードに自動切替:', userId);
       await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
       console.log('🚫 フィードバック利用制限:', userId);
     } else {
