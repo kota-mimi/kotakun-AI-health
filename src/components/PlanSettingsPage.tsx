@@ -227,7 +227,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   ? "bg-green-100 text-green-700 border-green-300"
                   : "bg-orange-100 text-orange-700 border-orange-300"
               }>
-                {currentPlan.status === 'active' ? '現在のプラン' : '解約予定'}
+                {currentPlan.status === 'active' || currentPlan.plan === 'free' ? '現在のプラン' : '解約予定'}
               </Badge>
             </div>
           )}
