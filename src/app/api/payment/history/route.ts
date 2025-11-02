@@ -13,24 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 特定ユーザー（決済済み）の一時的対応
-    if (userId === 'U7fd12476d6263912e0d9c99fc3a6bef9') {
-      console.log('✅ 決済済みユーザー：月額プランを返却');
-      return NextResponse.json({
-        success: true,
-        currentPlan: '月額プラン',
-        payments: [
-          {
-            id: 'paid_user_plan',
-            planName: '月額プラン',
-            amount: 890,
-            currency: 'JPY',
-            status: 'completed',
-            date: new Date().toLocaleDateString('ja-JP')
-          }
-        ]
-      });
-    }
+    // モックデータを削除（実際のFirebaseデータのみ使用）
 
     // 開発環境でFirebaseが初期化されていない場合はモックデータを返す
     if (process.env.NODE_ENV === 'development') {
