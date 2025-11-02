@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Stripe webhook received:', event.type);
 
-    // 決済完了イベントを処理
+    // 新規決済完了イベントを処理
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
@@ -138,6 +138,88 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error('❌ Failed to update user subscription:', error);
         }
+      }
+    }
+
+    // サブスクリプション更新イベントを処理
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription;
+      
+      console.log('🔄 Processing subscription update:', {
+        subscriptionId: subscription.id,
+        customerId: subscription.customer,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end
+      });
+
+      // メタデータまたは顧客IDからユーザーIDを取得
+      let userId: string | null = null;
+      
+      // 1. サブスクリプションメタデータから取得を試行
+      if (subscription.metadata?.userId) {
+        userId = subscription.metadata.userId;
+      } else {
+        // 2. 顧客メタデータから取得を試行
+        try {
+          const customer = await stripe.customers.retrieve(subscription.customer as string);
+          if (customer && !customer.deleted && customer.metadata?.userId) {
+            userId = customer.metadata.userId;
+          }
+        } catch (error) {
+          console.error('❌ Failed to retrieve customer:', error);
+        }
+      }
+
+      if (!userId) {
+        console.error('❌ Cannot find userId for subscription update:', subscription.id);
+        return NextResponse.json({ received: true });
+      }
+
+      // プラン名を決定
+      let planName = 'Unknown Plan';
+      const priceId = subscription.items.data[0]?.price?.id;
+      
+      if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
+        planName = '月額プラン';
+      } else if (priceId === process.env.STRIPE_QUARTERLY_PRICE_ID) {
+        planName = '3ヶ月プラン';
+      }
+
+      // ユーザーのサブスクリプション情報を更新
+      try {
+        const userRef = admin.firestore().collection('users').doc(userId);
+        
+        const updateData: any = {
+          subscriptionStatus: subscription.status,
+          currentPlan: planName,
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          currentPeriodStart: new Date(subscription.current_period_start * 1000),
+          stripeSubscriptionId: subscription.id,
+          updatedAt: new Date()
+        };
+
+        await userRef.update(updateData);
+        console.log('✅ User subscription updated:', updateData);
+
+        // プラン変更の記録を保存
+        await admin.firestore().collection('payments').add({
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: subscription.customer,
+          userId,
+          planName,
+          priceId,
+          type: 'plan_change',
+          amount: subscription.items.data[0]?.price?.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0,
+          currency: subscription.currency?.toUpperCase() || 'JPY',
+          status: 'completed',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        console.log('✅ Plan change record saved');
+
+      } catch (error) {
+        console.error('❌ Failed to update user subscription:', error);
       }
     }
 
