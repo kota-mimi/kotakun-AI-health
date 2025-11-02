@@ -756,9 +756,26 @@ class AIHealthService {
       const response = await result.response;
       const jsonText = response.text().replace(/```json|```/g, '').trim();
       
-      return JSON.parse(jsonText);
+      console.log('🤖 AIテキスト分析応答:', jsonText);
+      
+      const parsedResult = JSON.parse(jsonText);
+      console.log('📊 テキスト解析結果:', parsedResult);
+      
+      // カロリーが0の場合は警告とフォールバック
+      if (parsedResult.calories === 0) {
+        console.warn('⚠️ AIがカロリー0を返しました - フォールバック値を使用:', parsedResult);
+        return {
+          ...parsedResult,
+          calories: 300, // 最低限のカロリー保証
+          protein: parsedResult.protein || 12.0,
+          carbs: parsedResult.carbs || 45.0,
+          fat: parsedResult.fat || 8.0
+        };
+      }
+      
+      return parsedResult;
     } catch (error) {
-      console.error('食事テキスト分析エラー:', error);
+      console.error('🚨 食事テキスト分析エラー:', error);
       // フォールバック値を返す（現実的な値に設定）
       return {
         foodItems: [mealText],
@@ -873,9 +890,27 @@ class AIHealthService {
       const response = await result.response;
       const jsonText = response.text().replace(/```json|```/g, '').trim();
       
-      return JSON.parse(jsonText);
+      console.log('🤖 AI画像分析応答:', jsonText);
+      
+      const parsedResult = JSON.parse(jsonText);
+      console.log('📊 解析結果:', parsedResult);
+      
+      // カロリーが0の場合は警告とフォールバック
+      if (parsedResult.calories === 0) {
+        console.warn('⚠️ AIがカロリー0を返しました - フォールバック値を使用:', parsedResult);
+        return {
+          ...parsedResult,
+          calories: 300, // 最低限のカロリー保証
+          protein: parsedResult.protein || 12.0,
+          carbs: parsedResult.carbs || 45.0,
+          fat: parsedResult.fat || 8.0
+        };
+      }
+      
+      return parsedResult;
     } catch (error) {
-      console.error('食事画像分析エラー:', error);
+      console.error('🚨 食事画像分析エラー:', error);
+      console.error('📱 AI応答が取得できませんでした。フォールバック値を使用します。');
       // フォールバック値を返す（現実的な値に設定）
       return {
         foodItems: ['食事'],
