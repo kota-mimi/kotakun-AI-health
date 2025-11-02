@@ -110,45 +110,10 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     }
   };
 
-  // Stripe Billing Portal処理
-  const handleBillingPortal = async () => {
-    setIsProcessing(true);
-    setError(null);
-    
-    try {
-      if (!liffUser?.userId) {
-        setError('ユーザー情報が取得できません');
-        return;
-      }
 
-      console.log('🔄 Billing Portal開始');
-      const response = await fetch('/api/stripe/billing-portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: liffUser.userId }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success && data.url) {
-        // Stripe Billing Portalにリダイレクト
-        window.location.href = data.url;
-      } else {
-        setError(data.error || 'プラン管理画面の作成に失敗しました');
-      }
-    } catch (err) {
-      console.error('Billing Portalエラー:', err);
-      setError('プラン管理画面の作成でエラーが発生しました');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // プラン解約処理（Legacy - Billing Portalで代替）
+  // プラン解約処理
   const handleCancel = async () => {
-    if (!confirm('本当にプランを解約しますか？')) {
+    if (!confirm('プランを解約しますか？\n\n解約後も期間終了（次回更新日）まで全機能をご利用いただけます。\n期間終了後は自動的に無料プランに切り替わります。')) {
       return;
     }
 
@@ -328,14 +293,14 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 {currentPlan.status === 'active' && (
                   <Button 
                     variant="outline" 
-                    className="w-full h-8 text-xs text-blue-600 border-blue-600"
+                    className="w-full h-8 text-xs text-red-600 border-red-600 hover:bg-red-50"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleBillingPortal();
+                      handleCancel();
                     }}
                     disabled={isProcessing}
                   >
-                    {isProcessing ? '処理中...' : '🔧 プラン管理'}
+                    {isProcessing ? '処理中...' : '❌ 解約する'}
                   </Button>
                 )}
                 {currentPlan.status === 'cancel_at_period_end' && (
@@ -440,15 +405,15 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               </div>
             )}
             
-            {/* Billing Portalボタン（有料プランの場合のみ） */}
-            {(currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && currentPlan.plan !== 'free' && (
+            {/* 解約ボタン（有料プランかつアクティブの場合のみ） */}
+            {currentPlan.status === 'active' && currentPlan.plan !== 'free' && (
               <div className="mt-3">
                 <Button 
-                  onClick={handleBillingPortal}
+                  onClick={handleCancel}
                   disabled={isProcessing}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
                 >
-                  {isProcessing ? '処理中...' : '🔧 プラン管理・変更・解約'}
+                  {isProcessing ? '処理中...' : '❌ プランを解約する'}
                 </Button>
               </div>
             )}
@@ -471,11 +436,11 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
           <h4 className="font-semibold text-gray-800 mb-3">プラン管理について</h4>
           <div className="space-y-2 text-sm text-gray-600">
-            <p>• <strong>🔧 プラン管理</strong>ボタンで、プラン変更・解約・請求書確認が可能です</p>
-            <p>• プラン変更は即時反映されます（月額↔3ヶ月プラン）</p>
-            <p>• 解約は期間終了まで利用可能（即座解約ではありません）</p>
-            <p>• 請求履歴・次回請求日もStripe管理画面で確認できます</p>
-            <p>• 全ての変更はセキュアなStripe公式システムで処理されます</p>
+            <p>• <strong>❌ プランを解約する</strong>ボタンで、いつでも簡単に解約できます</p>
+            <p>• 解約後も期間終了まで全機能をご利用いただけます</p>
+            <p>• 期間終了後は自動的に無料プランに切り替わります</p>
+            <p>• 解約処理はStripe公式システムで安全に処理されます</p>
+            <p>• 支払い方法変更などのご相談はお問い合わせください</p>
           </div>
         </Card>
       </div>
