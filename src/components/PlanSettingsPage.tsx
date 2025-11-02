@@ -386,15 +386,17 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               }>
                 {currentPlan.planName}
               </Badge>
-              <span className="text-sm text-blue-700">
-                {currentPlan.status === 'active' && '有効'}
-                {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
-                {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
-              </span>
+              {currentPlan.plan !== 'free' && (
+                <span className="text-sm text-blue-700">
+                  {currentPlan.status === 'active' && '有効'}
+                  {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
+                  {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
+                </span>
+              )}
             </div>
             
-            {/* 有効期限表示 */}
-            {currentPlan.currentPeriodEnd && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
+            {/* 有効期限表示（有料プランのみ） */}
+            {currentPlan.plan !== 'free' && currentPlan.currentPeriodEnd && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
               <div className="text-sm text-blue-600">
                 {currentPlan.status === 'active' && (
                   <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
