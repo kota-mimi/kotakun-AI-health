@@ -16,6 +16,7 @@ import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHist
 import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
 import { WeightChart } from './WeightChart';
+import { TargetSettingsModal } from './TargetSettingsModal';
 
 
 interface MyProfilePageProps {
@@ -39,6 +40,8 @@ export function MyProfilePage({
 }: MyProfilePageProps) {
   // 編集モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // 目標設定モーダルの状態
+  const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
   // 保存中の状態
   const [isSaving, setIsSaving] = useState(false);
   // 強制リフレッシュ用のキー
@@ -627,6 +630,70 @@ export function MyProfilePage({
         </Card>
       </div>
 
+      {/* 目標値カード */}
+      <div className="px-4">
+        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-slate-900">目標値設定</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsTargetModalOpen(true)}
+              className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
+            >
+              編集
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="ghost"
+              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
+              onClick={() => setIsTargetModalOpen(true)}
+            >
+              <div>
+                <div className="text-xs text-slate-500 mb-1">カロリー</div>
+                <div className="font-bold text-slate-900">{finalCalories}kcal</div>
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
+              onClick={() => setIsTargetModalOpen(true)}
+            >
+              <div>
+                <div className="text-xs text-slate-500 mb-1">タンパク質</div>
+                <div className="font-bold text-red-600">{finalProtein}g</div>
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
+              onClick={() => setIsTargetModalOpen(true)}
+            >
+              <div>
+                <div className="text-xs text-slate-500 mb-1">脂質</div>
+                <div className="font-bold text-orange-600">{finalFat}g</div>
+              </div>
+            </Button>
+            <Button
+              variant="ghost"
+              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
+              onClick={() => setIsTargetModalOpen(true)}
+            >
+              <div>
+                <div className="text-xs text-slate-500 mb-1">炭水化物</div>
+                <div className="font-bold text-green-600">{finalCarbs}g</div>
+              </div>
+            </Button>
+          </div>
+          
+          <div className="mt-3 text-xs text-slate-500 text-center">
+            タップして目標値を編集できます
+          </div>
+        </Card>
+      </div>
+
       {/* 体重グラフ */}
       <div className="px-4">
         {weightManager?.realWeightData && (
@@ -792,6 +859,23 @@ export function MyProfilePage({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 目標設定モーダル */}
+      <TargetSettingsModal
+        isOpen={isTargetModalOpen}
+        onClose={() => setIsTargetModalOpen(false)}
+        selectedDate={new Date()}
+        currentTargets={{
+          targetCalories: finalCalories,
+          protein: finalProtein,
+          fat: finalFat,
+          carbs: finalCarbs
+        }}
+        onSave={() => {
+          refetchLatestProfile();
+          setRefreshKey(prev => prev + 1);
+        }}
+      />
 
     </div>
   );
