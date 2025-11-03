@@ -141,15 +141,16 @@ export function TargetSettingsModal({
               <Input
                 id="calories"
                 type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 pattern="[0-9]*"
+                step="0.1"
                 value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
                   targetCalories: parseFloat(e.target.value) || 0
                 }))}
                 onFocus={(e) => e.target.select()}
-                className="pr-12"
+                className="text-center text-sm h-8 pr-12"
                 min="500"
                 max="5000"
               />
@@ -175,15 +176,16 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     pattern="[0-9]*"
+                    step="0.1"
                     value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       protein: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
-                    className="pr-8"
+                    className="text-center text-sm h-8 pr-8"
                     min="0"
                     max="500"
                   />
@@ -204,15 +206,16 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     pattern="[0-9]*"
+                    step="0.1"
                     value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       fat: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
-                    className="pr-8"
+                    className="text-center text-sm h-8 pr-8"
                     min="0"
                     max="300"
                   />
@@ -233,15 +236,16 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     pattern="[0-9]*"
+                    step="0.1"
                     value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       carbs: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
-                    className="pr-8"
+                    className="text-center text-sm h-8 pr-8"
                     min="0"
                     max="800"
                   />
