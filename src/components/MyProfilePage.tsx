@@ -425,14 +425,20 @@ export function MyProfilePage({
           // モーダルを閉じる
           setIsEditModalOpen(false);
           
-          // 保存完了 - ページリロードで最新データを反映
-          window.location.reload();
+          // 保存完了 - 状態をリセット
+          setIsSaving(false);
+          
+          // データ更新イベントを発行してフックをリフレッシュ
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('forceDataRefresh'));
+          }
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
           
-          // エラー時も画面をリフレッシュ（部分的に保存されている可能性があるため）
-          window.location.reload();
+          // エラー時も状態をリセット
+          setIsSaving(false);
+          setIsEditModalOpen(false);
         }
       }
 
@@ -444,13 +450,13 @@ export function MyProfilePage({
             refetch(),
             refetchLatestProfile()
           ]);
+          
+          // フックリフレッシュ完了後に強制リフレッシュ
+          setRefreshKey(prev => prev + 1);
         } catch (refreshError) {
           console.error('⚠️ フックリフレッシュエラー:', refreshError);
         }
       }, 500); // 500ms遅延でFirestore反映を確実に待つ
-      
-      // 強制リフレッシュでコンポーネント再描画
-      setRefreshKey(prev => prev + 1);
       
       
       
@@ -484,22 +490,12 @@ export function MyProfilePage({
     {
       label: 'リマインダー設定',
       color: '#8B5CF6',
-      action: onNavigateToCounseling ? withCounselingGuard(
-        counselingResult,
-        onNavigateToCounseling,
-        'リマインダー設定',
-        onNavigateToReminderSettings || (() => {})
-      ) : onNavigateToReminderSettings
+      action: onNavigateToReminderSettings || (() => {})
     },
     {
       label: 'プラン・サブスクリプション',
       color: '#FBBF24',
-      action: onNavigateToCounseling ? withCounselingGuard(
-        counselingResult,
-        onNavigateToCounseling,
-        'プラン設定',
-        onNavigateToPlanSettings || (() => {})
-      ) : onNavigateToPlanSettings
+      action: onNavigateToPlanSettings || (() => {})
     }
   ];
 

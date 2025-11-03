@@ -18,27 +18,10 @@ export function FloatingShortcutBar({ onTextRecord, onCameraRecord, onAddExercis
   // カウンセリング状態を取得
   const { counselingResult } = useCounselingData();
   
-  // カウンセリングガード付きの関数を作成
-  const handleTextRecord = onNavigateToCounseling ? withCounselingGuard(
-    counselingResult,
-    onNavigateToCounseling,
-    'テキストで記録',
-    onTextRecord
-  ) : onTextRecord;
-  
-  const handleCameraRecord = onNavigateToCounseling ? withCounselingGuard(
-    counselingResult,
-    onNavigateToCounseling,
-    '写真で食事記録',
-    onCameraRecord
-  ) : onCameraRecord;
-  
-  const handleAddExercise = onAddExercise && onNavigateToCounseling ? withCounselingGuard(
-    counselingResult,
-    onNavigateToCounseling,
-    '運動記録',
-    onAddExercise
-  ) : onAddExercise;
+  // 直接関数を使用（カウンセリングガード削除）
+  const handleTextRecord = onTextRecord;
+  const handleCameraRecord = onCameraRecord;
+  const handleAddExercise = onAddExercise;
 
   const handleCameraClick = () => {
     // カウンセリングガードをチェックしてからカメラを開く

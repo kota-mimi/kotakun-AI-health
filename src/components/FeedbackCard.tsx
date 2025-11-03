@@ -43,13 +43,8 @@ export function FeedbackCard({
   // カウンセリング状態を取得
   const { counselingResult } = useCounselingData();
   
-  // カウンセリングガード付きのフィードバック生成関数
-  const handleGenerateFeedback = onNavigateToCounseling ? withCounselingGuard(
-    counselingResult,
-    onNavigateToCounseling,
-    '1日のフィードバック',
-    onGenerateFeedback
-  ) : onGenerateFeedback;
+  // 直接フィードバック生成関数を使用（カウンセリングガード削除）
+  const handleGenerateFeedback = onGenerateFeedback;
   
   // 今日の日付かチェック
   const isToday = () => {
