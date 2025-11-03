@@ -2,9 +2,8 @@ import { Card } from './ui/card';
 import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, Settings } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useProfileHistory, getTargetValuesForDate } from '@/hooks/useProfileHistory';
-import { TargetSettingsModal } from './TargetSettingsModal';
 
 interface PFCData {
   protein: number;
@@ -41,7 +40,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
   const [isMounted, setIsMounted] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
   
   // 日付に基づくプロフィールデータを取得
   const { profileData, refetch } = useProfileHistory(selectedDate);
@@ -112,17 +110,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
             <h3 className="font-semibold text-slate-900">カロリー</h3>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsTargetModalOpen(true);
-              }}
-              variant="ghost"
-              size="sm"
-              className="p-1 h-auto w-auto text-gray-600 hover:text-gray-800"
-            >
-              <Settings size={14} />
-            </Button>
             {isCollapsed ? (
               <ChevronDown size={16} className="text-slate-500" />
             ) : (
@@ -321,22 +308,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
           </div>
         </div>
       )}
-
-      {/* 目標設定モーダル */}
-      <TargetSettingsModal
-        isOpen={isTargetModalOpen}
-        onClose={() => setIsTargetModalOpen(false)}
-        selectedDate={selectedDate}
-        currentTargets={{
-          targetCalories: finalTargetCalories,
-          protein: finalProteinTarget,
-          fat: finalFatTarget,
-          carbs: finalCarbsTarget
-        }}
-        onSave={() => {
-          refetch();
-        }}
-      />
     </Card>
   );
 }

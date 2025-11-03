@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfileHistory, getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { TargetSettingsModal } from './TargetSettingsModal';
 
 interface ProfilePageProps {
   onNavigateToSettings?: () => void;
@@ -27,6 +29,12 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
   const [userLevel] = useState(12);
   const [userXP] = useState(2480);
   const [nextLevelXP] = useState(3000);
+  const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
+  
+  // 今日の日付で目標値を取得
+  const today = new Date();
+  const { profileData, refetch } = useProfileHistory(today);
+  const targetValues = getTargetValuesForDate(profileData, null);
 
   // LIFF認証完了まで待機（ちらつき防止）
   if (!isLiffReady || !isLoggedIn) {
@@ -57,7 +65,13 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
   };
 
   const menuItems = [
-    { icon: Target, label: "目標設定", color: "#4682B4", description: "カロリー・体重目標" },
+    { 
+      icon: Target, 
+      label: "目標設定", 
+      color: "#4682B4", 
+      description: `${targetValues.targetCalories}kcal・P${targetValues.macros.protein}g・F${targetValues.macros.fat}g・C${targetValues.macros.carbs}g`,
+      onClick: () => setIsTargetModalOpen(true)
+    },
     { icon: Calendar, label: "レポート", color: "#10B981", description: "週間・月間レポート" },
     { icon: Bell, label: "通知設定", color: "#F59E0B", description: "リマインダー設定" },
     { icon: Lock, label: "プライバシー", color: "#EF4444", description: "データ管理" },
@@ -130,7 +144,10 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
                 key={index}
                 variant="ghost"
                 className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
-                onClick={item.label === 'アプリ設定' ? onNavigateToSettings : undefined}
+                onClick={
+                  item.label === 'アプリ設定' ? onNavigateToSettings :
+                  item.onClick ? item.onClick : undefined
+                }
               >
                 <div className="flex items-center justify-between flex-1">
                   <div className="text-left">
@@ -184,6 +201,22 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
           <p className="text-xs text-slate-400">© 2025 LINE Corporation</p>
         </div>
       </Card>
+
+      {/* 目標設定モーダル */}
+      <TargetSettingsModal
+        isOpen={isTargetModalOpen}
+        onClose={() => setIsTargetModalOpen(false)}
+        selectedDate={today}
+        currentTargets={{
+          targetCalories: targetValues.targetCalories,
+          protein: targetValues.macros.protein,
+          fat: targetValues.macros.fat,
+          carbs: targetValues.macros.carbs
+        }}
+        onSave={() => {
+          refetch();
+        }}
+      />
     </div>
   );
 }
