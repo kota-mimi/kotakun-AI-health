@@ -108,11 +108,12 @@ export function MyProfilePage({
                    counselingResult?.userProfile?.gender === 'female' ? '女性' : 
                    null;
     const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
-    // dailyRecordsから最新体重を取得（高速化）
-    const currentWeight = weightManager?.weightData?.current || 
-                         counselingResult?.answers?.weight || 
-                         counselingResult?.userProfile?.weight || 
-                         null;
+    // dailyRecordsから最新体重を取得（高速化・古い値の先行表示を防ぐ）
+    const currentWeight = weightManager?.weightData?.current !== undefined
+                         ? weightManager.weightData.current  // dailyRecordsに記録があれば必ずそれを使用
+                         : (counselingResult?.answers?.weight || 
+                            counselingResult?.userProfile?.weight || 
+                            null);
     const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
     
     // 固定値を完全削除 - データがある時のみ表示
