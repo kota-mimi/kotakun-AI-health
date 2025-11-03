@@ -118,8 +118,6 @@ export function MyProfilePage({
                        counselingResult?.userProfile?.targetWeight || 
                        null;
   
-  // BMI計算（身長と体重がある場合のみ）
-  const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
   
   // ユーザープロフィールデータ（軽量化）
   const userProfile = {
@@ -130,7 +128,6 @@ export function MyProfilePage({
     currentWeight: currentWeight,
     targetWeight: targetWeight,
     targetDate: counselingResult?.answers?.targetDate || "未設定",
-    bmi: bmi,
     joinDate: "2024年1月"
   };
 
@@ -414,15 +411,6 @@ export function MyProfilePage({
 
 
 
-  // BMIステータス取得
-  const getBMIStatus = (bmi: number) => {
-    if (bmi < 18.5) return { status: '低体重', color: '#3B82F6' };
-    if (bmi < 25) return { status: '適正体重', color: '#10B981' };
-    if (bmi < 30) return { status: '肥満（1度）', color: '#F59E0B' };
-    return { status: '肥満（2度以上）', color: '#EF4444' };
-  };
-
-  const bmiStatus = getBMIStatus(userProfile.bmi);
 
   // メニューアイテム - iOS設定風に整理（データページ削除済み）
 
@@ -517,13 +505,6 @@ export function MyProfilePage({
               </div>
             </div>
             
-            {/* BMIバッジ */}
-            <Badge 
-              style={{backgroundColor: bmiStatus.color}} 
-              className="text-white text-xs px-2 py-1 rounded-lg"
-            >
-              {bmiStatus.status}
-            </Badge>
           </div>
 
           {/* 健康指標と目標値 - 横並び（タップで編集） */}
@@ -537,10 +518,6 @@ export function MyProfilePage({
                 <div className="text-xs text-slate-500">体重</div>
                 <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
               </button>
-              <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
-                <div className="text-xs text-slate-500">BMI</div>
-                <div className="font-bold text-slate-900 text-sm">{(userProfile.currentWeight && userProfile.height) ? userProfile.bmi : '-'}</div>
-              </div>
               <button 
                 onClick={handleOpenEditModal}
                 className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"

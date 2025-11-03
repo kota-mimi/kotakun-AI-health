@@ -3,6 +3,7 @@ import { useAuth } from './useAuth';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
+import { useLatestProfile } from './useProfileHistory';
 
 interface WeightEntry {
   id: string;
@@ -30,6 +31,7 @@ interface WeightSettings {
 
 export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any) {
   const { liffUser } = useAuth();
+  const { profileData: latestProfile } = useLatestProfile();
   
   // モーダル状態管理
   const [isWeightEntryModalOpen, setIsWeightEntryModalOpen] = useState(false);
@@ -250,12 +252,20 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     // 目標体重を設定（健康維持モード判定）
     const isMaintenanceMode = counselingResult?.answers?.primaryGoal === 'maintenance';
-    const targetWeight = (isMaintenanceMode ? 0 : counselingResult?.answers?.targetWeight) || 
+    const targetWeight = (isMaintenanceMode ? 0 : 
+                         latestProfile?.targetWeight || 
+                         counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
     // その日の体重記録を取得（APIデータから）
     const currentDayData = realWeightData.find(item => item.date === dateKey);
     let currentWeight = currentDayData?.weight || 0;
+    
+    // 体重記録がない場合、プロフィール履歴の体重を参照
+    if (currentWeight === 0 && latestProfile?.weight) {
+      currentWeight = latestProfile.weight;
+      console.log('📊 プロフィール履歴から体重を取得:', currentWeight);
+    }
     
     // 今日の日付で体重記録がない場合、前日の体重を使用（日付が変わった時の表示用）
     if (currentWeight === 0 && dateKey === today) {
@@ -293,6 +303,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       if (sortedData.length > 0) {
         return sortedData[0].weight;
       }
+    }
+    
+    // realWeightDataにない場合、プロフィール履歴から取得
+    if (latestProfile?.weight && latestProfile.weight > 0) {
+      console.log('📊 最新体重をプロフィール履歴から取得:', latestProfile.weight);
+      return latestProfile.weight;
     }
     
     // realWeightDataにない場合はlocalDataから検索
