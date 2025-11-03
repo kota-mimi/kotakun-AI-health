@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -32,26 +32,21 @@ export function TargetSettingsModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setTargets(currentTargets);
-    }
-  }, [isOpen, currentTargets]);
+    setTargets(currentTargets);
+  }, [currentTargets]);
 
   // カロリーからPFCパーセンテージを計算
-  const percentages = useMemo(() => {
-    const calories = Number(targets.targetCalories) || 0;
-    if (calories <= 0) return { protein: 0, fat: 0, carbs: 0 };
+  const getPercentages = () => {
+    if (targets.targetCalories <= 0) return { protein: 0, fat: 0, carbs: 0 };
     
-    const protein = Number(targets.protein) || 0;
-    const fat = Number(targets.fat) || 0;
-    const carbs = Number(targets.carbs) || 0;
-    
-    const proteinPercent = Math.round((protein * 4 / calories) * 100);
-    const fatPercent = Math.round((fat * 9 / calories) * 100);
-    const carbsPercent = Math.round((carbs * 4 / calories) * 100);
+    const proteinPercent = Math.round((targets.protein * 4 / targets.targetCalories) * 100);
+    const fatPercent = Math.round((targets.fat * 9 / targets.targetCalories) * 100);
+    const carbsPercent = Math.round((targets.carbs * 4 / targets.targetCalories) * 100);
     
     return { protein: proteinPercent, fat: fatPercent, carbs: carbsPercent };
-  }, [targets]);
+  };
+
+  const percentages = getPercentages();
 
   const handleSave = async () => {
     if (!liffUser?.userId) return;
@@ -62,15 +57,15 @@ export function TargetSettingsModal({
       
       const profileData = {
         changeDate,
-        targetCalories: Number(targets.targetCalories) || 0,
+        targetCalories: targets.targetCalories,
         macros: {
-          protein: Number(targets.protein) || 0,
-          fat: Number(targets.fat) || 0,
-          carbs: Number(targets.carbs) || 0
+          protein: targets.protein,
+          fat: targets.fat,
+          carbs: targets.carbs
         },
         // 既存の計算値は保持（手動編集時はBMR/TDEEは計算しない）
-        bmr: Math.round((Number(targets.targetCalories) || 0) * 0.7), // 簡易計算
-        tdee: Number(targets.targetCalories) || 0,
+        bmr: Math.round(targets.targetCalories * 0.7), // 簡易計算
+        tdee: targets.targetCalories,
         source: 'manual', // 手動編集フラグ
         name: '手動設定',
         age: 0,
@@ -139,16 +134,12 @@ export function TargetSettingsModal({
               <Input
                 id="calories"
                 type="number"
-                inputMode="decimal"
-                pattern="[0-9]*"
-                step="0.1"
-                value={targets.targetCalories || ''}
+                value={targets.targetCalories}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: e.target.value === '' ? '' : parseFloat(e.target.value)
+                  targetCalories: Number(e.target.value) || 0 
                 }))}
-                onFocus={(e) => e.target.select()}
-                className="text-center text-sm h-8 pr-12"
+                className="pr-12"
                 min="500"
                 max="5000"
               />
@@ -174,16 +165,12 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="decimal"
-                    pattern="[0-9]*"
-                    step="0.1"
-                    value={targets.protein || ''}
+                    value={targets.protein}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: e.target.value === '' ? '' : parseFloat(e.target.value) 
+                      protein: Number(e.target.value) || 0 
                     }))}
-                    onFocus={(e) => e.target.select()}
-                    className="text-center text-sm h-8 pr-8"
+                    className="pr-8"
                     min="0"
                     max="500"
                   />
@@ -204,16 +191,12 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="decimal"
-                    pattern="[0-9]*"
-                    step="0.1"
-                    value={targets.fat || ''}
+                    value={targets.fat}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: e.target.value === '' ? '' : parseFloat(e.target.value) 
+                      fat: Number(e.target.value) || 0 
                     }))}
-                    onFocus={(e) => e.target.select()}
-                    className="text-center text-sm h-8 pr-8"
+                    className="pr-8"
                     min="0"
                     max="300"
                   />
@@ -234,16 +217,12 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    inputMode="decimal"
-                    pattern="[0-9]*"
-                    step="0.1"
-                    value={targets.carbs || ''}
+                    value={targets.carbs}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: e.target.value === '' ? '' : parseFloat(e.target.value) 
+                      carbs: Number(e.target.value) || 0 
                     }))}
-                    onFocus={(e) => e.target.select()}
-                    className="text-center text-sm h-8 pr-8"
+                    className="pr-8"
                     min="0"
                     max="800"
                   />
@@ -260,7 +239,7 @@ export function TargetSettingsModal({
             <div className="text-sm text-gray-600">
               PFCからの計算カロリー: 
               <span className="font-medium ml-1">
-                {Math.round((Number(targets.protein) || 0) * 4 + (Number(targets.fat) || 0) * 9 + (Number(targets.carbs) || 0) * 4)} kcal
+                {Math.round(targets.protein * 4 + targets.fat * 9 + targets.carbs * 4)} kcal
               </span>
             </div>
           </div>
