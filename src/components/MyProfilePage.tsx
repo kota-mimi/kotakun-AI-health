@@ -39,6 +39,8 @@ export function MyProfilePage({
 }: MyProfilePageProps) {
   // 編集モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // 保存中の状態
+  const [isSaving, setIsSaving] = useState(false);
   // 強制リフレッシュ用のキー
   const [refreshKey, setRefreshKey] = useState(0);
   
@@ -176,8 +178,8 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
-    // モーダルを閉じる
-    setIsEditModalOpen(false);
+    // 保存開始
+    setIsSaving(true);
 
     // 保存処理を完了してからページリロード
     try {
@@ -420,6 +422,9 @@ export function MyProfilePage({
             
           }
 
+          // モーダルを閉じる
+          setIsEditModalOpen(false);
+          
           // 保存完了 - ページリロードで最新データを反映
           window.location.reload();
           
@@ -769,8 +774,13 @@ export function MyProfilePage({
                 キャンセル
               </Button>
             </DialogClose>
-            <Button onClick={handleSaveProfile} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm">
-              保存
+            <Button 
+              onClick={handleSaveProfile} 
+              disabled={isSaving}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50" 
+              size="sm"
+            >
+              {isSaving ? '保存中...' : '保存'}
             </Button>
           </div>
         </DialogContent>
