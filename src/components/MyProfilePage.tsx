@@ -109,6 +109,12 @@ export function MyProfilePage({
                    null;
     const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
     // dailyRecordsから最新体重を取得（高速化・古い値の先行表示を防ぐ）
+    console.log('🔍 Weight Debug:', {
+      weightManagerCurrent: weightManager?.weightData?.current,
+      counselingWeight: counselingResult?.answers?.weight,
+      profileWeight: counselingResult?.userProfile?.weight
+    });
+    
     const currentWeight = weightManager?.weightData?.current !== undefined
                          ? weightManager.weightData.current  // dailyRecordsに記録があれば必ずそれを使用
                          : (counselingResult?.answers?.weight || 
