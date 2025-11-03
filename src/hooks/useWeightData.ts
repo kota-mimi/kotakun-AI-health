@@ -185,7 +185,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return checkDate.toDateString() === counselingDate.toDateString();
   };
 
-  // 特定の日付の体重データを取得（シンプルなロジック）
+  // 特定の日付の体重データを取得（高速化済み）
   const getWeightDataForDate = (date: Date): WeightData => {
     // クライアントサイドでない場合はデフォルト値を返す
     if (!isClient) {
@@ -215,26 +215,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // その日の体重記録を取得（APIデータから）
+    // 🚀 高速化：APIデータを優先し、複雑なフォールバック削除
     const currentDayData = realWeightData.find(item => item.date === dateKey);
-    let currentWeight = currentDayData?.weight || 0;
-    
-    // 体重記録がない場合、プロフィール履歴の体重を参照
-    if (currentWeight === 0 && latestProfile?.weight) {
-      currentWeight = latestProfile.weight;
-      console.log('📊 プロフィール履歴から体重を取得:', currentWeight);
-    }
-    
-    // 今日の日付で体重記録がない場合、前日の体重を使用（日付が変わった時の表示用）
-    if (currentWeight === 0 && dateKey === today) {
-      const previousDate = new Date(date);
-      previousDate.setDate(previousDate.getDate() - 1);
-      const previousKey = getDateKey(previousDate);
-      const previousDayData = realWeightData.find(item => item.date === previousKey);
-      if (previousDayData?.weight) {
-        currentWeight = previousDayData.weight;
-      }
-    }
+    const currentWeight = currentDayData?.weight || 0;
     
     // 前日の体重記録を取得（前日比計算用）
     const previousDate = new Date(date);
@@ -250,9 +233,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     };
   };
 
-  // 最新の体重を取得（未来日付用）
+  // 最新の体重を取得（高速化済み）
   const getLatestWeight = (): number => {
-    // まずrealWeightDataから最新の体重を取得
+    // 🚀 高速化：realWeightDataのみから最新体重を取得
     if (realWeightData.length > 0) {
       const sortedData = realWeightData
         .filter(item => item.weight && item.weight > 0)
@@ -263,29 +246,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       }
     }
     
-    // realWeightDataにない場合、プロフィール履歴から取得
-    if (latestProfile?.weight && latestProfile.weight > 0) {
-      console.log('📊 最新体重をプロフィール履歴から取得:', latestProfile.weight);
-      return latestProfile.weight;
-    }
-    
-    // realWeightDataにない場合はlocalDataから検索
-    const today = new Date();
-    for (let i = 0; i <= 30; i++) { // 最大30日前まで検索
-      const searchDate = new Date(today);
-      searchDate.setDate(searchDate.getDate() - i);
-      const searchDateKey = getDateKey(searchDate);
-      
-      const dayData = dateBasedData[searchDateKey];
-      if (dayData?.weightEntries && dayData.weightEntries.length > 0) {
-        const latestEntry = dayData.weightEntries[dayData.weightEntries.length - 1];
-        if (latestEntry.weight > 0) {
-          return latestEntry.weight;
-        }
-      }
-    }
-    
-    return 0; // 何も見つからない場合
+    return 0; // 記録がない場合は0
   };
 
   // 前日の体重を取得（その日の実際の記録を正確に取得）
@@ -354,6 +315,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           
           return updatedData;
         });
+        
+        // 🔄 プロフィールの体重も自動更新するためイベント発火
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('weightDataUpdated', {
+            detail: { weight: data.weight, date: dateStr }
+          }));
+          console.log('🔄 体重記録→プロフィール自動更新イベント発火');
+        }
         
         // UI即座反映のため強制的にローディング状態をリセット
         setIsLoadingWeightData(false);

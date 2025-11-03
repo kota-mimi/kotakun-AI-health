@@ -136,16 +136,32 @@ export function useSharedProfile() {
       fetchLatestProfile();
     };
 
+    const handleWeightUpdate = (event: CustomEvent) => {
+      // 🔄 体重記録時にプロフィール体重も自動更新
+      const { weight } = event.detail;
+      if (latestProfile && weight) {
+        const updatedProfile = { ...latestProfile, weight };
+        setLatestProfile(updatedProfile);
+        
+        // キャッシュも更新
+        const cacheKey = createCacheKey('profile', liffUser?.userId, 'latest');
+        apiCache.set(cacheKey, updatedProfile, 5 * 60 * 1000);
+        console.log('🔄 体重記録→プロフィール体重自動更新完了');
+      }
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('profileHistoryUpdated', handleProfileUpdate);
       window.addEventListener('counselingDataUpdated', handleProfileUpdate);
+      window.addEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
       
       return () => {
         window.removeEventListener('profileHistoryUpdated', handleProfileUpdate);
         window.removeEventListener('counselingDataUpdated', handleProfileUpdate);
+        window.removeEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
       };
     }
-  }, []);
+  }, [latestProfile, liffUser?.userId]);
 
   return {
     latestProfile,
