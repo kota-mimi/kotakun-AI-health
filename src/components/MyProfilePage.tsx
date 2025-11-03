@@ -132,6 +132,7 @@ export function MyProfilePage({
   };
 
   // 目標値は latestProfile から直接取得（即座反映）
+  // refreshKeyが変わるたびに最新データを確実に取得
   const finalCalories = latestProfile?.targetCalories || 1600;
   const finalProtein = latestProfile?.macros?.protein || 100;
   const finalFat = latestProfile?.macros?.fat || 53;
@@ -408,16 +409,17 @@ export function MyProfilePage({
             
           }
 
+          // データ更新完了後、即座にフックをリフレッシュ
+          await Promise.all([
+            refetch(),
+            refetchLatestProfile()
+          ]);
+          
           // モーダルを閉じる
           setIsEditModalOpen(false);
           
           // 保存完了 - 状態をリセット
           setIsSaving(false);
-          
-          // データ更新イベントを発行してフックをリフレッシュ
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('forceDataRefresh'));
-          }
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
@@ -427,27 +429,6 @@ export function MyProfilePage({
           setIsEditModalOpen(false);
         }
       }
-
-      
-      // データ更新完了後、少し遅延してからフックのリフレッシュ実行
-      setTimeout(async () => {
-        try {
-          await Promise.all([
-            refetch(),
-            refetchLatestProfile()
-          ]);
-          
-          // フックリフレッシュ完了後に強制リフレッシュ
-          setRefreshKey(prev => prev + 1);
-        } catch (refreshError) {
-          console.error('⚠️ フックリフレッシュエラー:', refreshError);
-        }
-      }, 500); // 500ms遅延でFirestore反映を確実に待つ
-      
-      
-      
-      // 4. 編集モーダルを閉じる
-      setIsEditModalOpen(false);
       
     } catch (error) {
       console.error('プロフィール保存エラー:', error);
@@ -546,7 +527,7 @@ export function MyProfilePage({
 
 
   return (
-    <div key={refreshKey} className="space-y-8 pb-4">
+    <div key={`${refreshKey}-${latestProfile?.changeDate || 'default'}`} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
         <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-3">
@@ -779,8 +760,10 @@ export function MyProfilePage({
           fat: finalFat,
           carbs: finalCarbs
         }}
-        onSave={() => {
-          refetchLatestProfile();
+        onSave={async () => {
+          // 保存完了後に最新データを確実に取得
+          await refetchLatestProfile();
+          // 強制リフレッシュで確実に更新
           setRefreshKey(prev => prev + 1);
         }}
       />
