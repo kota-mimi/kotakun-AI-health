@@ -2,12 +2,12 @@
 import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
-// プラン別の制限設定
+// プラン別の制限設定（テスト用に一時的に無制限）
 export const USAGE_LIMITS = {
   free: {
-    aiMessagesPerDay: 5,     // AI会話：1日5通まで
-    recordsPerDay: 2,        // 記録：1日2通まで
-    webAppAiAccess: false    // WebアプリAI機能なし
+    aiMessagesPerDay: -1,    // テスト用：無制限
+    recordsPerDay: -1,       // テスト用：無制限
+    webAppAiAccess: true     // テスト用：アクセス許可
   },
   monthly: {
     aiMessagesPerDay: -1,    // 無制限
