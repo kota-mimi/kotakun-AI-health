@@ -144,7 +144,7 @@ export function TargetSettingsModal({
                 value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: e.target.value
+                  targetCalories: parseFloat(e.target.value) || 0
                 }))}
                 onFocus={(e) => e.target.select()}
                 className="pr-12"
@@ -178,7 +178,7 @@ export function TargetSettingsModal({
                     value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: e.target.value 
+                      protein: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="pr-8"
@@ -207,7 +207,7 @@ export function TargetSettingsModal({
                     value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: e.target.value 
+                      fat: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="pr-8"
@@ -236,7 +236,7 @@ export function TargetSettingsModal({
                     value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: e.target.value 
+                      carbs: parseFloat(e.target.value) || 0 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="pr-8"
