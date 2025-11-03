@@ -134,7 +134,9 @@ export function TargetSettingsModal({
               <Input
                 id="calories"
                 type="number"
-                value={targets.targetCalories}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
                   targetCalories: Number(e.target.value) || 0 
@@ -165,7 +167,9 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    value={targets.protein}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       protein: Number(e.target.value) || 0 
@@ -191,7 +195,9 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    value={targets.fat}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       fat: Number(e.target.value) || 0 
@@ -217,7 +223,9 @@ export function TargetSettingsModal({
                 <div className="relative">
                   <Input
                     type="number"
-                    value={targets.carbs}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       carbs: Number(e.target.value) || 0 
