@@ -6,10 +6,10 @@ import { Label } from './ui/label';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TargetValues {
-  targetCalories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
+  targetCalories: number | string;
+  protein: number | string;
+  fat: number | string;
+  carbs: number | string;
 }
 
 interface TargetSettingsModalProps {
@@ -32,16 +32,23 @@ export function TargetSettingsModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setTargets(currentTargets);
-  }, [currentTargets]);
+    if (isOpen) {
+      setTargets(currentTargets);
+    }
+  }, [isOpen]);
 
   // カロリーからPFCパーセンテージを計算
   const getPercentages = () => {
-    if (targets.targetCalories <= 0) return { protein: 0, fat: 0, carbs: 0 };
+    const calories = Number(targets.targetCalories) || 0;
+    if (calories <= 0) return { protein: 0, fat: 0, carbs: 0 };
     
-    const proteinPercent = Math.round((targets.protein * 4 / targets.targetCalories) * 100);
-    const fatPercent = Math.round((targets.fat * 9 / targets.targetCalories) * 100);
-    const carbsPercent = Math.round((targets.carbs * 4 / targets.targetCalories) * 100);
+    const protein = Number(targets.protein) || 0;
+    const fat = Number(targets.fat) || 0;
+    const carbs = Number(targets.carbs) || 0;
+    
+    const proteinPercent = Math.round((protein * 4 / calories) * 100);
+    const fatPercent = Math.round((fat * 9 / calories) * 100);
+    const carbsPercent = Math.round((carbs * 4 / calories) * 100);
     
     return { protein: proteinPercent, fat: fatPercent, carbs: carbsPercent };
   };
@@ -55,17 +62,22 @@ export function TargetSettingsModal({
     try {
       const changeDate = selectedDate.toISOString().split('T')[0];
       
+      const targetCalories = Number(targets.targetCalories) || 0;
+      const protein = Number(targets.protein) || 0;
+      const fat = Number(targets.fat) || 0;
+      const carbs = Number(targets.carbs) || 0;
+      
       const profileData = {
         changeDate,
-        targetCalories: targets.targetCalories,
+        targetCalories,
         macros: {
-          protein: targets.protein,
-          fat: targets.fat,
-          carbs: targets.carbs
+          protein,
+          fat,
+          carbs
         },
         // 既存の計算値は保持（手動編集時はBMR/TDEEは計算しない）
-        bmr: Math.round(targets.targetCalories * 0.7), // 簡易計算
-        tdee: targets.targetCalories,
+        bmr: Math.round(targetCalories * 0.7), // 簡易計算
+        tdee: targetCalories,
         source: 'manual', // 手動編集フラグ
         name: '手動設定',
         age: 0,
@@ -139,7 +151,7 @@ export function TargetSettingsModal({
                 value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: e.target.value === '' ? '' : Number(e.target.value) || 0
+                  targetCalories: e.target.value
                 }))}
                 className="pr-12"
               />
@@ -170,7 +182,7 @@ export function TargetSettingsModal({
                     value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: e.target.value === '' ? '' : Number(e.target.value) || 0 
+                      protein: e.target.value 
                     }))}
                     className="pr-8"
                   />
@@ -196,7 +208,7 @@ export function TargetSettingsModal({
                     value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: e.target.value === '' ? '' : Number(e.target.value) || 0 
+                      fat: e.target.value 
                     }))}
                     className="pr-8"
                   />
@@ -222,7 +234,7 @@ export function TargetSettingsModal({
                     value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: e.target.value === '' ? '' : Number(e.target.value) || 0 
+                      carbs: e.target.value 
                     }))}
                     className="pr-8"
                   />
