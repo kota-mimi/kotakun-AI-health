@@ -96,64 +96,46 @@ export function MyProfilePage({
   }
   
   
-  // リアクティブなプロフィールデータ計算（refreshKey、latestProfile、counselingResultの変更に反応）
-  const { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData } = useMemo(() => {
-    
-    // カウンセリング結果の名前を優先、LIFFは最後のフォールバック（認証後のみ）
-    // テストデータ「利光湖太郎」を除外
-    const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
-    const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
-    const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
-    const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
-    const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
-                   counselingResult?.answers?.gender === 'female' ? '女性' : 
-                   counselingResult?.userProfile?.gender === 'male' ? '男性' : 
-                   counselingResult?.userProfile?.gender === 'female' ? '女性' : 
-                   null;
-    const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
-    // dailyRecordsから最新体重を取得（高速化・古い値の先行表示を防ぐ）
-    console.log('🔍 Weight Debug:', {
-      weightManagerCurrent: weightManager?.weightData?.current,
-      counselingWeight: counselingResult?.answers?.weight,
-      profileWeight: counselingResult?.userProfile?.weight
-    });
-    
-    const currentWeight = (weightManager?.weightData?.current !== undefined && weightManager?.weightData?.current > 0)
-                         ? weightManager.weightData.current  // dailyRecordsに有効な記録があれば使用
-                         : (counselingResult?.answers?.weight || 
-                            counselingResult?.userProfile?.weight || 
-                            null);
-    const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
-    
-    // 固定値を完全削除 - データがある時のみ表示
-    // 最新のプロフィールデータに基づく目標値を取得
-    const targetValues = getTargetValuesForDate(latestProfile, counselingResult);
-    
-    const finalCalories = targetValues.targetCalories;
-    const finalProtein = targetValues.macros.protein;
-    const finalFat = targetValues.macros.fat;
-    const finalCarbs = targetValues.macros.carbs;
-    const bmrData = targetValues.bmr;
-    
-    // BMI計算（身長と体重がある場合のみ）
-    const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
-    
-    // ユーザープロフィールデータ（実際のデータを使用）
-    const userProfile = {
-      name: userName,
-      age: age,
-      gender: gender,
-      height: height,
-      currentWeight: currentWeight,
-      targetWeight: targetWeight,
-      targetDate: counselingResult?.answers?.targetDate || "未設定",
-      bmi: bmi,
-      joinDate: "2024年1月" // LIFF初回登録日など、実際のデータがあれば使用
-    };
+  // シンプルなプロフィールデータ（重い計算を削除）
+  const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
+  const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
+  const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
+  const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
+  const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
+                 counselingResult?.answers?.gender === 'female' ? '女性' : 
+                 counselingResult?.userProfile?.gender === 'male' ? '男性' : 
+                 counselingResult?.userProfile?.gender === 'female' ? '女性' : 
+                 null;
+  const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
+  
+  const currentWeight = (weightManager?.weightData?.current !== undefined && weightManager?.weightData?.current > 0)
+                       ? weightManager.weightData.current
+                       : (counselingResult?.answers?.weight || 
+                          counselingResult?.userProfile?.weight || 
+                          null);
+  const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
+  
+  // BMI計算（身長と体重がある場合のみ）
+  const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
+  
+  // ユーザープロフィールデータ（軽量化）
+  const userProfile = {
+    name: userName,
+    age: age,
+    gender: gender,
+    height: height,
+    currentWeight: currentWeight,
+    targetWeight: targetWeight,
+    targetDate: counselingResult?.answers?.targetDate || "未設定",
+    bmi: bmi,
+    joinDate: "2024年1月"
+  };
 
-    
-    return { userProfile, targetValues, finalCalories, finalProtein, finalFat, finalCarbs, bmrData };
-  }, [refreshKey, latestProfile, counselingResult, liffUser?.displayName]);
+  // 目標値は latestProfile から直接取得（即座反映）
+  const finalCalories = latestProfile?.targetCalories || 1600;
+  const finalProtein = latestProfile?.macros?.protein || 100;
+  const finalFat = latestProfile?.macros?.fat || 53;
+  const finalCarbs = latestProfile?.macros?.carbs || 180;
 
   // 編集フォームの状態（モーダル開いた時に最新値を反映）
   const [editForm, setEditForm] = useState({
@@ -616,83 +598,50 @@ export function MyProfilePage({
           </div>
 
           
-          {/* アクションボタン */}
+          {/* 目標値表示（コンパクト） */}
           <div className="mt-3 pt-2 border-t border-slate-200">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenEditModal}
-              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
-            >
-              プロフィール編集
-            </Button>
+            <div className="grid grid-cols-4 gap-2 mb-3">
+              <div className="text-center p-2 bg-white/60 rounded-lg">
+                <div className="text-xs text-slate-500">カロリー</div>
+                <div className="font-bold text-slate-900 text-sm">{finalCalories}</div>
+              </div>
+              <div className="text-center p-2 bg-white/60 rounded-lg">
+                <div className="text-xs text-slate-500">P</div>
+                <div className="font-bold text-red-600 text-sm">{finalProtein}g</div>
+              </div>
+              <div className="text-center p-2 bg-white/60 rounded-lg">
+                <div className="text-xs text-slate-500">F</div>
+                <div className="font-bold text-orange-600 text-sm">{finalFat}g</div>
+              </div>
+              <div className="text-center p-2 bg-white/60 rounded-lg">
+                <div className="text-xs text-slate-500">C</div>
+                <div className="font-bold text-green-600 text-sm">{finalCarbs}g</div>
+              </div>
+            </div>
+            
+            {/* アクションボタン */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenEditModal}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
+              >
+                プロフィール編集
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTargetModalOpen(true)}
+                className="text-green-600 border-green-200 hover:bg-green-50 h-8"
+              >
+                目標値編集
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
 
-      {/* 目標値カード */}
-      <div className="px-4">
-        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-slate-900">目標値設定</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTargetModalOpen(true)}
-              className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
-            >
-              編集
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="ghost"
-              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
-              onClick={() => setIsTargetModalOpen(true)}
-            >
-              <div>
-                <div className="text-xs text-slate-500 mb-1">カロリー</div>
-                <div className="font-bold text-slate-900">{finalCalories}kcal</div>
-              </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
-              onClick={() => setIsTargetModalOpen(true)}
-            >
-              <div>
-                <div className="text-xs text-slate-500 mb-1">タンパク質</div>
-                <div className="font-bold text-red-600">{finalProtein}g</div>
-              </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
-              onClick={() => setIsTargetModalOpen(true)}
-            >
-              <div>
-                <div className="text-xs text-slate-500 mb-1">脂質</div>
-                <div className="font-bold text-orange-600">{finalFat}g</div>
-              </div>
-            </Button>
-            <Button
-              variant="ghost"
-              className="bg-white/60 rounded-lg p-3 text-center h-auto hover:bg-white/80 transition-colors"
-              onClick={() => setIsTargetModalOpen(true)}
-            >
-              <div>
-                <div className="text-xs text-slate-500 mb-1">炭水化物</div>
-                <div className="font-bold text-green-600">{finalCarbs}g</div>
-              </div>
-            </Button>
-          </div>
-          
-          <div className="mt-3 text-xs text-slate-500 text-center">
-            タップして目標値を編集できます
-          </div>
-        </Card>
-      </div>
 
       {/* 体重グラフ */}
       <div className="px-4">
