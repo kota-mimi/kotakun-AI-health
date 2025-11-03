@@ -91,7 +91,7 @@ export function useMealData(
 		dinner: [],
 		snack: [],
 	});
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(false); // 🔧 初期ローディング状態を修正
 	const [addMealInitialMode, setAddMealInitialMode] = useState<
 		"camera" | "text" | "album" | "manual" | "default"
 	>("default");
@@ -120,7 +120,11 @@ export function useMealData(
 	useEffect(() => {
 		const fetchMealData = async () => {
 			const lineUserId = liffUser?.userId;
-			if (!lineUserId) return;
+			if (!lineUserId) {
+				setIsLoading(false);
+				console.log('⚠️ lineUserIdなし：食事データローディング終了');
+				return;
+			}
 			if (!selectedDate || isNaN(selectedDate.getTime())) {
 				if (process.env.NODE_ENV === "development") {
 					console.warn(
@@ -128,6 +132,7 @@ export function useMealData(
 						selectedDate,
 					);
 				}
+				setIsLoading(false);
 				return;
 			}
 			const dateStr = selectedDate.toLocaleDateString("sv-SE", {
