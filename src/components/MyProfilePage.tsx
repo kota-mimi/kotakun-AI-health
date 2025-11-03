@@ -343,16 +343,14 @@ export function MyProfilePage({
           // UIを強制更新
           setRefreshKey(prev => prev + 1);
           
-          // 少し待ってから追加のリフレッシュ（確実性向上）
-          setTimeout(() => {
-            setRefreshKey(prev => prev + 1);
-          }, 300);
-          
           // モーダルを閉じる
           setIsEditModalOpen(false);
           
           // 保存完了 - 状態をリセット
           setIsSaving(false);
+          
+          // 確実に反映させるためページリロード
+          window.location.reload();
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
