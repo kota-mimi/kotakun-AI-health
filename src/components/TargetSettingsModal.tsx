@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -38,7 +38,7 @@ export function TargetSettingsModal({
   }, [isOpen, currentTargets]);
 
   // カロリーからPFCパーセンテージを計算
-  const getPercentages = () => {
+  const percentages = useMemo(() => {
     const calories = Number(targets.targetCalories) || 0;
     if (calories <= 0) return { protein: 0, fat: 0, carbs: 0 };
     
@@ -51,9 +51,7 @@ export function TargetSettingsModal({
     const carbsPercent = Math.round((carbs * 4 / calories) * 100);
     
     return { protein: proteinPercent, fat: fatPercent, carbs: carbsPercent };
-  };
-
-  const percentages = getPercentages();
+  }, [targets]);
 
   const handleSave = async () => {
     if (!liffUser?.userId) return;
@@ -147,7 +145,7 @@ export function TargetSettingsModal({
                 value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: parseFloat(e.target.value) || 0
+                  targetCalories: e.target.value === '' ? '' : parseFloat(e.target.value)
                 }))}
                 onFocus={(e) => e.target.select()}
                 className="text-center text-sm h-8 pr-12"
@@ -182,7 +180,7 @@ export function TargetSettingsModal({
                     value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: parseFloat(e.target.value) || 0 
+                      protein: e.target.value === '' ? '' : parseFloat(e.target.value) 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="text-center text-sm h-8 pr-8"
@@ -212,7 +210,7 @@ export function TargetSettingsModal({
                     value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: parseFloat(e.target.value) || 0 
+                      fat: e.target.value === '' ? '' : parseFloat(e.target.value) 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="text-center text-sm h-8 pr-8"
@@ -242,7 +240,7 @@ export function TargetSettingsModal({
                     value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: parseFloat(e.target.value) || 0 
+                      carbs: e.target.value === '' ? '' : parseFloat(e.target.value) 
                     }))}
                     onFocus={(e) => e.target.select()}
                     className="text-center text-sm h-8 pr-8"
