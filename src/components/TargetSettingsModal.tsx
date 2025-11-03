@@ -32,8 +32,10 @@ export function TargetSettingsModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setTargets(currentTargets);
-  }, [currentTargets]);
+    if (isOpen) {
+      setTargets(currentTargets);
+    }
+  }, [isOpen, currentTargets]);
 
   // カロリーからPFCパーセンテージを計算
   const getPercentages = () => {
