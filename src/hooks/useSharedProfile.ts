@@ -121,7 +121,7 @@ export function useSharedProfile() {
       console.error('❌ 日付ベースプロフィール取得エラー:', error);
     }
 
-    // フォールバック：最新プロフィールを返す
+    // 🏥 健康アプリ仕様：過去の日付も最新の目標値で評価（医学的に正しい）
     return latestProfile;
   };
 

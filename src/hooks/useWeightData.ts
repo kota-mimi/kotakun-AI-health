@@ -53,7 +53,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     const fetchWeightData = async () => {
       const lineUserId = liffUser?.userId;
-      if (!lineUserId) return;
+      if (!lineUserId) {
+        // 🔧 ユーザーIDがない場合もローディング終了
+        setIsLoadingWeightData(false);
+        console.log('⚠️ lineUserIdなし：体重データローディング終了');
+        return;
+      }
       
       // キャッシュキー生成（月単位）
       const cacheKey = createCacheKey('weight', lineUserId, 'month');

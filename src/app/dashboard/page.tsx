@@ -288,14 +288,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
               {globalLoading.isWeightLoading ? (
                 <WeightCardSkeleton />
-              ) : weightManager?.weightData ? (
+              ) : (
                 <WeightCard 
-                  data={weightManager.weightData} 
+                  data={weightManager?.weightData || { current: 0, previous: 0, target: 0 }} 
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen?.(true)}
                   counselingResult={counselingResult}
                   selectedDate={navigation?.selectedDate}
                 />
-              ) : null}
+              )}
             </div>
 
 
