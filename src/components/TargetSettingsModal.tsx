@@ -141,11 +141,12 @@ export function TargetSettingsModal({
                 type="number"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                value={targets.targetCalories}
+                value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
                   targetCalories: e.target.value
                 }))}
+                onFocus={(e) => e.target.select()}
                 className="pr-12"
                 min="500"
                 max="5000"
@@ -174,11 +175,12 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.protein}
+                    value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       protein: e.target.value 
                     }))}
+                    onFocus={(e) => e.target.select()}
                     className="pr-8"
                     min="0"
                     max="500"
@@ -202,11 +204,12 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.fat}
+                    value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       fat: e.target.value 
                     }))}
+                    onFocus={(e) => e.target.select()}
                     className="pr-8"
                     min="0"
                     max="300"
@@ -230,11 +233,12 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.carbs}
+                    value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
                       carbs: e.target.value 
                     }))}
+                    onFocus={(e) => e.target.select()}
                     className="pr-8"
                     min="0"
                     max="800"
