@@ -183,10 +183,16 @@ export function MyProfilePage({
 
   // プロフィール保存
   const handleSaveProfile = async () => {
-    // 保存開始
+    // 🚀 楽観的更新：保存前に即座にUIを更新
     setIsSaving(true);
-
-    // 保存処理を完了してからページリロード
+    
+    // 即座にモーダルを閉じる
+    setIsEditModalOpen(false);
+    
+    // UI強制更新
+    setRefreshKey(prev => prev + 1);
+    
+    // バックグラウンドで保存処理
     try {
       
       // ローカルストレージのカウンセリング結果を更新
@@ -340,24 +346,19 @@ export function MyProfilePage({
             refetch() // カウンセリングデータも更新
           ]);
           
-          // UIを強制更新
-          setRefreshKey(prev => prev + 1);
-          
-          // モーダルを閉じる
-          setIsEditModalOpen(false);
-          
-          // 保存完了 - 状態をリセット
+          // 保存完了 - 状態をリセット（既にモーダルは閉じている）
           setIsSaving(false);
           
-          // 確実に反映させるためページリロード
-          window.location.reload();
+          console.log('✅ バックグラウンド保存完了（楽観的更新）');
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
           
-          // エラー時も状態をリセット
+          // 🔄 エラー時：楽観的更新をロールバック
+          setIsEditModalOpen(true); // モーダルを再表示
           setIsSaving(false);
-          setIsEditModalOpen(false);
+          
+          alert('保存に失敗しました。もう一度お試しください。');
         }
       }
       
