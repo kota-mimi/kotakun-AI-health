@@ -421,6 +421,9 @@ export function MyProfilePage({
           // 保存完了 - 状態をリセット
           setIsSaving(false);
           
+          // ページをリロードして確実に最新データを表示
+          window.location.reload();
+          
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
           
@@ -765,6 +768,8 @@ export function MyProfilePage({
           await refetchLatestProfile();
           // 強制リフレッシュで確実に更新
           setRefreshKey(prev => prev + 1);
+          // ページをリロードして確実に最新データを表示
+          window.location.reload();
         }}
       />
 
