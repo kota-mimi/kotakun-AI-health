@@ -115,8 +115,8 @@ export function MyProfilePage({
       profileWeight: counselingResult?.userProfile?.weight
     });
     
-    const currentWeight = weightManager?.weightData?.current !== undefined
-                         ? weightManager.weightData.current  // dailyRecordsに記録があれば必ずそれを使用
+    const currentWeight = (weightManager?.weightData?.current !== undefined && weightManager?.weightData?.current > 0)
+                         ? weightManager.weightData.current  // dailyRecordsに有効な記録があれば使用
                          : (counselingResult?.answers?.weight || 
                             counselingResult?.userProfile?.weight || 
                             null);
