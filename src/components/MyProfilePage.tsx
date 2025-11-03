@@ -108,12 +108,16 @@ export function MyProfilePage({
                  null;
   const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
   
-  const currentWeight = (weightManager?.weightData?.current !== undefined && weightManager?.weightData?.current > 0)
-                       ? weightManager.weightData.current
-                       : (counselingResult?.answers?.weight || 
-                          counselingResult?.userProfile?.weight || 
-                          null);
-  const targetWeight = counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || null;
+  // プロフィール履歴の体重を最優先にして、daily recordsは参考値程度にする
+  const currentWeight = latestProfile?.weight || 
+                        counselingResult?.answers?.weight || 
+                        counselingResult?.userProfile?.weight || 
+                        weightManager?.weightData?.current || 
+                        null;
+  const targetWeight = latestProfile?.targetWeight || 
+                       counselingResult?.answers?.targetWeight || 
+                       counselingResult?.userProfile?.targetWeight || 
+                       null;
   
   // BMI計算（身長と体重がある場合のみ）
   const bmi = height > 0 && currentWeight > 0 ? Math.round((currentWeight / Math.pow(height / 100, 2)) * 10) / 10 : 0;
