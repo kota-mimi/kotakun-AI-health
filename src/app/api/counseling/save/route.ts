@@ -23,6 +23,50 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
     const counselingRef = adminDb.collection('users').doc(lineUserId).collection('counseling').doc('result');
     await counselingRef.set(saveData, { merge: true });
     
+    // プロフィール履歴にも保存（プロフィール編集時）
+    if (counselingResult.answers || counselingResult.userProfile) {
+      const changeDate = new Date().toISOString().split('T')[0];
+      const profileHistoryRef = adminDb
+        .collection('users')
+        .doc(lineUserId)
+        .collection('profileHistory')
+        .doc(changeDate);
+
+      const answers = counselingResult.answers || {};
+      const userProfile = counselingResult.userProfile || {};
+      const results = counselingResult.results || {};
+      const aiAnalysis = counselingResult.aiAnalysis || {};
+
+      const profileHistoryData = {
+        changeDate,
+        name: userProfile.name || answers.name || '未設定',
+        age: Number(userProfile.age || answers.age) || 0,
+        gender: userProfile.gender || answers.gender || 'other',
+        height: Number(userProfile.height || answers.height) || 0,
+        weight: Number(userProfile.weight || answers.weight) || 0,
+        targetWeight: Number(userProfile.targetWeight || answers.targetWeight || userProfile.weight || answers.weight) || 0,
+        activityLevel: userProfile.activityLevel || answers.activityLevel || 'moderate',
+        primaryGoal: userProfile.goals?.[0]?.type || answers.primaryGoal || 'weight_loss',
+        targetCalories: results.targetCalories || aiAnalysis.nutritionPlan?.dailyCalories || 1600,
+        bmr: results.bmr || aiAnalysis.nutritionPlan?.bmr || Math.round((results.targetCalories || 1600) * 0.7),
+        tdee: results.tdee || aiAnalysis.nutritionPlan?.tdee || (results.targetCalories || 1600),
+        macros: results.pfc || aiAnalysis.nutritionPlan?.macros || {
+          protein: Math.round(((results.targetCalories || 1600) * 0.25) / 4),
+          fat: Math.round(((results.targetCalories || 1600) * 0.30) / 9),
+          carbs: Math.round(((results.targetCalories || 1600) * 0.45) / 4)
+        },
+        source: 'counseling_edit',
+        updatedAt: new Date(),
+        updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+        createdAt: new Date(),
+        createdAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+        timestamp: Date.now()
+      };
+
+      await profileHistoryRef.set(profileHistoryData);
+      console.log('✅ プロフィール編集: プロフィール履歴保存完了');
+    }
+    
     // ユーザープロファイルも更新
     const userRef = adminDb.collection('users').doc(lineUserId);
     const profileData = {
@@ -42,6 +86,9 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
     await userRef.set(profileData, { merge: true });
     console.log('✅ プロフィール編集: Firestore保存完了');
     
+    // プロフィール履歴更新を通知
+    console.log('🔄 プロフィール編集: プロフィール履歴更新通知発行');
+
     return NextResponse.json({
       success: true,
       message: 'プロフィールを更新しました'
@@ -108,6 +155,43 @@ export async function POST(request: NextRequest) {
       await counselingRef.set(saveData);
       console.log('✅ カウンセリング結果保存完了');
 
+      // プロフィール履歴にも保存（プロフィール表示で使用）
+      const changeDate = new Date().toISOString().split('T')[0];
+      const profileHistoryRef = adminDb
+        .collection('users')
+        .doc(lineUserId)
+        .collection('profileHistory')
+        .doc(changeDate);
+
+      const profileHistoryData = {
+        changeDate,
+        name: answers.name || '未設定',
+        age: Number(answers.age) || 0,
+        gender: answers.gender || 'other',
+        height: Number(answers.height) || 0,
+        weight: Number(answers.weight) || 0,
+        targetWeight: Number(answers.targetWeight) || Number(answers.weight) || 0,
+        activityLevel: answers.activityLevel || 'moderate',
+        primaryGoal: answers.primaryGoal || 'weight_loss',
+        targetCalories: results.targetCalories,
+        bmr: results.bmr || Math.round(results.targetCalories * 0.7),
+        tdee: results.tdee || results.targetCalories,
+        macros: results.pfc || {
+          protein: Math.round((results.targetCalories * 0.25) / 4),
+          fat: Math.round((results.targetCalories * 0.30) / 9),
+          carbs: Math.round((results.targetCalories * 0.45) / 4)
+        },
+        source: 'counseling',
+        updatedAt: new Date(),
+        updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+        createdAt: new Date(),
+        createdAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+        timestamp: Date.now()
+      };
+
+      await profileHistoryRef.set(profileHistoryData);
+      console.log('✅ プロフィール履歴保存完了');
+
       // ユーザープロファイルも保存
       const userRef = adminDb.collection('users').doc(lineUserId);
       const profileData = {
@@ -132,6 +216,9 @@ export async function POST(request: NextRequest) {
       
       await userRef.set(profileData, { merge: true });
       console.log('✅ ユーザープロファイル保存完了');
+
+      // プロフィール履歴更新を通知
+      console.log('🔄 プロフィール履歴更新通知発行');
       
     } catch (error) {
       console.error('❌ Firestore保存エラー:', error);
