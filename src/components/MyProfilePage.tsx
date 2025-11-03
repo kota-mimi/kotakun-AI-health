@@ -144,9 +144,7 @@ export function MyProfilePage({
     gender: counselingResult?.answers?.gender || 'male',
     height: userProfile.height,
     currentWeight: userProfile.currentWeight,
-    targetWeight: userProfile.targetWeight,
-    activityLevel: counselingResult?.answers?.activityLevel || 'moderate',
-    primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
+    targetWeight: userProfile.targetWeight
   });
 
   // モーダルが開かれた時に最新の値で更新
@@ -157,9 +155,7 @@ export function MyProfilePage({
       gender: counselingResult?.answers?.gender || 'male',
       height: userProfile.height,
       currentWeight: userProfile.currentWeight,
-      targetWeight: userProfile.targetWeight,
-      activityLevel: counselingResult?.answers?.activityLevel || 'moderate',
-      primaryGoal: counselingResult?.answers?.primaryGoal || 'weight_loss'
+      targetWeight: userProfile.targetWeight
     });
     setIsEditModalOpen(true);
   };
@@ -197,9 +193,7 @@ export function MyProfilePage({
             gender: editForm.gender,
             height: editForm.height,
             weight: editForm.currentWeight,
-            targetWeight: editForm.targetWeight,
-            activityLevel: editForm.activityLevel,
-            primaryGoal: editForm.primaryGoal
+            targetWeight: editForm.targetWeight
           };
           
           localStorage.setItem('counselingAnswers', JSON.stringify(updatedAnswers));
@@ -223,9 +217,7 @@ export function MyProfilePage({
               gender: editForm.gender,
               height: editForm.height,
               weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight,
-              activityLevel: editForm.activityLevel,
-              primaryGoal: editForm.primaryGoal
+              targetWeight: editForm.targetWeight
             }
           };
         }
@@ -266,9 +258,9 @@ export function MyProfilePage({
             height: editForm.height,
             weight: editForm.currentWeight,
             targetWeight: editForm.targetWeight,
-            activityLevel: editForm.activityLevel as UserProfile['activityLevel'],
+            activityLevel: 'moderate' as UserProfile['activityLevel'],
             goals: [{
-              type: editForm.primaryGoal as HealthGoal['type'],
+              type: 'maintenance' as HealthGoal['type'],
               targetValue: editForm.targetWeight
             }],
             sleepDuration: '8h_plus',
@@ -282,7 +274,7 @@ export function MyProfilePage({
 
           // 目標に基づいてカロリー計算（必ず実行）
           const goals: HealthGoal[] = [{
-            type: editForm.primaryGoal as HealthGoal['type'],
+            type: 'maintenance' as HealthGoal['type'],
             targetValue: editForm.targetWeight
           }];
           
@@ -306,8 +298,8 @@ export function MyProfilePage({
                 height: editForm.height,
                 weight: editForm.currentWeight,
                 targetWeight: editForm.targetWeight,
-                activityLevel: editForm.activityLevel,
-                primaryGoal: editForm.primaryGoal,
+                activityLevel: 'moderate',
+                primaryGoal: 'maintenance',
                 // 計算された値も保存
                 targetCalories: newCalorieTarget,
                 bmr: newBMR,
@@ -333,9 +325,7 @@ export function MyProfilePage({
               gender: editForm.gender,
               height: editForm.height,
               weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight,
-              activityLevel: editForm.activityLevel,
-              primaryGoal: editForm.primaryGoal
+              targetWeight: editForm.targetWeight
             },
             userProfile: {
               name: editForm.name,
@@ -581,62 +571,60 @@ export function MyProfilePage({
             </Badge>
           </div>
 
-          {/* 健康指標 - コンパクト横並び */}
-          <div className="flex space-x-2">
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500">体重</div>
-              <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
-            </div>
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500">BMI</div>
-              <div className="font-bold text-slate-900 text-sm">{(userProfile.currentWeight && userProfile.height) ? userProfile.bmi : '-'}</div>
-            </div>
-            <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
-              <div className="text-xs text-slate-500">目標</div>
-              <div className="font-bold text-slate-900 text-sm">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
-            </div>
-          </div>
-
-          
-          {/* 目標値表示（コンパクト） */}
-          <div className="mt-3 pt-2 border-t border-slate-200">
-            <div className="grid grid-cols-4 gap-2 mb-3">
-              <div className="text-center p-2 bg-white/60 rounded-lg">
-                <div className="text-xs text-slate-500">カロリー</div>
-                <div className="font-bold text-slate-900 text-sm">{finalCalories}</div>
+          {/* 健康指標と目標値 - 横並び（タップで編集） */}
+          <div className="space-y-2">
+            {/* 上段：体重関連 */}
+            <div className="flex space-x-2">
+              <button 
+                onClick={handleOpenEditModal}
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+              >
+                <div className="text-xs text-slate-500">体重</div>
+                <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
+              </button>
+              <div className="flex-1 text-center p-2 bg-white/60 rounded-lg">
+                <div className="text-xs text-slate-500">BMI</div>
+                <div className="font-bold text-slate-900 text-sm">{(userProfile.currentWeight && userProfile.height) ? userProfile.bmi : '-'}</div>
               </div>
-              <div className="text-center p-2 bg-white/60 rounded-lg">
-                <div className="text-xs text-slate-500">P</div>
-                <div className="font-bold text-red-600 text-sm">{finalProtein}g</div>
-              </div>
-              <div className="text-center p-2 bg-white/60 rounded-lg">
-                <div className="text-xs text-slate-500">F</div>
-                <div className="font-bold text-orange-600 text-sm">{finalFat}g</div>
-              </div>
-              <div className="text-center p-2 bg-white/60 rounded-lg">
-                <div className="text-xs text-slate-500">C</div>
-                <div className="font-bold text-green-600 text-sm">{finalCarbs}g</div>
-              </div>
+              <button 
+                onClick={handleOpenEditModal}
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+              >
+                <div className="text-xs text-slate-500">目標</div>
+                <div className="font-bold text-slate-900 text-sm">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
+              </button>
             </div>
             
-            {/* アクションボタン */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleOpenEditModal}
-                className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8"
-              >
-                プロフィール編集
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+            {/* 下段：栄養目標 */}
+            <div className="flex space-x-2">
+              <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="text-green-600 border-green-200 hover:bg-green-50 h-8"
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
               >
-                目標値編集
-              </Button>
+                <div className="text-xs text-slate-500">カロリー</div>
+                <div className="font-bold text-slate-900 text-sm">{finalCalories}</div>
+              </button>
+              <button 
+                onClick={() => setIsTargetModalOpen(true)}
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+              >
+                <div className="text-xs text-slate-500">P</div>
+                <div className="font-bold text-red-600 text-sm">{finalProtein}g</div>
+              </button>
+              <button 
+                onClick={() => setIsTargetModalOpen(true)}
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+              >
+                <div className="text-xs text-slate-500">F</div>
+                <div className="font-bold text-orange-600 text-sm">{finalFat}g</div>
+              </button>
+              <button 
+                onClick={() => setIsTargetModalOpen(true)}
+                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+              >
+                <div className="text-xs text-slate-500">C</div>
+                <div className="font-bold text-green-600 text-sm">{finalCarbs}g</div>
+              </button>
             </div>
           </div>
         </Card>
@@ -760,35 +748,6 @@ export function MyProfilePage({
             </div>
           </div>
 
-          {/* 運動量レベル */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-700">運動量レベル</label>
-            <Select value={editForm.activityLevel} onValueChange={(value) => handleEditFormChange('activityLevel', value)}>
-              <SelectTrigger className="text-sm h-8">
-                <SelectValue placeholder="運動量を選択" />
-              </SelectTrigger>
-              <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
-                <SelectItem value="sedentary" className="text-base py-3 px-4">ほとんど運動しない</SelectItem>
-                <SelectItem value="light" className="text-base py-3 px-4">軽い運動をする</SelectItem>
-                <SelectItem value="moderate" className="text-base py-3 px-4">定期的に運動する</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 目的 */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-700">目的</label>
-            <Select value={editForm.primaryGoal} onValueChange={(value) => handleEditFormChange('primaryGoal', value)}>
-              <SelectTrigger className="text-sm h-8">
-                <SelectValue placeholder="目的を選択" />
-              </SelectTrigger>
-              <SelectContent style={{minWidth: '280px', width: '280px'}} className="p-2">
-                <SelectItem value="weight_loss" className="text-base py-3 px-4">ダイエット</SelectItem>
-                <SelectItem value="muscle_gain" className="text-base py-3 px-4">筋肉量アップ</SelectItem>
-                <SelectItem value="maintenance" className="text-base py-3 px-4">健康維持</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {/* ボタン */}
           <div className="flex space-x-2 pt-1">
