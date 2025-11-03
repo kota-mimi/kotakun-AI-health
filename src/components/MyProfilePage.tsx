@@ -384,34 +384,7 @@ export function MyProfilePage({
           // 両方のAPI呼び出しを並列実行
           await Promise.all([profileHistoryPromise, counselingUpdatePromise]);
 
-          // Firestore書き込み完了後にイベントを発行
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
-              detail: { 
-                type: 'profile_update',
-                newCalories: currentCalories,
-                newMacros: currentMacros,
-                timestamp: new Date().toISOString()
-              }
-            }));
-            
-            window.dispatchEvent(new CustomEvent('profileHistoryUpdated', {
-              detail: { 
-                type: 'profile_save',
-                userId: liffUser.userId,
-                newCalories: currentCalories,
-                newMacros: currentMacros,
-                timestamp: new Date().toISOString()
-              }
-            }));
-            
-          }
-
-          // データ更新完了後、即座にフックをリフレッシュ
-          await Promise.all([
-            refetch(),
-            refetchLatestProfile()
-          ]);
+          console.log('✅ プロフィール編集: API保存完了');
           
           // モーダルを閉じる
           setIsEditModalOpen(false);
@@ -419,7 +392,7 @@ export function MyProfilePage({
           // 保存完了 - 状態をリセット
           setIsSaving(false);
           
-          // ページをリロードして確実に最新データを表示
+          // API保存完了後、即座にページをリロードして確実に最新データを表示
           window.location.reload();
           
         } catch (error) {
