@@ -132,11 +132,23 @@ export function MyProfilePage({
   };
 
   // 目標値は latestProfile から直接取得（即座反映）
-  // refreshKeyが変わるたびに最新データを確実に取得
-  const finalCalories = latestProfile?.targetCalories || 1600;
-  const finalProtein = latestProfile?.macros?.protein || 100;
-  const finalFat = latestProfile?.macros?.fat || 53;
-  const finalCarbs = latestProfile?.macros?.carbs || 180;
+  // カウンセリング結果もフォールバックとして使用
+  const finalCalories = latestProfile?.targetCalories || 
+                       counselingResult?.results?.targetCalories || 
+                       counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories || 
+                       1600;
+  const finalProtein = latestProfile?.macros?.protein || 
+                      counselingResult?.results?.pfc?.protein || 
+                      counselingResult?.aiAnalysis?.nutritionPlan?.macros?.protein || 
+                      100;
+  const finalFat = latestProfile?.macros?.fat || 
+                  counselingResult?.results?.pfc?.fat || 
+                  counselingResult?.aiAnalysis?.nutritionPlan?.macros?.fat || 
+                  53;
+  const finalCarbs = latestProfile?.macros?.carbs || 
+                    counselingResult?.results?.pfc?.carbs || 
+                    counselingResult?.aiAnalysis?.nutritionPlan?.macros?.carbs || 
+                    180;
 
   // 編集フォームの状態（モーダル開いた時に最新値を反映）
   const [editForm, setEditForm] = useState({
