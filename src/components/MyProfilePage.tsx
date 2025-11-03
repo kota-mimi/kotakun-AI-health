@@ -11,8 +11,7 @@ import { useCounselingData } from '@/hooks/useCounselingData';
 import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
-import { calculateCalorieTarget, calculateMacroTargets, calculateTDEE, calculateBMR } from '@/utils/calculations';
-import { useLatestProfile, getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { useLatestProfile } from '@/hooks/useProfileHistory';
 import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
 import { WeightChart } from './WeightChart';
@@ -277,16 +276,11 @@ export function MyProfilePage({
             alcoholFrequency: 'none'
           };
 
-          // 目標に基づいてカロリー計算（必ず実行）
-          const goals: HealthGoal[] = [{
-            type: 'maintenance' as HealthGoal['type'],
-            targetValue: editForm.targetWeight
-          }];
-          
-          const newCalorieTarget = calculateCalorieTarget(newProfile, goals);
-          const newMacros = calculateMacroTargets(newCalorieTarget);
-          const newBMR = calculateBMR(newProfile);
-          const newTDEE = calculateTDEE(newProfile);
+          // 既存の目標値を保持（自動計算削除）
+          const currentCalories = latestProfile?.targetCalories || finalCalories;
+          const currentMacros = latestProfile?.macros || { protein: finalProtein, fat: finalFat, carbs: finalCarbs };
+          const currentBMR = latestProfile?.bmr || 1200;
+          const currentTDEE = latestProfile?.tdee || currentCalories;
           
           // プロフィール履歴をAPIで保存（Promise化）
           const profileHistoryPromise = fetch('/api/profile/save', {
@@ -305,11 +299,11 @@ export function MyProfilePage({
                 targetWeight: editForm.targetWeight,
                 activityLevel: 'moderate',
                 primaryGoal: 'maintenance',
-                // 計算された値も保存
-                targetCalories: newCalorieTarget,
-                bmr: newBMR,
-                tdee: newTDEE,
-                macros: newMacros,
+                // 既存値を保持
+                targetCalories: currentCalories,
+                bmr: currentBMR,
+                tdee: currentTDEE,
+                macros: currentMacros,
                 changeDate: new Date().toISOString().split('T')[0]
               }
             })
@@ -349,10 +343,10 @@ export function MyProfilePage({
               ...counselingResult?.aiAnalysis,
               nutritionPlan: {
                 ...counselingResult?.aiAnalysis?.nutritionPlan,
-                dailyCalories: newCalorieTarget,
-                bmr: newBMR,
-                tdee: newTDEE,
-                macros: newMacros
+                dailyCalories: currentCalories,
+                bmr: currentBMR,
+                tdee: currentTDEE,
+                macros: currentMacros
               }
             }
           };
@@ -363,11 +357,11 @@ export function MyProfilePage({
             id: `profile_update_${Date.now()}`,
             answers: updatedCounselingData.answers,
             results: {
-              bmr: Math.round(newBMR),
-              tdee: Math.round(newTDEE),
-              targetCalories: Math.round(newCalorieTarget),
+              bmr: Math.round(currentBMR),
+              tdee: Math.round(currentTDEE),
+              targetCalories: Math.round(currentCalories),
               targetWeight: editForm.targetWeight,
-              pfc: newMacros
+              pfc: currentMacros
             },
             aiAnalysis: updatedCounselingData.aiAnalysis,
             createdAt: new Date().toISOString()
@@ -395,8 +389,8 @@ export function MyProfilePage({
             window.dispatchEvent(new CustomEvent('counselingDataUpdated', {
               detail: { 
                 type: 'profile_update',
-                newCalories: newCalorieTarget,
-                newMacros: newMacros,
+                newCalories: currentCalories,
+                newMacros: currentMacros,
                 timestamp: new Date().toISOString()
               }
             }));
@@ -405,8 +399,8 @@ export function MyProfilePage({
               detail: { 
                 type: 'profile_save',
                 userId: liffUser.userId,
-                newCalories: newCalorieTarget,
-                newMacros: newMacros,
+                newCalories: currentCalories,
+                newMacros: currentMacros,
                 timestamp: new Date().toISOString()
               }
             }));
