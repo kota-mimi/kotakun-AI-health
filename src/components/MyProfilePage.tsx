@@ -334,8 +334,19 @@ export function MyProfilePage({
             window.dispatchEvent(new CustomEvent('profileUpdated'));
           }
           
-          // プロフィール履歴を更新
-          await refetchLatestProfile();
+          // データを強制更新
+          await Promise.all([
+            refetchLatestProfile(),
+            refetch() // カウンセリングデータも更新
+          ]);
+          
+          // UIを強制更新
+          setRefreshKey(prev => prev + 1);
+          
+          // 少し待ってから追加のリフレッシュ（確実性向上）
+          setTimeout(() => {
+            setRefreshKey(prev => prev + 1);
+          }, 300);
           
           // モーダルを閉じる
           setIsEditModalOpen(false);
