@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfileHistory, getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { TargetSettingsModal } from './TargetSettingsModal';
 
 interface ProfilePageProps {
@@ -31,9 +32,8 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
   const [nextLevelXP] = useState(3000);
   const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
   
-  // 今日の日付で目標値を取得
-  const today = new Date();
-  const { profileData, refetch } = useProfileHistory(today);
+  // 最新プロフィールデータを取得
+  const { latestProfile: profileData, refetch } = useSharedProfile();
   const targetValues = getTargetValuesForDate(profileData, null);
 
   // LIFF認証完了まで待機（ちらつき防止）
