@@ -215,9 +215,26 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // 🚀 高速化：APIデータを優先し、複雑なフォールバック削除
+    // 🐛 デバッグ：現在の体重データを確認
     const currentDayData = realWeightData.find(item => item.date === dateKey);
-    const currentWeight = currentDayData?.weight || 0;
+    let currentWeight = currentDayData?.weight || 0;
+    
+    // 🔄 体重記録がない場合はプロフィール体重をフォールバック（緊急修正）
+    if (currentWeight === 0 && latestProfile?.weight) {
+      currentWeight = latestProfile.weight;
+      console.log('📊 プロフィール体重をフォールバック:', currentWeight);
+    }
+    
+    // 🐛 デバッグログ
+    console.log('🐛 体重データデバッグ:', {
+      dateKey,
+      realWeightDataLength: realWeightData.length,
+      currentDayData,
+      currentWeight,
+      latestProfileWeight: latestProfile?.weight,
+      targetWeight,
+      isMaintenanceMode
+    });
     
     // 前日の体重記録を取得（前日比計算用）
     const previousDate = new Date(date);
