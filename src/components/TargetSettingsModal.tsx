@@ -133,15 +133,15 @@ export function TargetSettingsModal({
             <div className="relative mt-1">
               <Input
                 id="calories"
-                type="number"
-                value={targets.targetCalories}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={targets.targetCalories || ''}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: Number(e.target.value) || 0 
+                  targetCalories: e.target.value === '' ? '' : Number(e.target.value) || 0
                 }))}
                 className="pr-12"
-                min="500"
-                max="5000"
               />
               <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
                 kcal
@@ -164,15 +164,15 @@ export function TargetSettingsModal({
                 </div>
                 <div className="relative">
                   <Input
-                    type="number"
-                    value={targets.protein}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.protein || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: Number(e.target.value) || 0 
+                      protein: e.target.value === '' ? '' : Number(e.target.value) || 0 
                     }))}
                     className="pr-8"
-                    min="0"
-                    max="500"
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
                     g
@@ -190,15 +190,15 @@ export function TargetSettingsModal({
                 </div>
                 <div className="relative">
                   <Input
-                    type="number"
-                    value={targets.fat}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.fat || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: Number(e.target.value) || 0 
+                      fat: e.target.value === '' ? '' : Number(e.target.value) || 0 
                     }))}
                     className="pr-8"
-                    min="0"
-                    max="300"
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
                     g
@@ -216,15 +216,15 @@ export function TargetSettingsModal({
                 </div>
                 <div className="relative">
                   <Input
-                    type="number"
-                    value={targets.carbs}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={targets.carbs || ''}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: Number(e.target.value) || 0 
+                      carbs: e.target.value === '' ? '' : Number(e.target.value) || 0 
                     }))}
                     className="pr-8"
-                    min="0"
-                    max="800"
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
                     g
