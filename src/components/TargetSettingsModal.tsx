@@ -136,10 +136,10 @@ export function TargetSettingsModal({
                 type="number"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                value={targets.targetCalories || ''}
+                value={targets.targetCalories === 0 ? '' : targets.targetCalories}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: Number(e.target.value) || 0 
+                  targetCalories: e.target.value === '' ? 0 : Number(e.target.value) 
                 }))}
                 className="pr-12"
                 min="500"
@@ -169,10 +169,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.protein || ''}
+                    value={targets.protein === 0 ? '' : targets.protein}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: Number(e.target.value) || 0 
+                      protein: e.target.value === '' ? 0 : Number(e.target.value) 
                     }))}
                     className="pr-8"
                     min="0"
@@ -197,10 +197,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.fat || ''}
+                    value={targets.fat === 0 ? '' : targets.fat}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: Number(e.target.value) || 0 
+                      fat: e.target.value === '' ? 0 : Number(e.target.value) 
                     }))}
                     className="pr-8"
                     min="0"
@@ -225,10 +225,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.carbs || ''}
+                    value={targets.carbs === 0 ? '' : targets.carbs}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: Number(e.target.value) || 0 
+                      carbs: e.target.value === '' ? 0 : Number(e.target.value) 
                     }))}
                     className="pr-8"
                     min="0"
