@@ -312,85 +312,24 @@ export function MyProfilePage({
             return response.json();
           });
           
-          // LocalStorageとFirestoreのカウンセリングデータも更新（同期保持）
-          const updatedCounselingData = {
-            answers: {
-              ...counselingResult?.answers,
-              name: editForm.name,
-              age: editForm.age,
-              gender: editForm.gender,
-              height: editForm.height,
-              weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight
-            },
-            userProfile: {
-              name: editForm.name,
-              age: editForm.age,
-              gender: editForm.gender,
-              height: editForm.height,
-              weight: editForm.currentWeight,
-              targetWeight: editForm.targetWeight,
-              activityLevel: editForm.activityLevel,
-              goals: [{
-                type: editForm.primaryGoal,
-                targetValue: editForm.targetWeight
-              }]
-            },
-            aiAnalysis: {
-              ...counselingResult?.aiAnalysis,
-              nutritionPlan: {
-                ...counselingResult?.aiAnalysis?.nutritionPlan,
-                dailyCalories: currentCalories,
-                bmr: currentBMR,
-                tdee: currentTDEE,
-                macros: currentMacros
-              }
-            }
-          };
-          
-          // LocalStorage更新（カウンセリングと同じキーを使用）
-          localStorage.setItem('counselingAnswers', JSON.stringify(updatedCounselingData.answers));
-          localStorage.setItem('counselingResult', JSON.stringify({
-            id: `profile_update_${Date.now()}`,
-            answers: updatedCounselingData.answers,
-            results: {
-              bmr: Math.round(currentBMR),
-              tdee: Math.round(currentTDEE),
-              targetCalories: Math.round(currentCalories),
-              targetWeight: editForm.targetWeight,
-              pfc: currentMacros
-            },
-            aiAnalysis: updatedCounselingData.aiAnalysis,
-            createdAt: new Date().toISOString()
-          }));
-          localStorage.setItem('hasCompletedCounseling', 'true');
-          
-          // カウンセリング結果APIでFirestoreも更新（並列実行）
-          const counselingUpdatePromise = fetch('/api/counseling/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              lineUserId: liffUser.userId,
-              counselingResult: updatedCounselingData
-            })
-          }).catch(error => {
-            console.error('⚠️ カウンセリングデータ更新エラー（続行）:', error);
-            return null;
-          });
+          // プロフィール履歴のみ保存（シンプル化）
+          await profileHistoryPromise;
 
-          // 両方のAPI呼び出しを並列実行
-          await Promise.all([profileHistoryPromise, counselingUpdatePromise]);
-
-          console.log('✅ プロフィール編集: API保存完了');
+          console.log('✅ プロフィール編集: 保存完了');
+          
+          // プロフィール更新イベント発火
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('profileUpdated'));
+          }
+          
+          // プロフィール履歴を更新
+          await refetchLatestProfile();
           
           // モーダルを閉じる
           setIsEditModalOpen(false);
           
           // 保存完了 - 状態をリセット
           setIsSaving(false);
-          
-          // API保存完了後、即座にページをリロードして確実に最新データを表示
-          window.location.reload();
           
         } catch (error) {
           console.error('❌ プロフィール保存エラー:', error.message);
