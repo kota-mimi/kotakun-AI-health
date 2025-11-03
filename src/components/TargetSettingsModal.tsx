@@ -37,11 +37,16 @@ export function TargetSettingsModal({
 
   // カロリーからPFCパーセンテージを計算
   const getPercentages = () => {
-    if (targets.targetCalories <= 0) return { protein: 0, fat: 0, carbs: 0 };
+    const calories = Number(targets.targetCalories) || 0;
+    if (calories <= 0) return { protein: 0, fat: 0, carbs: 0 };
     
-    const proteinPercent = Math.round((targets.protein * 4 / targets.targetCalories) * 100);
-    const fatPercent = Math.round((targets.fat * 9 / targets.targetCalories) * 100);
-    const carbsPercent = Math.round((targets.carbs * 4 / targets.targetCalories) * 100);
+    const protein = Number(targets.protein) || 0;
+    const fat = Number(targets.fat) || 0;
+    const carbs = Number(targets.carbs) || 0;
+    
+    const proteinPercent = Math.round((protein * 4 / calories) * 100);
+    const fatPercent = Math.round((fat * 9 / calories) * 100);
+    const carbsPercent = Math.round((carbs * 4 / calories) * 100);
     
     return { protein: proteinPercent, fat: fatPercent, carbs: carbsPercent };
   };
@@ -57,15 +62,15 @@ export function TargetSettingsModal({
       
       const profileData = {
         changeDate,
-        targetCalories: targets.targetCalories,
+        targetCalories: Number(targets.targetCalories) || 0,
         macros: {
-          protein: targets.protein,
-          fat: targets.fat,
-          carbs: targets.carbs
+          protein: Number(targets.protein) || 0,
+          fat: Number(targets.fat) || 0,
+          carbs: Number(targets.carbs) || 0
         },
         // 既存の計算値は保持（手動編集時はBMR/TDEEは計算しない）
-        bmr: Math.round(targets.targetCalories * 0.7), // 簡易計算
-        tdee: targets.targetCalories,
+        bmr: Math.round((Number(targets.targetCalories) || 0) * 0.7), // 簡易計算
+        tdee: Number(targets.targetCalories) || 0,
         source: 'manual', // 手動編集フラグ
         name: '手動設定',
         age: 0,
@@ -136,10 +141,10 @@ export function TargetSettingsModal({
                 type="number"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                value={targets.targetCalories === 0 ? '' : targets.targetCalories}
+                value={targets.targetCalories}
                 onChange={(e) => setTargets(prev => ({ 
                   ...prev, 
-                  targetCalories: e.target.value === '' ? 0 : Number(e.target.value) 
+                  targetCalories: e.target.value
                 }))}
                 className="pr-12"
                 min="500"
@@ -169,10 +174,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.protein === 0 ? '' : targets.protein}
+                    value={targets.protein}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      protein: e.target.value === '' ? 0 : Number(e.target.value) 
+                      protein: e.target.value 
                     }))}
                     className="pr-8"
                     min="0"
@@ -197,10 +202,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.fat === 0 ? '' : targets.fat}
+                    value={targets.fat}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      fat: e.target.value === '' ? 0 : Number(e.target.value) 
+                      fat: e.target.value 
                     }))}
                     className="pr-8"
                     min="0"
@@ -225,10 +230,10 @@ export function TargetSettingsModal({
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={targets.carbs === 0 ? '' : targets.carbs}
+                    value={targets.carbs}
                     onChange={(e) => setTargets(prev => ({ 
                       ...prev, 
-                      carbs: e.target.value === '' ? 0 : Number(e.target.value) 
+                      carbs: e.target.value 
                     }))}
                     className="pr-8"
                     min="0"
@@ -247,7 +252,7 @@ export function TargetSettingsModal({
             <div className="text-sm text-gray-600">
               PFCからの計算カロリー: 
               <span className="font-medium ml-1">
-                {Math.round(targets.protein * 4 + targets.fat * 9 + targets.carbs * 4)} kcal
+                {Math.round((Number(targets.protein) || 0) * 4 + (Number(targets.fat) || 0) * 9 + (Number(targets.carbs) || 0) * 4)} kcal
               </span>
             </div>
           </div>
