@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { apiCache, createCacheKey } from "@/lib/cache";
 import { generateId } from "@/lib/utils";
 import { useAuth } from "./useAuth";
-import { getTargetValuesForDate, useProfileHistory } from "./useProfileHistory";
+import { getTargetValuesForDate } from "./useProfileHistory";
+// import { useProfileHistory } from "./useProfileHistory"; // 🔄 統合により削除
 
 interface FoodItem {
 	id: string;
@@ -62,11 +63,22 @@ export function useMealData(
 	dateBasedData: any,
 	updateDateData: (updates: any) => void,
 	counselingResult?: CounselingResult | null,
+	sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any },
 ) {
 	const { liffUser } = useAuth();
 
-	// 選択された日付のプロフィール履歴を取得
-	const { profileData: dateProfileData } = useProfileHistory(selectedDate);
+	// 🔄 統合プロフィールから日付ベースデータを取得（状態管理）
+	const [dateProfileData, setDateProfileData] = useState<any>(null);
+	
+	useEffect(() => {
+		const loadProfileForDate = async () => {
+			if (sharedProfile?.getProfileForDate) {
+				const profileData = await sharedProfile.getProfileForDate(selectedDate);
+				setDateProfileData(profileData);
+			}
+		};
+		loadProfileForDate();
+	}, [selectedDate, sharedProfile]);
 	const [isAddMealModalOpen, setIsAddMealModalOpen] = useState(false);
 	const [isEditMealModalOpen, setIsEditMealModalOpen] = useState(false);
 	const [isMealDetailModalOpen, setIsMealDetailModalOpen] = useState(false);

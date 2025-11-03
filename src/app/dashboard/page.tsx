@@ -10,6 +10,8 @@ import { useExerciseData } from '@/hooks/useExerciseData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
+import { useGlobalLoading } from '@/hooks/useGlobalLoading';
+import { useSharedProfile } from '@/hooks/useSharedProfile';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { WeightCard } from '@/components/WeightCard';
@@ -36,6 +38,7 @@ import { WeightChart } from '@/components/WeightChart';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
+import { WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const [hasError, setHasError] = React.useState(false);
@@ -90,6 +93,8 @@ export default function DashboardPage() {
 function DashboardContent({ onError }: { onError: () => void }) {
   const navigation = useNavigationState();
   const dateBasedDataManager = useDateBasedData();
+  const globalLoading = useGlobalLoading();
+  const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
   
   // URLパラメータに基づいてプラン設定ページを開く
   React.useEffect(() => {
@@ -119,13 +124,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  const { counselingResult } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  const { counselingResult, isLoading: isCounselingLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
 
   const mealManager = useMealData(
     navigation?.selectedDate || new Date(), 
     dateBasedDataManager?.dateBasedData || {}, 
     updateDateData,
-    counselingResult
+    counselingResult,
+    sharedProfile // 🔄 統合プロフィール渡し
   );
 
   const exerciseManager = useExerciseData(
@@ -138,7 +144,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
-    counselingResult
+    counselingResult,
+    sharedProfile // 🔄 統合プロフィール渡し
   );
 
   const feedbackManager = useFeedbackData(
@@ -146,6 +153,28 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dateBasedDataManager?.dateBasedData || {},
     updateDateData
   );
+
+  // グローバルローディング状態を更新
+  React.useEffect(() => {
+    globalLoading.setLoadingState('counseling', isCounselingLoading);
+  }, [isCounselingLoading]);
+
+  React.useEffect(() => {
+    globalLoading.setLoadingState('weight', weightManager.isLoadingWeightData);
+  }, [weightManager.isLoadingWeightData]);
+
+  React.useEffect(() => {
+    globalLoading.setLoadingState('meal', mealManager.isLoading);
+  }, [mealManager.isLoading]);
+
+  React.useEffect(() => {
+    globalLoading.setLoadingState('feedback', feedbackManager.isLoading);
+  }, [feedbackManager.isLoading]);
+
+  // 運動データのローディング状態（現在はhookで管理されていないため固定でfalse）
+  React.useEffect(() => {
+    globalLoading.setLoadingState('exercise', false);
+  }, []);
 
   // 現在の時間に基づいて適切な食事タイプを判定
 
@@ -257,20 +286,24 @@ function DashboardContent({ onError }: { onError: () => void }) {
           <div {...swipeHandlers} className="relative px-4 py-4 pb-24 space-y-4">
             {/* 体重カード - クリックで体重入力モーダル */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {weightManager?.weightData && (
+              {globalLoading.isWeightLoading ? (
+                <WeightCardSkeleton />
+              ) : weightManager?.weightData ? (
                 <WeightCard 
                   data={weightManager.weightData} 
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen?.(true)}
                   counselingResult={counselingResult}
                   selectedDate={navigation?.selectedDate}
                 />
-              )}
+              ) : null}
             </div>
 
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {mealManager && (
+              {globalLoading.isMealLoading || globalLoading.isCounselingLoading ? (
+                <CalorieCardSkeleton />
+              ) : mealManager ? (
                 <CalorieCard 
                   totalCalories={mealManager.calorieData?.totalCalories || 0}
                   targetCalories={mealManager.calorieData?.targetCalories || 2000}
@@ -279,11 +312,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   exerciseData={exerciseManager?.exerciseData || []}
                   selectedDate={navigation.selectedDate}
                 />
-              )}
+              ) : null}
             </div>
 
             {/* 食事カード */}
-            {mealManager?.mealData && (
+            {globalLoading.isMealLoading ? (
+              <MealCardSkeleton />
+            ) : mealManager?.mealData ? (
               <MealSummaryCard
                 meals={mealManager.mealData}
                 onAddMeal={mealManager.handleAddMeal || (() => {})}
@@ -297,11 +332,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToMeal={() => {}} // 削除：専用ページなし
                 onMenuOpenChange={setIsMealMenuOpen}
               />
-            )}
+            ) : null}
 
             {/* 運動カード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {exerciseManager?.exerciseData && navigation?.selectedDate && (
+              {globalLoading.isExerciseLoading ? (
+                <WorkoutCardSkeleton />
+              ) : exerciseManager?.exerciseData && navigation?.selectedDate ? (
                 <WorkoutSummaryCard 
                   exerciseData={exerciseManager.exerciseData}
                   selectedDate={navigation.selectedDate}
@@ -317,7 +354,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise?.(exerciseId)}
                   onUpdateExercise={(exerciseId, updates) => exerciseManager.handleUpdateExercise?.(exerciseId, updates)}
                 />
-              )}
+              ) : null}
             </div>
 
             {/* フィードバックカード */}

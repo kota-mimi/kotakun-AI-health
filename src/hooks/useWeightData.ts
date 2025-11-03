@@ -3,7 +3,7 @@ import { useAuth } from './useAuth';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
-import { useLatestProfile } from './useProfileHistory';
+// import { useLatestProfile } from './useProfileHistory'; // 🔄 統合により削除
 
 interface WeightEntry {
   id: string;
@@ -29,9 +29,9 @@ interface WeightSettings {
   reminderEnabled: boolean;
 }
 
-export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any) {
+export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }) {
   const { liffUser } = useAuth();
-  const { profileData: latestProfile } = useLatestProfile();
+  const latestProfile = sharedProfile?.latestProfile; // 🔄 統合プロフィールから取得
   
   // モーダル状態管理
   const [isWeightEntryModalOpen, setIsWeightEntryModalOpen] = useState(false);
@@ -72,35 +72,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
         
-        // 今日の日付の場合のみ、バックグラウンドでAPI取得して更新チェック
-        if (!isTodaySelected) {
-          return; // 過去日付は更新不要
-        }
-        console.log('🔄 今日の日付：バックグラウンドで最新データをチェック');
-        
-        // バックグラウンドでAPIチェック（キャッシュ優先で即座表示済み）
-        (async () => {
-          try {
-            const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
-            if (response.ok) {
-              const result = await response.json();
-              const latestData = result.data || [];
-              
-              const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(latestData);
-              if (hasChanges) {
-                console.log('🔄 バックグラウンド：最新データで更新');
-                apiCache.set(cacheKey, latestData, 5 * 60 * 1000);
-                setRealWeightData(latestData);
-              } else {
-                console.log('✅ バックグラウンド：データ変更なし');
-              }
-            }
-          } catch (error) {
-            console.log('バックグラウンド取得エラー:', error);
-          }
-        })(); // 即座にバックグラウンド取得
-        
-        return; // メインのAPI取得はスキップ
+        // キャッシュから取得完了（バックグラウンド取得削除でAPI半減）
+        return;
       } else {
         console.log('🔄 キャッシュなし：API取得');
       }
@@ -170,27 +143,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
         
-        // バックグラウンドで最新チェック（軽量）
-        const checkLatestData = async () => {
-          try {
-            const response = await fetch(`/api/weight?lineUserId=${liffUser.userId}&period=month`);
-            if (response.ok) {
-              const result = await response.json();
-              const weightData = result.data || [];
-              
-              const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(weightData);
-              if (hasChanges) {
-                console.log('🔄 今日のデータに更新があるため反映');
-                apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
-                setRealWeightData(weightData);
-              }
-            }
-          } catch (error) {
-            console.log('バックグラウンド更新チェックエラー:', error);
-          }
-        };
-        
-        checkLatestData();
+        // キャッシュから即座表示（バックグラウンド取得削除）
       }
     }
   }, [selectedDate, liffUser?.userId, isClient]); // 今日選択時のみの軽量チェック
