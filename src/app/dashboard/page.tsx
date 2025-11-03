@@ -311,6 +311,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   counselingResult={counselingResult}
                   exerciseData={exerciseManager?.exerciseData || []}
                   selectedDate={navigation.selectedDate}
+                  profileData={sharedProfile.latestProfile} // 🔄 統合プロフィール渡し
                 />
               ) : null}
             </div>

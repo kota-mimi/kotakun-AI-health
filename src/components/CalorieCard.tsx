@@ -3,7 +3,7 @@ import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { useProfileHistory, getTargetValuesForDate } from '@/hooks/useProfileHistory';
+import { getTargetValuesForDate } from '@/hooks/useProfileHistory';
 
 interface PFCData {
   protein: number;
@@ -34,15 +34,13 @@ interface CalorieCardProps {
   counselingResult?: CounselingResult | null;
   exerciseData?: Array<{ calories: number; duration: number; type: string }>;
   selectedDate: Date;
+  profileData?: any; // 🔄 統合プロフィールから受け取り
 }
 
-export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [], selectedDate }: CalorieCardProps) {
+export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [], selectedDate, profileData }: CalorieCardProps) {
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
   const [isMounted, setIsMounted] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  // 日付に基づくプロフィールデータを取得
-  const { profileData, refetch } = useProfileHistory(selectedDate);
   
   useEffect(() => {
     setIsMounted(true);

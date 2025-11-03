@@ -11,7 +11,7 @@ import { useCounselingData } from '@/hooks/useCounselingData';
 import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
-import { useLatestProfile } from '@/hooks/useProfileHistory';
+import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
 import { WeightChart } from './WeightChart';
@@ -69,7 +69,7 @@ export function MyProfilePage({
   );
   
   // 最新のプロフィールデータを取得
-  const { profileData: latestProfile, refetch: refetchLatestProfile } = useLatestProfile();
+  const { latestProfile, refetch: refetchLatestProfile } = useSharedProfile();
   
   // 最も安全：LIFF認証完了まで待機のみ
   if (!isLiffReady || !isLoggedIn) {
