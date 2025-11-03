@@ -361,6 +361,11 @@ export function useMealData(
 					...prev,
 					[currentMealType]: [...prev[currentMealType], newMeal],
 				}));
+
+				// カロリー表示更新のイベントを発火
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('mealDataUpdated'));
+				}
 			} else if (response.status === 403) {
 				// 利用制限エラーの場合
 				const errorData = await response.json();
@@ -513,6 +518,11 @@ export function useMealData(
 						meal.id === originalMealId ? updatedMeal : meal,
 					),
 				}));
+
+				// カロリー表示更新のイベントを発火
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('mealDataUpdated'));
+				}
 			} else {
 				console.error("🔧 API update failed:", response.status);
 				throw new Error("API update failed");
@@ -633,6 +643,11 @@ export function useMealData(
 						apiCache.set(cacheKey, data.mealData, 5 * 60 * 1000);
 						setFirestoreMealData(data.mealData);
 					}
+				}
+
+				// カロリー表示更新のイベントを発火
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('mealDataUpdated'));
 				}
 			} else {
 				console.error(

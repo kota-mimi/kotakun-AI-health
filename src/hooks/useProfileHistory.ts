@@ -71,6 +71,21 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
     fetchProfileData();
   }, [targetDate, liffUser?.userId]);
 
+  // 食事データ更新時にカロリー表示を更新
+  useEffect(() => {
+    const handleMealUpdate = () => {
+      fetchProfileData();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mealDataUpdated', handleMealUpdate);
+      
+      return () => {
+        window.removeEventListener('mealDataUpdated', handleMealUpdate);
+      };
+    }
+  }, [fetchProfileData]);
+
   // プロフィール履歴更新イベントをリスニング（日付ベース用）
   useEffect(() => {
     const handleProfileHistoryUpdate = () => {
