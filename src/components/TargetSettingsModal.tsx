@@ -152,7 +152,15 @@ export function TargetSettingsModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* 更新中表示 */}
+        {saving && (
+          <div className="flex items-center justify-center py-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></div>
+            <span className="text-blue-700 font-medium">目標値を更新中...</span>
+          </div>
+        )}
+
+        <div className={`space-y-6 ${saving ? 'opacity-50 pointer-events-none' : ''} transition-opacity duration-300`}>
           {/* カロリー目標 */}
           <div>
             <Label htmlFor="calories" className="text-sm font-medium">

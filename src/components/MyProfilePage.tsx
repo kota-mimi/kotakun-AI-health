@@ -453,7 +453,7 @@ export function MyProfilePage({
     <div key={`${refreshKey}-${latestProfile?.changeDate || 'default'}`} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-3">
+        <Card className={`relative bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
@@ -466,6 +466,13 @@ export function MyProfilePage({
               </div>
             </div>
             
+            {/* 更新中表示 */}
+            {isSaving && (
+              <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center space-x-1">
+                <div className="animate-spin h-3 w-3 border border-white border-t-transparent rounded-full"></div>
+                <span>更新中</span>
+              </div>
+            )}
           </div>
 
           {/* 健康指標と目標値 - 横並び（タップで編集） */}
@@ -673,10 +680,19 @@ export function MyProfilePage({
           carbs: finalCarbs
         }}
         onSave={async () => {
-          // 保存完了後に最新データを確実に取得
-          await refetchLatestProfile();
-          // 強制リフレッシュで確実に更新
-          setRefreshKey(prev => prev + 1);
+          // 更新中表示を開始
+          setIsSaving(true);
+          try {
+            // 保存完了後に最新データを確実に取得
+            await refetchLatestProfile();
+            // 強制リフレッシュで確実に更新
+            setRefreshKey(prev => prev + 1);
+          } finally {
+            // 少し遅延させてユーザーに更新完了を実感させる
+            setTimeout(() => {
+              setIsSaving(false);
+            }, 500);
+          }
         }}
       />
 
