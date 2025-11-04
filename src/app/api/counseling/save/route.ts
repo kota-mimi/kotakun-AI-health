@@ -65,6 +65,26 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
 
       await profileHistoryRef.set(profileHistoryData);
       console.log('✅ プロフィール編集: プロフィール履歴保存完了');
+
+      // プロフィール編集時の体重もdailyRecordsに保存（グラフ表示用）
+      const editWeight = userProfile.weight || answers.weight;
+      if (editWeight && Number(editWeight) > 0) {
+        const weightRecordRef = adminDb
+          .collection('users')
+          .doc(lineUserId)
+          .collection('dailyRecords')
+          .doc(changeDate);
+
+        const weightRecord = {
+          weight: Number(editWeight),
+          createdAt: new Date(),
+          timestamp: Date.now(),
+          source: 'profile_edit'
+        };
+
+        await weightRecordRef.set(weightRecord, { merge: true });
+        console.log('✅ プロフィール編集時の体重をdailyRecordsに保存:', editWeight, 'kg on', changeDate);
+      }
     }
     
     // ユーザープロファイルも更新
@@ -191,6 +211,26 @@ export async function POST(request: NextRequest) {
 
       await profileHistoryRef.set(profileHistoryData);
       console.log('✅ プロフィール履歴保存完了');
+
+      // カウンセリング体重をdailyRecordsにも保存（グラフ表示用）
+      if (answers.weight && Number(answers.weight) > 0) {
+        const weightDate = changeDate; // カウンセリング完了日
+        const weightRecordRef = adminDb
+          .collection('users')
+          .doc(lineUserId)
+          .collection('dailyRecords')
+          .doc(weightDate);
+
+        const weightRecord = {
+          weight: Number(answers.weight),
+          createdAt: new Date(),
+          timestamp: Date.now(),
+          source: 'counseling'
+        };
+
+        await weightRecordRef.set(weightRecord, { merge: true });
+        console.log('✅ カウンセリング体重をdailyRecordsに保存:', answers.weight, 'kg on', weightDate);
+      }
 
       // ユーザープロファイルも保存
       const userRef = adminDb.collection('users').doc(lineUserId);
