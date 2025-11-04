@@ -15,7 +15,7 @@ interface FeedbackData {
   };
 }
 
-export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
+export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, dashboardFeedbackData?: any[]) {
   const { liffUser } = useAuth();
   
   // フィードバックデータ取得用のstate
@@ -28,15 +28,28 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     setIsClient(true);
   }, []);
 
-  // 自動でフィードバックデータを取得
+  // 🚀 統合データがある場合は使用、ない場合は従来のAPI取得
   useEffect(() => {
     if (!isClient) return;
     
+    const dateStr = getDateKey(selectedDate);
+    
+    // 統合データがある場合は即座に使用
+    if (dashboardFeedbackData && dashboardFeedbackData.length >= 0) {
+      const todayFeedback = dashboardFeedbackData.find(item => item.date === dateStr);
+      console.log('⚡ 統合データからフィードバックデータを取得');
+      setFeedbackData(todayFeedback || null);
+      setIsLoading(false);
+      return;
+    }
+    
     const fetchFeedbackData = async () => {
       const lineUserId = liffUser?.userId;
-      const dateStr = getDateKey(selectedDate);
       
-      if (!lineUserId) return;
+      if (!lineUserId) {
+        setIsLoading(false);
+        return;
+      }
       
       // 未来の日付は取得しない
       const today = getDateKey(new Date());
@@ -87,7 +100,7 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     };
 
     fetchFeedbackData();
-  }, [selectedDate, liffUser?.userId, isClient]);
+  }, [selectedDate, liffUser?.userId, isClient, dashboardFeedbackData]);
 
   // 日付のキーを生成（日本時間基準で統一）
   const getDateKey = (date: Date) => {

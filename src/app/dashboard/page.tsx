@@ -12,6 +12,7 @@ import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { WeightCard } from '@/components/WeightCard';
@@ -96,6 +97,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
   
+  // 🚀 統合ダッシュボードデータ取得（コスト削減）
+  const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
+  
   // URLパラメータに基づいてプラン設定ページを開く
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -124,14 +128,17 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  const { counselingResult, isLoading: isCounselingLoading } = useCounselingData(); // 本番環境対応・エラー耐性強化版
+  // 🔄 統合データから各データを取得（コスト削減済み）
+  const counselingResult = dashboardData.counselingData;
+  const isCounselingLoading = dashboardData.isLoading;
 
   const mealManager = useMealData(
     navigation?.selectedDate || new Date(), 
     dateBasedDataManager?.dateBasedData || {}, 
     updateDateData,
     counselingResult,
-    sharedProfile // 🔄 統合プロフィール渡し
+    sharedProfile, // 🔄 統合プロフィール渡し
+    dashboardData.mealsData // 🚀 統合データから取得
   );
 
   const exerciseManager = useExerciseData(
@@ -145,13 +152,15 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
     counselingResult,
-    sharedProfile // 🔄 統合プロフィール渡し
+    sharedProfile, // 🔄 統合プロフィール渡し
+    dashboardData.weightData // 🚀 統合データから取得
   );
 
   const feedbackManager = useFeedbackData(
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
-    updateDateData
+    updateDateData,
+    dashboardData.feedbackData // 🚀 統合データから取得
   );
 
   // グローバルローディング状態を更新

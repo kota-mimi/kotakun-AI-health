@@ -29,7 +29,7 @@ interface WeightSettings {
   reminderEnabled: boolean;
 }
 
-export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }) {
+export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[]) {
   const { liffUser } = useAuth();
   const latestProfile = sharedProfile?.latestProfile; // 🔄 統合プロフィールから取得
   
@@ -47,9 +47,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     setIsClient(true);
   }, []);
 
-  // Firestoreから体重データを取得（月データを一度取得して使い回し）
+  // 🚀 統合データがある場合は使用、ない場合は従来のFirestore取得
   useEffect(() => {
     if (!isClient) return;
+    
+    // 統合データがある場合は即座に使用
+    if (dashboardWeightData && dashboardWeightData.length >= 0) {
+      console.log('⚡ 統合データから体重データを取得');
+      setRealWeightData(dashboardWeightData);
+      setIsLoadingWeightData(false);
+      return;
+    }
     
     const fetchWeightData = async () => {
       const lineUserId = liffUser?.userId;
@@ -129,7 +137,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     };
 
     fetchWeightData();
-  }, [liffUser?.userId, isClient]); // selectedDateを依存関係から除去（月データ使い回しのため）
+  }, [liffUser?.userId, isClient, dashboardWeightData]); // 統合データ追加
   
   // 今日の日付が選択された場合のみ最新データチェック
   useEffect(() => {

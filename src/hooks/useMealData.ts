@@ -64,6 +64,7 @@ export function useMealData(
 	updateDateData: (updates: any) => void,
 	counselingResult?: CounselingResult | null,
 	sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any },
+	dashboardMealsData?: any[], // 🚀 統合データから取得
 ) {
 	const { liffUser } = useAuth();
 
