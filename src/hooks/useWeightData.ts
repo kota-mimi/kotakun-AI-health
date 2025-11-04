@@ -215,11 +215,23 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // 🐛 デバッグ：現在の体重データを確認
+    // 🎯 体重表示ロジック：選択日→最新記録→プロフィール体重の順
     const currentDayData = realWeightData.find(item => item.date === dateKey);
     let currentWeight = currentDayData?.weight || 0;
     
-    // 🔄 体重記録がない場合はプロフィール体重をフォールバック（緊急修正）
+    // ステップ1: 選択日に記録がない場合、最新の体重記録を使用
+    if (currentWeight === 0 && realWeightData.length > 0) {
+      const latestWeightRecord = realWeightData
+        .filter(item => item.weight && item.weight > 0)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      
+      if (latestWeightRecord) {
+        currentWeight = latestWeightRecord.weight;
+        console.log('📈 最新の体重記録を表示:', currentWeight, 'from', latestWeightRecord.date);
+      }
+    }
+    
+    // ステップ2: 最後の手段としてプロフィール体重をフォールバック
     if (currentWeight === 0 && latestProfile?.weight) {
       currentWeight = latestProfile.weight;
       console.log('📊 プロフィール体重をフォールバック:', currentWeight);
@@ -236,12 +248,26 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       isMaintenanceMode
     });
     
-    // 前日の体重記録を取得（前日比計算用）
-    const previousDate = new Date(date);
-    previousDate.setDate(previousDate.getDate() - 1);
-    const previousKey = getDateKey(previousDate);
-    const previousDayData = realWeightData.find(item => item.date === previousKey);
-    const previousWeight = previousDayData?.weight || 0;
+    // 前日比計算：最新記録を使用している場合は、その記録の前日と比較
+    let previousWeight = 0;
+    if (currentDayData?.weight) {
+      // 選択日に記録がある場合：通常の前日比
+      const previousDate = new Date(date);
+      previousDate.setDate(previousDate.getDate() - 1);
+      const previousKey = getDateKey(previousDate);
+      const previousDayData = realWeightData.find(item => item.date === previousKey);
+      previousWeight = previousDayData?.weight || 0;
+    } else if (realWeightData.length > 1) {
+      // 最新記録を表示している場合：最新から2番目の記録と比較
+      const sortedData = realWeightData
+        .filter(item => item.weight && item.weight > 0)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      if (sortedData.length > 1) {
+        previousWeight = sortedData[1].weight;
+        console.log('📈 最新記録の前日比:', currentWeight, '-', previousWeight);
+      }
+    }
     
     return {
       current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
