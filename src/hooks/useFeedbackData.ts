@@ -198,6 +198,9 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
         apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
         setFeedbackData(feedbackData);
         
+        // ローカルステートも即座に更新
+        setFeedbackData(feedbackData);
+        
         // 統合データ更新のためイベントを発火
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('feedbackDataUpdated', {
