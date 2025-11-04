@@ -275,8 +275,13 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     console.log('  - PFC:', results.pfc);
     console.log('  - mockAnalysis:', JSON.stringify(mockAnalysis, null, 2));
     
-    // 🚫 カウンセリング完了メッセージを削除（ユーザー要望）
-    console.log('✅ カウンセリング完了 - メッセージ送信はスキップ');
+    const flexMessage = createCounselingResultFlexMessage(mockAnalysis, userProfile);
+    
+    // 🚫 テキストメッセージのみ削除、flexメッセージは送信（ユーザー要望）
+    console.log('送信中 - カウンセリング結果（Flexメッセージのみ）');
+    await pushMessage(lineUserId, [flexMessage]);
+
+    console.log('LINEメッセージ送信完了:', userName);
 
     // カウンセリング完了後、通常モードに設定
     try {
