@@ -275,24 +275,8 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     console.log('  - PFC:', results.pfc);
     console.log('  - mockAnalysis:', JSON.stringify(mockAnalysis, null, 2));
     
-    const flexMessage = createCounselingResultFlexMessage(mockAnalysis, userProfile);
-    
-    // カウンセリング完了メッセージ
-    const completionMessage = {
-      type: 'text',
-      text: `${userName}さん、カウンセリングありがとう！
-
-こちらがあなたの目標に向けた目安のカロリー・たんぱく質・脂質・炭水化物だよ！
-
-カウンセリング結果をタップしたらアプリにあなたの情報が見れるよ！
-
-これから一緒に頑張ろうね！`
-    };
-    
-    console.log('送信中 - カウンセリング結果（完了メッセージ + Flex）');
-    await pushMessage(lineUserId, [completionMessage, flexMessage]);
-
-    console.log('LINEメッセージ送信完了:', userName);
+    // 🚫 カウンセリング完了メッセージを削除（ユーザー要望）
+    console.log('✅ カウンセリング完了 - メッセージ送信はスキップ');
 
     // カウンセリング完了後、通常モードに設定
     try {

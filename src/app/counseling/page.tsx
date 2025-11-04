@@ -81,12 +81,40 @@ export default function SimpleCounselingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasCompletedCounseling, setHasCompletedCounseling] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
   
-  // 開始時に古いカウンセリングキャッシュをクリア
+  // カウンセリング完了状態をチェック
   React.useEffect(() => {
-    console.log('🧹 カウンセリングキャッシュをクリアしています...');
-    localStorage.removeItem('counselingResult');
-    localStorage.removeItem('hasCompletedCounseling');
+    const checkCounselingStatus = async () => {
+      try {
+        setIsCheckingStatus(true);
+        
+        // LocalStorageからカウンセリング結果をチェック
+        const localResult = localStorage.getItem('counselingResult');
+        
+        if (localResult) {
+          console.log('🔒 カウンセリング既に完了 - アクセス無効');
+          setHasCompletedCounseling(true);
+          return;
+        }
+        
+        console.log('✅ カウンセリング未完了 - アクセス許可');
+        setHasCompletedCounseling(false);
+        
+        // 開始時に古いカウンセリングキャッシュをクリア
+        console.log('🧹 カウンセリングキャッシュをクリアしています...');
+        localStorage.removeItem('hasCompletedCounseling');
+        
+      } catch (error) {
+        console.error('カウンセリング状態チェックエラー:', error);
+        setHasCompletedCounseling(false);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+    
+    checkCounselingStatus();
   }, []);
   const [basicInfo, setBasicInfo] = useState<BasicInfo>({
     name: '',
@@ -559,6 +587,41 @@ export default function SimpleCounselingPage() {
     'どのような目標を達成したいですか？',
     '普段の運動レベルを教えてください'
   ];
+
+  // ローディング中の表示
+  if (isCheckingStatus) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">カウンセリング状態を確認中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // カウンセリング完了済みの表示
+  if (hasCompletedCounseling) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl p-8 text-center shadow-lg max-w-sm w-full">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">カウンセリング完了済み</h2>
+          <p className="text-slate-600 mb-6">すでにカウンセリングは完了しています。<br />アプリで健康管理を続けましょう！</p>
+          <Button 
+            onClick={() => router.push('/dashboard')}
+            className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl"
+          >
+            ダッシュボードへ
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto relative">
