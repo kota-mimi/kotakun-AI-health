@@ -26,6 +26,11 @@ interface CounselingResult {
     }>;
   };
   answers: {
+    name: string;
+    age: number;
+    gender: string;
+    height: number;
+    weight: number;
     targetWeight: number;
     targetDate: string;
     primaryGoal: string;
@@ -75,7 +80,14 @@ export function useCounselingData() {
               setCounselingResult({
                 answers,
                 aiAnalysis: analysis,
-                userProfile: answers
+                userProfile: {
+                  name: answers.name,
+                  age: answers.age,
+                  gender: answers.gender,
+                  height: answers.height,
+                  weight: answers.weight,
+                  targetWeight: answers.targetWeight
+                }
               });
               
               setIsLoading(false);
@@ -165,7 +177,14 @@ export function useCounselingData() {
             setCounselingResult({
               answers,
               aiAnalysis: analysis,
-              userProfile: answers
+              userProfile: {
+                name: answers.name,
+                age: answers.age,
+                gender: answers.gender,
+                height: answers.height,
+                weight: answers.weight,
+                targetWeight: answers.targetWeight
+              }
             });
           } catch (error) {
             console.error('Storage update error:', error);
@@ -204,7 +223,14 @@ export function useCounselingData() {
           setCounselingResult({
             answers,
             aiAnalysis: analysis,
-            userProfile: answers
+            userProfile: {
+              name: answers.name,
+              age: answers.age,
+              gender: answers.gender,
+              height: answers.height,
+              weight: answers.weight,
+              targetWeight: answers.targetWeight
+            }
           });
           setIsLoading(false);
           return;
