@@ -98,14 +98,16 @@ export function MyProfilePage({
   // シンプルなプロフィールデータ（重い計算を削除）
   const counselingName = counselingResult?.answers?.name === '利光湖太郎' ? null : counselingResult?.answers?.name;
   const profileName = counselingResult?.userProfile?.name === '利光湖太郎' ? null : counselingResult?.userProfile?.name;
-  const userName = counselingName || profileName || liffUser?.displayName || "ユーザー";
-  const age = counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
-  const gender = counselingResult?.answers?.gender === 'male' ? '男性' : 
+  const userName = latestProfile?.name || counselingName || profileName || liffUser?.displayName || "ユーザー";
+  const age = latestProfile?.age || counselingResult?.answers?.age || counselingResult?.userProfile?.age || null;
+  const gender = latestProfile?.gender === 'male' ? '男性' :
+                 latestProfile?.gender === 'female' ? '女性' :
+                 counselingResult?.answers?.gender === 'male' ? '男性' : 
                  counselingResult?.answers?.gender === 'female' ? '女性' : 
                  counselingResult?.userProfile?.gender === 'male' ? '男性' : 
                  counselingResult?.userProfile?.gender === 'female' ? '女性' : 
                  null;
-  const height = counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
+  const height = latestProfile?.height || counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
   
   // プロフィール履歴の体重を最優先にして、daily recordsは参考値程度にする
   const currentWeight = latestProfile?.weight || 
