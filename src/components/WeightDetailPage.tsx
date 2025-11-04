@@ -223,6 +223,7 @@ export function WeightDetailPage({
 					{/* グラフエリア */}
 					<div className="-mx-1">
 						<WeightChart
+							key={`weight-detail-chart-${weightData.length}-${weightData.map(d => `${d.date}:${d.weight}`).join('-')}`}
 							data={weightData}
 							period={selectedPeriod}
 							height={height}

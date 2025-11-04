@@ -541,6 +541,7 @@ export function MyProfilePage({
       <div className="px-4">
         {weightManager?.realWeightData && (
           <WeightChart 
+            key={`weight-chart-${weightManager.realWeightData.length}-${weightManager.realWeightData.map(d => `${d.date}:${d.weight}`).join('-')}`}
             data={weightManager.realWeightData}
             period="month"
             height={200}
