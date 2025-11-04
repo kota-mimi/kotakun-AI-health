@@ -677,8 +677,6 @@ export function MyProfilePage({
           await refetchLatestProfile();
           // 強制リフレッシュで確実に更新
           setRefreshKey(prev => prev + 1);
-          // ページをリロードして確実に最新データを表示
-          window.location.reload();
         }}
       />
 
