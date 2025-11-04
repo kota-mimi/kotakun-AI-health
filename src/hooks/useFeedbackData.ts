@@ -15,7 +15,7 @@ interface FeedbackData {
   };
 }
 
-export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, dashboardFeedbackData?: any[]) {
+export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void) {
   const { liffUser } = useAuth();
   
   // フィードバックデータ取得用のstate
@@ -28,20 +28,9 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     setIsClient(true);
   }, []);
 
-  // 🚀 統合データがある場合は使用、ない場合は従来のAPI取得
+  // 自動でフィードバックデータを取得
   useEffect(() => {
     if (!isClient) return;
-    
-    const dateStr = getDateKey(selectedDate);
-    
-    // 統合データがある場合は即座に使用
-    if (dashboardFeedbackData && dashboardFeedbackData.length >= 0) {
-      const todayFeedback = dashboardFeedbackData.find(item => item.date === dateStr);
-      console.log('⚡ 統合データからフィードバックデータを取得');
-      setFeedbackData(todayFeedback || null);
-      setIsLoading(false);
-      return;
-    }
     
     const fetchFeedbackData = async () => {
       const lineUserId = liffUser?.userId;
@@ -198,20 +187,6 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
         apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
         setFeedbackData(feedbackData);
         
-        // ローカルステートも即座に更新
-        setFeedbackData(feedbackData);
-        
-        // 統合データ更新のためイベントを発火
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('feedbackDataUpdated', {
-            detail: { feedbackData, date: dateStr }
-          }));
-        }
-        
-        // dateBasedDataも即座に更新
-        updateDateData({
-          [`${dateStr}.feedback`]: feedbackData
-        });
       } else if (response.status === 403) {
         // 利用制限エラーの場合
         const errorData = await response.json();
@@ -251,31 +226,11 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     return feedbackData !== null;
   };
 
-  // 統合データがある場合はそれを優先、なければローカルデータ
-  const currentFeedbackData = (() => {
-    if (!isClient) return null;
-    
-    const dateKey = getDateKey(selectedDate);
-    const today = getDateKey(new Date());
-    
-    // 未来の日付の場合はnullを返す
-    if (dateKey > today) return null;
-    
-    // 統合データがある場合はそちらを優先
-    if (dashboardFeedbackData && dashboardFeedbackData.length >= 0) {
-      const todayFeedback = dashboardFeedbackData.find(item => item.date === dateKey);
-      return todayFeedback || null;
-    }
-    
-    // 統合データがない場合はローカルデータ
-    return feedbackData;
-  })();
-
   return {
     // データ
-    feedbackData: currentFeedbackData,
+    feedbackData: getFeedbackDataForDate(selectedDate),
     isLoading,
-    hasFeedbackData: currentFeedbackData !== null,
+    hasFeedbackData: hasFeedbackData(),
     
     // アクション
     generateFeedback,

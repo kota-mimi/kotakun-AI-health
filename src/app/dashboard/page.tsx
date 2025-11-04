@@ -159,8 +159,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const feedbackManager = useFeedbackData(
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
-    updateDateData,
-    dashboardData.feedbackData // 🚀 統合データから取得
+    updateDateData
   );
 
   // グローバルローディング状態を更新
