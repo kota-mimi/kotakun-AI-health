@@ -1002,8 +1002,22 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         return;
       }
       
-      // 記録確認メッセージを送信
-      await sendRecordConfirmation(replyToken);
+      // 直接フィードバック生成を実行（確認メッセージをスキップ）
+      // フィードバック生成中かチェック
+      const isDailyFeedbackProcessing = isProcessing(userId);
+      if (isDailyFeedbackProcessing) {
+        console.log('⚠️ フィードバック生成中: ボタン押下を無視');
+        return;
+      }
+      
+      // 重複実行防止フラグを設定
+      setProcessing(userId, true);
+      
+      try {
+        await handleDailyFeedback(replyToken, userId);
+      } finally {
+        setProcessing(userId, false);
+      }
       break;
     
     case 'feedback_with_records':

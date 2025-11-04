@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
-import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 interface FeedbackData {
   date: string;
@@ -34,15 +34,16 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     
     const fetchFeedbackData = async () => {
       const lineUserId = liffUser?.userId;
+      const dateStr = getDateKey(selectedDate);
       
-      if (!lineUserId) {
-        setIsLoading(false);
-        return;
-      }
+      if (!lineUserId) return;
       
       // 未来の日付は取得しない
       const today = getDateKey(new Date());
-      if (dateStr > today) return;
+      if (dateStr > today) {
+        setFeedbackData(null);
+        return;
+      }
       
       // キャッシュキー生成
       const cacheKey = createCacheKey('feedback', lineUserId, dateStr);
@@ -78,13 +79,17 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
               ...parsedFeedback
             };
             
-            // キャッシュに保存（15分間有効 - フィードバックデータ）
-            apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
+            // キャッシュに保存（5分間有効に短縮してデータ更新を早める）
+            apiCache.set(cacheKey, feedbackData, 5 * 60 * 1000);
             setFeedbackData(feedbackData);
+          } else {
+            // データがない場合はnullをセット
+            setFeedbackData(null);
           }
         }
       } catch (error) {
         console.error('フィードバック取得エラー:', error);
+        setFeedbackData(null);
       }
     };
 
@@ -183,10 +188,14 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
           ...parsedFeedback
         };
         
-        // キャッシュに保存（15分間有効）
-        apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
+        // キャッシュに保存（5分間有効に短縮してデータ更新を早める）
+        apiCache.set(cacheKey, feedbackData, 5 * 60 * 1000);
         setFeedbackData(feedbackData);
         
+        // フィードバック生成後は一度キャッシュをクリアして最新データを確実に取得
+        setTimeout(() => {
+          apiCache.delete(cacheKey);
+        }, 1000);
       } else if (response.status === 403) {
         // 利用制限エラーの場合
         const errorData = await response.json();
