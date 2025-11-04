@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '@/lib/utils';
-import { apiCache, createCacheKey } from '@/lib/cache';
+import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
 // import { useLatestProfile } from './useProfileHistory'; // 🔄 統合により削除
 
 interface WeightEntry {
@@ -98,8 +98,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           const result = await response.json();
           const weightData = result.data || [];
           
-          // キャッシュに保存（5分間有効）
-          apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
+          // キャッシュに保存（30分間有効 - 体重データ最適化）
+          apiCache.set(cacheKey, weightData, CACHE_TTL.WEIGHT);
           
           // 今日の場合、既にキャッシュデータを表示済みなら、差分がある場合のみ更新
           if (isTodaySelected && cachedData) {
@@ -359,9 +359,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
             new Date(a.date).getTime() - new Date(b.date).getTime()
           );
           
-          // キャッシュも同時に更新（重要：削除ではなく更新）
+          // キャッシュも同時に更新（30分TTL）
           const cacheKey = createCacheKey('weight', lineUserId, 'month');
-          apiCache.set(cacheKey, updatedData, 5 * 60 * 1000);
+          apiCache.set(cacheKey, updatedData, CACHE_TTL.WEIGHT);
           console.log('⚡ 体重記録後：キャッシュも即座に更新');
           
           return updatedData;
@@ -429,8 +429,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
             const result = await response.json();
             const weightData = result.data || [];
             
-            // キャッシュに保存（5分間有効）
-            apiCache.set(cacheKey, weightData, 5 * 60 * 1000);
+            // キャッシュに保存（30分間有効）
+            apiCache.set(cacheKey, weightData, CACHE_TTL.WEIGHT);
             setRealWeightData(weightData);
           }
         } catch (error) {

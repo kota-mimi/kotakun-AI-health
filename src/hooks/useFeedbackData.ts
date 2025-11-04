@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
-import { apiCache, createCacheKey } from '@/lib/cache';
+import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
 
 interface FeedbackData {
   date: string;
@@ -89,8 +89,8 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
               ...parsedFeedback
             };
             
-            // キャッシュに保存（30分間有効）
-            apiCache.set(cacheKey, feedbackData, 30 * 60 * 1000);
+            // キャッシュに保存（15分間有効 - フィードバックデータ）
+            apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
             setFeedbackData(feedbackData);
           }
         }
@@ -194,8 +194,8 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
           ...parsedFeedback
         };
         
-        // キャッシュに保存（30分間有効）
-        apiCache.set(cacheKey, feedbackData, 30 * 60 * 1000);
+        // キャッシュに保存（15分間有効）
+        apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
         setFeedbackData(feedbackData);
       } else if (response.status === 403) {
         // 利用制限エラーの場合

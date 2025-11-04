@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useAuth } from './useAuth';
-import { apiCache, createCacheKey } from '@/lib/cache';
+import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
 
 interface ProfileData {
   changeDate: string;
@@ -72,8 +72,8 @@ export function useSharedProfile() {
         const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
         
         if (profile) {
-          // キャッシュに保存（5分間）
-          apiCache.set(cacheKey, profile, 5 * 60 * 1000);
+          // キャッシュに保存（1時間 - プロフィールは変更頻度が低い）
+          apiCache.set(cacheKey, profile, CACHE_TTL.PROFILE);
           setLatestProfile(profile);
           
           console.log('✅ 最新プロフィールを取得・キャッシュ保存');
@@ -143,9 +143,9 @@ export function useSharedProfile() {
         const updatedProfile = { ...latestProfile, weight };
         setLatestProfile(updatedProfile);
         
-        // キャッシュも更新
+        // キャッシュも更新（1時間TTL）
         const cacheKey = createCacheKey('profile', liffUser?.userId, 'latest');
-        apiCache.set(cacheKey, updatedProfile, 5 * 60 * 1000);
+        apiCache.set(cacheKey, updatedProfile, CACHE_TTL.PROFILE);
         console.log('🔄 体重記録→プロフィール体重自動更新完了');
       }
     };

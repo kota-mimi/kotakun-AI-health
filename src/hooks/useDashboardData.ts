@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
-import { apiCache, createCacheKey } from '@/lib/cache';
+import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
 
 interface DashboardData {
   counseling: any;
@@ -60,8 +60,8 @@ export function useDashboardData(selectedDate: Date) {
           if (result.success) {
             const dashboardData = result.data;
             
-            // キャッシュに保存（15分間有効 - 統合データなので長めに設定）
-            apiCache.set(cacheKey, dashboardData, 15 * 60 * 1000);
+            // キャッシュに保存（15分間有効 - 統合ダッシュボードデータ）
+            apiCache.set(cacheKey, dashboardData, CACHE_TTL.DASHBOARD);
             setData(dashboardData);
             
             console.log('✅ 統合ダッシュボードデータ取得・キャッシュ保存完了');
