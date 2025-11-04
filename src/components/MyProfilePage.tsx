@@ -348,8 +348,12 @@ export function MyProfilePage({
             refetch() // カウンセリングデータも更新
           ]);
           
-          // 保存完了 - 状態をリセット（既にモーダルは閉じている）
-          setIsSaving(false);
+          // 保存完了 - 更新中表示を1.5秒維持してページリロード
+          setTimeout(() => {
+            setIsSaving(false);
+            // 確実に反映させるためページをリロード
+            window.location.reload();
+          }, 1500);
           
           console.log('✅ バックグラウンド保存完了（楽観的更新）');
           
@@ -540,8 +544,8 @@ export function MyProfilePage({
             data={weightManager.realWeightData}
             period="month"
             height={200}
-            targetWeight={counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
-            currentWeight={weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
+            targetWeight={latestProfile?.targetWeight || counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
+            currentWeight={latestProfile?.weight || weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
             counselingResult={counselingResult}
           />
         )}
@@ -696,7 +700,12 @@ export function MyProfilePage({
             } catch (error) {
               console.error('バックグラウンド更新エラー:', error);
             } finally {
-              setIsSaving(false);
+              // 更新中表示を2秒間維持
+              setTimeout(() => {
+                setIsSaving(false);
+                // 確実に反映させるためページをリロード
+                window.location.reload();
+              }, 2000);
             }
           }, 100);
         }}
