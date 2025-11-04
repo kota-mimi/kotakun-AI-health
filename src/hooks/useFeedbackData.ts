@@ -251,11 +251,31 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     return feedbackData !== null;
   };
 
+  // 統合データがある場合はそれを優先、なければローカルデータ
+  const currentFeedbackData = (() => {
+    if (!isClient) return null;
+    
+    const dateKey = getDateKey(selectedDate);
+    const today = getDateKey(new Date());
+    
+    // 未来の日付の場合はnullを返す
+    if (dateKey > today) return null;
+    
+    // 統合データがある場合はそちらを優先
+    if (dashboardFeedbackData && dashboardFeedbackData.length >= 0) {
+      const todayFeedback = dashboardFeedbackData.find(item => item.date === dateKey);
+      return todayFeedback || null;
+    }
+    
+    // 統合データがない場合はローカルデータ
+    return feedbackData;
+  })();
+
   return {
     // データ
-    feedbackData: getFeedbackDataForDate(selectedDate),
+    feedbackData: currentFeedbackData,
     isLoading,
-    hasFeedbackData: hasFeedbackData(),
+    hasFeedbackData: currentFeedbackData !== null,
     
     // アクション
     generateFeedback,
