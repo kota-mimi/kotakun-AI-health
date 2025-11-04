@@ -89,7 +89,7 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     };
 
     fetchFeedbackData();
-  }, [selectedDate, liffUser?.userId, isClient, dashboardFeedbackData]);
+  }, [selectedDate, liffUser?.userId, isClient]);
 
   // 日付のキーを生成（日本時間基準で統一）
   const getDateKey = (date: Date) => {
