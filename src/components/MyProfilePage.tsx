@@ -679,20 +679,24 @@ export function MyProfilePage({
           fat: finalFat,
           carbs: finalCarbs
         }}
-        onSave={async () => {
-          // 更新中表示を開始
+        onSave={() => {
+          // 楽観的更新：即座に更新中表示を開始
           setIsSaving(true);
-          try {
-            // 保存完了後に最新データを確実に取得
-            await refetchLatestProfile();
-            // 強制リフレッシュで確実に更新
-            setRefreshKey(prev => prev + 1);
-          } finally {
-            // 少し遅延させてユーザーに更新完了を実感させる
-            setTimeout(() => {
+          
+          // 即座にモーダルを閉じる（楽観的更新）
+          setIsTargetModalOpen(false);
+          
+          // バックグラウンドでデータを更新
+          setTimeout(async () => {
+            try {
+              await refetchLatestProfile();
+              setRefreshKey(prev => prev + 1);
+            } catch (error) {
+              console.error('バックグラウンド更新エラー:', error);
+            } finally {
               setIsSaving(false);
-            }, 500);
-          }
+            }
+          }, 100);
         }}
       />
 
