@@ -197,6 +197,18 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
         // キャッシュに保存（15分間有効）
         apiCache.set(cacheKey, feedbackData, CACHE_TTL.FEEDBACK);
         setFeedbackData(feedbackData);
+        
+        // 統合データ更新のためイベントを発火
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('feedbackDataUpdated', {
+            detail: { feedbackData, date: dateStr }
+          }));
+        }
+        
+        // dateBasedDataも即座に更新
+        updateDateData({
+          [`${dateStr}.feedback`]: feedbackData
+        });
       } else if (response.status === 403) {
         // 利用制限エラーの場合
         const errorData = await response.json();

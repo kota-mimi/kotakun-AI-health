@@ -83,6 +83,30 @@ export function useDashboardData(selectedDate: Date) {
     fetchDashboardData();
   }, [liffUser?.userId, selectedDate, isClient]);
 
+  // フィードバック更新イベントの監視
+  useEffect(() => {
+    if (!isClient) return;
+
+    const handleFeedbackUpdate = (event: CustomEvent) => {
+      const { feedbackData, date } = event.detail;
+      const currentDateStr = selectedDate.toISOString().split('T')[0];
+      
+      // 現在選択中の日付のフィードバックが更新された場合
+      if (date === currentDateStr) {
+        updateLocalData('feedback', feedbackData);
+        console.log('✅ フィードバックデータをリアルタイム更新');
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
+      
+      return () => {
+        window.removeEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
+      };
+    }
+  }, [isClient, selectedDate]);
+
   // データ更新関数（個別保存後にキャッシュクリア用）
   const invalidateCache = () => {
     if (!liffUser?.userId) return;
