@@ -4,6 +4,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useSharedProfile } from '@/hooks/useSharedProfile';
+import { useCounselingData } from '@/hooks/useCounselingData';
 
 interface TargetValues {
   targetCalories: number | string;
@@ -28,6 +30,8 @@ export function TargetSettingsModal({
   onSave 
 }: TargetSettingsModalProps) {
   const { liffUser } = useAuth();
+  const { latestProfile } = useSharedProfile();
+  const { counselingResult } = useCounselingData();
   const [targets, setTargets] = useState<TargetValues>(currentTargets);
   const [saving, setSaving] = useState(false);
 
@@ -67,6 +71,18 @@ export function TargetSettingsModal({
       const fat = Number(targets.fat) || 0;
       const carbs = Number(targets.carbs) || 0;
       
+      // 既存のプロフィールデータを保持
+      const existingProfile = latestProfile || {
+        name: counselingResult?.answers?.name || counselingResult?.userProfile?.name || '未設定',
+        age: counselingResult?.answers?.age || counselingResult?.userProfile?.age || 25,
+        gender: counselingResult?.answers?.gender || counselingResult?.userProfile?.gender || 'other',
+        height: counselingResult?.answers?.height || counselingResult?.userProfile?.height || 170,
+        weight: counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || 70,
+        targetWeight: counselingResult?.answers?.targetWeight || counselingResult?.userProfile?.targetWeight || 65,
+        activityLevel: 'moderate',
+        primaryGoal: 'maintenance'
+      };
+
       const profileData = {
         changeDate,
         targetCalories,
@@ -75,18 +91,18 @@ export function TargetSettingsModal({
           fat,
           carbs
         },
-        // 既存の計算値は保持（手動編集時はBMR/TDEEは計算しない）
-        bmr: Math.round(targetCalories * 0.7), // 簡易計算
-        tdee: targetCalories,
-        source: 'manual', // 手動編集フラグ
-        name: '手動設定',
-        age: 0,
-        gender: 'other',
-        height: 0,
-        weight: 0,
-        targetWeight: 0,
-        activityLevel: 'manual',
-        primaryGoal: 'manual'
+        // 既存の計算値は保持
+        bmr: existingProfile.bmr || Math.round(targetCalories * 0.7),
+        tdee: existingProfile.tdee || targetCalories,
+        // 既存のプロフィール情報を保持
+        name: existingProfile.name,
+        age: existingProfile.age,
+        gender: existingProfile.gender,
+        height: existingProfile.height,
+        weight: existingProfile.weight,
+        targetWeight: existingProfile.targetWeight,
+        activityLevel: existingProfile.activityLevel,
+        primaryGoal: existingProfile.primaryGoal
       };
 
       const response = await fetch('/api/profile/save', {
