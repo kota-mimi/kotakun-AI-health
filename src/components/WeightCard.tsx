@@ -49,12 +49,9 @@ export function WeightCard({
 		counselingResult?.answers?.primaryGoal === "maintenance";
 	const shouldShowTarget = hasTargetData && !isMaintenanceMode;
 
-	// 現在の体重表示（未来日付では表示しない、カウンセリング結果を優先）
-	const counselingWeight = counselingResult?.answers?.weight;
-	const currentWeight = hasCurrentData ? data.current : counselingWeight || 0;
-	const shouldShowWeight =
-		!isFutureDate &&
-		(hasCurrentData || (counselingWeight && counselingWeight > 0));
+	// 現在の体重表示（useWeightDataの計算結果を信頼）
+	const currentWeight = data.current;
+	const shouldShowWeight = !isFutureDate && currentWeight > 0;
 
 	// 前日比計算
 	const difference =
@@ -62,11 +59,9 @@ export function WeightCard({
 	const shouldShowDifference = hasCurrentData && hasPreviousData;
 	const isDecrease = difference < 0;
 
-	// 目標までの計算（未来日付では表示しない、カウンセリング結果がある場合は体重記録がなくても計算）
+	// 目標までの計算（useWeightDataの計算結果を信頼）
 	const canCalculateRemaining =
-		!isFutureDate &&
-		(hasCurrentData || (counselingWeight && counselingWeight > 0)) &&
-		shouldShowTarget;
+		!isFutureDate && currentWeight > 0 && shouldShowTarget;
 	const remaining = canCalculateRemaining
 		? Math.abs(currentWeight - data.target)
 		: 0;
