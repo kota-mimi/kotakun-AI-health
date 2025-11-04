@@ -19,14 +19,14 @@ export default function PaymentCancelPage() {
         </p>
         <div className="space-y-2">
           <Button 
-            onClick={() => window.location.href = '/settings'}
+            onClick={() => window.location.href = '/dashboard?tab=plan'}
             className="w-full"
           >
             プラン選択に戻る
           </Button>
           <Button 
             variant="outline"
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = '/dashboard'}
             className="w-full"
           >
             ホームに戻る

@@ -60,7 +60,7 @@ function PaymentSuccessContent() {
             決済の処理中にエラーが発生しました。
           </p>
           <Button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = '/dashboard'}
             className="w-full"
           >
             ホームに戻る
