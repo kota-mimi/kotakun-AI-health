@@ -276,19 +276,15 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     
-    console.log('🚀 AI生成開始');
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
-    console.log('✅ AI生成成功、テキスト長:', text.length);
-    return text;
+    return response.text();
     
   } catch (error) {
     console.error('❌❌❌ AI生成エラー:', error);
     // フォールバック: 固定テンプレート
-    console.log('🔄 フォールバック使用');
     return generateFallbackFeedback(data, totalCalories, totalProtein, totalFat, totalCarbs, totalExerciseTime);
   }
 }
