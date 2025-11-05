@@ -493,13 +493,6 @@ export function MyProfilePage({
                 <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
               </button>
               <button 
-                onClick={() => weightManager.setIsWeightEntryModalOpen(true)}
-                className="flex-1 text-center p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-              >
-                <div className="text-xs text-blue-600">記録</div>
-                <div className="font-bold text-blue-700 text-sm">体重を記録</div>
-              </button>
-              <button 
                 onClick={handleOpenEditModal}
                 className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
               >
