@@ -15,16 +15,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // プラン制限チェック：テスト用に一時的に無効化
-    // if (userId) {
-    //   const userPlan = await getUserPlan(userId);
-    //   if (userPlan === 'free') {
-    //     return NextResponse.json({ 
-    //       error: 'WebアプリでのAI機能は有料プランの機能です。プランをアップグレードするか、LINEでご利用ください。',
-    //       needsUpgrade: true 
-    //     }, { status: 403 });
-    //   }
-    // }
+    // プラン制限チェック
+    if (userId) {
+      const userPlan = await getUserPlan(userId);
+      if (userPlan === 'free') {
+        return NextResponse.json({ 
+          error: 'WebアプリでのAI機能は有料プランの機能です。プランをアップグレードするか、LINEでご利用ください。',
+          needsUpgrade: true 
+        }, { status: 403 });
+      }
+    }
 
     // ファイルをBufferに変換
     const bytes = await file.arrayBuffer();
