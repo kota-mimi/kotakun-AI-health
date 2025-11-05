@@ -277,23 +277,29 @@ export function WeightChart({
 		const center = (min + max) / 2;
 		const actualRange = max - min;
 
-		// 体重の場合は適切な範囲設定
+		// 体重の場合は自然な範囲設定
 		if (dataType === "weight") {
 			// 単一データポイントの場合
 			if (values.length === 1) {
 				const singleValue = values[0];
-				const baseRange = 4; // ±2kgの範囲
+				// 体重に応じて自然な範囲を設定
+				const baseMin = Math.floor(singleValue - 2);
+				const baseMax = Math.ceil(singleValue + 2);
 				return {
-					min: singleValue - baseRange / 2,
-					max: singleValue + baseRange / 2,
+					min: baseMin,
+					max: baseMax,
 				};
 			}
 			
 			// 複数データポイントの場合
-			const padding = Math.max(1, actualRange * 0.2); // 最小1kg、実際の範囲の20%のパディング
+			const padding = Math.max(0.5, actualRange * 0.15); // 最小0.5kg、実際の範囲の15%のパディング
+			const paddedMin = min - padding;
+			const paddedMax = max + padding;
+			
+			// 自然な値に調整（0.5kg単位）
 			return {
-				min: min - padding,
-				max: max + padding,
+				min: Math.floor(paddedMin * 2) / 2,
+				max: Math.ceil(paddedMax * 2) / 2,
 			};
 		}
 
@@ -498,10 +504,22 @@ export function WeightChart({
 
 	// Y軸の目盛りを生成（動的範囲対応）
 	const generateYAxisTicks = () => {
+		// データ範囲に応じて適切な刻みを自動決定
 		const range = currentConfig.max - currentConfig.min;
-
-		// 体重の場合は0.5kg刻み、その他は1刻み
-		const tickInterval = selectedDataType === "weight" ? 0.5 : 1;
+		let tickInterval;
+		
+		if (selectedDataType === "weight") {
+			// 体重の場合：範囲に応じて刻みを調整
+			if (range <= 3) {
+				tickInterval = 0.5; // 3kg以下なら0.5kg刻み
+			} else if (range <= 8) {
+				tickInterval = 1; // 8kg以下なら1kg刻み
+			} else {
+				tickInterval = 2; // それ以上なら2kg刻み
+			}
+		} else {
+			tickInterval = 1;
+		}
 
 		// 開始値を間隔に合わせて調整
 		const startValue =
