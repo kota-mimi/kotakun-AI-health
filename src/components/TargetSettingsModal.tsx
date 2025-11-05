@@ -64,12 +64,20 @@ export function TargetSettingsModal({
     
     setSaving(true);
     try {
-      const changeDate = selectedDate.toISOString().split('T')[0];
+      const changeDate = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       const targetCalories = Number(targets.targetCalories) || 0;
       const protein = Number(targets.protein) || 0;
       const fat = Number(targets.fat) || 0;
       const carbs = Number(targets.carbs) || 0;
+      
+      console.log('🔍 カロリー変更保存時の値確認:', {
+        targetCalories,
+        protein,
+        fat,
+        carbs,
+        changeDate
+      });
       
       // 既存のプロフィールデータを保持
       const existingProfile = latestProfile || {
@@ -115,9 +123,9 @@ export function TargetSettingsModal({
       });
 
       if (response.ok) {
-        // プロフィール履歴更新イベントを発火
+        // プロフィール更新イベントを発火（useSharedProfileで受け取り）
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('profileHistoryUpdated'));
+          window.dispatchEvent(new CustomEvent('profileUpdated'));
         }
         onSave();
         onClose();

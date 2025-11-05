@@ -707,20 +707,21 @@ export function MyProfilePage({
           // 即座にモーダルを閉じる（楽観的更新）
           setIsTargetModalOpen(false);
           
-          // バックグラウンドでデータを更新
+          // バックグラウンドでデータを更新（リロードなし）
           setTimeout(async () => {
             try {
-              await refetchLatestProfile();
+              await Promise.all([
+                refetchLatestProfile(),
+                refetch() // カウンセリングデータも更新
+              ]);
               setRefreshKey(prev => prev + 1);
             } catch (error) {
               console.error('バックグラウンド更新エラー:', error);
             } finally {
-              // 更新中表示を2秒間維持
+              // 更新中表示を1.5秒間維持してから終了（リロードなし）
               setTimeout(() => {
                 setIsSaving(false);
-                // 確実に反映させるためページをリロード
-                window.location.reload();
-              }, 2000);
+              }, 1500);
             }
           }, 100);
         }}
