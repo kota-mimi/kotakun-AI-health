@@ -294,11 +294,24 @@ export function MyProfilePage({
             alcoholFrequency: 'none'
           };
 
-          // 既存の目標値を保持（自動計算削除）
-          const currentCalories = latestProfile?.targetCalories || finalCalories;
-          const currentMacros = latestProfile?.macros || { protein: finalProtein, fat: finalFat, carbs: finalCarbs };
+          // 🎯 重要：UIに表示されている現在の値を保存（デフォルト化防止）
+          // finalCalories/finalProtein等はUIで使用中の実際の値
+          const currentCalories = finalCalories;  // UIで表示されている値を保持
+          const currentMacros = {
+            protein: finalProtein,   // UIで表示されている値を保持
+            fat: finalFat,           // UIで表示されている値を保持
+            carbs: finalCarbs        // UIで表示されている値を保持
+          };
           const currentBMR = latestProfile?.bmr || 1200;
           const currentTDEE = latestProfile?.tdee || currentCalories;
+          
+          console.log('🔍 プロフィール保存時の栄養価値確認:', {
+            currentCalories,
+            currentMacros,
+            finalCalories,
+            latestProfileTargetCalories: latestProfile?.targetCalories,
+            latestProfileMacros: latestProfile?.macros
+          });
           
           // プロフィール履歴をAPIで保存（Promise化）
           const profileHistoryPromise = fetch('/api/profile/save', {
@@ -322,7 +335,7 @@ export function MyProfilePage({
                 bmr: currentBMR,
                 tdee: currentTDEE,
                 macros: currentMacros,
-                changeDate: new Date().toISOString().split('T')[0]
+                changeDate: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
               }
             })
           }).then(async response => {
