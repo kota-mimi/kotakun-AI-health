@@ -110,15 +110,7 @@ export function useDashboardData(selectedDate: Date) {
       }
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
-      window.addEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
-      
-      return () => {
-        window.removeEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
-        window.removeEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
-      };
-    }
+    // 古いイベント駆動システムを削除（統合APIにより不要）
   }, [isClient, selectedDate]);
 
   // データ更新関数（個別保存後にキャッシュクリア用）

@@ -150,17 +150,7 @@ export function useSharedProfile() {
       }
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('profileHistoryUpdated', handleProfileUpdate);
-      window.addEventListener('counselingDataUpdated', handleProfileUpdate);
-      window.addEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
-      
-      return () => {
-        window.removeEventListener('profileHistoryUpdated', handleProfileUpdate);
-        window.removeEventListener('counselingDataUpdated', handleProfileUpdate);
-        window.removeEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
-      };
-    }
+    // 古いイベント駆動システムを削除（データソース統一により不要）
   }, [latestProfile, liffUser?.userId]);
 
   return {

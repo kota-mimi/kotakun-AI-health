@@ -25,7 +25,7 @@ async function saveCounselingResult(lineUserId: string, counselingResult: any) {
     
     // プロフィール履歴にも保存（プロフィール編集時）
     if (counselingResult.answers || counselingResult.userProfile) {
-      const changeDate = new Date().toISOString().split('T')[0];
+      const changeDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const profileHistoryRef = adminDb
         .collection('users')
         .doc(lineUserId)
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ カウンセリング結果保存完了');
 
       // プロフィール履歴にも保存（プロフィール表示で使用）
-      const changeDate = new Date().toISOString().split('T')[0];
+      const changeDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const profileHistoryRef = adminDb
         .collection('users')
         .doc(lineUserId)

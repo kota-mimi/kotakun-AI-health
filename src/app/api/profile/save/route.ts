@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
     
     // プロフィール履歴をサブコレクションに保存
-    const changeDate = profileData.changeDate || new Date().toISOString().split('T')[0];
+    const changeDate = profileData.changeDate || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     const profileHistoryRef = adminDb
       .collection('users')
       .doc(lineUserId)

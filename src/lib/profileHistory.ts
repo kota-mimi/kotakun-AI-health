@@ -27,7 +27,7 @@ export interface ProfileHistoryEntry {
 // プロフィール変更を履歴として保存
 export async function saveProfileHistory(userId: string, profileData: Omit<ProfileHistoryEntry, 'changeDate' | 'targetCalories' | 'bmr' | 'tdee' | 'macros'>): Promise<void> {
   try {
-    const changeDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const changeDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }); // YYYY-MM-DD format
     
     console.log('📊 プロフィール履歴保存開始:', {
       userId,

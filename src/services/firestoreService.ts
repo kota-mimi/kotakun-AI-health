@@ -320,7 +320,7 @@ export class FirestoreService {
   // プロフィール履歴の保存
   async saveProfileHistory(lineUserId: string, profileData: any) {
     try {
-      const changeDate = new Date().toISOString().split('T')[0];
+      const changeDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const profileHistoryRef = doc(db, 'users', lineUserId, 'profileHistory', changeDate);
       
       await setDoc(profileHistoryRef, {

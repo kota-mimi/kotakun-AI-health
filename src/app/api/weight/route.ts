@@ -59,7 +59,16 @@ export async function POST(request: NextRequest) {
         'profile.weight': recordData.weight,
         updatedAt: new Date(),
       });
-      console.log('✅ プロフィール体重も同期更新:', recordData.weight);
+      
+      // プロフィール履歴も同時更新（完全なデータ同期）
+      const profileHistoryRef = adminDb.collection('users').doc(lineUserId).collection('profileHistory').doc(targetDate);
+      await profileHistoryRef.set({
+        weight: recordData.weight,
+        changeDate: targetDate,
+        updatedAt: new Date(),
+      }, { merge: true });
+      
+      console.log('✅ プロフィール体重・履歴も同期更新:', recordData.weight);
     }
 
     return NextResponse.json({ 
