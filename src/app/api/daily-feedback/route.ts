@@ -30,14 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'userId and date are required' }, { status: 400 });
     }
 
-    // プラン制限チェック：テスト用に一時的に無効化
-    // const userPlan = await getUserPlan(userId);
-    // if (userPlan === 'free') {
-    //   return NextResponse.json({ 
-    //     error: 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。',
-    //     needsUpgrade: true 
-    //   }, { status: 403 });
-    // }
+    // プラン制限チェック
+    const userPlan = await getUserPlan(userId);
+    if (userPlan === 'free') {
+      return NextResponse.json({ 
+        error: 'フィードバック機能は有料プランの機能です。プランをアップグレードしてご利用ください。',
+        needsUpgrade: true 
+      }, { status: 403 });
+    }
 
     // 1日の記録データを取得
     const dailyData = await getDailyRecords(userId, date);
