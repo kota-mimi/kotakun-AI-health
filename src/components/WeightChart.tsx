@@ -121,51 +121,64 @@ export function WeightChart({
 			return processedData;
 		}
 
-		// 期間に応じた簡単なフィルタリング（最新データから指定件数）
+		// 期間に応じた日付ベースフィルタリング（現在日付から期間を計算）
 		const sortedData = validData.sort((a, b) => {
 			const dateA = new Date(a.date + "T00:00:00");
 			const dateB = new Date(b.date + "T00:00:00");
 			return dateA.getTime() - dateB.getTime();
 		});
 
-		let takeCount;
-		switch (selectedPeriod) {
-			case "week":
-				takeCount = 7;
-				break;
-			case "month":
-				takeCount = 30;
-				break;
-			case "6months":
-				takeCount = 90;
-				break;
-			case "year":
-				takeCount = 365;
-				break;
-			case "all":
-				takeCount = sortedData.length;
-				break;
-			default:
-				takeCount = 30;
-				break;
+		let filteredData = sortedData;
+		const now = new Date();
+		
+		if (selectedPeriod !== "all") {
+			let daysToShow;
+			switch (selectedPeriod) {
+				case "week":
+					daysToShow = 7;
+					break;
+				case "month":
+					daysToShow = 30;
+					break;
+				case "6months":
+					daysToShow = 180;
+					break;
+				case "year":
+					daysToShow = 365;
+					break;
+				default:
+					daysToShow = 30;
+					break;
+			}
+			
+			// 現在日付から前後の期間でフィルタリング
+			const startDate = new Date(now.getTime() - (daysToShow * 24 * 60 * 60 * 1000));
+			const endDate = new Date(now.getTime() + (daysToShow * 24 * 60 * 60 * 1000));
+			
+			filteredData = sortedData.filter(item => {
+				const itemDate = new Date(item.date + "T00:00:00");
+				return itemDate >= startDate && itemDate <= endDate;
+			});
 		}
-
-		const filteredData =
-			selectedPeriod === "all" ? sortedData : sortedData.slice(-takeCount);
 
 		// データがない場合は空配列を返す
 		if (filteredData.length === 0) {
 			return [];
 		}
 
-		// データ量に応じて自動間引き（シンプル化）
+		// データ量に応じてスマートな間引き処理
 		let downsampledData = filteredData;
-		if (filteredData.length > 50) {
-			// 50件以上の場合は適切に間引く
-			const interval = Math.ceil(filteredData.length / 50);
-			downsampledData = filteredData.filter(
-				(_, index) => index % interval === 0,
-			);
+		if (filteredData.length > 100) {
+			// 100件以上の場合はスマートに間引く
+			const targetPoints = selectedPeriod === "all" ? 100 : 50;
+			const interval = Math.ceil(filteredData.length / targetPoints);
+			
+			// 最初と最後のデータポイントは必ず含める
+			downsampledData = filteredData.filter((_, index) => {
+				return index === 0 || 
+					   index === filteredData.length - 1 || 
+					   index % interval === 0;
+			});
 		}
 
 		// データフォーマットを統一（実際のデータはweightのみ、waistは仮の値）
@@ -196,7 +209,25 @@ export function WeightChart({
 				const formatDate = () => {
 					const month = itemDate.getMonth() + 1;
 					const day = itemDate.getDate();
-					return `${month}/${day}`;
+					const year = itemDate.getFullYear();
+					
+					// 期間に応じて日付フォーマットを変更
+					switch (selectedPeriod) {
+						case "week":
+						case "month":
+							return `${month}/${day}`;
+						case "6months":
+						case "year":
+						case "all":
+							// 年が現在年と異なる場合は年も表示
+							const currentYear = new Date().getFullYear();
+							if (year !== currentYear) {
+								return `${year % 100}/${month}/${day}`;
+							}
+							return `${month}/${day}`;
+						default:
+							return `${month}/${day}`;
+					}
 				};
 
 				return {
@@ -808,11 +839,31 @@ export function WeightChart({
 									);
 									const totalPoints = filteredPoints.length;
 
-									// データ量に応じて表示間隔を自動調整
+									// データ量と期間に応じて表示間隔を自動調整
+									let maxLabels;
+									switch (selectedPeriod) {
+										case "week":
+											maxLabels = 7; // 週は全日表示
+											break;
+										case "month":
+											maxLabels = 8; // 月は適度に間引き
+											break;
+										case "6months":
+											maxLabels = 6; // 半年は月単位で表示
+											break;
+										case "year":
+										case "all":
+											maxLabels = 8; // 年以上は適度に間引き
+											break;
+										default:
+											maxLabels = 8;
+											break;
+									}
+									
 									const displayInterval = Math.max(
 										1,
-										Math.floor(totalPoints / 8),
-									); // 最大8個の日付を表示
+										Math.ceil(totalPoints / maxLabels),
+									);
 
 									// 日付フォーマット関数（シンプル化）
 									const formatDate = (dateStr: string) => {
