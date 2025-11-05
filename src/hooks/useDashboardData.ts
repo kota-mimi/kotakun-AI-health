@@ -83,7 +83,7 @@ export function useDashboardData(selectedDate: Date) {
     fetchDashboardData();
   }, [liffUser?.userId, selectedDate, isClient]);
 
-  // フィードバック更新イベントの監視
+  // フィードバック・体重更新イベントの監視
   useEffect(() => {
     if (!isClient) return;
 
@@ -98,11 +98,25 @@ export function useDashboardData(selectedDate: Date) {
       }
     };
 
+    const handleWeightUpdate = (event: CustomEvent) => {
+      const { weight, date } = event.detail;
+      const currentDateStr = selectedDate.toISOString().split('T')[0];
+      
+      // 現在選択中の日付の体重が更新された場合
+      if (date === currentDateStr) {
+        const weightData = [{ date, weight }];
+        updateLocalData('weight', weightData);
+        console.log('✅ 体重データをリアルタイム更新');
+      }
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
+      window.addEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
       
       return () => {
         window.removeEventListener('feedbackDataUpdated', handleFeedbackUpdate as EventListener);
+        window.removeEventListener('weightDataUpdated', handleWeightUpdate as EventListener);
       };
     }
   }, [isClient, selectedDate]);
