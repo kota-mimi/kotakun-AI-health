@@ -40,6 +40,7 @@ import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 import { WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
+import { AppLoadingScreen } from '@/components/LoadingScreen';
 
 export default function DashboardPage() {
   const [hasError, setHasError] = React.useState(false);
@@ -49,9 +50,9 @@ export default function DashboardPage() {
     setIsClient(true);
   }, []);
 
-  // サーバーサイドでは何も表示しない
+  // サーバーサイドまたは初期ローディング中はローディング画面を表示
   if (!isClient) {
-    return <div className="min-h-screen bg-gray-50" />;
+    return <AppLoadingScreen />;
   }
 
   // エラーハンドリング
@@ -183,6 +184,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
   React.useEffect(() => {
     globalLoading.setLoadingState('exercise', false);
   }, []);
+
+  // 初期データ読み込み中はローディング画面を表示
+  const isInitialLoading = mealManager?.isLoading || weightManager?.isLoadingWeightData;
+  
+  if (isInitialLoading) {
+    return <AppLoadingScreen />;
+  }
 
   // 現在の時間に基づいて適切な食事タイプを判定
 
