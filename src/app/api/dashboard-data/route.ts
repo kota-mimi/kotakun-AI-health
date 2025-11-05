@@ -108,53 +108,77 @@ async function getMealData(adminDb: any, lineUserId: string, date?: string) {
   }
 }
 
-// 体重データ取得（月単位）- dailyRecordsから取得するよう修正
+// 体重データ取得（月単位）- dailyRecordsから効率的に取得
 async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
   try {
     const targetDate = date ? new Date(date) : new Date();
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth() + 1;
     
-    console.log('⚖️ 体重データ月単位取得開始:', { lineUserId, year, month });
+    // 月の開始日と終了日を計算
+    const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+    const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
     
+    console.log('⚖️ 体重データ月単位取得:', { startDate, endDate });
+    
+    // 効率的な方法: バッチでdailyRecordsを取得
     const weights: any[] = [];
+    const now = new Date();
+    const periodDays = 30; // 30日分取得
     
-    // 30日分のdailyRecordsをチェック
-    for (let day = 1; day <= 31; day++) {
-      const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-      
-      try {
-        const recordRef = adminDb
-          .collection('users')
-          .doc(lineUserId)
-          .collection('dailyRecords')
-          .doc(dateStr);
-        
-        const recordDoc = await recordRef.get();
-        
-        if (recordDoc.exists) {
-          const dailyRecord = recordDoc.data();
-          
-          // 体重データがあれば含める
-          if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
-            weights.push({
-              date: dateStr,
-              weight: dailyRecord.weight,
-              note: dailyRecord.note,
-              source: dailyRecord.source || 'manual'
-            });
-          }
-        }
-      } catch (dayError) {
-        // 個別日付のエラーは無視して続行
-        console.warn(`日付 ${dateStr} の体重データ取得エラー:`, dayError);
-      }
+    // 日付配列を生成
+    const dates: string[] = [];
+    for (let i = 0; i < periodDays; i++) {
+      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      dates.push(dateStr);
     }
     
-    // 日付順でソート（新しい順）
-    weights.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // バッチ処理で効率的に取得（10件ずつに分割）
+    const batchSize = 10;
+    const batches = [];
+    for (let i = 0; i < dates.length; i += batchSize) {
+      batches.push(dates.slice(i, i + batchSize));
+    }
     
-    console.log(`✅ 体重データ ${weights.length}件取得完了 (dailyRecordsから)`);
+    // 並列処理でバッチを実行
+    const batchPromises = batches.map(async (batch) => {
+      const batchPromises = batch.map(async (dateStr) => {
+        try {
+          const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+          const recordDoc = await recordRef.get();
+          
+          if (recordDoc.exists) {
+            const dailyRecord = recordDoc.data();
+            if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+              return {
+                date: dateStr,
+                weight: dailyRecord.weight,
+                note: dailyRecord.note
+              };
+            }
+          }
+          return null;
+        } catch (dayError) {
+          return null;
+        }
+      });
+      
+      return Promise.all(batchPromises);
+    });
+    
+    const batchResults = await Promise.all(batchPromises);
+    
+    // 結果をフラット化してnullを除去
+    batchResults.forEach(batchResult => {
+      batchResult.forEach(result => {
+        if (result) {
+          weights.push(result);
+        }
+      });
+    });
+    
+    console.log(`✅ 体重データ ${weights.length}件取得完了 (dailyRecordsからバッチ処理)`);
     return weights;
     
   } catch (error) {
