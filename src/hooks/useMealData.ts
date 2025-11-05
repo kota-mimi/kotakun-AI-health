@@ -92,7 +92,7 @@ export function useMealData(
 		dinner: [],
 		snack: [],
 	});
-	const [isLoading, setIsLoading] = useState(false); // 🔧 初期ローディング状態を修正
+	const [isLoading, setIsLoading] = useState(true); // 初期はローディング状態
 	const [addMealInitialMode, setAddMealInitialMode] = useState<
 		"camera" | "text" | "album" | "manual" | "default"
 	>("default");
