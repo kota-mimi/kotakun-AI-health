@@ -51,9 +51,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   useEffect(() => {
     if (!isClient) return;
     
-    // 統合データがある場合は即座に使用
-    if (dashboardWeightData && dashboardWeightData.length >= 0) {
-      console.log('⚡ 統合データから体重データを取得');
+    // 統合データがある場合は即座に使用（undefinedでない場合）
+    if (dashboardWeightData !== undefined) {
+      console.log('⚡ 統合データから体重データを取得:', dashboardWeightData.length, '件');
       setRealWeightData(dashboardWeightData);
       setIsLoadingWeightData(false);
       return;
