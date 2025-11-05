@@ -133,6 +133,9 @@ export function useSharedProfile() {
   // イベントリスナー（プロフィール更新時）
   useEffect(() => {
     const handleProfileUpdate = () => {
+      // キャッシュをクリアして最新データを取得
+      const cacheKey = createCacheKey('profile', liffUser?.userId, 'latest');
+      apiCache.delete(cacheKey);
       fetchLatestProfile();
     };
 
@@ -150,7 +153,14 @@ export function useSharedProfile() {
       }
     };
 
-    // 古いイベント駆動システムを削除（データソース統一により不要）
+    // プロフィール更新イベントリスナー
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('weightDataUpdated', handleWeightUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('weightDataUpdated', handleWeightUpdate);
+    };
   }, [latestProfile, liffUser?.userId]);
 
   return {

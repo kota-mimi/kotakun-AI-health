@@ -17,6 +17,7 @@ interface WeightChartProps {
 	targetWeight?: number;
 	currentWeight?: number;
 	counselingResult?: any;
+	onOpenWeightEntry?: () => void;
 }
 
 type DataType = "weight" | "waist";
@@ -28,6 +29,7 @@ export function WeightChart({
 	targetWeight = 68.0,
 	currentWeight = 0,
 	counselingResult,
+	onOpenWeightEntry,
 }: WeightChartProps) {
 	const [selectedDataType, setSelectedDataType] = useState<DataType>("weight");
 	const [selectedPoint, setSelectedPoint] = useState<{
@@ -724,6 +726,18 @@ export function WeightChart({
 					<div className="flex items-center space-x-2">
 						<h3 className="font-semibold text-slate-900">体重グラフ</h3>
 					</div>
+					{onOpenWeightEntry && (
+						<Button
+							onClick={(e) => {
+								e.stopPropagation();
+								onOpenWeightEntry();
+							}}
+							size="sm"
+							className="h-8 px-3 text-xs bg-blue-500 hover:bg-blue-600 text-white"
+						>
+							記録
+						</Button>
+					)}
 				</div>
 			</Button>
 
