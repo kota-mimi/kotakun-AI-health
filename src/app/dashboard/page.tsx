@@ -40,7 +40,7 @@ import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 import { WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
-// import { AppLoadingScreen } from '@/components/LoadingScreen';
+import { AppLoadingScreen } from '@/components/LoadingScreen';
 
 export default function DashboardPage() {
   const [hasError, setHasError] = React.useState(false);
@@ -50,9 +50,9 @@ export default function DashboardPage() {
     setIsClient(true);
   }, []);
 
-  // サーバーサイドでは何も表示しない
+  // サーバーサイドまたは初期ローディング中はローディング画面を表示
   if (!isClient) {
-    return <div className="min-h-screen bg-gray-50" />;
+    return <AppLoadingScreen />;
   }
 
   // エラーハンドリング
