@@ -7,7 +7,6 @@ import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useNavigationState } from '@/hooks/useNavigationState';
 import { useMealData } from '@/hooks/useMealData';
 import { useExerciseData } from '@/hooks/useExerciseData';
-import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useGlobalLoading } from '@/hooks/useGlobalLoading';
@@ -15,7 +14,6 @@ import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 import { CompactHeader } from '@/components/CompactHeader';
-import { WeightCard } from '@/components/WeightCard';
 import { CalorieCard } from '@/components/CalorieCard';
 import { MealSummaryCard } from '@/components/MealSummaryCard';
 import { WorkoutSummaryCard } from '@/components/WorkoutSummaryCard';
@@ -32,14 +30,12 @@ import { PlanSettingsPage } from '@/components/PlanSettingsPage';
 import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
 import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
-import { WeightEntryModal } from '@/components/WeightEntryModal';
-import { WeightSettingsModal } from '@/components/WeightSettingsModal';
 import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightChart } from '@/components/WeightChart';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
-import { WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
+import { CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
 // import { AppLoadingScreen } from '@/components/LoadingScreen';
 
 export default function DashboardPage() {
@@ -148,14 +144,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
     updateDateData
   );
 
-  const weightManager = useWeightData(
-    navigation?.selectedDate || new Date(),
-    dateBasedDataManager?.dateBasedData || {},
-    updateDateData,
-    counselingResult,
-    sharedProfile, // 🔄 統合プロフィール渡し
-    dashboardData.weightData // 🚀 統合データから取得
-  );
 
   const feedbackManager = useFeedbackData(
     navigation?.selectedDate || new Date(),
@@ -168,9 +156,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
     globalLoading.setLoadingState('counseling', isCounselingLoading);
   }, [isCounselingLoading]);
 
-  React.useEffect(() => {
-    globalLoading.setLoadingState('weight', weightManager.isLoadingWeightData);
-  }, [weightManager.isLoadingWeightData]);
 
   React.useEffect(() => {
     globalLoading.setLoadingState('meal', mealManager.isLoading);
@@ -186,7 +171,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
   }, []);
 
   // 初期データ読み込み中はローディング画面を表示（一時的に無効化）
-  // const isInitialLoading = mealManager?.isLoading || weightManager?.isLoadingWeightData;
   // if (isInitialLoading) {
   //   return <AppLoadingScreen />;
   // }
@@ -299,19 +283,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
           </div>
 
           <div {...swipeHandlers} className="relative px-4 py-4 pb-24 space-y-4">
-            {/* 体重カード - クリックで体重入力モーダル */}
-            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {globalLoading.isWeightLoading ? (
-                <WeightCardSkeleton />
-              ) : (
-                <WeightCard 
-                  data={weightManager?.weightData || { current: 0, previous: 0, target: 0 }} 
-                  onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen?.(true)}
-                  counselingResult={counselingResult}
-                  selectedDate={navigation?.selectedDate}
-                />
-              )}
-            </div>
 
 
             {/* カロリーカード */}
@@ -414,19 +385,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
         />
       )}
 
-      <WeightEntryModal
-        isOpen={weightManager.isWeightEntryModalOpen}
-        onClose={() => weightManager.setIsWeightEntryModalOpen(false)}
-        onSubmit={weightManager.handleAddWeightEntry}
-        currentWeight={weightManager.weightData.current}
-      />
-
-      <WeightSettingsModal
-        isOpen={weightManager.isWeightSettingsModalOpen}
-        onClose={() => weightManager.setIsWeightSettingsModalOpen(false)}
-        currentSettings={weightManager.weightSettings}
-        onUpdateSettings={weightManager.handleUpdateWeightSettings}
-      />
 
       <DataManagementModal
         isOpen={isDataManagementModalOpen}
@@ -480,7 +438,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
         isOpen={isExerciseEntryModalOpen}
         onClose={() => setIsExerciseEntryModalOpen(false)}
         onSubmit={exerciseManager.handleAddSimpleExercise}
-        userWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 70}
+        userWeight={counselingResult?.answers?.weight || 70}
       />
 
       {/* 運動編集モーダル */}
@@ -497,7 +455,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
           exerciseManager.handleDeleteExercise(exerciseId);
         }}
         exercise={selectedExerciseForEdit}
-        userWeight={weightManager.weightData.current || counselingResult?.answers?.weight || 70}
+        userWeight={counselingResult?.answers?.weight || 70}
       />
 
     </div>
