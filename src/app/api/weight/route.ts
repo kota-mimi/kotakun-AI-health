@@ -52,14 +52,15 @@ export async function POST(request: NextRequest) {
     
     await recordRef.set(mergedData, { merge: true });
 
-    // ユーザープロファイルの体重更新を削除（dailyRecordsのみに統合）
-    // if (recordData.weight) {
-    //   const userRef = adminDb.collection('users').doc(lineUserId);
-    //   await userRef.update({
-    //     'profile.weight': recordData.weight,
-    //     updatedAt: new Date(),
-    //   });
-    // }
+    // ユーザープロファイルの体重も更新（データ整合性確保）
+    if (recordData.weight) {
+      const userRef = adminDb.collection('users').doc(lineUserId);
+      await userRef.update({
+        'profile.weight': recordData.weight,
+        updatedAt: new Date(),
+      });
+      console.log('✅ プロフィール体重も同期更新:', recordData.weight);
+    }
 
     return NextResponse.json({ 
       success: true,

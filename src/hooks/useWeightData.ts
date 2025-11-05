@@ -64,7 +64,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       if (!lineUserId) {
         // 🔧 ユーザーIDがない場合もローディング終了
         setIsLoadingWeightData(false);
-        console.log('⚠️ lineUserIdなし：体重データローディング終了');
+        // lineUserIdなし：体重データローディング終了
         return;
       }
       
@@ -81,14 +81,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       
       // キャッシュがあれば常に即座に表示（アプリ起動時の高速化）
       if (cachedData) {
-        console.log('⚡ 体重データをキャッシュから即座に取得');
+        // 体重データをキャッシュから即座に取得
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
         
         // キャッシュから取得完了（バックグラウンド取得削除でAPI半減）
         return;
       } else {
-        console.log('🔄 キャッシュなし：API取得');
+        // キャッシュなし：API取得
       }
       
       try {
@@ -223,38 +223,24 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // 🎯 体重表示ロジック：選択日→最新記録→プロフィール体重の順
+    // 🎯 統一された体重表示ロジック：dailyRecordsを真実の源として使用
     const currentDayData = realWeightData.find(item => item.date === dateKey);
-    let currentWeight = currentDayData?.weight || 0;
+    let currentWeight = 0;
     
-    // ステップ1: 選択日に記録がない場合、最新の体重記録を使用
-    if (currentWeight === 0 && realWeightData.length > 0) {
+    if (currentDayData?.weight && currentDayData.weight > 0) {
+      // 選択日に記録がある場合はそれを使用
+      currentWeight = currentDayData.weight;
+    } else if (realWeightData.length > 0) {
+      // 選択日に記録がない場合、最新の体重記録を使用
       const latestWeightRecord = realWeightData
         .filter(item => item.weight && item.weight > 0)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       
       if (latestWeightRecord) {
         currentWeight = latestWeightRecord.weight;
-        console.log('📈 最新の体重記録を表示:', currentWeight, 'from', latestWeightRecord.date);
       }
     }
-    
-    // ステップ2: 最後の手段としてプロフィール体重をフォールバック
-    if (currentWeight === 0 && latestProfile?.weight) {
-      currentWeight = latestProfile.weight;
-      console.log('📊 プロフィール体重をフォールバック:', currentWeight);
-    }
-    
-    // 🐛 デバッグログ
-    console.log('🐛 体重データデバッグ:', {
-      dateKey,
-      realWeightDataLength: realWeightData.length,
-      currentDayData,
-      currentWeight,
-      latestProfileWeight: latestProfile?.weight,
-      targetWeight,
-      isMaintenanceMode
-    });
+    // プロフィール体重のフォールバックを削除（データソース統一のため）
     
     // 前日比計算：最新記録を使用している場合は、その記録の前日と比較
     let previousWeight = 0;
@@ -345,11 +331,11 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
       // ローカル保存はせず、APIが真実の源となる
 
-      // realWeightDataも即座に更新（体重が記録された場合）
+      // realWeightDataとキャッシュを即座に更新
       if (data.weight) {
         const newRealWeightEntry = {
           date: dateStr,
-          weight: data.weight || 0
+          weight: data.weight
         };
         
         setRealWeightData(prevData => {
@@ -359,25 +345,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
             new Date(a.date).getTime() - new Date(b.date).getTime()
           );
           
-          // キャッシュも同時に更新（30分TTL）
+          // キャッシュを即座に更新（データ整合性確保）
           const cacheKey = createCacheKey('weight', lineUserId, 'month');
           apiCache.set(cacheKey, updatedData, CACHE_TTL.WEIGHT);
-          console.log('⚡ 体重記録後：キャッシュも即座に更新');
           
           return updatedData;
         });
         
-        // 🔄 プロフィールの体重も自動更新するためイベント発火
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('weightDataUpdated', {
-            detail: { weight: data.weight, date: dateStr }
-          }));
-          console.log('🔄 体重記録→プロフィール自動更新イベント発火');
-        }
-        
-        // UI即座反映のため強制的にローディング状態をリセット
+        // ローディング状態をリセット（UI即座反映）
         setIsLoadingWeightData(false);
-        console.log('🔄 アプリ記録後に体重キャッシュを強制更新&UI即座反映');
       }
 
       console.log('記録が正常に保存されました');
