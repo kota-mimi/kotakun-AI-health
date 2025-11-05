@@ -1002,12 +1002,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         return;
       }
       
-      // 確認メッセージを表示してからフィードバック生成
-      await sendRecordConfirmation(replyToken);
-      break;
-    
-    case 'feedback_with_records':
-      // 記録ありでフィードバック実行
       // フィードバック生成中かチェック
       const isFeedbackProcessing = isProcessing(userId);
       if (isFeedbackProcessing) {
@@ -1023,11 +1017,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       } finally {
         setProcessing(userId, false);
       }
-      break;
-    
-    case 'feedback_no_records':
-      // 記録なしの場合は何もしない（通常モードに戻る）
-      console.log('📝 記録なしでフィードバックをキャンセル:', { userId });
       break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
