@@ -2,12 +2,12 @@
 import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
-// プラン別の制限設定（テスト用に一時的に無制限）
+// プラン別の制限設定
 export const USAGE_LIMITS = {
   free: {
-    aiMessagesPerDay: -1,    // テスト用：無制限
-    recordsPerDay: -1,       // テスト用：無制限
-    webAppAiAccess: true     // テスト用：アクセス許可
+    aiMessagesPerDay: 5,     // AI会話：1日5通まで
+    recordsPerDay: 2,        // LINE記録：1日2通まで
+    webAppAiAccess: false    // アプリからAI記録は使用不可
   },
   monthly: {
     aiMessagesPerDay: -1,    // 無制限
@@ -96,35 +96,36 @@ export async function recordUsage(userId: string, type: 'ai' | 'record'): Promis
   }
 }
 
-// 利用制限チェック（一時的に無効化）
+// 利用制限チェック
 export async function checkUsageLimit(
   userId: string, 
   type: 'ai' | 'record'
 ): Promise<{ allowed: boolean; reason?: string; usage?: number; limit?: number }> {
-  // 一時的に全ての利用制限を無効化
-  console.log('🔓 利用制限一時無効化中 - 全ユーザー無制限アクセス');
-  return { allowed: true };
-  
-  /* 元のコード（一時停止）
   try {
     // 1. ユーザーのプランを取得
     const userPlan = await getUserPlan(userId);
     const limits = USAGE_LIMITS[userPlan as keyof typeof USAGE_LIMITS] || USAGE_LIMITS.free;
+    
+    console.log(`🔍 利用制限チェック: ${userId} - ${type}, プラン: ${userPlan}`);
     
     // 2. 制限値を確認
     const dailyLimit = type === 'ai' ? limits.aiMessagesPerDay : limits.recordsPerDay;
     
     // 無制限の場合
     if (dailyLimit === -1) {
+      console.log(`✅ 無制限プラン: ${userPlan}`);
       return { allowed: true };
     }
     
     // 3. 今日の使用回数を取得
     const todayUsage = await getTodayUsage(userId, type);
     
+    console.log(`📊 使用状況: ${todayUsage}/${dailyLimit}`);
+    
     // 4. 制限チェック
     if (todayUsage >= dailyLimit) {
       const actionName = type === 'ai' ? 'AI会話' : '記録';
+      console.log(`⚠️ 制限達成: ${actionName} ${todayUsage}/${dailyLimit}`);
       return { 
         allowed: false, 
         reason: `${actionName}の1日の制限（${dailyLimit}回）に達しました。\n有料プランにアップグレードすると無制限でご利用いただけます。`,
@@ -133,6 +134,8 @@ export async function checkUsageLimit(
       };
     }
     
+    const actionName = type === 'ai' ? 'AI会話' : '記録';
+    console.log(`✅ 制限内: ${actionName} ${todayUsage}/${dailyLimit}`);
     return { 
       allowed: true, 
       usage: todayUsage, 
@@ -144,5 +147,4 @@ export async function checkUsageLimit(
     // エラー時は制限なしで通す（サービス継続性を重視）
     return { allowed: true };
   }
-  */
 }
