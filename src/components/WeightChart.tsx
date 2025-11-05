@@ -277,12 +277,23 @@ export function WeightChart({
 		const center = (min + max) / 2;
 		const actualRange = max - min;
 
-		// 体重の場合は固定5kg範囲
+		// 体重の場合は適切な範囲設定
 		if (dataType === "weight") {
-			const fixedRange = 5; // 固定5kg幅
+			// 単一データポイントの場合
+			if (values.length === 1) {
+				const singleValue = values[0];
+				const baseRange = 4; // ±2kgの範囲
+				return {
+					min: singleValue - baseRange / 2,
+					max: singleValue + baseRange / 2,
+				};
+			}
+			
+			// 複数データポイントの場合
+			const padding = Math.max(1, actualRange * 0.2); // 最小1kg、実際の範囲の20%のパディング
 			return {
-				min: center - fixedRange / 2,
-				max: center + fixedRange / 2,
+				min: min - padding,
+				max: max + padding,
 			};
 		}
 
@@ -489,8 +500,8 @@ export function WeightChart({
 	const generateYAxisTicks = () => {
 		const range = currentConfig.max - currentConfig.min;
 
-		// 固定1kg刻み
-		const tickInterval = 1;
+		// 体重の場合は0.5kg刻み、その他は1刻み
+		const tickInterval = selectedDataType === "weight" ? 0.5 : 1;
 
 		// 開始値を間隔に合わせて調整
 		const startValue =
