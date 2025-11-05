@@ -21,9 +21,21 @@ export const USAGE_LIMITS = {
   }
 };
 
+// 開発者用特別ID（永続無料アクセス）
+const DEVELOPER_IDS = [
+  process.env.DEVELOPER_LINE_ID, // 環境変数から取得
+  // 必要に応じて他の開発者IDも追加可能
+].filter(Boolean);
+
 // ユーザーの現在のプランを取得
 export async function getUserPlan(userId: string): Promise<string> {
   try {
+    // 開発者IDの場合は常に月額プラン扱い
+    if (DEVELOPER_IDS.includes(userId)) {
+      console.log('🔧 開発者ID検出: 永続無料アクセス許可');
+      return 'monthly';
+    }
+    
     const db = admin.firestore();
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
