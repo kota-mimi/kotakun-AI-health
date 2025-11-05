@@ -357,7 +357,7 @@ export function WeightChart({
 		});
 	}, [currentData, currentConfig, svgHeight]);
 
-	// より滑らかなCardinal曲線を生成
+	// より滑らかなスプライン曲線を生成
 	const createSmoothPath = (points: typeof pathPoints) => {
 		if (points.length < 1) return "";
 		if (points.length === 1) {
@@ -367,12 +367,17 @@ export function WeightChart({
 		}
 
 		if (points.length === 2) {
-			// 2つのポイントの場合は直線
-			return `M ${points[0].x},${points[0].y} L ${points[1].x},${points[1].y}`;
+			// 2つのポイントの場合は滑らかな曲線
+			const p1 = points[0];
+			const p2 = points[1];
+			const midX = (p1.x + p2.x) / 2;
+			const cp1x = p1.x + (midX - p1.x) * 0.5;
+			const cp2x = p2.x - (p2.x - midX) * 0.5;
+			return `M ${p1.x},${p1.y} C ${cp1x},${p1.y} ${cp2x},${p2.y} ${p2.x},${p2.y}`;
 		}
 
-		// Cardinal曲線のテンション（0.3-0.5が自然）
-		const tension = 0.4;
+		// より強い補間でスムーズな曲線（tension値を大きく）
+		const tension = 0.6; // 0.4 → 0.6 でより滑らか
 
 		let path = `M ${points[0].x},${points[0].y}`;
 
@@ -382,11 +387,11 @@ export function WeightChart({
 			const p2 = points[i];
 			const p3 = i === points.length - 1 ? points[i] : points[i + 1];
 
-			// Cardinal曲線の制御点を計算
-			const cp1x = p1.x + ((p2.x - p0.x) * tension) / 6;
-			const cp1y = p1.y + ((p2.y - p0.y) * tension) / 6;
-			const cp2x = p2.x - ((p3.x - p1.x) * tension) / 6;
-			const cp2y = p2.y - ((p3.y - p1.y) * tension) / 6;
+			// より滑らかなベジェ曲線の制御点を計算
+			const cp1x = p1.x + ((p2.x - p0.x) * tension) / 4; // 6 → 4 でより強い曲線
+			const cp1y = p1.y + ((p2.y - p0.y) * tension) / 4;
+			const cp2x = p2.x - ((p3.x - p1.x) * tension) / 4;
+			const cp2y = p2.y - ((p3.y - p1.y) * tension) / 4;
 
 			path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
 		}
@@ -724,9 +729,12 @@ export function WeightChart({
 									d={smoothPathData}
 									fill="none"
 									stroke="#3B82F6"
-									strokeWidth="3"
+									strokeWidth="4"
 									strokeLinecap="round"
 									strokeLinejoin="round"
+									style={{
+										filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3))'
+									}}
 								/>
 
 								{/* インタラクティブエリア（見えない） */}
