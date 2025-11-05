@@ -904,14 +904,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const startTime = Date.now();
       console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
       
-      // カウンセリング完了チェック
-      const isRecordCounselingCompleted = await isCounselingCompleted(userId);
-      if (!isRecordCounselingCompleted) {
-        console.log('⚠️ カウンセリング未完了: 記録モード開始をブロック');
-        await sendCounselingPrompt(replyToken, '記録機能');
-        return;
-      }
-      
       // 既に記録モード中かチェック
       const alreadyInRecordMode = await isRecordMode(userId);
       if (alreadyInRecordMode) {
@@ -994,14 +986,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         // エラーの場合は制限なしで続行
       }
 
-      // カウンセリング完了チェック
-      const isFeedbackCounselingCompleted = await isCounselingCompleted(userId);
-      if (!isFeedbackCounselingCompleted) {
-        console.log('⚠️ カウンセリング未完了: 1日のフィードバック生成をブロック');
-        await sendCounselingPrompt(replyToken, '1日のフィードバック');
-        return;
-      }
-      
       // フィードバック生成中かチェック
       const isFeedbackProcessing = isProcessing(userId);
       if (isFeedbackProcessing) {
