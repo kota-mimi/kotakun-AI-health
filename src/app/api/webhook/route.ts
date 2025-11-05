@@ -1203,17 +1203,17 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
             {
               type: 'action',
               action: {
-                type: 'camera',
-                label: 'カメラで記録'
+                type: 'postback',
+                label: 'テキストで記録',
+                data: 'action=open_keyboard',
+                inputOption: 'openKeyboard'
               }
             },
             {
               type: 'action',
               action: {
-                type: 'postback',
-                label: 'テキストで記録',
-                data: 'action=open_keyboard',
-                inputOption: 'openKeyboard'
+                type: 'camera',
+                label: 'カメラで記録'
               }
             },
             {
