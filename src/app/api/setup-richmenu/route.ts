@@ -117,8 +117,8 @@ async function createRichMenu(accessToken: string) {
           height: 632
         },
         action: {
-          type: "postback",
-          data: "action=usage_guide"
+          type: "uri",
+          uri: "https://kotakun-ai-health.vercel.app/usage-guide"
         }
       }
     ]
