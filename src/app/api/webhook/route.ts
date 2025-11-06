@@ -1002,6 +1002,29 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         setProcessing(userId, false);
       }
       break;
+    case 'usage_guide':
+      // 使い方ガイドボタン押下 - 念のためWebhookでも対応
+      console.log('📖 使い方ガイドボタン押下（Webhook経由）:', { userId, timestamp: new Date().toISOString() });
+      try {
+        await replyMessage(replyToken, [{
+          type: 'template',
+          altText: '使い方ガイド',
+          template: {
+            type: 'buttons',
+            text: '🔍 使い方ガイド\n\n詳しい使い方はこちらをご覧ください！',
+            actions: [
+              {
+                type: 'uri',
+                label: '使い方ガイドを見る',
+                uri: 'https://liff.line.me/2007945061-DEEaglg8/usage-guide'
+              }
+            ]
+          }
+        }]);
+      } catch (error) {
+        console.error('❌ 使い方ガイド応答エラー:', error);
+      }
+      break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;

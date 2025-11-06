@@ -117,8 +117,8 @@ async function createRichMenu(accessToken: string) {
           height: 632
         },
         action: {
-          type: "uri",
-          uri: "https://liff.line.me/2007945061-DEEaglg8/usage-guide"
+          type: "postback",
+          data: "action=usage_guide"
         }
       }
     ]
