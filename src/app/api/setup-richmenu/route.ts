@@ -118,7 +118,7 @@ async function createRichMenu(accessToken: string) {
         },
         action: {
           type: "uri",
-          uri: "https://kotakun-ai-health.vercel.app/usage-guide"
+          uri: "https://liff.line.me/2007945061-DEEaglg8/usage-guide"
         }
       }
     ]
