@@ -179,14 +179,6 @@ export function FeedbackCard({
                           ))}
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-orange-700">改善提案</h4>
-                        <div className="text-sm text-slate-700">
-                          {feedbackData.exerciseEvaluation.improvements.split('\n').map((line, index) => (
-                            <div key={index} className="leading-none">{line}</div>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>

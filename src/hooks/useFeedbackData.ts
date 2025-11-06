@@ -110,10 +110,9 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
     const foodGoodPoints = foodSection.split('改善点:')[0].replace('良かった点:', '').trim() || '・栄養バランスを意識した食事選択ができています';
     const foodImprovements = foodSection.split('改善点:')[1]?.trim() || '・野菜不足が気になります\n・水分補給を意識してください';
     
-    // 運動評価セクションを抽出
+    // 運動評価セクションを抽出（良かった点のみ）
     const exerciseSection = extractSection(lines, '■ 運動評価', '');
-    const exerciseGoodPoints = exerciseSection.split('改善提案:')[0].replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです';
-    const exerciseImprovements = exerciseSection.split('改善提案:')[1]?.trim() || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加';
+    const exerciseGoodPoints = exerciseSection.replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです';
     
     return {
       foodEvaluation: {
@@ -122,7 +121,7 @@ export function useFeedbackData(selectedDate: Date, dateBasedData: any, updateDa
       },
       exerciseEvaluation: {
         goodPoints: exerciseGoodPoints,
-        improvements: exerciseImprovements
+        improvements: '' // 運動の改善提案は削除
       }
     };
   };
