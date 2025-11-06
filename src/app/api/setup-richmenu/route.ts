@@ -77,7 +77,7 @@ async function createRichMenu(accessToken: string) {
         bounds: {
           x: 0,
           y: 0,
-          width: 833,
+          width: 625,
           height: 632
         },
         action: {
@@ -87,9 +87,9 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
-          x: 833,
+          x: 625,
           y: 0,
-          width: 834,
+          width: 625,
           height: 632
         },
         action: {
@@ -99,14 +99,26 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
-          x: 1667,
+          x: 1250,
           y: 0,
-          width: 833,
+          width: 625,
           height: 632
         },
         action: {
           type: "postback",
           data: "action=daily_feedback"
+        }
+      },
+      {
+        bounds: {
+          x: 1875,
+          y: 0,
+          width: 625,
+          height: 632
+        },
+        action: {
+          type: "postback",
+          data: "action=usage_guide"
         }
       }
     ]
@@ -134,20 +146,11 @@ async function createRichMenu(accessToken: string) {
 // リッチメニュー画像をアップロード
 async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
   try {
-    // 生成されたPNG画像を読み込み
-    const fs = require('fs');
-    const path = require('path');
-    const imagePath = path.join(process.cwd(), 'rich-menu-new.png');
+    // Base64エンコードされた画像データ
+    const RICH_MENU_IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAACcQAAAJ4CAYAAADwjKLsAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAADl0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uIDMuMC4zLCBodHRwOi8vbWF0cGxvdGxpYi5vcmcvnQurowAAIABJREFUeJzs3XecJGWZ//HPd2d7c3Y3ZyVIziAZQVBAQVFRDOi9H5ozZ8+cPcPF9A4npznPn4mzp2dCRUEyKEsSFMkhJ2cFEmZmdud3qvr3x1OzOzs9k3anqV7OV7169XRV9VN9d1T3+r6eJ3wCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     
-    let imageBuffer;
-    
-    if (fs.existsSync(imagePath)) {
-      console.log('📸 生成された画像を使用:', imagePath);
-      imageBuffer = fs.readFileSync(imagePath);
-    } else {
-      console.log('⚠️ 画像ファイルが見つかりません、スキップします');
-      return;
-    }
+    const imageBuffer = Buffer.from(RICH_MENU_IMAGE_BASE64, 'base64');
+    console.log('📸 Base64画像データを使用');
     
     const canvas = imageBuffer;
 
