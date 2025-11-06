@@ -149,7 +149,7 @@ async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
     // 生成されたPNG画像を読み込み
     const fs = require('fs');
     const path = require('path');
-    const imagePath = path.join(process.cwd(), 'rich-menu-combined.png');
+    const imagePath = path.join(process.cwd(), 'rich-menu-new.png');
     
     let imageBuffer;
     
