@@ -199,25 +199,26 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   
   // プロンプトを作成
   const prompt = `
-あなたは経験豊富なパーソナルトレーナーと管理栄養士の知識を持つアドバイザーです。
-ユーザーから提供された1日の食事内容と運動内容を分析し、具体的で実践的なフィードバックを提供してください。
+あなたは経験豊富な管理栄養士の知識を持つ親しみやすいアドバイザーです。
+ユーザーから提供された1日の食事内容と運動内容を分析し、わかりやすく親しみやすいフィードバックを提供してください。
 
 【${date}の記録データ】
 📊 基本情報:
 - 体重: ${data.weight?.value || '未記録'}kg
 - 体重変化: ${weightTrend}
 
-🔥 カロリー分析:
-- 摂取カロリー: ${totalCalories}kcal (目標: ${targetCalories}kcal)
-- 達成率: ${calorieAchievement}% ${calorieAchievement >= 90 && calorieAchievement <= 110 ? '✅ 適正範囲' : calorieAchievement < 90 ? '⚠️ 不足' : '⚠️ 過多'}
+🔥 カロリー状況:
+- 今日の摂取: ${totalCalories}kcal 
+- 目標: ${targetCalories}kcal
+- 状況: ${calorieAchievement >= 90 && calorieAchievement <= 110 ? 'ちょうどいい感じ！' : calorieAchievement < 90 ? 'ちょっと少なめかも' : 'ちょっと多めかも'}
 
-🎯 PFC目標達成率:
-- タンパク質: ${totalProtein}g / ${targetProtein}g (${proteinAchievement}%) ${proteinAchievement >= 90 ? '✅' : '⚠️'}
-- 脂質: ${totalFat}g / ${targetFat}g (${fatAchievement}%) ${fatAchievement >= 80 && fatAchievement <= 120 ? '✅' : '⚠️'}
-- 炭水化物: ${totalCarbs}g / ${targetCarbs}g (${carbsAchievement}%) ${carbsAchievement >= 80 && carbsAchievement <= 120 ? '✅' : '⚠️'}
+🎯 栄養バランス状況:
+- タンパク質: ${totalProtein}g ${proteinAchievement >= 90 ? '(バッチリ！)' : '(もう少し摂れるといいね)'}
+- 脂質: ${totalFat}g ${fatAchievement >= 80 && fatAchievement <= 120 ? '(いい感じ！)' : '(バランス調整してみよう)'}
+- 炭水化物: ${totalCarbs}g ${carbsAchievement >= 80 && carbsAchievement <= 120 ? '(いい感じ！)' : '(バランス調整してみよう)'}
 
 💪 運動記録:
-- 総運動時間: ${exerciseTime}分
+- 今日の運動: ${exerciseTime > 0 ? `${exerciseTime}分間お疲れさま！` : '運動記録なし'}
 - 運動内容: ${data.exercises.map(ex => {
   const details = [];
   if (ex.duration > 0) details.push(`${ex.duration}分`);
@@ -226,7 +227,7 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   if (ex.setsCount > 0) details.push(`${ex.setsCount}セット`);
   if (ex.distance > 0) details.push(`${ex.distance}km`);
   return `${ex.displayName || ex.type}${details.length > 0 ? ` (${details.join(', ')})` : ''}`;
-}).join(', ') || '未実施'}
+}).join(', ') || '今日は運動お休み'}
 
 🍽️ 食事詳細:
 ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
@@ -235,13 +236,13 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
 - 親しみやすく、友達のような口調で書く（敬語は使わない）
 - 難しい言葉は使わず、分かりやすい表現にする
 - 箇条書きは「・」で始める
-- 良かった点は200-300文字でしっかりとアドバイスも含めて詳しく書く
-- 改善点・改善提案は150-200文字で具体的に書く
-- カロリーや栄養素の数値があれば必ず具体的なアドバイスを書く
+- パーセンテージや達成率などの数字は使わない（「バッチリ」「いい感じ」「もう少し」など感覚的表現を使う）
+- 良かった点は200-300文字でしっかりと詳しく書く
+- 改善点は150-200文字で具体的に書く
 - 完全に記録が0の場合のみ「記録なし」を使う
 - 少しでも記録があれば「もう少し詳しく記録できるともっといいね」など前向きに書く
 - 食事評価では絶対に食事・栄養の話のみ（運動の話は書くな）
-- 運動評価では絶対に運動・身体活動の話のみ（食事の話は書くな）
+- 運動評価では褒めるだけ（改善提案やアドバイスは一切書くな）
 
 【フィードバック形式】
 
@@ -256,22 +257,13 @@ ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${me
 ■ 運動評価
 
 良かった点:
-・[運動・身体活動で良かったことを詳しく褒めて、今後も続けるためのアドバイスも含める。少しでも記録があれば具体的に褒める。完全に記録が0の場合のみ「記録なし」]
-
-改善提案:
-・[運動・身体活動で改善すべき点のみを親しみやすく提案。記録が少なくても前向きに書く。完全に記録が0の場合のみ「記録なし」]
+・[運動・身体活動で良かったことを詳しく褒める。記録があれば褒めて励ます。完全に記録が0の場合のみ「記録なし」]
 
 【絶対厳守！違反禁止！】
+🚫 運動評価では改善提案・アドバイス・今後の提案を一切書くな！褒めるだけ！
 🚫 運動評価では食事・栄養・タンパク質・水分補給・食べ物の話を一切書くな！
-🚫 運動評価は運動・筋トレ・ストレッチ・体の動かし方のみ！
 🚫 食事評価では運動・筋トレ・有酸素運動・体を動かすことの話を一切書くな！
-🚫 食事評価は食事・栄養・食べ物・飲み物のみ！
-
-【セクション分離の厳守】
-📌 良かった点：実際にやったことを褒める・評価する
-📌 改善点/改善提案：今後の提案・アドバイス
-🚫 良かった点に改善提案を書くな！
-🚫 改善提案に過去の褒め言葉を書くな！
+🚫 数字やパーセンテージは使うな！感覚的な表現のみ！
 `;
 
   try {
@@ -304,7 +296,7 @@ function generateFallbackFeedback(
   return `■ 食事評価
 
 良かった点:
-・${hasMeals ? `タンパク質${protein}gもしっかり摂れてるね！筋肉を作るのに大切な栄養だから、この調子でバランス良く食べていこう。食事記録をつけることで栄養バランスが見えるようになって、健康的な食生活の第一歩になってるよ。` : '記録なし'}
+・${hasMeals ? `タンパク質もしっかり摂れてるね！筋肉を作るのに大切な栄養だから、この調子でバランス良く食べていこう。食事記録をつけることで栄養バランスが見えるようになって、健康的な食生活の第一歩になってるよ。` : '記録なし'}
 
 改善点:
 ・${hasMeals ? `野菜をもう少し増やせるともっといいかも。ビタミンとか食物繊維が体の調子を整えてくれるからね。` : '記録なし'}
@@ -312,10 +304,7 @@ function generateFallbackFeedback(
 ■ 運動評価
 
 良かった点:
-・${hasExercise ? `${exerciseTime}分も体を動かしたんだね！継続することで体力もついてくるし、すごくいい感じだよ。運動を習慣にすることで、代謝も良くなって体の調子も整ってくるから、今のペースを大切にしていこう。` : '記録なし'}
-
-改善提案:
-・${hasExercise ? `今の運動を続けながら、始める前と終わった後にちょっとストレッチするともっと効果的だよ。` : '記録なし'}
+・${hasExercise ? `体を動かしたんだね！継続することで体力もついてくるし、すごくいい感じだよ。運動を習慣にすることで、代謝も良くなって体の調子も整ってくるから、今のペースを大切にしていこう。` : '記録なし'}
 
 `;
 }
