@@ -110,11 +110,11 @@ export function MyProfilePage({
                  null;
   const height = latestProfile?.height || counselingResult?.answers?.height || counselingResult?.userProfile?.height || null;
   
-  // プロフィール履歴の体重を最優先にして、daily recordsは参考値程度にする
-  const currentWeight = latestProfile?.weight || 
+  // 🎯 体重グラフと統一：dailyRecordsを最優先、フォールバック保持
+  const currentWeight = weightManager?.weightData?.current || 
+                        latestProfile?.weight || 
                         counselingResult?.answers?.weight || 
                         counselingResult?.userProfile?.weight || 
-                        weightManager?.weightData?.current || 
                         null;
   const targetWeight = latestProfile?.targetWeight || 
                        counselingResult?.answers?.targetWeight || 
