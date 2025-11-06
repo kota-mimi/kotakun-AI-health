@@ -934,7 +934,7 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
 
-          // 運動評価セクション
+          // 運動評価セクション（褒めるだけ）
           {
             type: 'separator',
             color: '#E0E0E0',
@@ -966,28 +966,7 @@ export function createDailyFeedbackFlexMessage(
                   },
                   {
                     type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[0].replace('良かった点:', '') || '・継続的な運動習慣が素晴らしいです',
-                    size: 'sm',
-                    color: '#333333',
-                    wrap: true
-                  }
-                ]
-              },
-              {
-                type: 'box',
-                layout: 'vertical',
-                spacing: 'none',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '改善提案',
-                    weight: 'bold',
-                    size: 'md',
-                    color: '#FF9800'
-                  },
-                  {
-                    type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').split('改善提案:')[1] || '・筋トレと有酸素のバランスを意識\n・運動前後のストレッチを追加',
+                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです',
                     size: 'sm',
                     color: '#333333',
                     wrap: true
