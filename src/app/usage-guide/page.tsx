@@ -235,21 +235,21 @@ export default function UsageGuidePage() {
             <div className="step-number">1</div>
             <h2 className="step-title">カウンセリング</h2>
             <div className="step-description">
-              まずはLINEで簡単なカウンセリングを受けて、あなたの目標設定をしましょう。年齢、身長、体重、目標などを教えてもらい、あなた専用の健康管理プランを作成します。
+              友達追加後、届いたメッセージの「カウンセリング開始」ボタンをタップして、基本情報を入力します。カウンセリングが完了すると、あなた専用のカロリー目標とPFCバランスが自動で計算されます！
             </div>
             <div className="feature-grid">
               <div className="feature-card">
                 <span className="feature-icon">👤</span>
                 <div className="feature-title">基本情報入力</div>
                 <div className="feature-description">
-                  年齢、身長、体重などの基本的な情報をお伺いします
+                  お名前・年齢・性別・身長・体重などの基本的な情報をお伺いします
                 </div>
               </div>
               <div className="feature-card">
                 <span className="feature-icon">🎯</span>
                 <div className="feature-title">目標設定</div>
                 <div className="feature-description">
-                  目標体重や活動レベルを設定して個別プランを作成
+                  目標体重や活動レベルを設定して個別プランを作成します
                 </div>
               </div>
               <div className="feature-card">
@@ -273,7 +273,31 @@ export default function UsageGuidePage() {
             <div className="step-number">2</div>
             <h2 className="step-title">食事を記録</h2>
             <div className="step-description">
-              毎日の食事を簡単に記録できます。写真を撮るだけでも、テキストで入力することもできます。AIが自動で栄養素を分析してくれます。
+              LINEのリッチメニューから「記録」ボタンをタップして、記録モードを開始します。写真撮影による食事記録と、テキストでの記録が可能です。
+            </div>
+            
+            <div style={{ marginBottom: '25px' }}>
+              <h3 style={{
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                color: '#1E90FF',
+                marginBottom: '15px'
+              }}>食事の記録例</h3>
+              <div style={{
+                background: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                padding: '15px',
+                fontSize: '0.9rem',
+                lineHeight: '1.6'
+              }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <strong>単品で:</strong> 「朝にバナナ食べた」「昼にパスタ」
+                </div>
+                <div>
+                  <strong>複数まとめて:</strong> 「朝に目玉焼きとご飯100g、昼に唐揚げ定食、夜にサラダと豚汁、おやつにクッキー2枚」
+                </div>
+              </div>
             </div>
             
             <div className="feature-grid">
@@ -303,9 +327,33 @@ export default function UsageGuidePage() {
 
           <div className="step-container">
             <div className="step-number">3</div>
-            <h2 className="step-title">運動を記録</h2>
+            <h2 className="step-title">運動・体重を記録</h2>
             <div className="step-description">
-              ランニング、筋トレ、ヨガなど、あらゆる運動を記録できます。時間、強度、消費カロリーなども自動で計算されます。
+              運動や体重も同じ記録モードで簡単に記録できます。
+            </div>
+            
+            <div style={{ marginBottom: '25px' }}>
+              <h3 style={{
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                color: '#1E90FF',
+                marginBottom: '15px'
+              }}>体重・運動の記録例</h3>
+              <div style={{
+                background: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                padding: '15px',
+                fontSize: '0.9rem',
+                lineHeight: '1.6'
+              }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <strong>体重:</strong> 「体重68.5kg」「68.5」
+                </div>
+                <div>
+                  <strong>運動:</strong> 「ランニング30分」「ベンチプレス90kg10回」「野球した」
+                </div>
+              </div>
             </div>
             
             <div className="feature-grid">
@@ -324,35 +372,47 @@ export default function UsageGuidePage() {
                 </div>
               </div>
               <div className="feature-card">
-                <span className="feature-icon">🧘</span>
-                <div className="feature-title">その他の活動</div>
+                <span className="feature-icon">⚖️</span>
+                <div className="feature-title">体重記録</div>
                 <div className="feature-description">
-                  ヨガ、ストレッチ、スポーツなど幅広い活動に対応
+                  日々の体重変化を記録してグラフで推移を確認
                 </div>
               </div>
             </div>
           </div>
+        </section>
 
+        <div className="divider"></div>
+
+        {/* 確認・編集 */}
+        <section>
           <div className="step-container">
             <div className="step-number">4</div>
-            <h2 className="step-title">体重を記録</h2>
+            <h2 className="step-title">確認・編集</h2>
             <div className="step-description">
-              日々の体重変化を記録して、目標に向けた進捗を確認できます。グラフで推移を見ることで、モチベーション維持にも役立ちます。
+              記録した内容の確認と編集が可能です。リッチメニューやチャットから簡単にアクセスできます。
             </div>
             
             <div className="feature-grid">
               <div className="feature-card">
-                <span className="feature-icon">⚖️</span>
-                <div className="feature-title">簡単入力</div>
+                <span className="feature-icon">📱</span>
+                <div className="feature-title">リッチメニューで確認</div>
                 <div className="feature-description">
-                  「体重 65kg」と入力するだけで記録完了
+                  リッチメニューから記録内容をすぐに確認
                 </div>
               </div>
               <div className="feature-card">
-                <span className="feature-icon">📈</span>
-                <div className="feature-title">グラフ表示</div>
+                <span className="feature-icon">💬</span>
+                <div className="feature-title">チャットで確認</div>
                 <div className="feature-description">
-                  体重の推移をグラフで視覚的に確認できます
+                  チャット画面でも記録の確認が可能
+                </div>
+              </div>
+              <div className="feature-card">
+                <span className="feature-icon">✏️</span>
+                <div className="feature-title">編集・追加もカンタン</div>
+                <div className="feature-description">
+                  記録の修正や追加が簡単に行えます
                 </div>
               </div>
             </div>
@@ -367,7 +427,7 @@ export default function UsageGuidePage() {
             <div className="step-number">5</div>
             <h2 className="step-title">フィードバックを受ける</h2>
             <div className="step-description">
-              記録したデータに基づいて、AIがあなたの健康状態を分析し、個人に合わせたアドバイスを提供します。
+              リッチメニューの「フィードバック」ボタンから、今日の記録に対するAIのアドバイスを確認できます。
             </div>
             <div className="highlight-box">
               <div className="highlight-text">💡 AI分析によるパーソナライズされたアドバイス</div>
@@ -380,25 +440,77 @@ export default function UsageGuidePage() {
             <div className="feature-grid">
               <div className="feature-card">
                 <span className="feature-icon">🍎</span>
-                <div className="feature-title">栄養指導</div>
+                <div className="feature-title">栄養バランスの分析</div>
                 <div className="feature-description">
-                  食事バランスの改善点や推奨食材のアドバイス
+                  食事バランスの分析と改善点のアドバイス
                 </div>
               </div>
               <div className="feature-card">
-                <span className="feature-icon">🏋️</span>
-                <div className="feature-title">運動指導</div>
+                <span className="feature-icon">🎯</span>
+                <div className="feature-title">カロリー目標達成状況</div>
                 <div className="feature-description">
-                  効果的なトレーニング方法や運動量の調整提案
+                  目標に対する達成度を確認できます
                 </div>
               </div>
               <div className="feature-card">
                 <span className="feature-icon">📋</span>
-                <div className="feature-title">進捗評価</div>
+                <div className="feature-title">改善点のアドバイス</div>
                 <div className="feature-description">
-                  目標達成度の評価と今後の改善ポイント
+                  個人に合わせた具体的な改善提案
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="divider"></div>
+
+        {/* その他の便利な機能 */}
+        <section>
+          <h2 className="section-title">💬 その他の便利な機能</h2>
+          
+          <div className="step-container">
+            <h3 style={{
+              fontSize: '1.3rem',
+              fontWeight: 'bold',
+              color: '#1E90FF',
+              marginBottom: '15px'
+            }}>通常モード（記録以外の会話）</h3>
+            <div className="step-description">
+              記録モード以外では、こたくんに何でも質問できます！
+            </div>
+            
+            <div style={{ marginBottom: '25px' }}>
+              <h4 style={{
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+                color: '#1E90FF',
+                marginBottom: '10px'
+              }}>質問例</h4>
+              <div style={{
+                background: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                padding: '15px',
+                fontSize: '0.9rem',
+                lineHeight: '1.8'
+              }}>
+                <div style={{ marginBottom: '8px' }}>「バナナのカロリーってどのくらい?」</div>
+                <div style={{ marginBottom: '8px' }}>「胸筋のトレーニング教えて」</div>
+                <div>「栄養がある食べ物何個か教えて欲しい!」</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="step-container">
+            <h3 style={{
+              fontSize: '1.3rem',
+              fontWeight: 'bold',
+              color: '#1E90FF',
+              marginBottom: '15px'
+            }}>体重グラフで変化を実感</h3>
+            <div className="step-description">
+              マイページでは、体重の推移をグラフで確認できます。1ヶ月、3ヶ月、全期間と期間を切り替えて、あなたの頑張りを視覚化！
             </div>
           </div>
         </section>
