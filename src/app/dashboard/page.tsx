@@ -135,6 +135,28 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
+  // 記録があるかどうかをチェック
+  const hasRecordsForDate = (date: Date): boolean => {
+    const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    
+    // 体重記録チェック
+    const hasWeightRecord = weightManager?.realWeightData?.some(
+      (record: any) => record.date === dateKey && record.weight > 0
+    );
+    
+    // 食事記録チェック
+    const hasMealRecord = mealManager?.mealData && Object.values(mealManager.mealData).some(
+      (meals: any) => Array.isArray(meals) && meals.length > 0
+    );
+    
+    // 運動記録チェック
+    const hasExerciseRecord = exerciseManager?.exerciseData?.some(
+      (exercise: any) => exercise.date === dateKey
+    );
+    
+    return hasWeightRecord || hasMealRecord || hasExerciseRecord;
+  };
+
   // 🔄 統合データから各データを取得（コスト削減済み）
   const counselingResult = dashboardData.counselingData;
   const isCounselingLoading = dashboardData.isLoading;
@@ -296,6 +318,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToProfile={() => navigation.setActiveTab('profile')}
                 onNavigateToData={() => {}} // 削除：データページなし
                 counselingResult={counselingResult}
+                hasRecordsForDate={hasRecordsForDate}
               />
             )}
           </div>

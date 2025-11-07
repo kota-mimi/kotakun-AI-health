@@ -10,9 +10,10 @@ interface CompactHeaderProps {
   onNavigateToData?: () => void;
   customContent?: React.ReactNode;
   counselingResult?: any;
+  hasRecordsForDate?: (date: Date) => boolean;
 }
 
-export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult }: CompactHeaderProps) {
+export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult, hasRecordsForDate }: CompactHeaderProps) {
   // currentDateから今日までの週オフセットを計算（日曜日始まりの週で計算）
   const calculateWeekOffset = () => {
     const today = new Date();
@@ -181,6 +182,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
               
+              const hasRecords = hasRecordsForDate ? hasRecordsForDate(date) : false;
+              
               return (
                 <Button
                   key={dateKey}
@@ -192,7 +195,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                       : isBeforeAppStart
                       ? 'text-slate-400 hover:bg-slate-100/40'
                       : 'text-slate-600 hover:bg-slate-100/60'
-                  }`}
+                  } ${hasRecords ? '!border-2 !border-dotted !border-blue-400' : ''}`}
                 >
                 <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
                 <span className="text-sm font-semibold">
