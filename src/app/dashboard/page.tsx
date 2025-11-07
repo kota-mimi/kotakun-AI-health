@@ -301,6 +301,17 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
           <div {...swipeHandlers} className="relative px-4 py-4 pb-24 space-y-4">
 
+            {/* 体重カード */}
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              {weightManager && (
+                <WeightCard
+                  data={weightManager.weightData}
+                  counselingResult={counselingResult}
+                  selectedDate={navigation.selectedDate}
+                  onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
+                />
+              )}
+            </div>
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
@@ -317,18 +328,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   profileData={sharedProfile.latestProfile} // 🔄 統合プロフィール渡し
                 />
               ) : null}
-            </div>
-
-            {/* 体重カード */}
-            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {weightManager && (
-                <WeightCard
-                  data={weightManager.weightData}
-                  counselingResult={counselingResult}
-                  selectedDate={navigation.selectedDate}
-                  onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
-                />
-              )}
             </div>
 
             {/* 食事カード */}
