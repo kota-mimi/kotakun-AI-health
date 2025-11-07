@@ -12,10 +12,12 @@ import { useMealData } from '@/hooks/useMealData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
+import { useNavigationState } from '@/hooks/useNavigationState';
 import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
 import { WeightEntryModal } from './WeightEntryModal';
 import { TargetSettingsModal } from './TargetSettingsModal';
+import { WeightCard } from './WeightCard';
 
 
 interface MyProfilePageProps {
@@ -53,6 +55,12 @@ export function MyProfilePage({
   // 日付ベースのデータマネージャーを取得
   const dateBasedDataManager = useDateBasedData();
   
+  // ナビゲーション状態を取得
+  const navigation = useNavigationState();
+  
+  // プロフィール管理フック
+  const sharedProfile = useSharedProfile();
+  
   // ホームと同じカロリーデータを取得
   const mealManager = useMealData(
     new Date(), 
@@ -63,13 +71,15 @@ export function MyProfilePage({
   
   // 体重データを取得
   const weightManager = useWeightData(
-    new Date(),
+    navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
-    () => {}
+    () => {},
+    counselingResult,
+    sharedProfile
   );
   
   // 最新のプロフィールデータを取得
-  const { latestProfile, refetch: refetchLatestProfile } = useSharedProfile();
+  const { latestProfile, refetch: refetchLatestProfile } = sharedProfile;
   
   // 最も安全：LIFF認証完了まで待機のみ
   if (!isLiffReady || !isLoggedIn) {
@@ -548,7 +558,17 @@ export function MyProfilePage({
         </Card>
       </div>
 
-
+      {/* 体重カード */}
+      <div className="px-4 mb-4">
+        {weightManager && (
+          <WeightCard
+            data={weightManager.weightData}
+            counselingResult={counselingResult}
+            selectedDate={navigation?.selectedDate || new Date()}
+            onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
+          />
+        )}
+      </div>
 
       {/* アカウント・プラン */}
       {renderSection('アカウント・プラン', accountMenuItems)}
