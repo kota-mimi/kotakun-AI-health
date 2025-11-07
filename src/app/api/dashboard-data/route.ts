@@ -125,9 +125,9 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
       .collection('users')
       .doc(lineUserId)
       .collection('dailyRecords')
-      .where(adminDb.FieldPath.documentId(), '>=', startDate)
-      .where(adminDb.FieldPath.documentId(), '<=', endDate)
-      .orderBy(adminDb.FieldPath.documentId(), 'desc');
+      .where(admin.firestore.FieldPath.documentId(), '>=', startDate)
+      .where(admin.firestore.FieldPath.documentId(), '<=', endDate)
+      .orderBy(admin.firestore.FieldPath.documentId(), 'desc');
     
     const snapshot = await dailyRecordsRef.get();
     const weights: any[] = [];
