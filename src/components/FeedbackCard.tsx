@@ -135,7 +135,7 @@ export function FeedbackCard({
                     )}
                   </div>
                   {expandedSections.food && (
-                    <div className="p-4 space-y-3">
+                    <div className="p-4">
                       <div>
                         <h4 className="font-medium text-green-700">良かった点</h4>
                         <div className="text-sm text-slate-700">
