@@ -120,31 +120,36 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
     
     console.log('⚖️ 体重データ効率取得:', { startDate, endDate });
     
-    // Firestoreクエリで一度に取得
+    // 全てのdailyRecordsを取得してフィルタリング（より安全なアプローチ）
     const dailyRecordsRef = adminDb
       .collection('users')
       .doc(lineUserId)
-      .collection('dailyRecords')
-      .where(admin.firestore.FieldPath.documentId(), '>=', startDate)
-      .where(admin.firestore.FieldPath.documentId(), '<=', endDate)
-      .orderBy(admin.firestore.FieldPath.documentId(), 'desc');
+      .collection('dailyRecords');
     
     const snapshot = await dailyRecordsRef.get();
     const weights: any[] = [];
     
     snapshot.forEach((doc: any) => {
+      const docId = doc.id;
       const dailyRecord = doc.data();
-      // 体重データがあれば含める
-      if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
-        weights.push({
-          date: doc.id,
-          weight: dailyRecord.weight,
-          note: dailyRecord.note
-        });
+      
+      // 日付範囲でフィルタリング
+      if (docId >= startDate && docId <= endDate) {
+        // 体重データがあれば含める
+        if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+          weights.push({
+            date: docId,
+            weight: dailyRecord.weight,
+            note: dailyRecord.note
+          });
+        }
       }
     });
     
-    console.log(`✅ 体重データ ${weights.length}件取得完了 (1回のクエリ)`);
+    // 日付降順でソート
+    weights.sort((a, b) => b.date.localeCompare(a.date));
+    
+    console.log(`✅ 体重データ ${weights.length}件取得完了 (安全なクエリ)`);
     return weights;
     
   } catch (error) {
