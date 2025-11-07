@@ -44,9 +44,6 @@ export function WeightDetailPage({
 	onOpenWeightEntry,
 	onOpenWeightSettings,
 }: WeightDetailPageProps) {
-	const [selectedPeriod, setSelectedPeriod] = useState<
-		"week" | "month" | "6months" | "year"
-	>("month");
 	const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(new Date());
 	const [progressPhotos, setProgressPhotos] = useState<string[]>([]);
@@ -86,12 +83,6 @@ export function WeightDetailPage({
 		return { trend: "stable", change };
 	};
 
-	const periodOptions = [
-		{ key: "week", label: "7日", days: 7 },
-		{ key: "month", label: "1ヶ月", days: 30 },
-		{ key: "6months", label: "半年", days: 180 },
-		{ key: "year", label: "1年", days: 365 },
-	];
 
 	const trend = getWeightTrend();
 	const progress = calculateProgress();

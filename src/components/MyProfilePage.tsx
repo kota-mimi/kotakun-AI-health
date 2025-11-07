@@ -14,7 +14,6 @@ import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
-import { WeightChart } from './WeightChart';
 import { WeightEntryModal } from './WeightEntryModal';
 import { TargetSettingsModal } from './TargetSettingsModal';
 
@@ -550,21 +549,6 @@ export function MyProfilePage({
       </div>
 
 
-      {/* 体重グラフ */}
-      <div className="px-4">
-        {weightManager?.realWeightData && (
-          <WeightChart 
-            key={`weight-chart-${weightManager.realWeightData.length}-${weightManager.realWeightData.map(d => `${d.date}:${d.weight}`).join('-')}`}
-            data={weightManager.realWeightData}
-            period="month"
-            height={200}
-            targetWeight={latestProfile?.targetWeight || counselingResult?.answers?.targetWeight || weightManager?.weightSettings?.targetWeight || 70}
-            currentWeight={latestProfile?.weight || weightManager?.weightData?.current || counselingResult?.answers?.weight || 0}
-            counselingResult={counselingResult}
-            onOpenWeightEntry={() => weightManager.setIsWeightEntryModalOpen(true)}
-          />
-        )}
-      </div>
 
       {/* アカウント・プラン */}
       {renderSection('アカウント・プラン', accountMenuItems)}
