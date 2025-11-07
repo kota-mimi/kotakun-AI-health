@@ -49,8 +49,10 @@ export function WeightCard({
 		counselingResult?.answers?.primaryGoal === "maintenance";
 	const shouldShowTarget = hasTargetData && !isMaintenanceMode;
 
-	// 現在の体重表示（useWeightDataの計算結果を信頼）
-	const currentWeight = data.current;
+	// 現在の体重表示（useWeightDataの結果 + カウンセリング体重フォールバック）
+	const currentWeight = data.current > 0 ? data.current : 
+	                      (counselingResult?.answers?.weight || 
+	                       counselingResult?.userProfile?.weight || 0);
 	const shouldShowWeight = !isFutureDate && currentWeight > 0;
 
 	// 前日比計算
@@ -59,11 +61,15 @@ export function WeightCard({
 	const shouldShowDifference = hasCurrentData && hasPreviousData;
 	const isDecrease = difference < 0;
 
-	// 目標までの計算（useWeightDataの計算結果を信頼）
+	// 目標体重取得（useWeightDataの結果 + カウンセリング結果フォールバック）
+	const targetWeight = data.target > 0 ? data.target : 
+	                     (counselingResult?.answers?.targetWeight || 0);
+	
+	// 目標までの計算
 	const canCalculateRemaining =
-		!isFutureDate && currentWeight > 0 && shouldShowTarget;
+		!isFutureDate && currentWeight > 0 && targetWeight > 0 && !isMaintenanceMode;
 	const remaining = canCalculateRemaining
-		? Math.abs(currentWeight - data.target)
+		? Math.abs(currentWeight - targetWeight)
 		: 0;
 
 	return (
@@ -133,9 +139,9 @@ export function WeightCard({
 						</div>
 						<div className="text-lg font-bold">
 							{canCalculateRemaining ? (
-								currentWeight === data.target ? (
+								currentWeight === targetWeight ? (
 									<span className="text-green-600">🎉 達成</span>
-								) : currentWeight > data.target ? (
+								) : currentWeight > targetWeight ? (
 									<span className="text-red-600">
 										-{remaining.toFixed(1)}
 										<span className="text-sm font-medium text-slate-600 ml-1">

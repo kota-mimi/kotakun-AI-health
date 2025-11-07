@@ -35,6 +35,7 @@ import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightCard } from '@/components/WeightCard';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
+import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 import { CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
 // import { AppLoadingScreen } from '@/components/LoadingScreen';
@@ -484,6 +485,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
         }}
         exercise={selectedExerciseForEdit}
         userWeight={counselingResult?.answers?.weight || 70}
+      />
+
+      {/* 体重記録モーダル */}
+      <WeightEntryModal
+        isOpen={weightManager?.isWeightEntryModalOpen || false}
+        onClose={() => weightManager?.setIsWeightEntryModalOpen(false)}
+        onSubmit={weightManager?.handleAddWeightEntry || (() => {})}
+        currentWeight={weightManager?.weightData?.current || 0}
       />
 
     </div>

@@ -239,8 +239,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       if (latestWeightRecord) {
         currentWeight = latestWeightRecord.weight;
       }
+    } else {
+      // 実際の記録がない場合、カウンセリング体重またはプロフィール体重をフォールバック
+      currentWeight = latestProfile?.weight || 
+                      counselingResult?.answers?.weight || 
+                      counselingResult?.userProfile?.weight || 0;
     }
-    // プロフィール体重のフォールバックを削除（データソース統一のため）
     
     // 前日比計算：最新記録を使用している場合は、その記録の前日と比較
     let previousWeight = 0;
