@@ -15,7 +15,6 @@ import { ImageViewModal } from "./ImageViewModal";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { WeightChart } from "./WeightChart";
 import { WeightEntryModal } from "./WeightEntryModal";
 
 interface WeightDetailPageProps {
@@ -201,36 +200,6 @@ export function WeightDetailPage({
 					</div>
 				</Card>
 
-				{/* 体重グラフ（期間選択統合） */}
-				<Card className=" bg-white shadow-sm border border-gray-200 rounded-xl p-4">
-					{/* 期間選択セグメントコントロール */}
-					<div className="bg-slate-100/60 rounded-xl p-1 flex mb-4">
-						{periodOptions.map((option) => (
-							<button
-								key={option.key}
-								onClick={() => setSelectedPeriod(option.key as any)}
-								className={`flex-1 py-2.5 px-3 text-xs font-medium rounded-lg transition-all duration-300 ${
-									selectedPeriod === option.key
-										? "bg-white text-slate-900 shadow-sm"
-										: "text-slate-600 hover:text-slate-800 hover:bg-gray-100"
-								}`}
-							>
-								{option.label}
-							</button>
-						))}
-					</div>
-
-					{/* グラフエリア */}
-					<div className="-mx-1">
-						<WeightChart
-							key={`weight-detail-chart-${weightData.length}-${weightData.map(d => `${d.date}:${d.weight}`).join('-')}`}
-							data={weightData}
-							period={selectedPeriod}
-							height={height}
-							targetWeight={targetWeight}
-						/>
-					</div>
-				</Card>
 
 				{/* 進捗写真 */}
 
