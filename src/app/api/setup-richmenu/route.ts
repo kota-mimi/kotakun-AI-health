@@ -118,7 +118,7 @@ async function createRichMenu(accessToken: string) {
         },
         action: {
           type: "uri",
-          uri: "https://liff.line.me/2007945061-DEEaglg8/usage-guide"
+          uri: "https://liff.line.me/2007945061-DEEaglg8/dashboard?showUserGuide=true"
         }
       }
     ]

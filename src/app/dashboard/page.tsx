@@ -97,14 +97,22 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 🚀 統合ダッシュボードデータ取得（コスト削減）
   const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
   
-  // URLパラメータに基づいてプラン設定ページを開く
+  // URLパラメータに基づいてページを開く
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
+    const showUserGuide = params.get('showUserGuide');
+    
     if (tab === 'plan') {
       // プロフィールタブに切り替えてからプラン設定ページを開く
       navigation.setActiveTab('profile');
       navigation.handleNavigateToPlanSettings();
+    }
+    
+    if (showUserGuide === 'true') {
+      // プロフィールタブに切り替えてから使い方ガイドを開く
+      navigation.setActiveTab('profile');
+      navigation.handleNavigateToUserGuide();
     }
   }, []);
   
