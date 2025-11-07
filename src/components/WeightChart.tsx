@@ -203,6 +203,23 @@ export function WeightChart({
                 </text>
               ))}
               
+              {/* Y軸ラベル（左端） */}
+              {[0, 1, 2, 3, 4].map(i => {
+                const y = 20 + i * (svgHeight - 40) / 4;
+                const value = maxWeight - (i / 4) * weightRange;
+                return (
+                  <text
+                    key={i}
+                    x={5}
+                    y={y + 4}
+                    textAnchor="start"
+                    className="text-xs fill-slate-600"
+                  >
+                    {value.toFixed(1)}
+                  </text>
+                );
+              })}
+              
               {/* 日付表示（狭い間隔） */}
               {points.map((point, index) => (
                 <text
