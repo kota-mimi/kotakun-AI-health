@@ -7,6 +7,7 @@ import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useNavigationState } from '@/hooks/useNavigationState';
 import { useMealData } from '@/hooks/useMealData';
 import { useExerciseData } from '@/hooks/useExerciseData';
+import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useGlobalLoading } from '@/hooks/useGlobalLoading';
@@ -31,7 +32,7 @@ import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
 import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
 import { DataManagementModal } from '@/components/DataManagementModal';
-import { WeightChart } from '@/components/WeightChart';
+import { WeightCard } from '@/components/WeightCard';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
 import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
@@ -152,6 +153,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
     updateDateData
   );
 
+  const weightManager = useWeightData(
+    navigation?.selectedDate || new Date(),
+    dateBasedDataManager?.dateBasedData || {},
+    updateDateData,
+    counselingResult,
+    sharedProfile,
+    dashboardData.weightData // 🚀 統合データから取得
+  );
 
   const feedbackManager = useFeedbackData(
     navigation?.selectedDate || new Date(),
@@ -308,6 +317,18 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   profileData={sharedProfile.latestProfile} // 🔄 統合プロフィール渡し
                 />
               ) : null}
+            </div>
+
+            {/* 体重カード */}
+            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
+              {weightManager && (
+                <WeightCard
+                  data={weightManager.weightData}
+                  counselingResult={counselingResult}
+                  selectedDate={navigation.selectedDate}
+                  onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
+                />
+              )}
             </div>
 
             {/* 食事カード */}

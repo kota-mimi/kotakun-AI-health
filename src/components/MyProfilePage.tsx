@@ -17,7 +17,6 @@ import { withCounselingGuard } from '@/utils/counselingGuard';
 import type { HealthGoal, UserProfile } from '@/types';
 import { WeightEntryModal } from './WeightEntryModal';
 import { TargetSettingsModal } from './TargetSettingsModal';
-import { WeightCard } from './WeightCard';
 
 
 interface MyProfilePageProps {
@@ -558,17 +557,6 @@ export function MyProfilePage({
         </Card>
       </div>
 
-      {/* 体重カード */}
-      <div className="px-4 mb-4">
-        {weightManager && (
-          <WeightCard
-            data={weightManager.weightData}
-            counselingResult={counselingResult}
-            selectedDate={navigation?.selectedDate || new Date()}
-            onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
-          />
-        )}
-      </div>
 
       {/* アカウント・プラン */}
       {renderSection('アカウント・プラン', accountMenuItems)}
