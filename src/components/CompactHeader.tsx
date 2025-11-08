@@ -157,6 +157,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
               
               const hasRecords = hasRecordsForDate ? hasRecordsForDate(date) : false;
+              console.log(`📅 Date ${dateKey}: hasRecords=${hasRecords}`);
               
               return (
                 <Button
@@ -167,7 +168,13 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                     isSameDate(date, currentDate)
                       ? 'bg-health-primary text-white shadow-sm'
                       : 'text-slate-600 hover:bg-slate-100/60'
-                  } ${hasRecords ? '!border-2 !border-dotted !border-blue-400' : ''}`}
+                  }`}
+                  style={{
+                    ...(hasRecords && {
+                      border: '2px dotted #60a5fa',
+                      borderStyle: 'dotted'
+                    })
+                  }}
                 >
                 <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
                 <span className="text-sm font-semibold">
