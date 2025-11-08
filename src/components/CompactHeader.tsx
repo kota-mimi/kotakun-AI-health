@@ -160,12 +160,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               prevWeek.setDate(currentDate.getDate() - 7);
               onDateSelect(prevWeek);
             }}
-            disabled={!canGoPrevious()}
-            className={`w-8 h-8 p-0 rounded-lg ${
-              canGoPrevious() 
-                ? 'hover:bg-slate-100/80 text-slate-600' 
-                : 'text-slate-300 cursor-not-allowed'
-            }`}
+            className="w-8 h-8 p-0 rounded-lg hover:bg-slate-100/80 text-slate-600"
           >
             <ChevronLeft size={16} />
           </Button>
