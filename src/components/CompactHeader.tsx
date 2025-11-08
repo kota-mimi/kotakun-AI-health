@@ -58,25 +58,11 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
   };
 
   const getWeekDates = (weekOffset: number = 0) => {
-    const appStartDate = getAppStartDate();
     const today = new Date();
     
-    // アプリ開始日からの経過週数を計算
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const daysSinceStart = Math.floor((today.getTime() - appStartDate.getTime()) / msPerDay);
-    const weeksSinceStart = Math.floor(daysSinceStart / 7);
-    
-    // アプリ開始日の週まで戻れるように計算
-    const appStartDayOfWeek = appStartDate.getDay();
-    const appStartWeekStart = new Date(appStartDate);
-    appStartWeekStart.setDate(appStartDate.getDate() - appStartDayOfWeek);
-    
-    const maxWeeksBack = Math.floor((today.getTime() - appStartWeekStart.getTime()) / (7 * msPerDay));
-    const actualWeekOffset = Math.max(weekOffset, -maxWeeksBack);
-    
-    // 今日を基準に週の開始を計算
+    // 今日を基準に週の開始を計算（制限なし）
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() + actualWeekOffset * 7 - today.getDay());
+    startOfWeek.setDate(today.getDate() + weekOffset * 7 - today.getDay());
     
     const dates = [];
     for (let i = 0; i < 7; i++) {
@@ -167,13 +153,6 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           
           <div className="grid grid-cols-7 gap-1 flex-1 mx-3">
             {weekDates.map((date, index) => {
-              const appStartDate = getAppStartDate();
-              // 日付のみで比較（時間は無視）
-              const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-              const appStartDateOnly = new Date(appStartDate.getFullYear(), appStartDate.getMonth(), appStartDate.getDate());
-              // カウンセリング開始日より前の日付は選択不可
-              const isBeforeAppStart = dateOnly.getTime() < appStartDateOnly.getTime();
-              
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
               
@@ -187,8 +166,6 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                   className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
                     isSameDate(date, currentDate)
                       ? 'bg-health-primary text-white shadow-sm'
-                      : isBeforeAppStart
-                      ? 'text-slate-400 hover:bg-slate-100/40'
                       : 'text-slate-600 hover:bg-slate-100/60'
                   } ${hasRecords ? '!border-2 !border-dotted !border-blue-400' : ''}`}
                 >
