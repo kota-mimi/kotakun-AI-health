@@ -9,9 +9,10 @@ interface CalendarModalProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
   counselingResult?: any;
+  hasRecordsForDate?: (date: Date) => boolean;
 }
 
-export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, counselingResult }: CalendarModalProps) {
+export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, counselingResult, hasRecordsForDate }: CalendarModalProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate);
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -162,6 +163,7 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, cou
               const isSelected = day.toDateString() === selectedDate.toDateString();
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
               const isDisabled = isBeforeCounselingDate(day);
+              const hasRecords = hasRecordsForDate ? hasRecordsForDate(day) : false;
               
               // 当月の日付のみ表示
               if (!isCurrentMonth) {
@@ -182,6 +184,12 @@ export function CalendarModal({ isOpen, onClose, selectedDate, onDateSelect, cou
                       ? 'border-2 border-blue-400 text-blue-600 bg-blue-50'
                       : 'text-slate-700 hover:bg-slate-100'
                   }`}
+                  style={{
+                    ...(hasRecords && !isSelected && !isToday && {
+                      border: '2px dotted #60a5fa',
+                      borderStyle: 'dotted'
+                    })
+                  }}
                 >
                   {day.getDate()}
                 </button>
