@@ -145,9 +145,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
     );
     
     // 食事記録チェック
-    const hasMealRecord = mealManager?.mealData && Object.values(mealManager.mealData).some(
-      (meals: any) => Array.isArray(meals) && meals.length > 0
-    );
+    const hasMealRecord = mealManager?.mealData?.[dateKey] && 
+                          Array.isArray(mealManager.mealData[dateKey]) && 
+                          mealManager.mealData[dateKey].length > 0;
     
     // 運動記録チェック
     const hasExerciseRecord = exerciseManager?.exerciseData?.some(

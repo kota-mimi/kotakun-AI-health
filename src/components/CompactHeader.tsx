@@ -157,7 +157,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
               
               const hasRecords = hasRecordsForDate ? hasRecordsForDate(date) : false;
-              console.log(`📅 Date ${dateKey}: hasRecords=${hasRecords}`);
+              const debugDateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+              console.log(`📅 Date ${debugDateKey}: hasRecords=${hasRecords}`);
               
               return (
                 <Button
