@@ -182,15 +182,26 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   };
 
 
-  // カウンセリング日かどうかをチェック
-  const isCounselingDate = (checkDate: Date): boolean => {
+  // カウンセリング開始日より前かどうかをチェック
+  const isBeforeCounselingStart = (checkDate: Date): boolean => {
     if (!counselingResult) return false;
+    
     const counselingDateRaw = counselingResult.firstCompletedAt || 
                              counselingResult.createdAt || 
                              counselingResult.completedAt;
+    
     if (!counselingDateRaw) return false;
+    
     const counselingDate = new Date(counselingDateRaw);
-    return checkDate.toDateString() === counselingDate.toDateString();
+    if (isNaN(counselingDate.getTime())) {
+      console.warn('⚠️ Invalid counseling date in useWeightData:', counselingDateRaw);
+      return false;
+    }
+    
+    // カウンセリング開始日より前かチェック
+    const checkDateKey = getDateKey(checkDate);
+    const counselingDateKey = getDateKey(counselingDate);
+    return checkDateKey < counselingDateKey;
   };
 
   // 特定の日付の体重データを取得（高速化済み）
@@ -200,7 +211,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: 0,
         previous: 0,
-        target: weightSettingsStorage.value.targetWeight || 68.0
+        target: weightSettingsStorage.value.targetWeight || 0
       };
     }
     
@@ -212,7 +223,16 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return {
         current: 0,
         previous: 0,
-        target: weightSettingsStorage.value.targetWeight || 68.0
+        target: weightSettingsStorage.value.targetWeight || 0
+      };
+    }
+    
+    // カウンセリング開始日より前の場合は体重を表示しない
+    if (isBeforeCounselingStart(date)) {
+      return {
+        current: 0,
+        previous: 0,
+        target: weightSettingsStorage.value.targetWeight || 0
       };
     }
     
