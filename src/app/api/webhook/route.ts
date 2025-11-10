@@ -587,7 +587,44 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     }
     
     console.log('🤖 通常モード - AI会話で応答');
-    const aiResponse = await aiService.generateAdvancedResponse(text, userId);
+    
+    // レシピ質問かどうかをチェック
+    console.log('🔍 レシピ判定開始:', text.substring(0, 50));
+    const isRecipe = await aiService.isRecipeQuestion(text);
+    console.log('🍳 レシピ判定結果:', { isRecipe, text });
+    
+    let aiResponse;
+    
+    if (isRecipe) {
+      console.log('🍳 レシピFlexメッセージ生成開始');
+      const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
+      console.log('🍳 レシピ生成完了:', { hasFlexMessage: !!recipeResult.flexMessage });
+      
+      if (recipeResult.flexMessage) {
+        console.log('🍳 レシピFlexメッセージ送信開始');
+        // Flexメッセージと通常テキストを送信
+        await stopLoadingAnimation(userId);
+        await replyMessage(replyToken, [
+          {
+            type: 'text',
+            text: recipeResult.textResponse
+          },
+          recipeResult.flexMessage
+        ]);
+        
+        // 会話履歴を保存
+        await aiService.saveConversation(userId, text, recipeResult.textResponse);
+        // AI応答成功時に使用回数を記録
+        await recordUsage(userId, 'ai');
+        console.log('🍳 レシピFlexメッセージ送信完了');
+        return;
+      } else {
+        aiResponse = recipeResult.textResponse;
+      }
+    } else {
+      // 通常のAI会話（軽量モデル）
+      aiResponse = await aiService.generateGeneralResponse(text, userId);
+    }
     
     // 会話履歴を保存
     if (aiResponse) {
@@ -615,47 +652,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
                    await aiService.generateGeneralResponse(text, userId);
     } else {
-      // 記録モード中かチェック
-      const isInRecordMode = await isRecordMode(userId);
-      console.log('🔍 レシピ処理チェック:', { isInRecordMode, text: text.substring(0, 50) });
-      
-      // レシピ質問かどうかをチェック（記録モード以外で対応）
-      if (!isInRecordMode) {
-        const isRecipe = await aiService.isRecipeQuestion(text);
-        console.log('🍳 レシピ判定結果:', { isRecipe, text });
-        
-        if (isRecipe) {
-          console.log('🍳 レシピFlexメッセージ生成開始');
-          const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
-          console.log('🍳 レシピ生成完了:', { hasFlexMessage: !!recipeResult.flexMessage });
-          
-          if (recipeResult.flexMessage) {
-            console.log('🍳 レシピFlexメッセージ送信開始');
-            // Flexメッセージと通常テキストを送信
-            await stopLoadingAnimation(userId);
-            await replyMessage(replyToken, [
-              {
-                type: 'text',
-                text: recipeResult.textResponse
-              },
-              recipeResult.flexMessage
-            ]);
-            
-            // 会話履歴を保存
-            await aiService.saveConversation(userId, text, recipeResult.textResponse);
-            console.log('🍳 レシピFlexメッセージ送信完了');
-            return;
-          } else {
-            aiResponse = recipeResult.textResponse;
-          }
-        }
-      }
-      
-      if (!aiResponse) {
-        aiResponse = isAdviceMode 
-          ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
-          : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
-      }
+      aiResponse = isAdviceMode 
+        ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
+        : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
     }
     
     // 会話履歴を保存
