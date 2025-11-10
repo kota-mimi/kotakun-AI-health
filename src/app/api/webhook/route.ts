@@ -615,8 +615,11 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
                    await aiService.generateGeneralResponse(text, userId);
     } else {
-      // レシピ質問かどうかをチェック（高性能モードの場合のみ）
-      if (isAdviceMode && await aiService.isRecipeQuestion(text)) {
+      // 記録モード中かチェック
+      const isInRecordMode = await isRecordMode(userId);
+      
+      // レシピ質問かどうかをチェック（記録モード以外で対応）
+      if (!isInRecordMode && await aiService.isRecipeQuestion(text)) {
         const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
         
         if (recipeResult.flexMessage) {
