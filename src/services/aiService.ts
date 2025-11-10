@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
 import { admin } from '@/lib/firebase-admin';
+import { createRecipeFlexMessage } from './flexMessageTemplates';
 
 class AIHealthService {
   private genAI: GoogleGenerativeAI;
@@ -995,7 +996,6 @@ true または false で回答してください。`;
         const jsonResponse = JSON.parse(response.text());
         
         // Flexメッセージを生成
-        const { createRecipeFlexMessage } = await import('./flexMessageTemplates');
         const flexMessage = createRecipeFlexMessage(
           jsonResponse.recipeName,
           jsonResponse.ingredients,
