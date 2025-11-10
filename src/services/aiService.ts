@@ -924,6 +924,104 @@ class AIHealthService {
     }
   }
 
+  // レシピ質問かどうかを判定
+  async isRecipeQuestion(userMessage: string): Promise<boolean> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      const prompt = `
+ユーザーメッセージ「${userMessage}」がレシピや料理の作り方を求める質問かどうかを判定してください。
+
+レシピ質問の例：
+- "オムライスの作り方教えて"
+- "ハンバーグのレシピ"
+- "簡単なパスタの作り方"
+- "プロテイン入りパンケーキの作り方"
+- "低カロリーなサラダのレシピ"
+- "鶏胸肉を使った料理"
+
+レシピ質問でない例：
+- "オムライスのカロリーは？"
+- "ハンバーグは健康に良い？"
+- "パスタを食べても大丈夫？"
+- "プロテインの効果は？"
+
+true または false で回答してください。`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text().trim().toLowerCase();
+      
+      return text.includes('true');
+    } catch (error) {
+      console.error('レシピ判定エラー:', error);
+      return false;
+    }
+  }
+
+  // レシピ生成とFlexメッセージ作成
+  async generateRecipeWithFlex(userMessage: string, userId?: string): Promise<{ textResponse: string; flexMessage?: any }> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-preview-05-20' });
+      
+      const prompt = `
+あなたは「こたくん」という専門的なパーソナルトレーナー兼栄養管理士です。
+ユーザーの「${userMessage}」に対して、健康的で栄養バランスの良いレシピを提案してください。
+
+以下のJSON形式で回答してください：
+{
+  "recipeName": "料理名",
+  "textResponse": "親しみやすい口調でのレシピ説明（100-150文字）",
+  "ingredients": ["材料1", "材料2", "材料3"],
+  "instructions": ["手順1", "手順2", "手順3"],
+  "cookingInfo": {
+    "cookingTime": "調理時間（例：30分）",
+    "servings": "人数（例：2人分）",
+    "calories": "カロリー（例：約400kcal）"
+  }
+}
+
+条件：
+- 健康的で栄養バランスを重視
+- 材料は8個以内
+- 手順は8ステップ以内
+- 親しみやすい「こたくん」の口調で説明
+- 敬語は使わず、フレンドリーに`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      
+      try {
+        const jsonResponse = JSON.parse(response.text());
+        
+        // Flexメッセージを生成
+        const { createRecipeFlexMessage } = await import('./flexMessageTemplates');
+        const flexMessage = createRecipeFlexMessage(
+          jsonResponse.recipeName,
+          jsonResponse.ingredients,
+          jsonResponse.instructions,
+          jsonResponse.cookingInfo
+        );
+        
+        return {
+          textResponse: jsonResponse.textResponse,
+          flexMessage: flexMessage
+        };
+      } catch (parseError) {
+        console.error('レシピJSON解析エラー:', parseError);
+        // フォールバック: 通常のテキストレスポンス
+        return {
+          textResponse: await this.generateAdvancedResponse(userMessage, userId)
+        };
+      }
+    } catch (error) {
+      console.error('レシピ生成エラー:', error);
+      return {
+        textResponse: 'すみません、レシピの生成で問題が発生しました。もう一度お試しください。'
+      };
+    }
+  }
+
   // 高性能な会話レスポンスを生成（通常モード用・専門的なパーソナルトレーナー）
   async generateAdvancedResponse(userMessage: string, userId?: string): Promise<string> {
     try {

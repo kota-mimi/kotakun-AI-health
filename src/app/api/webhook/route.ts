@@ -615,9 +615,32 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
                    await aiService.generateGeneralResponse(text, userId);
     } else {
-      aiResponse = isAdviceMode 
-        ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
-        : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
+      // レシピ質問かどうかをチェック（高性能モードの場合のみ）
+      if (isAdviceMode && await aiService.isRecipeQuestion(text)) {
+        const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
+        
+        if (recipeResult.flexMessage) {
+          // Flexメッセージと通常テキストを送信
+          await stopLoadingAnimation(userId);
+          await replyMessage(replyToken, [
+            {
+              type: 'text',
+              text: recipeResult.textResponse
+            },
+            recipeResult.flexMessage
+          ]);
+          
+          // 会話履歴を保存
+          await aiService.saveConversation(userId, text, recipeResult.textResponse);
+          return;
+        } else {
+          aiResponse = recipeResult.textResponse;
+        }
+      } else {
+        aiResponse = isAdviceMode 
+          ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
+          : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
+      }
     }
     
     // 会話履歴を保存
