@@ -993,7 +993,17 @@ true または false で回答してください。`;
       const response = await result.response;
       
       try {
-        const jsonResponse = JSON.parse(response.text());
+        // マークダウン記号を除去してJSONを抽出
+        let responseText = response.text();
+        
+        // ```json と ``` を除去
+        responseText = responseText.replace(/```json\s*/g, '');
+        responseText = responseText.replace(/```\s*/g, '');
+        responseText = responseText.trim();
+        
+        console.log('🔍 レシピJSON生成結果（整形前）:', responseText.substring(0, 200));
+        
+        const jsonResponse = JSON.parse(responseText);
         
         // Flexメッセージを生成
         const flexMessage = createRecipeFlexMessage(
