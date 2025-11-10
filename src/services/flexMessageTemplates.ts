@@ -1025,7 +1025,8 @@ export function createRecipeFlexMessage(
     servings?: string;
     difficulty?: string;
     calories?: string;
-  }
+  },
+  healthTips?: string
 ) {
   return {
     type: 'flex',
@@ -1231,7 +1232,47 @@ export function createRecipeFlexMessage(
             cornerRadius: '4px',
             paddingAll: '12px',
             margin: 'sm'
-          }
+          },
+
+          // 健康効果セクション（healthTipsがある場合のみ表示）
+          ...(healthTips ? [{
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '健康効果',
+                weight: 'bold',
+                size: 'md',
+                color: '#374151',
+                margin: 'lg'
+              },
+              {
+                type: 'separator',
+                color: '#F3F4F6',
+                margin: 'sm'
+              }
+            ]
+          }, {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: healthTips,
+                size: 'sm',
+                color: '#374151',
+                wrap: true,
+                margin: 'sm'
+              }
+            ],
+            backgroundColor: '#FEF3C7',
+            borderColor: '#F59E0B',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'sm'
+          }] : [])
         ],
         paddingAll: '16px'
       }
