@@ -617,29 +617,41 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     } else {
       // 記録モード中かチェック
       const isInRecordMode = await isRecordMode(userId);
+      console.log('🔍 レシピ処理チェック:', { isInRecordMode, text: text.substring(0, 50) });
       
       // レシピ質問かどうかをチェック（記録モード以外で対応）
-      if (!isInRecordMode && await aiService.isRecipeQuestion(text)) {
-        const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
+      if (!isInRecordMode) {
+        const isRecipe = await aiService.isRecipeQuestion(text);
+        console.log('🍳 レシピ判定結果:', { isRecipe, text });
         
-        if (recipeResult.flexMessage) {
-          // Flexメッセージと通常テキストを送信
-          await stopLoadingAnimation(userId);
-          await replyMessage(replyToken, [
-            {
-              type: 'text',
-              text: recipeResult.textResponse
-            },
-            recipeResult.flexMessage
-          ]);
+        if (isRecipe) {
+          console.log('🍳 レシピFlexメッセージ生成開始');
+          const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
+          console.log('🍳 レシピ生成完了:', { hasFlexMessage: !!recipeResult.flexMessage });
           
-          // 会話履歴を保存
-          await aiService.saveConversation(userId, text, recipeResult.textResponse);
-          return;
-        } else {
-          aiResponse = recipeResult.textResponse;
+          if (recipeResult.flexMessage) {
+            console.log('🍳 レシピFlexメッセージ送信開始');
+            // Flexメッセージと通常テキストを送信
+            await stopLoadingAnimation(userId);
+            await replyMessage(replyToken, [
+              {
+                type: 'text',
+                text: recipeResult.textResponse
+              },
+              recipeResult.flexMessage
+            ]);
+            
+            // 会話履歴を保存
+            await aiService.saveConversation(userId, text, recipeResult.textResponse);
+            console.log('🍳 レシピFlexメッセージ送信完了');
+            return;
+          } else {
+            aiResponse = recipeResult.textResponse;
+          }
         }
-      } else {
+      }
+      
+      if (!aiResponse) {
         aiResponse = isAdviceMode 
           ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
           : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
