@@ -622,8 +622,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         aiResponse = recipeResult.textResponse;
       }
     } else {
-      // 通常のAI会話（軽量モデル）
-      aiResponse = await aiService.generateGeneralResponse(text, userId);
+      // 通常のAI会話（詳細プロンプト・高性能モデル）
+      aiResponse = await aiService.generateAdvancedResponse(text, userId);
     }
     
     // 会話履歴を保存

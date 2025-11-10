@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
 import { admin } from '@/lib/firebase-admin';
-import { createRecipeFlexMessage } from './flexMessageTemplates';
 
 class AIHealthService {
   private genAI: GoogleGenerativeAI;
@@ -931,21 +930,17 @@ class AIHealthService {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
-ユーザーメッセージ「${userMessage}」がレシピや料理の作り方を求める質問かどうかを判定してください。
+以下のメッセージがレシピや料理の作り方を求める質問かどうか判定してください。
 
-レシピ質問の例：
-- "オムライスの作り方教えて"
-- "ハンバーグのレシピ"
-- "簡単なパスタの作り方"
-- "プロテイン入りパンケーキの作り方"
-- "低カロリーなサラダのレシピ"
-- "鶏胸肉を使った料理"
+メッセージ: "${userMessage}"
 
-レシピ質問でない例：
-- "オムライスのカロリーは？"
-- "ハンバーグは健康に良い？"
-- "パスタを食べても大丈夫？"
-- "プロテインの効果は？"
+レシピや料理の作り方を求める質問の例：
+- 「○○の作り方教えて」
+- 「○○のレシピを教えて」
+- 「○○ってどうやって作るの？」
+- 「ヘルシーな○○の作り方」
+- 「ダイエット用の○○レシピ」
+- 「筋トレ後におすすめの○○作り方」
 
 true または false で回答してください。`;
 
@@ -979,7 +974,8 @@ true または false で回答してください。`;
     "cookingTime": "調理時間（例：30分）",
     "servings": "人数（例：2人分）",
     "calories": "カロリー（例：約400kcal）"
-  }
+  },
+  "healthTips": "この料理・食材の健康効果や栄養的メリットを親しみやすく説明（80-120文字）"
 }
 
 条件：
@@ -993,24 +989,16 @@ true または false で回答してください。`;
       const response = await result.response;
       
       try {
-        // マークダウン記号を除去してJSONを抽出
-        let responseText = response.text();
-        
-        // ```json と ``` を除去
-        responseText = responseText.replace(/```json\s*/g, '');
-        responseText = responseText.replace(/```\s*/g, '');
-        responseText = responseText.trim();
-        
-        console.log('🔍 レシピJSON生成結果（整形前）:', responseText.substring(0, 200));
-        
-        const jsonResponse = JSON.parse(responseText);
+        const jsonResponse = JSON.parse(response.text());
         
         // Flexメッセージを生成
+        const { createRecipeFlexMessage } = await import('./flexMessageTemplates');
         const flexMessage = createRecipeFlexMessage(
           jsonResponse.recipeName,
           jsonResponse.ingredients,
           jsonResponse.instructions,
-          jsonResponse.cookingInfo
+          jsonResponse.cookingInfo,
+          jsonResponse.healthTips
         );
         
         return {
