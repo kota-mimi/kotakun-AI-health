@@ -1060,7 +1060,7 @@ true または false で回答してください。`;
   "instructions": ["手順1", "手順2", "手順3"],
   "cookingInfo": {
     "cookingTime": "調理時間（例：30分）",
-    "servings": "人数（例：2人分）",
+    "servings": "人数（例：1人分）",
     "calories": "カロリー（例：約400kcal）"
   },
   "healthTips": "この料理・食材の健康効果や栄養的メリットを親しみやすく説明（30-50文字）"
@@ -1071,7 +1071,10 @@ true または false で回答してください。`;
 - 材料は8個以内
 - 手順は8ステップ以内
 - 親しみやすい「こたくん」の口調で説明
-- 敬語は使わず、フレンドリーに`;
+- 敬語は使わず、フレンドリーに
+- **基本は1人前で作成**（ユーザーが「2人分の〜」「4人分の〜」など明確に指定した場合はその分量で調整）
+- 材料の分量は1人前に合わせて正確に記載
+- カロリー計算も1人前基準で算出`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;

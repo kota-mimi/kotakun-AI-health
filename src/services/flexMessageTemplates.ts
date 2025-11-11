@@ -1058,73 +1058,127 @@ export function createRecipeFlexMessage(
       },
       body: {
         type: 'box',
-        layout: 'horizontal',
+        layout: 'vertical',
         contents: [
-          // 左側: 材料 + 調理情報
+          // 調理情報セクション
+          ...(cookingInfo && (cookingInfo.cookingTime || cookingInfo.servings || cookingInfo.calories) ? [{
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              ...(cookingInfo.cookingTime ? [{
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '調理時間',
+                    size: 'xs',
+                    color: '#6B7280',
+                    align: 'center'
+                  },
+                  {
+                    type: 'text',
+                    text: cookingInfo.cookingTime,
+                    size: 'sm',
+                    color: '#111827',
+                    align: 'center',
+                    margin: 'xs'
+                  }
+                ],
+                flex: 1
+              }] : []),
+              ...(cookingInfo.servings ? [{
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '人数',
+                    size: 'xs',
+                    color: '#6B7280',
+                    align: 'center'
+                  },
+                  {
+                    type: 'text',
+                    text: cookingInfo.servings,
+                    size: 'sm',
+                    color: '#111827',
+                    align: 'center',
+                    margin: 'xs'
+                  }
+                ],
+                flex: 1
+              }] : []),
+              ...(cookingInfo.calories ? [{
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'カロリー',
+                    size: 'xs',
+                    color: '#6B7280',
+                    align: 'center'
+                  },
+                  {
+                    type: 'text',
+                    text: cookingInfo.calories,
+                    size: 'sm',
+                    color: '#111827',
+                    align: 'center',
+                    margin: 'xs'
+                  }
+                ],
+                flex: 1
+              }] : [])
+            ],
+            backgroundColor: '#F9FAFB',
+            borderColor: '#F3F4F6',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'lg'
+          }] : []),
+          // 材料セクション
           {
             type: 'box',
             layout: 'vertical',
             contents: [
-              // 調理情報セクション（コンパクトに）
-              ...(cookingInfo && (cookingInfo.cookingTime || cookingInfo.servings || cookingInfo.calories) ? [{
-                type: 'box',
-                layout: 'vertical',
-                contents: [
-                  ...(cookingInfo.cookingTime ? [{
-                    type: 'text',
-                    text: cookingInfo.cookingTime,
-                    size: 'xs',
-                    color: '#374151'
-                  }] : []),
-                  ...(cookingInfo.servings ? [{
-                    type: 'text',
-                    text: cookingInfo.servings,
-                    size: 'xs',
-                    color: '#374151'
-                  }] : []),
-                  ...(cookingInfo.calories ? [{
-                    type: 'text',
-                    text: cookingInfo.calories,
-                    size: 'xs',
-                    color: '#374151'
-                  }] : [])
-                ],
-                spacing: 'xs',
-                margin: 'sm'
-              }] : []),
-
-              // 材料セクション
               {
                 type: 'text',
                 text: '材料',
                 weight: 'bold',
-                size: 'sm',
+                size: 'md',
                 color: '#374151',
-                margin: 'md'
+                margin: 'lg'
               },
               {
-                type: 'box',
-                layout: 'vertical',
-                contents: ingredients.slice(0, 6).map(ingredient => ({
-                  type: 'text',
-                  text: `・${ingredient}`,
-                  size: 'xs',
-                  color: '#374151',
-                  margin: 'xs',
-                  wrap: true
-                })),
-                spacing: 'xs',
-                backgroundColor: '#F9FAFB',
-                borderColor: '#E5E7EB',
-                borderWidth: '1px',
-                cornerRadius: '4px',
-                paddingAll: '8px'
+                type: 'separator',
+                color: '#F3F4F6',
+                margin: 'sm'
               }
-            ],
-            flex: 1,
-            paddingEnd: 'md'
+            ]
           },
-          // 右側: 作り方
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: ingredients.slice(0, 8).map(ingredient => ({
+              type: 'text',
+              text: `・${ingredient}`,
+              size: 'sm',
+              color: '#374151',
+              margin: 'xs',
+              wrap: true
+            })),
+            backgroundColor: '#F9FAFB',
+            borderColor: '#F3F4F6',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'sm'
+          },
+
+          // 作り方セクション
           {
             type: 'box',
             layout: 'vertical',
@@ -1133,49 +1187,53 @@ export function createRecipeFlexMessage(
                 type: 'text',
                 text: '作り方',
                 weight: 'bold',
-                size: 'sm',
+                size: 'md',
                 color: '#374151',
-                margin: 'md'
+                margin: 'lg'
               },
               {
-                type: 'box',
-                layout: 'vertical',
-                contents: instructions.slice(0, 6).map((instruction, index) => ({
-                  type: 'box',
-                  layout: 'horizontal',
-                  contents: [
-                    {
-                      type: 'text',
-                      text: `${index + 1}.`,
-                      size: 'xs',
-                      color: '#2563EB',
-                      weight: 'bold',
-                      flex: 0
-                    },
-                    {
-                      type: 'text',
-                      text: instruction,
-                      size: 'xs',
-                      color: '#374151',
-                      wrap: true,
-                      flex: 5,
-                      margin: 'xs'
-                    }
-                  ],
-                  spacing: 'xs'
-                })),
-                spacing: 'xs',
-                backgroundColor: '#F9FAFB',
-                borderColor: '#E5E7EB',
-                borderWidth: '1px',
-                cornerRadius: '4px',
-                paddingAll: '8px'
+                type: 'separator',
+                color: '#F3F4F6',
+                margin: 'sm'
               }
-            ],
-            flex: 1
+            ]
+          },
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: instructions.slice(0, 8).map((instruction, index) => ({
+              type: 'box',
+              layout: 'horizontal',
+              contents: [
+                {
+                  type: 'text',
+                  text: `${index + 1}.`,
+                  size: 'sm',
+                  color: '#2563EB',
+                  weight: 'bold',
+                  flex: 0,
+                  margin: 'none'
+                },
+                {
+                  type: 'text',
+                  text: instruction,
+                  size: 'sm',
+                  color: '#374151',
+                  wrap: true,
+                  flex: 5,
+                  margin: 'sm'
+                }
+              ],
+              margin: 'sm'
+            })),
+            backgroundColor: '#F9FAFB',
+            borderColor: '#F3F4F6',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'sm'
           }
         ],
-        spacing: 'md',
         paddingAll: '16px'
       },
       footer: {
