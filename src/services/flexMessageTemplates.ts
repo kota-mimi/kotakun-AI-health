@@ -1025,6 +1025,7 @@ export function createRecipeFlexMessage(
     servings?: string;
     difficulty?: string;
     calories?: string;
+    totalCost?: string;
   },
   healthTips?: string
 ) {
@@ -1119,6 +1120,28 @@ export function createRecipeFlexMessage(
                   {
                     type: 'text',
                     text: cookingInfo.calories,
+                    size: 'sm',
+                    color: '#111827',
+                    align: 'center',
+                    margin: 'xs'
+                  }
+                ],
+                flex: 1
+              }] : []),
+              ...(cookingInfo.totalCost ? [{
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '材料費',
+                    size: 'xs',
+                    color: '#6B7280',
+                    align: 'center'
+                  },
+                  {
+                    type: 'text',
+                    text: cookingInfo.totalCost,
                     size: 'sm',
                     color: '#111827',
                     align: 'center',
