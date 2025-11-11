@@ -1035,10 +1035,6 @@ export function createRecipeFlexMessage(
       type: 'bubble',
       size: 'mega',
       direction: 'ltr',
-      action: {
-        type: 'uri',
-        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-      },
       header: {
         type: 'box',
         layout: 'vertical',
