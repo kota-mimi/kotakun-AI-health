@@ -1034,6 +1034,7 @@ export function createRecipeFlexMessage(
     contents: {
       type: 'bubble',
       size: 'mega',
+      direction: 'ltr',
       action: {
         type: 'uri',
         uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
@@ -1071,19 +1072,19 @@ export function createRecipeFlexMessage(
                 contents: [
                   ...(cookingInfo.cookingTime ? [{
                     type: 'text',
-                    text: `⏱️ ${cookingInfo.cookingTime}`,
+                    text: cookingInfo.cookingTime,
                     size: 'xs',
                     color: '#374151'
                   }] : []),
                   ...(cookingInfo.servings ? [{
                     type: 'text',
-                    text: `👥 ${cookingInfo.servings}`,
+                    text: cookingInfo.servings,
                     size: 'xs',
                     color: '#374151'
                   }] : []),
                   ...(cookingInfo.calories ? [{
                     type: 'text',
-                    text: `🔥 ${cookingInfo.calories}`,
+                    text: cookingInfo.calories,
                     size: 'xs',
                     color: '#374151'
                   }] : [])
@@ -1095,7 +1096,7 @@ export function createRecipeFlexMessage(
               // 材料セクション
               {
                 type: 'text',
-                text: '🥬 材料',
+                text: '材料',
                 weight: 'bold',
                 size: 'sm',
                 color: '#374151',
@@ -1112,7 +1113,12 @@ export function createRecipeFlexMessage(
                   margin: 'xs',
                   wrap: true
                 })),
-                spacing: 'xs'
+                spacing: 'xs',
+                backgroundColor: '#F9FAFB',
+                borderColor: '#E5E7EB',
+                borderWidth: '1px',
+                cornerRadius: '4px',
+                paddingAll: '8px'
               }
             ],
             flex: 1,
@@ -1125,7 +1131,7 @@ export function createRecipeFlexMessage(
             contents: [
               {
                 type: 'text',
-                text: '👩‍🍳 作り方',
+                text: '作り方',
                 weight: 'bold',
                 size: 'sm',
                 color: '#374151',
@@ -1158,7 +1164,12 @@ export function createRecipeFlexMessage(
                   ],
                   spacing: 'xs'
                 })),
-                spacing: 'xs'
+                spacing: 'xs',
+                backgroundColor: '#F9FAFB',
+                borderColor: '#E5E7EB',
+                borderWidth: '1px',
+                cornerRadius: '4px',
+                paddingAll: '8px'
               }
             ],
             flex: 1
@@ -1173,11 +1184,20 @@ export function createRecipeFlexMessage(
         contents: [
           // 健康効果セクション（healthTipsがある場合のみ表示）
           ...(healthTips ? [{
-            type: 'text',
-            text: `💡 ${healthTips}`,
-            size: 'xs',
-            color: '#F59E0B',
-            wrap: true,
+            type: 'box',
+            layout: 'vertical',
+            contents: [{
+              type: 'text',
+              text: healthTips,
+              size: 'xs',
+              color: '#92400E',
+              wrap: true
+            }],
+            backgroundColor: '#FEF3C7',
+            borderColor: '#D97706',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '8px',
             margin: 'sm'
           }] : [])
         ],
