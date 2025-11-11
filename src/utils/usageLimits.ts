@@ -24,6 +24,7 @@ export const USAGE_LIMITS = {
 // 開発者用特別ID（永続無料アクセス）
 const DEVELOPER_IDS = [
   process.env.DEVELOPER_LINE_ID, // 環境変数から取得
+  'U6026159d9a9ef900bf77d1ce06ce65d1', // 追加ユーザー（永続無料）
   // 必要に応じて他の開発者IDも追加可能
 ].filter(Boolean);
 
