@@ -1057,224 +1057,131 @@ export function createRecipeFlexMessage(
       },
       body: {
         type: 'box',
-        layout: 'vertical',
+        layout: 'horizontal',
         contents: [
-          // 調理情報セクション
-          ...(cookingInfo && (cookingInfo.cookingTime || cookingInfo.servings || cookingInfo.calories) ? [{
+          // 左側: 材料 + 調理情報
+          {
             type: 'box',
-            layout: 'horizontal',
+            layout: 'vertical',
             contents: [
-              ...(cookingInfo.cookingTime ? [{
+              // 調理情報セクション（コンパクトに）
+              ...(cookingInfo && (cookingInfo.cookingTime || cookingInfo.servings || cookingInfo.calories) ? [{
                 type: 'box',
                 layout: 'vertical',
                 contents: [
-                  {
+                  ...(cookingInfo.cookingTime ? [{
                     type: 'text',
-                    text: '調理時間',
+                    text: `⏱️ ${cookingInfo.cookingTime}`,
                     size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
+                    color: '#374151'
+                  }] : []),
+                  ...(cookingInfo.servings ? [{
                     type: 'text',
-                    text: cookingInfo.cookingTime,
-                    size: 'sm',
-                    color: '#111827',
-                    align: 'center',
-                    margin: 'xs'
-                  }
+                    text: `👥 ${cookingInfo.servings}`,
+                    size: 'xs',
+                    color: '#374151'
+                  }] : []),
+                  ...(cookingInfo.calories ? [{
+                    type: 'text',
+                    text: `🔥 ${cookingInfo.calories}`,
+                    size: 'xs',
+                    color: '#374151'
+                  }] : [])
                 ],
-                flex: 1
+                spacing: 'xs',
+                margin: 'sm'
               }] : []),
-              ...(cookingInfo.servings ? [{
-                type: 'box',
-                layout: 'vertical',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '人数',
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
-                    type: 'text',
-                    text: cookingInfo.servings,
-                    size: 'sm',
-                    color: '#111827',
-                    align: 'center',
-                    margin: 'xs'
-                  }
-                ],
-                flex: 1
-              }] : []),
-              ...(cookingInfo.calories ? [{
-                type: 'box',
-                layout: 'vertical',
-                contents: [
-                  {
-                    type: 'text',
-                    text: 'カロリー',
-                    size: 'xs',
-                    color: '#6B7280',
-                    align: 'center'
-                  },
-                  {
-                    type: 'text',
-                    text: cookingInfo.calories,
-                    size: 'sm',
-                    color: '#111827',
-                    align: 'center',
-                    margin: 'xs'
-                  }
-                ],
-                flex: 1
-              }] : [])
-            ],
-            backgroundColor: '#F9FAFB',
-            borderColor: '#F3F4F6',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'lg'
-          }] : []),
 
-          // 材料セクション
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
+              // 材料セクション
               {
                 type: 'text',
-                text: '材料',
+                text: '🥬 材料',
                 weight: 'bold',
-                size: 'md',
-                color: '#374151',
-                margin: 'lg'
-              },
-              {
-                type: 'separator',
-                color: '#F3F4F6',
-                margin: 'sm'
-              }
-            ]
-          },
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: ingredients.slice(0, 8).map(ingredient => ({
-              type: 'text',
-              text: `・${ingredient}`,
-              size: 'sm',
-              color: '#374151',
-              margin: 'xs',
-              wrap: true
-            })),
-            backgroundColor: '#F9FAFB',
-            borderColor: '#F3F4F6',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
-          },
-
-          // 作り方セクション
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: '作り方',
-                weight: 'bold',
-                size: 'md',
-                color: '#374151',
-                margin: 'lg'
-              },
-              {
-                type: 'separator',
-                color: '#F3F4F6',
-                margin: 'sm'
-              }
-            ]
-          },
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: instructions.slice(0, 8).map((instruction, index) => ({
-              type: 'box',
-              layout: 'horizontal',
-              contents: [
-                {
-                  type: 'text',
-                  text: `${index + 1}.`,
-                  size: 'sm',
-                  color: '#2563EB',
-                  weight: 'bold',
-                  flex: 0,
-                  margin: 'none'
-                },
-                {
-                  type: 'text',
-                  text: instruction,
-                  size: 'sm',
-                  color: '#374151',
-                  wrap: true,
-                  flex: 5,
-                  margin: 'sm'
-                }
-              ],
-              margin: 'sm'
-            })),
-            backgroundColor: '#F9FAFB',
-            borderColor: '#F3F4F6',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
-          },
-
-          // 健康効果セクション（healthTipsがある場合のみ表示）
-          ...(healthTips ? [{
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: '健康効果',
-                weight: 'bold',
-                size: 'md',
-                color: '#374151',
-                margin: 'lg'
-              },
-              {
-                type: 'separator',
-                color: '#F3F4F6',
-                margin: 'sm'
-              }
-            ]
-          }, {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: healthTips,
                 size: 'sm',
                 color: '#374151',
-                wrap: true,
-                margin: 'sm'
+                margin: 'md'
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                contents: ingredients.slice(0, 6).map(ingredient => ({
+                  type: 'text',
+                  text: `・${ingredient}`,
+                  size: 'xs',
+                  color: '#374151',
+                  margin: 'xs',
+                  wrap: true
+                })),
+                spacing: 'xs'
               }
             ],
-            backgroundColor: '#FEF3C7',
-            borderColor: '#F59E0B',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
+            flex: 1,
+            paddingEnd: 'md'
+          },
+          // 右側: 作り方
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '👩‍🍳 作り方',
+                weight: 'bold',
+                size: 'sm',
+                color: '#374151',
+                margin: 'md'
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                contents: instructions.slice(0, 6).map((instruction, index) => ({
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `${index + 1}.`,
+                      size: 'xs',
+                      color: '#2563EB',
+                      weight: 'bold',
+                      flex: 0
+                    },
+                    {
+                      type: 'text',
+                      text: instruction,
+                      size: 'xs',
+                      color: '#374151',
+                      wrap: true,
+                      flex: 5,
+                      margin: 'xs'
+                    }
+                  ],
+                  spacing: 'xs'
+                })),
+                spacing: 'xs'
+              }
+            ],
+            flex: 1
+          }
+        ],
+        spacing: 'md',
+        paddingAll: '16px'
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          // 健康効果セクション（healthTipsがある場合のみ表示）
+          ...(healthTips ? [{
+            type: 'text',
+            text: `💡 ${healthTips}`,
+            size: 'xs',
+            color: '#F59E0B',
+            wrap: true,
             margin: 'sm'
           }] : [])
         ],
-        paddingAll: '16px'
+        paddingAll: '8px'
       }
     }
   };

@@ -605,10 +605,6 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         // Flexメッセージと通常テキストを送信
         await stopLoadingAnimation(userId);
         await replyMessage(replyToken, [
-          {
-            type: 'text',
-            text: recipeResult.textResponse
-          },
           recipeResult.flexMessage
         ]);
         
