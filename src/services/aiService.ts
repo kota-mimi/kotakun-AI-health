@@ -1068,7 +1068,9 @@ true または false で回答してください。`;
 - 世界最高レベルの健康・運動・栄養の専門知識を簡単に説明
 - ユーザーの真剣な相談には必ず丁寧で包括的な回答をする${conversationHistory}
 
-以下のJSON形式で回答してください：
+**重要: 必ず以下のJSON形式のみで回答してください。他のテキストは一切含めないでください。**
+
+```json
 {
   "recipeName": "料理名",
   "textResponse": "親しみやすい口調でのレシピ説明（20-50文字）",
@@ -1081,6 +1083,7 @@ true または false で回答してください。`;
   },
   "healthTips": "この料理・食材の健康効果や栄養的メリットを親しみやすく説明（30-50文字）"
 }
+```
 
 条件：
 - 健康的で栄養バランスを重視
@@ -1109,14 +1112,29 @@ true または false で回答してください。`;
         // マークダウン記号を除去してJSONを抽出
         let responseText = response.text();
         
-        // ```json と ``` を除去
-        responseText = responseText.replace(/```json\s*/g, '');
-        responseText = responseText.replace(/```\s*/g, '');
-        responseText = responseText.trim();
+        console.log('🔍 レシピAI生成結果（生データ）:', responseText.substring(0, 300));
         
-        console.log('🔍 レシピJSON生成結果（整形前）:', responseText.substring(0, 200));
+        // JSONブロックを探す（より堅牢に）
+        let jsonString = '';
         
-        const jsonResponse = JSON.parse(responseText);
+        // ```json...``` パターンをチェック
+        const jsonBlockMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonBlockMatch) {
+          jsonString = jsonBlockMatch[1].trim();
+        } else {
+          // { ... } パターンを探す
+          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonString = jsonMatch[0].trim();
+          } else {
+            // JSON形式が見つからない場合
+            throw new Error('JSON形式のレスポンスが見つかりません');
+          }
+        }
+        
+        console.log('🔍 抽出されたJSON:', jsonString.substring(0, 200));
+        
+        const jsonResponse = JSON.parse(jsonString);
         
         // Flexメッセージを生成
         const { createRecipeFlexMessage } = await import('./flexMessageTemplates');
