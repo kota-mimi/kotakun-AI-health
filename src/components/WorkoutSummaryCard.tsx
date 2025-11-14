@@ -371,23 +371,23 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
           )}
         </div>
 
-      {/* 削除確認モーダル */}
-      <ExerciseDeleteModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
-        onConfirm={handleDeleteConfirm}
-        exercise={deleteModal.exercise}
-      />
+        {/* 削除確認モーダル */}
+        <ExerciseDeleteModal
+          isOpen={deleteModal.isOpen}
+          onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
+          onConfirm={handleDeleteConfirm}
+          exercise={deleteModal.exercise}
+        />
 
-      {/* 編集モーダル */}
-      <ExerciseEditModal
-        isOpen={editModal.isOpen}
-        onClose={() => setEditModal({ isOpen: false, exercise: null })}
-        onUpdate={handleUpdateExercise}
-        onDelete={handleDeleteFromEdit}
-        exercise={editModal.exercise}
-        userWeight={70}
-      />
+        {/* 編集モーダル */}
+        <ExerciseEditModal
+          isOpen={editModal.isOpen}
+          onClose={() => setEditModal({ isOpen: false, exercise: null })}
+          onUpdate={handleUpdateExercise}
+          onDelete={handleDeleteFromEdit}
+          exercise={editModal.exercise}
+          userWeight={70}
+        />
     </div>
   );
 }
