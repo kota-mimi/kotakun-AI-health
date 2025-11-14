@@ -161,10 +161,9 @@ export function MealSummaryCard({
 						return (
 							<div key={mealType} className="space-y-2">
 								{/* 食事タイプヘッダー - クリック可能 */}
-								<Button
+								<div
 									onClick={() => onAddMeal(mealType)}
-									variant="ghost"
-									className="w-full justify-start p-0 h-auto hover:bg-transparent"
+									className="w-full cursor-pointer"
 								>
 									<div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
 										<div className="flex items-center justify-between w-full">
@@ -173,7 +172,7 @@ export function MealSummaryCard({
 											</h4>
 										</div>
 									</div>
-								</Button>
+								</div>
 
 								{/* 食事リスト */}
 								{mealItems.length > 0 && (
