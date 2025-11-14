@@ -179,11 +179,11 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
     <>
       <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
         {hasWorkout ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* 統計サマリー */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <div 
-                className="rounded-xl p-3 text-center"
+                className="rounded-xl p-2 text-center"
                 style={{ 
                   background: 'linear-gradient(to bottom right, #fefaf8, #fef0e6)'
                 }}
@@ -191,19 +191,19 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                 <div className="text-lg font-bold text-orange-700">{totalCalories > 0 ? totalCalories : '-'}</div>
                 <div className="text-xs text-orange-600">消費カロリー</div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 text-center">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-2 text-center">
                 <div className="text-lg font-bold text-blue-700">{totalDuration > 0 ? totalDuration : '-'}</div>
                 <div className="text-xs text-blue-600">運動時間（分）</div>
               </div>
             </div>
             
             {/* 運動記録リスト */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-slate-700 mb-2">運動記録</h4>
+            <div className="space-y-1.5">
+              <h4 className="text-sm font-medium text-slate-700 mb-1.5">運動記録</h4>
               {actualExerciseData.map((exercise, index) => (
                 <div 
                   key={exercise.id} 
-                  className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="bg-white rounded-lg p-2 border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
                   onClick={() => onEditExercise?.(exercise.id)}
                 >
                   <div className="flex items-center justify-between">
