@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Activity, ChevronRight, ChevronDown, ChevronUp, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2, Edit3 } from 'lucide-react';
+import { Activity, ChevronRight, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2, Edit3 } from 'lucide-react';
 import { ExerciseDeleteModal } from './ExerciseDeleteModal';
 import { ExerciseEditModal } from './ExerciseEditModal';
 
@@ -73,7 +72,6 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
 export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise, onUpdateExercise }: WorkoutSummaryCardProps) {
   
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   const [editModal, setEditModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   
@@ -180,27 +178,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
-      <Button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        variant="ghost"
-        className="w-full justify-start p-0 h-auto hover:bg-transparent"
-      >
-        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
-          <div className="flex items-center space-x-2">
-            <h3 className="font-semibold text-slate-900">今日の運動</h3>
-          </div>
-          {isCollapsed ? (
-            <ChevronDown size={16} className="text-slate-500" />
-          ) : (
-            <ChevronUp size={16} className="text-slate-500" />
-          )}
-        </div>
-      </Button>
-
-      {/* コンテンツ */}
-      {!isCollapsed && (
-        <div className="px-4 -mt-4 pb-4">
+    <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 px-4 pb-4">
           {hasWorkout ? (
             <div className="space-y-4">
             {/* 統計サマリー */}
@@ -392,7 +370,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
           </div>
           )}
         </div>
-      )}
 
       {/* 削除確認モーダル */}
       <ExerciseDeleteModal
@@ -411,6 +388,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
         exercise={editModal.exercise}
         userWeight={70}
       />
-    </Card>
+    </div>
   );
 }
