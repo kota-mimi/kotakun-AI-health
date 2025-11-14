@@ -165,7 +165,7 @@ export function MealSummaryCard({
 									onClick={() => onAddMeal(mealType)}
 									className="cursor-pointer"
 								>
-									<div className="flex items-center justify-between w-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl p-3 hover:from-slate-200 hover:via-slate-100 hover:to-slate-200 transition-all duration-300 border border-slate-200/50 shadow-sm hover:shadow-md">
+									<div className="flex items-center justify-between w-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl p-2 hover:from-slate-200 hover:via-slate-100 hover:to-slate-200 transition-all duration-300 border border-slate-200/50 shadow-sm hover:shadow-md">
 										<div className="flex items-center justify-between w-full">
 											<h4 className="text-base font-semibold text-slate-800">
 												{mealTimeLabels[mealType]}
