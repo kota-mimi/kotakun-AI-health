@@ -180,8 +180,8 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   return (
     <>
       <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 px-4 pb-4">
-          {hasWorkout ? (
-            <div className="space-y-4">
+        {hasWorkout ? (
+          <div className="space-y-4">
             {/* 統計サマリー */}
             <div className="grid grid-cols-2 gap-3">
               <div 
@@ -369,8 +369,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
               運動を記録する
             </Button>
           </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* 削除確認モーダル */}
