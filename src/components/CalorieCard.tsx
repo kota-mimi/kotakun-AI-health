@@ -93,7 +93,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   };
 
   return (
-    <div className="space-y-0">
+    <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 space-y-0">
       {/* セグメントコントロール - iOS風 */}
       <div className="p-4 pb-0">
         <div className="bg-slate-100/80 rounded-xl p-1 flex">
