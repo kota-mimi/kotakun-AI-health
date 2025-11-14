@@ -178,7 +178,8 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
   };
 
   return (
-    <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 px-4 pb-4">
+    <>
+      <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 px-4 pb-4">
           {hasWorkout ? (
             <div className="space-y-4">
             {/* 統計サマリー */}
@@ -370,24 +371,25 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
           </div>
           )}
         </div>
+      </div>
 
-        {/* 削除確認モーダル */}
-        <ExerciseDeleteModal
-          isOpen={deleteModal.isOpen}
-          onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
-          onConfirm={handleDeleteConfirm}
-          exercise={deleteModal.exercise}
-        />
+      {/* 削除確認モーダル */}
+      <ExerciseDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, exercise: null })}
+        onConfirm={handleDeleteConfirm}
+        exercise={deleteModal.exercise}
+      />
 
-        {/* 編集モーダル */}
-        <ExerciseEditModal
-          isOpen={editModal.isOpen}
-          onClose={() => setEditModal({ isOpen: false, exercise: null })}
-          onUpdate={handleUpdateExercise}
-          onDelete={handleDeleteFromEdit}
-          exercise={editModal.exercise}
-          userWeight={70}
-        />
-    </div>
+      {/* 編集モーダル */}
+      <ExerciseEditModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, exercise: null })}
+        onUpdate={handleUpdateExercise}
+        onDelete={handleDeleteFromEdit}
+        exercise={editModal.exercise}
+        userWeight={70}
+      />
+    </>
   );
 }
