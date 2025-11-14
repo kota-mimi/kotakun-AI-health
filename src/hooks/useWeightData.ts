@@ -251,8 +251,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       // 選択日に記録がある場合のみその日の体重を使用
       currentWeight = currentDayData.weight;
     } else {
-      // 選択日に記録がない場合は0（--表示）
-      currentWeight = 0;
+      // 選択日に記録がない場合は最新の記録体重を表示
+      const latestRecord = realWeightData
+        .filter(item => item.date <= dateKey && item.weight > 0)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      
+      currentWeight = latestRecord?.weight || 0;
     }
     
     // 前日比計算：選択日に記録がある場合のみ前日と比較
