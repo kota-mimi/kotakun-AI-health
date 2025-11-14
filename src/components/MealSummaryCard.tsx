@@ -1,8 +1,5 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
 
 interface MealItem {
 	id: string;
@@ -64,7 +61,6 @@ export function MealSummaryCard({
 	onMenuOpenChange,
 }: MealSummaryCardProps) {
 	const [isMounted, setIsMounted] = useState(false);
-	const [isExpanded, setIsExpanded] = useState(true);
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -145,27 +141,7 @@ export function MealSummaryCard({
 	];
 
 	return (
-		<Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
-			<Button
-				onClick={() => setIsExpanded(!isExpanded)}
-				variant="ghost"
-				className="w-full justify-start p-0 h-auto hover:bg-transparent"
-			>
-				<div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
-					<div className="flex items-center space-x-2">
-						<h3 className="font-semibold text-slate-900">今日の食事記録</h3>
-					</div>
-					{isExpanded ? (
-						<ChevronUp size={16} className="text-slate-500" />
-					) : (
-						<ChevronDown size={16} className="text-slate-500" />
-					)}
-				</div>
-			</Button>
-
-			{/* 食事フレーム - 開閉可能 */}
-			{isExpanded && (
-				<div className="p-4 space-y-3">
+		<div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4 space-y-3">
 					{mealTypeOrder.map((mealType) => {
 						const mealItems = expandedMealData[mealType];
 						const totalCaloriesForType = getMealCalories(mealType);
@@ -185,10 +161,9 @@ export function MealSummaryCard({
 						return (
 							<div key={mealType} className="space-y-2">
 								{/* 食事タイプヘッダー - クリック可能 */}
-								<Button
+								<div
 									onClick={() => onAddMeal(mealType)}
-									variant="ghost"
-									className="w-full justify-start p-0 h-auto hover:bg-transparent"
+									className="cursor-pointer"
 								>
 									<div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
 										<div className="flex items-center justify-between w-full">
@@ -197,7 +172,7 @@ export function MealSummaryCard({
 											</h4>
 										</div>
 									</div>
-								</Button>
+								</div>
 
 								{/* 食事リスト */}
 								{mealItems.length > 0 && (
@@ -280,8 +255,6 @@ export function MealSummaryCard({
 							</div>
 						);
 					})}
-				</div>
-			)}
-		</Card>
+		</div>
 	);
 }
