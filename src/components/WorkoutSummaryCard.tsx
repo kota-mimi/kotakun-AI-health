@@ -70,8 +70,6 @@ const getExerciseTypeIcon = (type: Exercise['type']) => {
 };
 
 export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWorkout, onAddExercise, onEditExercise, onDeleteExercise, onUpdateExercise }: WorkoutSummaryCardProps) {
-  
-  const [isExpanded, setIsExpanded] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   const [editModal, setEditModal] = useState<{ isOpen: boolean; exercise: Exercise | null }>({ isOpen: false, exercise: null });
   
@@ -202,7 +200,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
             {/* 運動記録リスト */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-slate-700 mb-2">運動記録</h4>
-              {(isExpanded ? actualExerciseData : actualExerciseData.slice(0, 3)).map((exercise, index) => (
+              {actualExerciseData.map((exercise, index) => (
                 <div 
                   key={exercise.id} 
                   className="bg-white rounded-lg p-3 border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
@@ -332,17 +330,6 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
                   </div>
                 </div>
               ))}
-              
-              {actualExerciseData.length > 3 && (
-                <div className="text-center py-2">
-                  <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full transition-colors font-medium"
-                  >
-                    {isExpanded ? '閉じる' : `もっと見る (${actualExerciseData.length - 3}件)`}
-                  </button>
-                </div>
-              )}
             </div>
             
             {/* 運動追加ボタン */}
