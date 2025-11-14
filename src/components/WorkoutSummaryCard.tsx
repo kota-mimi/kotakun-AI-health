@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
 import { Activity, ChevronRight, Flame, Clock, Dumbbell, Zap, User, Trophy, Trash2, Edit3 } from 'lucide-react';
 import { ExerciseDeleteModal } from './ExerciseDeleteModal';
