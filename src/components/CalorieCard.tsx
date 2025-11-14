@@ -1,8 +1,5 @@
-import { Card } from './ui/card';
 import { Progress } from './ui/progress';
-import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import { getTargetValuesForDate } from '@/hooks/useProfileHistory';
 
 interface PFCData {
@@ -40,7 +37,6 @@ interface CalorieCardProps {
 export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [], selectedDate, profileData }: CalorieCardProps) {
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
   const [isMounted, setIsMounted] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   
   useEffect(() => {
     setIsMounted(true);
@@ -97,28 +93,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
-      <Button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        variant="ghost"
-        className="w-full justify-start p-0 h-auto hover:bg-transparent"
-      >
-        <div className="flex items-center justify-between w-full px-4 py-3 border-b border-slate-200 hover:bg-slate-50 transition-colors duration-200">
-          <div className="flex items-center space-x-2">
-            <h3 className="font-semibold text-slate-900">カロリー</h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            {isCollapsed ? (
-              <ChevronDown size={16} className="text-slate-500" />
-            ) : (
-              <ChevronUp size={16} className="text-slate-500" />
-            )}
-          </div>
-        </div>
-      </Button>
-
-      {!isCollapsed && (
-        <div className="space-y-0">
+    <div className="space-y-0">
           {/* セグメントコントロール - iOS風 */}
           <div className="p-4 pb-0">
             <div className="bg-slate-100/80 rounded-xl p-1 flex">
@@ -305,7 +280,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
             )}
           </div>
         </div>
-      )}
-    </Card>
+    </div>
   );
 }
