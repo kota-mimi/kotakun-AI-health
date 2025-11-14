@@ -74,11 +74,11 @@ export function WeightCard({
 
 	return (
 		<Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
-			<div className="p-3">
-				<div className="grid grid-cols-3 gap-2">
+			<div className="p-2">
+				<div className="grid grid-cols-3 gap-1.5">
 					{/* 現在の体重 */}
 					<div
-						className="text-center p-3 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">
@@ -100,7 +100,7 @@ export function WeightCard({
 
 					{/* 前日比 */}
 					<div
-						className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
@@ -131,7 +131,7 @@ export function WeightCard({
 
 					{/* 目標まで */}
 					<div
-						className="text-center p-3 bg-green-50 rounded-xl border border-green-200 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-green-50 rounded-xl border border-green-200 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
