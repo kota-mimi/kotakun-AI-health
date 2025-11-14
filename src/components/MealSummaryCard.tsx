@@ -159,13 +159,13 @@ export function MealSummaryCard({
 						);
 
 						return (
-							<div key={mealType} className="space-y-2">
+							<div key={mealType} className="space-y-1.5">
 								{/* 食事タイプヘッダー - クリック可能 */}
 								<div
 									onClick={() => onAddMeal(mealType)}
 									className="cursor-pointer"
 								>
-									<div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-3 hover:bg-slate-100 transition-colors duration-200">
+									<div className="flex items-center justify-between w-full bg-slate-50 rounded-lg p-2 hover:bg-slate-100 transition-colors duration-200">
 										<div className="flex items-center justify-between w-full">
 											<h4 className="text-base font-semibold text-slate-800">
 												{mealTimeLabels[mealType]}
@@ -176,7 +176,7 @@ export function MealSummaryCard({
 
 								{/* 食事リスト */}
 								{mealItems.length > 0 && (
-									<div className="space-y-2">
+									<div className="space-y-1.5">
 										{mealItems.map((meal) => {
 											const images =
 												meal.images || (meal.image ? [meal.image] : []);
@@ -184,7 +184,7 @@ export function MealSummaryCard({
 											return (
 												<div
 													key={meal.id}
-													className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
+													className="bg-white rounded-lg border border-slate-200 p-2 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group"
 													onClick={() => {
 														// 複数食事の個別食事の場合は個別編集
 														if (
@@ -201,9 +201,9 @@ export function MealSummaryCard({
 														}
 													}}
 												>
-													<div className="flex items-center space-x-3">
+													<div className="flex items-center space-x-2">
 														{/* 食事画像 */}
-														<div className="flex-shrink-0 w-12 h-12">
+														<div className="flex-shrink-0 w-10 h-10">
 															{images.length > 0 && (
 																<img
 																	src={images[0]}
