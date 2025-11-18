@@ -1051,13 +1051,13 @@ export function createRecipeFlexMessage(
           }
         ],
         backgroundColor: '#1E90FF',
-        paddingAll: '16px'
+        paddingAll: '8px'
       },
       body: {
         type: 'box',
         layout: 'vertical',
         contents: [
-          // 調理情報セクション
+          // 調理情報セクション（コンパクト化）
           ...(cookingInfo && (cookingInfo.cookingTime || cookingInfo.servings || cookingInfo.calories) ? [{
             type: 'box',
             layout: 'horizontal',
@@ -1068,15 +1068,15 @@ export function createRecipeFlexMessage(
                 contents: [
                   {
                     type: 'text',
-                    text: '調理時間',
-                    size: 'xs',
+                    text: '時間',
+                    size: 'xxs',
                     color: '#6B7280',
                     align: 'center'
                   },
                   {
                     type: 'text',
                     text: cookingInfo.cookingTime,
-                    size: 'sm',
+                    size: 'xs',
                     color: '#111827',
                     align: 'center',
                     margin: 'xs'
@@ -1091,14 +1091,14 @@ export function createRecipeFlexMessage(
                   {
                     type: 'text',
                     text: '人数',
-                    size: 'xs',
+                    size: 'xxs',
                     color: '#6B7280',
                     align: 'center'
                   },
                   {
                     type: 'text',
                     text: cookingInfo.servings,
-                    size: 'sm',
+                    size: 'xs',
                     color: '#111827',
                     align: 'center',
                     margin: 'xs'
@@ -1113,14 +1113,14 @@ export function createRecipeFlexMessage(
                   {
                     type: 'text',
                     text: 'カロリー',
-                    size: 'xs',
+                    size: 'xxs',
                     color: '#6B7280',
                     align: 'center'
                   },
                   {
                     type: 'text',
                     text: cookingInfo.calories,
-                    size: 'sm',
+                    size: 'xs',
                     color: '#111827',
                     align: 'center',
                     margin: 'xs'
@@ -1135,14 +1135,14 @@ export function createRecipeFlexMessage(
                   {
                     type: 'text',
                     text: '材料費',
-                    size: 'xs',
+                    size: 'xxs',
                     color: '#6B7280',
                     align: 'center'
                   },
                   {
                     type: 'text',
                     text: cookingInfo.totalCost,
-                    size: 'sm',
+                    size: 'xs',
                     color: '#111827',
                     align: 'center',
                     margin: 'xs'
@@ -1155,10 +1155,10 @@ export function createRecipeFlexMessage(
             borderColor: '#F3F4F6',
             borderWidth: '1px',
             cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'lg'
+            paddingAll: '8px',
+            margin: 'sm'
           }] : []),
-          // 材料セクション
+          // 材料セクション（2列表示）
           {
             type: 'box',
             layout: 'vertical',
@@ -1167,37 +1167,68 @@ export function createRecipeFlexMessage(
                 type: 'text',
                 text: '材料',
                 weight: 'bold',
-                size: 'md',
+                size: 'sm',
                 color: '#374151',
-                margin: 'lg'
+                margin: 'sm'
               },
               {
                 type: 'separator',
                 color: '#F3F4F6',
-                margin: 'sm'
+                margin: 'xs'
               }
             ]
           },
           {
             type: 'box',
             layout: 'vertical',
-            contents: ingredients.slice(0, 8).map(ingredient => ({
-              type: 'text',
-              text: `・${ingredient}`,
-              size: 'sm',
-              color: '#374151',
-              margin: 'xs',
-              wrap: true
-            })),
+            contents: (() => {
+              const ingredientRows = [];
+              const maxIngredients = 12; // 制限を8→12に拡張
+              const ingredientsToShow = ingredients.slice(0, maxIngredients);
+              
+              // 2列に分割
+              for (let i = 0; i < ingredientsToShow.length; i += 2) {
+                const leftIngredient = ingredientsToShow[i];
+                const rightIngredient = ingredientsToShow[i + 1];
+                
+                ingredientRows.push({
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: `・${leftIngredient}`,
+                      size: 'xs',
+                      color: '#374151',
+                      wrap: true,
+                      flex: 1
+                    },
+                    ...(rightIngredient ? [{
+                      type: 'text',
+                      text: `・${rightIngredient}`,
+                      size: 'xs',
+                      color: '#374151',
+                      wrap: true,
+                      flex: 1
+                    }] : [{
+                      type: 'spacer',
+                      size: 'sm'
+                    }])
+                  ],
+                  margin: 'xs'
+                });
+              }
+              return ingredientRows;
+            })(),
             backgroundColor: '#F9FAFB',
             borderColor: '#F3F4F6',
             borderWidth: '1px',
             cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
+            paddingAll: '8px',
+            margin: 'xs'
           },
 
-          // 作り方セクション
+          // 作り方セクション（コンパクト化）
           {
             type: 'box',
             layout: 'vertical',
@@ -1206,28 +1237,28 @@ export function createRecipeFlexMessage(
                 type: 'text',
                 text: '作り方',
                 weight: 'bold',
-                size: 'md',
+                size: 'sm',
                 color: '#374151',
-                margin: 'lg'
+                margin: 'sm'
               },
               {
                 type: 'separator',
                 color: '#F3F4F6',
-                margin: 'sm'
+                margin: 'xs'
               }
             ]
           },
           {
             type: 'box',
             layout: 'vertical',
-            contents: instructions.slice(0, 8).map((instruction, index) => ({
+            contents: instructions.slice(0, 12).map((instruction, index) => ({
               type: 'box',
               layout: 'horizontal',
               contents: [
                 {
                   type: 'text',
                   text: `${index + 1}.`,
-                  size: 'sm',
+                  size: 'xs',
                   color: '#2563EB',
                   weight: 'bold',
                   flex: 0,
@@ -1236,21 +1267,21 @@ export function createRecipeFlexMessage(
                 {
                   type: 'text',
                   text: instruction,
-                  size: 'sm',
+                  size: 'xs',
                   color: '#374151',
                   wrap: true,
                   flex: 5,
-                  margin: 'sm'
+                  margin: 'xs'
                 }
               ],
-              margin: 'sm'
+              margin: 'xs'
             })),
             backgroundColor: '#F9FAFB',
             borderColor: '#F3F4F6',
             borderWidth: '1px',
             cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
+            paddingAll: '8px',
+            margin: 'xs'
           }
         ],
         paddingAll: '16px'
