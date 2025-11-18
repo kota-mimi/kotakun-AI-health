@@ -49,6 +49,15 @@ export async function getUserPlan(userId: string): Promise<string> {
     const subscriptionStatus = userData?.subscriptionStatus || 'inactive';
     const currentPlan = userData?.currentPlan;
     
+    // お試し期間中の場合（3日間無制限）
+    if (subscriptionStatus === 'trial') {
+      const trialEnd = userData?.trialEndDate?.toDate();
+      if (trialEnd && new Date() < trialEnd) {
+        console.log('🎁 お試し期間中: 無制限アクセス許可', { userId, trialEnd });
+        return 'monthly'; // お試し期間中は月額プラン扱い
+      }
+    }
+    
     // アクティブなサブスクリプションがある場合
     if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
       if (currentPlan === '月額プラン') return 'monthly';

@@ -257,6 +257,26 @@ export async function POST(request: NextRequest) {
       await userRef.set(profileData, { merge: true });
       console.log('✅ ユーザープロファイル保存完了');
 
+      // 🎁 3日間お試し期間を設定（新規カウンセリング完了時）
+      const trialStartDate = new Date();
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 3); // 3日後
+      
+      const trialData = {
+        subscriptionStatus: 'trial',
+        trialStartDate: trialStartDate,
+        trialEndDate: trialEndDate,
+        hasCompletedCounseling: true,
+        updatedAt: new Date(),
+      };
+      
+      await userRef.set(trialData, { merge: true });
+      console.log('🎁 3日間お試し期間設定完了:', { 
+        userId: lineUserId, 
+        trialStart: trialStartDate.toISOString(),
+        trialEnd: trialEndDate.toISOString()
+      });
+
       // プロフィール履歴更新を通知
       console.log('🔄 プロフィール履歴更新通知発行');
       
@@ -272,6 +292,23 @@ export async function POST(request: NextRequest) {
     if (isValidLineUserId) {
       try {
         await sendCounselingResultToLine(lineUserId, answers, results);
+        
+        // 🎁 お試し期間開始のメッセージを送信
+        const trialMessage = {
+          type: 'text',
+          text: '🎉 カウンセリング完了おめでとう！\n\n' +
+                '✨ 今から3日間、すべての機能が無制限で使い放題です！\n\n' +
+                '📱 この期間中は：\n' +
+                '・AI会話 無制限\n' +
+                '・記録機能 無制限\n' +
+                '・アプリのAI記録機能も利用可能\n' +
+                '・1日フィードバック機能も利用可能\n\n' +
+                '🚀 ぜひたくさん使って、こたくんの力を実感してみてね！'
+        };
+        
+        await pushMessage(lineUserId, [trialMessage]);
+        console.log('🎁 お試し期間開始メッセージ送信完了:', lineUserId);
+        
       } catch (error) {
         console.error('LINE送信エラー:', error);
         // LINE送信エラーは無視してAPIは成功として続行
