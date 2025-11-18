@@ -1181,45 +1181,14 @@ export function createRecipeFlexMessage(
           {
             type: 'box',
             layout: 'vertical',
-            contents: (() => {
-              const ingredientRows = [];
-              const maxIngredients = 12; // 制限を8→12に拡張
-              const ingredientsToShow = ingredients.slice(0, maxIngredients);
-              
-              // 2列に分割
-              for (let i = 0; i < ingredientsToShow.length; i += 2) {
-                const leftIngredient = ingredientsToShow[i];
-                const rightIngredient = ingredientsToShow[i + 1];
-                
-                ingredientRows.push({
-                  type: 'box',
-                  layout: 'horizontal',
-                  contents: [
-                    {
-                      type: 'text',
-                      text: `・${leftIngredient}`,
-                      size: 'xs',
-                      color: '#374151',
-                      wrap: true,
-                      flex: 1
-                    },
-                    ...(rightIngredient ? [{
-                      type: 'text',
-                      text: `・${rightIngredient}`,
-                      size: 'xs',
-                      color: '#374151',
-                      wrap: true,
-                      flex: 1
-                    }] : [{
-                      type: 'spacer',
-                      size: 'sm'
-                    }])
-                  ],
-                  margin: 'xs'
-                });
-              }
-              return ingredientRows;
-            })(),
+            contents: ingredients.slice(0, 12).map(ingredient => ({
+              type: 'text',
+              text: `・${ingredient}`,
+              size: 'xs',
+              color: '#374151',
+              margin: 'xs',
+              wrap: true
+            })),
             backgroundColor: '#F9FAFB',
             borderColor: '#F3F4F6',
             borderWidth: '1px',
@@ -1285,31 +1254,6 @@ export function createRecipeFlexMessage(
           }
         ],
         paddingAll: '16px'
-      },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          // 健康効果セクション（healthTipsがある場合のみ表示）
-          ...(healthTips ? [{
-            type: 'box',
-            layout: 'vertical',
-            contents: [{
-              type: 'text',
-              text: healthTips,
-              size: 'xs',
-              color: '#92400E',
-              wrap: true
-            }],
-            backgroundColor: '#FEF3C7',
-            borderColor: '#D97706',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '8px',
-            margin: 'sm'
-          }] : [])
-        ],
-        paddingAll: '8px'
       }
     }
   };
