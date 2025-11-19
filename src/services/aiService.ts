@@ -26,7 +26,7 @@ class AIHealthService {
         personalizedAdvice = this.generateStructuredMockAdvice(answers);
       } else {
         try {
-          const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+          const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
           const prompt = this.buildCounselingPrompt(answers);
           const result = await model.generateContent(prompt);
           const response = await result.response;
@@ -534,7 +534,7 @@ class AIHealthService {
   // テキストが体重記録の意図かどうかを判定
   async analyzeWeightRecordIntent(text: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 テキスト「${text}」を分析して、体重記録の意図があるかどうか以下のJSONで返してください：
@@ -592,7 +592,7 @@ class AIHealthService {
   // テキストが食事記録の意図かどうかを判定
   async analyzeFoodRecordIntent(text: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 テキスト「${text}」を分析して、食事記録の意図があるかどうか以下のJSONで返してください：
@@ -670,7 +670,7 @@ class AIHealthService {
   // テキストから食事内容を分析
   async analyzeMealFromText(mealText: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 食事内容のテキスト「${mealText}」を分析して、以下の形式のJSONで返してください：
@@ -776,7 +776,7 @@ class AIHealthService {
   // 画像から食事内容を分析
   async analyzeMealFromImage(imageBuffer: Buffer) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 この画像を分析してください。まず、この画像が食事・料理・食べ物の写真かどうかを判定してください。
@@ -890,7 +890,7 @@ class AIHealthService {
   // 食事写真を分析（将来の機能 - 後方互換性のため残す）
   async analyzeMealImage(imageBuffer: Buffer) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 この食事の写真を分析して、以下の情報を日本語のJSONで返してください：
@@ -927,7 +927,7 @@ class AIHealthService {
   // レシピ質問かどうかを判定
   async isRecipeQuestion(userMessage: string): Promise<boolean> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 以下のメッセージが**具体的なレシピや作り方を求める質問**かどうか判定してください。
@@ -967,7 +967,7 @@ true または false で回答してください。`;
   // レシピ生成とFlexメッセージ作成
   async generateRecipeWithFlex(userMessage: string, userId?: string): Promise<{ textResponse: string; flexMessage?: any }> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // 会話履歴を取得
       let conversationHistory = '';
@@ -1182,7 +1182,7 @@ true または false で回答してください。`;
   // 高性能な会話レスポンスを生成（通常モード用・専門的なパーソナルトレーナー）
   async generateAdvancedResponse(userMessage: string, userId?: string): Promise<string> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // 会話履歴を取得
       let conversationHistory = '';
@@ -1319,7 +1319,7 @@ true または false で回答してください。`;
   // テキストが運動記録の意図かどうかを判定
   async analyzeExerciseRecordIntent(text: string) {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
 テキスト「${text}」を分析して、運動記録の意図があるかどうか以下のJSONで返してください：
@@ -1515,7 +1515,7 @@ true または false で回答してください。`;
   // 一般会話機能（エラー時フォールバック用）
   async generateGeneralResponse(userMessage: string, userId?: string): Promise<string> {
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // 会話履歴を取得
       let conversationHistory = '';
