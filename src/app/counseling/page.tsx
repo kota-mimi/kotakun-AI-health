@@ -97,6 +97,7 @@ export default function SimpleCounselingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCompletedCounseling, setHasCompletedCounseling] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [expandedCategory, setExpandedCategory] = useState<'loss' | 'maintenance' | 'gain' | null>(null);
   
   // カウンセリング完了状態をチェック
   React.useEffect(() => {
@@ -454,124 +455,187 @@ export default function SimpleCounselingPage() {
       <div className="space-y-8">
         <div className="space-y-4">
           {/* 減量系 */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-slate-700">減量・ダイエット</h4>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setExpandedCategory(expandedCategory === 'loss' ? null : 'loss')}
+              className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
+                ['rapid_loss', 'moderate_loss', 'slow_loss'].includes(goal.type)
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <div>
+                <div className="font-medium text-lg mb-1">減量・ダイエット</div>
+                <div className="text-sm opacity-80">体重を減らして理想の体型を目指す</div>
+              </div>
+              <div className={`transition-transform ${expandedCategory === 'loss' ? 'rotate-180' : ''}`}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </button>
             
-            <button
-              type="button"
-              onClick={() => setGoal(prev => ({ 
-                ...prev, 
-                type: 'slow_loss',
-                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 3 : 65)),
-                targetDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-              }))}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'slow_loss'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">緩やか減量 (-0.25kg/週)</div>
-              <div className="text-sm opacity-80">無理なく健康的にダイエット</div>
-            </button>
+            {expandedCategory === 'loss' && (
+              <div className="space-y-2 pl-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal(prev => ({ 
+                      ...prev, 
+                      type: 'slow_loss',
+                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 3 : 65)),
+                      targetDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                    }));
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'slow_loss'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">緩やか減量 (-0.25kg/週)</div>
+                  <div className="text-sm opacity-80">無理なく健康的にダイエット</div>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setGoal(prev => ({ 
-                ...prev, 
-                type: 'moderate_loss',
-                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 5 : 65)),
-                targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-              }))}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'moderate_loss'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">標準減量 (-0.5kg/週)</div>
-              <div className="text-sm opacity-80">バランスの良いダイエット</div>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal(prev => ({ 
+                      ...prev, 
+                      type: 'moderate_loss',
+                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 5 : 65)),
+                      targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                    }));
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'moderate_loss'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">標準減量 (-0.5kg/週)</div>
+                  <div className="text-sm opacity-80">バランスの良いダイエット</div>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setGoal(prev => ({ 
-                ...prev, 
-                type: 'rapid_loss',
-                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 8 : 65)),
-                targetDate: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-              }))}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'rapid_loss'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">集中減量 (-0.7kg/週)</div>
-              <div className="text-sm opacity-80">短期集中でしっかり減量</div>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal(prev => ({ 
+                      ...prev, 
+                      type: 'rapid_loss',
+                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 8 : 65)),
+                      targetDate: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                    }));
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'rapid_loss'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">集中減量 (-0.7kg/週)</div>
+                  <div className="text-sm opacity-80">短期集中でしっかり減量</div>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 維持系 */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-slate-700">現状維持</h4>
-            
+          <div className="space-y-2">
             <button
               type="button"
-              onClick={() => setGoal({ type: 'maintenance' })}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
+              onClick={() => {
+                setGoal({ type: 'maintenance' });
+                setExpandedCategory(null);
+              }}
+              className={`w-full p-4 rounded-2xl text-left transition-all ${
                 goal.type === 'maintenance'
                   ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              <div className="font-medium mb-1">健康維持 (±0kg/週)</div>
-              <div className="text-sm opacity-80">現在の体重をキープ</div>
+              <div className="font-medium text-lg mb-1">健康維持</div>
+              <div className="text-sm opacity-80">現在の体重をキープして健康的に過ごす</div>
             </button>
           </div>
 
           {/* 増量系 */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-slate-700">増量・筋肉増加</h4>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setExpandedCategory(expandedCategory === 'gain' ? null : 'gain')}
+              className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
+                ['lean_gain', 'moderate_gain', 'bulk_gain'].includes(goal.type)
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <div>
+                <div className="font-medium text-lg mb-1">増量・筋肉増加</div>
+                <div className="text-sm opacity-80">筋力トレーニングで体を大きくする</div>
+              </div>
+              <div className={`transition-transform ${expandedCategory === 'gain' ? 'rotate-180' : ''}`}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </button>
             
-            <button
-              type="button"
-              onClick={() => setGoal({ type: 'lean_gain' })}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'lean_gain'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">リーンゲイン (+0.2kg/週)</div>
-              <div className="text-sm opacity-80">脂肪を抑えて筋肉増加</div>
-            </button>
+            {expandedCategory === 'gain' && (
+              <div className="space-y-2 pl-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal({ type: 'lean_gain' });
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'lean_gain'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">リーンゲイン (+0.2kg/週)</div>
+                  <div className="text-sm opacity-80">脂肪を抑えて筋肉増加</div>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setGoal({ type: 'moderate_gain' })}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'moderate_gain'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">筋肉増加 (+0.3kg/週)</div>
-              <div className="text-sm opacity-80">しっかり筋肉をつける</div>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal({ type: 'moderate_gain' });
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'moderate_gain'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">筋肉増加 (+0.3kg/週)</div>
+                  <div className="text-sm opacity-80">しっかり筋肉をつける</div>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setGoal({ type: 'bulk_gain' })}
-              className={`w-full p-4 rounded-xl text-left transition-all ${
-                goal.type === 'bulk_gain'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-              }`}
-            >
-              <div className="font-medium mb-1">バルクアップ (+0.5kg/週)</div>
-              <div className="text-sm opacity-80">積極的な増量・筋肉増加</div>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGoal({ type: 'bulk_gain' });
+                    setExpandedCategory(null);
+                  }}
+                  className={`w-full p-3 rounded-xl text-left transition-all ${
+                    goal.type === 'bulk_gain'
+                      ? 'bg-blue-400 text-white shadow-sm'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  <div className="font-medium mb-1">バルクアップ (+0.5kg/週)</div>
+                  <div className="text-sm opacity-80">積極的な増量・筋肉増加</div>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
