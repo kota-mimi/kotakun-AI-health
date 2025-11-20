@@ -97,7 +97,6 @@ export default function SimpleCounselingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCompletedCounseling, setHasCompletedCounseling] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
-  const [expandedCategory, setExpandedCategory] = useState<'goal' | 'activity' | null>(null);
   
   // カウンセリング完了状態をチェック
   React.useEffect(() => {
@@ -453,173 +452,58 @@ export default function SimpleCounselingPage() {
   const renderStep2 = () => (
     <div className="flex-1 px-6">
       <div className="space-y-8">
-        <div className="space-y-4">
+        <div className="space-y-8">
           {/* 目標設定 */}
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setExpandedCategory(expandedCategory === 'goal' ? null : 'goal')}
-              className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
-                goal.type
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <div>
-                <div className="font-medium text-lg mb-1">目標設定</div>
-                <div className="text-sm opacity-80">
-                  {goal.type === 'slow_loss' && '緩やか減量 (-0.25kg/週)'}
-                  {goal.type === 'moderate_loss' && '標準減量 (-0.5kg/週)'}
-                  {goal.type === 'rapid_loss' && '集中減量 (-0.7kg/週)'}
-                  {goal.type === 'maintenance' && '健康維持 (±0kg/週)'}
-                  {goal.type === 'lean_gain' && 'リーンゲイン (+0.2kg/週)'}
-                  {goal.type === 'moderate_gain' && '筋肉増加 (+0.3kg/週)'}
-                  {goal.type === 'bulk_gain' && 'バルクアップ (+0.5kg/週)'}
-                </div>
-              </div>
-              <div className={`transition-transform ${expandedCategory === 'goal' ? 'rotate-180' : ''}`}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700 block">目標設定</label>
+            <div className="relative">
+              <select
+                value={goal.type}
+                onChange={(e) => {
+                  const selectedType = e.target.value as Goal['type'];
+                  let targetWeight = goal.targetWeight;
+                  let targetDate = goal.targetDate;
+                  
+                  // 目標タイプに応じてデフォルト値を設定
+                  if (['rapid_loss', 'moderate_loss', 'slow_loss'].includes(selectedType) && typeof basicInfo.weight === 'number') {
+                    const weightReduction = selectedType === 'slow_loss' ? 3 : selectedType === 'moderate_loss' ? 5 : 8;
+                    targetWeight = Math.max(30, basicInfo.weight - weightReduction);
+                  }
+                  
+                  if (selectedType !== 'maintenance') {
+                    const days = selectedType === 'rapid_loss' ? 70 : selectedType === 'slow_loss' ? 120 : 90;
+                    targetDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                  }
+                  
+                  setGoal({ type: selectedType, targetWeight, targetDate });
+                }}
+                className="w-full h-14 px-4 pr-12 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+                style={{ 
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none'
+                }}
+              >
+                <optgroup label="減量・ダイエット">
+                  <option value="slow_loss">緩やか減量 (-0.25kg/週)</option>
+                  <option value="moderate_loss">標準減量 (-0.5kg/週)</option>
+                  <option value="rapid_loss">集中減量 (-0.7kg/週)</option>
+                </optgroup>
+                <optgroup label="現状維持">
+                  <option value="maintenance">健康維持 (±0kg/週)</option>
+                </optgroup>
+                <optgroup label="増量・筋肉増加">
+                  <option value="lean_gain">リーンゲイン (+0.2kg/週)</option>
+                  <option value="moderate_gain">筋肉増加 (+0.3kg/週)</option>
+                  <option value="bulk_gain">バルクアップ (+0.5kg/週)</option>
+                </optgroup>
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6L8 10L12 6" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-            </button>
-            
-            {expandedCategory === 'goal' && (
-              <div className="space-y-2 pl-4">
-                {/* 減量系 */}
-                <div className="text-xs font-medium text-slate-500 mb-2">減量・ダイエット</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal(prev => ({ 
-                      ...prev, 
-                      type: 'slow_loss',
-                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 3 : 65)),
-                      targetDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                    }));
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'slow_loss'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">緩やか減量 (-0.25kg/週)</div>
-                  <div className="text-sm opacity-80">無理なく健康的にダイエット</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal(prev => ({ 
-                      ...prev, 
-                      type: 'moderate_loss',
-                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 5 : 65)),
-                      targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                    }));
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'moderate_loss'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">標準減量 (-0.5kg/週)</div>
-                  <div className="text-sm opacity-80">バランスの良いダイエット</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal(prev => ({ 
-                      ...prev, 
-                      type: 'rapid_loss',
-                      targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 8 : 65)),
-                      targetDate: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-                    }));
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'rapid_loss'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">集中減量 (-0.7kg/週)</div>
-                  <div className="text-sm opacity-80">短期集中でしっかり減量</div>
-                </button>
-
-                {/* 維持系 */}
-                <div className="text-xs font-medium text-slate-500 mb-2 mt-4">現状維持</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal({ type: 'maintenance' });
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'maintenance'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">健康維持 (±0kg/週)</div>
-                  <div className="text-sm opacity-80">現在の体重をキープ</div>
-                </button>
-
-                {/* 増量系 */}
-                <div className="text-xs font-medium text-slate-500 mb-2 mt-4">増量・筋肉増加</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal({ type: 'lean_gain' });
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'lean_gain'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">リーンゲイン (+0.2kg/週)</div>
-                  <div className="text-sm opacity-80">脂肪を抑えて筋肉増加</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal({ type: 'moderate_gain' });
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'moderate_gain'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">筋肉増加 (+0.3kg/週)</div>
-                  <div className="text-sm opacity-80">しっかり筋肉をつける</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoal({ type: 'bulk_gain' });
-                    setExpandedCategory(null);
-                  }}
-                  className={`w-full p-3 rounded-xl text-left transition-all ${
-                    goal.type === 'bulk_gain'
-                      ? 'bg-blue-400 text-white shadow-sm'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                  }`}
-                >
-                  <div className="font-medium mb-1">バルクアップ (+0.5kg/週)</div>
-                  <div className="text-sm opacity-80">積極的な増量・筋肉増加</div>
-                </button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -693,118 +577,33 @@ export default function SimpleCounselingPage() {
 
   const renderStep3 = () => (
     <div className="flex-1 px-6">
-      <div className="space-y-4">
-        {/* 活動レベル */}
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => setExpandedCategory(expandedCategory === 'activity' ? null : 'activity')}
-            className={`w-full p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
-              activityLevel.level
-                ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <div>
-              <div className="font-medium text-lg mb-1">運動習慣</div>
-              <div className="text-sm opacity-80">
-                {activityLevel.level === 'sedentary' && 'ほとんど運動しない (×1.2)'}
-                {activityLevel.level === 'light' && '軽い運動をする (×1.375)'}
-                {activityLevel.level === 'moderate' && '定期的に運動する (×1.55)'}
-                {activityLevel.level === 'active' && '激しい運動をする (×1.725)'}
-                {activityLevel.level === 'very_active' && '非常に激しい運動 (×1.9)'}
-              </div>
-            </div>
-            <div className={`transition-transform ${expandedCategory === 'activity' ? 'rotate-180' : ''}`}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <div className="space-y-8">
+        {/* 運動習慣 */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-slate-700 block">運動習慣</label>
+          <div className="relative">
+            <select
+              value={activityLevel.level}
+              onChange={(e) => setActivityLevel({ level: e.target.value as ActivityLevel['level'] })}
+              className="w-full h-14 px-4 pr-12 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-lg bg-white"
+              style={{ 
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none'
+              }}
+            >
+              <option value="sedentary">ほとんど運動しない (×1.2)</option>
+              <option value="light">軽い運動をする (×1.375)</option>
+              <option value="moderate">定期的に運動する (×1.55)</option>
+              <option value="active">激しい運動をする (×1.725)</option>
+              <option value="very_active">非常に激しい運動 (×1.9)</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6L8 10L12 6" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-          </button>
-          
-          {expandedCategory === 'activity' && (
-            <div className="space-y-2 pl-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setActivityLevel({ level: 'sedentary' });
-                  setExpandedCategory(null);
-                }}
-                className={`w-full p-3 rounded-xl text-left transition-all ${
-                  activityLevel.level === 'sedentary'
-                    ? 'bg-blue-400 text-white shadow-sm'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                }`}
-              >
-                <div className="font-medium mb-1">ほとんど運動しない (×1.2)</div>
-                <div className="text-sm opacity-80">デスクワーク中心で、ほぼ座って過ごす</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivityLevel({ level: 'light' });
-                  setExpandedCategory(null);
-                }}
-                className={`w-full p-3 rounded-xl text-left transition-all ${
-                  activityLevel.level === 'light'
-                    ? 'bg-blue-400 text-white shadow-sm'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                }`}
-              >
-                <div className="font-medium mb-1">軽い運動をする (×1.375)</div>
-                <div className="text-sm opacity-80">週1〜3回程度の軽い運動や散歩</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivityLevel({ level: 'moderate' });
-                  setExpandedCategory(null);
-                }}
-                className={`w-full p-3 rounded-xl text-left transition-all ${
-                  activityLevel.level === 'moderate'
-                    ? 'bg-blue-400 text-white shadow-sm'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                }`}
-              >
-                <div className="font-medium mb-1">定期的に運動する (×1.55)</div>
-                <div className="text-sm opacity-80">週3〜5回程度の運動やスポーツ</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivityLevel({ level: 'active' });
-                  setExpandedCategory(null);
-                }}
-                className={`w-full p-3 rounded-xl text-left transition-all ${
-                  activityLevel.level === 'active'
-                    ? 'bg-blue-400 text-white shadow-sm'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                }`}
-              >
-                <div className="font-medium mb-1">激しい運動をする (×1.725)</div>
-                <div className="text-sm opacity-80">週6〜7回の激しい運動やトレーニング</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivityLevel({ level: 'very_active' });
-                  setExpandedCategory(null);
-                }}
-                className={`w-full p-3 rounded-xl text-left transition-all ${
-                  activityLevel.level === 'very_active'
-                    ? 'bg-blue-400 text-white shadow-sm'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-                }`}
-              >
-                <div className="font-medium mb-1">非常に激しい運動 (×1.9)</div>
-                <div className="text-sm opacity-80">1日2回の運動や肉体労働</div>
-              </button>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
