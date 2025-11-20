@@ -14,13 +14,13 @@ interface BasicInfo {
 }
 
 interface Goal {
-  type: 'weight_loss' | 'muscle_gain' | 'maintenance';
+  type: 'rapid_loss' | 'moderate_loss' | 'slow_loss' | 'maintenance' | 'lean_gain' | 'moderate_gain' | 'bulk_gain';
   targetWeight?: number;
   targetDate?: string; // 目標達成日 (YYYY-MM-DD)
 }
 
 interface ActivityLevel {
-  level: 'sedentary' | 'light' | 'moderate';
+  level: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 }
 
 const calculateBMR = (basicInfo: BasicInfo) => {
@@ -42,7 +42,9 @@ const calculateTDEE = (bmr: number, activityLevel: ActivityLevel['level']) => {
   const multipliers = {
     sedentary: 1.2,
     light: 1.375,
-    moderate: 1.55
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9
   };
   
   return bmr * multipliers[activityLevel];
@@ -50,11 +52,20 @@ const calculateTDEE = (bmr: number, activityLevel: ActivityLevel['level']) => {
 
 const calculateTargetCalories = (tdee: number, goal: Goal['type']) => {
   switch (goal) {
-    case 'weight_loss':
-      return tdee - 500; // アプリと統一（標準的な500kcal減）
-    case 'muscle_gain':
-      return tdee + 300;
+    case 'rapid_loss':
+      return tdee - 700; // -0.7kg/週（急速減量）
+    case 'moderate_loss':
+      return tdee - 500; // -0.5kg/週（標準減量）
+    case 'slow_loss':
+      return tdee - 250; // -0.25kg/週（緩やか減量）
     case 'maintenance':
+      return tdee; // 現状維持
+    case 'lean_gain':
+      return tdee + 200; // +0.2kg/週（リーンゲイン）
+    case 'moderate_gain':
+      return tdee + 300; // +0.3kg/週（筋肉増加）
+    case 'bulk_gain':
+      return tdee + 500; // +0.5kg/週（バルクアップ）
     default:
       return tdee;
   }
@@ -62,8 +73,11 @@ const calculateTargetCalories = (tdee: number, goal: Goal['type']) => {
 
 const calculatePFC = (targetCalories: number, weight: number, goal: Goal['type']) => {
   let proteinMultiplier = 1.6;
-  if (goal === 'muscle_gain') proteinMultiplier = 2.0;
-  if (goal === 'weight_loss') proteinMultiplier = 1.8;
+  
+  // 目標別のタンパク質量調整
+  if (goal === 'moderate_gain' || goal === 'bulk_gain') proteinMultiplier = 2.0;
+  if (goal === 'lean_gain') proteinMultiplier = 1.8;
+  if (goal === 'rapid_loss' || goal === 'moderate_loss' || goal === 'slow_loss') proteinMultiplier = 1.8;
   
   const protein = Math.round(weight * proteinMultiplier);
   const proteinCalories = protein * 4;
@@ -124,7 +138,7 @@ export default function SimpleCounselingPage() {
     weight: ''
   });
   const [goal, setGoal] = useState<Goal>({ 
-    type: 'weight_loss',
+    type: 'moderate_loss',
     targetWeight: 65,
     targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 3ヶ月後
   });
@@ -183,6 +197,7 @@ export default function SimpleCounselingPage() {
       ...cleanBasicInfo,
       name: cleanBasicInfo.name, // cleanBasicInfoから直接取得
       goal: goal.type,
+      primaryGoal: goal.type, // 保存処理で使用される
       targetWeight: goal.targetWeight,
       targetDate: goal.targetDate,
       activityLevel: activityLevel.level
@@ -295,20 +310,40 @@ export default function SimpleCounselingPage() {
 
   const generateAdvice = (goalType: Goal['type'], basicInfo: BasicInfo) => {
     const adviceMap = {
-      weight_loss: [
+      rapid_loss: [
+        '短期集中のため、水分と電解質の補給を忘れずに',
+        '急激な減量のため、体調の変化に注意して進めましょう',
+        '高タンパク質食品で筋肉の維持を心がけましょう'
+      ],
+      moderate_loss: [
         '無理な食事制限は避け、バランスの良い食事を心がけましょう',
         '有酸素運動と筋力トレーニングを組み合わせると効果的です',
-        '1週間で0.5-1kgのペースで減量するのが理想的です'
+        '1週間で0.5kgのペースで健康的に減量しましょう'
       ],
-      muscle_gain: [
-        'タンパク質をしっかり摂取し、筋力トレーニングを継続しましょう',
-        '休養も筋肉成長には重要です。十分な睡眠を取りましょう',
-        '段階的に負荷を上げながらトレーニングを行いましょう'
+      slow_loss: [
+        'ゆっくりとしたペースで無理なく続けることが大切です',
+        '食事の質を重視し、栄養バランスを整えましょう',
+        '長期的な習慣作りを意識して取り組みましょう'
       ],
       maintenance: [
         '現在の良い状態を維持するため、規則的な運動習慣を続けましょう',
         'バランスの良い食事で栄養バランスを保ちましょう',
         '定期的な体重・体調チェックで健康状態を把握しましょう'
+      ],
+      lean_gain: [
+        '体脂肪の増加を抑えながら筋肉を増やしましょう',
+        '質の良いタンパク質を体重×1.8g以上摂取しましょう',
+        '筋力トレーニングに加えて適度な有酸素運動も取り入れましょう'
+      ],
+      moderate_gain: [
+        'タンパク質をしっかり摂取し、筋力トレーニングを継続しましょう',
+        '休養も筋肉成長には重要です。十分な睡眠を取りましょう',
+        '段階的に負荷を上げながらトレーニングを行いましょう'
+      ],
+      bulk_gain: [
+        '積極的にカロリーを摂取し、しっかりと体を大きくしましょう',
+        '高強度の筋力トレーニングで筋肉に刺激を与えましょう',
+        '十分な休息と睡眠で筋肉の回復と成長を促進しましょう'
       ]
     };
 
@@ -418,49 +453,126 @@ export default function SimpleCounselingPage() {
     <div className="flex-1 px-6">
       <div className="space-y-8">
         <div className="space-y-4">
-          <button
-            type="button"
-            onClick={() => setGoal(prev => ({ 
-              ...prev, 
-              type: 'weight_loss',
-              targetWeight: Math.max(30, basicInfo.weight - 5),
-              targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-            }))}
-            className={`w-full p-6 rounded-2xl text-left transition-all ${
-              goal.type === 'weight_loss'
-                ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-            }`}
-          >
-            <div className="font-medium text-lg mb-2">ダイエット</div>
-            <div className="text-sm opacity-80">体重を減らして理想の体型を目指す</div>
-          </button>
+          {/* 減量系 */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-slate-700">減量・ダイエット</h4>
+            
+            <button
+              type="button"
+              onClick={() => setGoal(prev => ({ 
+                ...prev, 
+                type: 'slow_loss',
+                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 3 : 65)),
+                targetDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              }))}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'slow_loss'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">緩やか減量 (-0.25kg/週)</div>
+              <div className="text-sm opacity-80">無理なく健康的にダイエット</div>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setGoal({ type: 'muscle_gain' })}
-            className={`w-full p-6 rounded-2xl text-left transition-all ${
-              goal.type === 'muscle_gain'
-                ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-            }`}
-          >
-            <div className="font-medium text-lg mb-2">筋肉量アップ</div>
-            <div className="text-sm opacity-80">筋力トレーニングで体を大きくする</div>
-          </button>
+            <button
+              type="button"
+              onClick={() => setGoal(prev => ({ 
+                ...prev, 
+                type: 'moderate_loss',
+                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 5 : 65)),
+                targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              }))}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'moderate_loss'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">標準減量 (-0.5kg/週)</div>
+              <div className="text-sm opacity-80">バランスの良いダイエット</div>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setGoal({ type: 'maintenance' })}
-            className={`w-full p-6 rounded-2xl text-left transition-all ${
-              goal.type === 'maintenance'
-                ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 active:bg-slate-200'
-            }`}
-          >
-            <div className="font-medium text-lg mb-2">健康維持</div>
-            <div className="text-sm opacity-80">現在の状態をキープして健康的に過ごす</div>
-          </button>
+            <button
+              type="button"
+              onClick={() => setGoal(prev => ({ 
+                ...prev, 
+                type: 'rapid_loss',
+                targetWeight: Math.max(30, (typeof basicInfo.weight === 'number' ? basicInfo.weight - 8 : 65)),
+                targetDate: new Date(Date.now() + 70 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              }))}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'rapid_loss'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">集中減量 (-0.7kg/週)</div>
+              <div className="text-sm opacity-80">短期集中でしっかり減量</div>
+            </button>
+          </div>
+
+          {/* 維持系 */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-slate-700">現状維持</h4>
+            
+            <button
+              type="button"
+              onClick={() => setGoal({ type: 'maintenance' })}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'maintenance'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">健康維持 (±0kg/週)</div>
+              <div className="text-sm opacity-80">現在の体重をキープ</div>
+            </button>
+          </div>
+
+          {/* 増量系 */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-slate-700">増量・筋肉増加</h4>
+            
+            <button
+              type="button"
+              onClick={() => setGoal({ type: 'lean_gain' })}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'lean_gain'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">リーンゲイン (+0.2kg/週)</div>
+              <div className="text-sm opacity-80">脂肪を抑えて筋肉増加</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setGoal({ type: 'moderate_gain' })}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'moderate_gain'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">筋肉増加 (+0.3kg/週)</div>
+              <div className="text-sm opacity-80">しっかり筋肉をつける</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setGoal({ type: 'bulk_gain' })}
+              className={`w-full p-4 rounded-xl text-left transition-all ${
+                goal.type === 'bulk_gain'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+              }`}
+            >
+              <div className="font-medium mb-1">バルクアップ (+0.5kg/週)</div>
+              <div className="text-sm opacity-80">積極的な増量・筋肉増加</div>
+            </button>
+          </div>
         </div>
 
         {/* 詳細設定 */}
@@ -498,7 +610,7 @@ export default function SimpleCounselingPage() {
           </div>
 
           {/* 目標達成日 */}
-          {(goal.type === 'weight_loss' || goal.type === 'muscle_gain') && (
+          {(goal.type !== 'maintenance') && (
             <div className="space-y-3">
               <label className="text-sm font-medium text-slate-700 block">目標達成日</label>
               <input
@@ -537,40 +649,66 @@ export default function SimpleCounselingPage() {
         <button
           type="button"
           onClick={() => setActivityLevel({ level: 'sedentary' })}
-          className={`w-full p-6 rounded-2xl text-left transition-all ${
+          className={`w-full p-5 rounded-2xl text-left transition-all ${
             activityLevel.level === 'sedentary'
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-slate-100 text-slate-700 active:bg-slate-200'
           }`}
         >
-          <div className="font-medium text-lg mb-2">ほとんど運動しない</div>
+          <div className="font-medium text-lg mb-2">ほとんど運動しない (×1.2)</div>
           <div className="text-sm opacity-80">デスクワーク中心で、ほぼ座って過ごす</div>
         </button>
 
         <button
           type="button"
           onClick={() => setActivityLevel({ level: 'light' })}
-          className={`w-full p-6 rounded-2xl text-left transition-all ${
+          className={`w-full p-5 rounded-2xl text-left transition-all ${
             activityLevel.level === 'light'
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-slate-100 text-slate-700 active:bg-slate-200'
           }`}
         >
-          <div className="font-medium text-lg mb-2">軽い運動をする</div>
-          <div className="text-sm opacity-80">週1〜2回程度の軽い運動や散歩</div>
+          <div className="font-medium text-lg mb-2">軽い運動をする (×1.375)</div>
+          <div className="text-sm opacity-80">週1〜3回程度の軽い運動や散歩</div>
         </button>
 
         <button
           type="button"
           onClick={() => setActivityLevel({ level: 'moderate' })}
-          className={`w-full p-6 rounded-2xl text-left transition-all ${
+          className={`w-full p-5 rounded-2xl text-left transition-all ${
             activityLevel.level === 'moderate'
               ? 'bg-blue-500 text-white shadow-md'
               : 'bg-slate-100 text-slate-700 active:bg-slate-200'
           }`}
         >
-          <div className="font-medium text-lg mb-2">定期的に運動する</div>
+          <div className="font-medium text-lg mb-2">定期的に運動する (×1.55)</div>
           <div className="text-sm opacity-80">週3〜5回程度の運動やスポーツ</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActivityLevel({ level: 'active' })}
+          className={`w-full p-5 rounded-2xl text-left transition-all ${
+            activityLevel.level === 'active'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+          }`}
+        >
+          <div className="font-medium text-lg mb-2">激しい運動をする (×1.725)</div>
+          <div className="text-sm opacity-80">週6〜7回の激しい運動やトレーニング</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActivityLevel({ level: 'very_active' })}
+          className={`w-full p-5 rounded-2xl text-left transition-all ${
+            activityLevel.level === 'very_active'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-slate-100 text-slate-700 active:bg-slate-200'
+          }`}
+        >
+          <div className="font-medium text-lg mb-2">非常に激しい運動 (×1.9)</div>
+          <div className="text-sm opacity-80">1日2回の運動や肉体労働</div>
         </button>
       </div>
     </div>

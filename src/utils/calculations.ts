@@ -62,14 +62,27 @@ export function calculateCalorieTarget(profile: UserProfile, goals: HealthGoal[]
   if (!primaryGoal) return Math.round(tdee);
   
   switch (primaryGoal.type) {
+    case 'rapid_loss':
+      return Math.round(tdee - 700); // -0.7kg/週
+    case 'moderate_loss':
+      return Math.round(tdee - 500); // -0.5kg/週
+    case 'slow_loss':
+      return Math.round(tdee - 250); // -0.25kg/週
+    case 'maintenance':
+      return Math.round(tdee); // 現状維持
+    case 'lean_gain':
+      return Math.round(tdee + 200); // +0.2kg/週
+    case 'moderate_gain':
+      return Math.round(tdee + 300); // +0.3kg/週
+    case 'bulk_gain':
+      return Math.round(tdee + 500); // +0.5kg/週
+    // 旧形式のサポート（下位互換性）
     case 'weight_loss':
-      return Math.round(tdee - 500); // 1ポンド/週 = 500kcal/日の赤字
+      return Math.round(tdee - 500);
     case 'weight_gain':
       return Math.round(tdee + 500);
     case 'muscle_gain':
       return Math.round(tdee + 300);
-    case 'maintenance':
-      return Math.round(tdee); // 健康維持：現在の消費カロリーと同じ
     default:
       return Math.round(tdee);
   }

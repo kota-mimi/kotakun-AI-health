@@ -31,7 +31,8 @@ export interface UserProfile {
 }
 
 export interface HealthGoal {
-  type: 'weight_loss' | 'healthy_beauty' | 'weight_gain' | 'muscle_gain' | 'lean_muscle' | 'fitness_improve' | 'maintenance' | 'other';
+  type: 'rapid_loss' | 'moderate_loss' | 'slow_loss' | 'maintenance' | 'lean_gain' | 'moderate_gain' | 'bulk_gain' | 
+        'weight_loss' | 'healthy_beauty' | 'weight_gain' | 'muscle_gain' | 'lean_muscle' | 'fitness_improve' | 'other';
   targetValue?: number;
   targetDate?: Date;
 }

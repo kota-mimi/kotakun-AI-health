@@ -13,6 +13,14 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
   // 目標の日本語変換
   const getGoalText = (goal: string) => {
     switch(goal) {
+      case 'rapid_loss': return '集中減量 (-0.7kg/週)';
+      case 'moderate_loss': return '標準減量 (-0.5kg/週)';
+      case 'slow_loss': return '緩やか減量 (-0.25kg/週)';
+      case 'maintenance': return '健康維持 (±0kg/週)';
+      case 'lean_gain': return 'リーンゲイン (+0.2kg/週)';
+      case 'moderate_gain': return '筋肉増加 (+0.3kg/週)';
+      case 'bulk_gain': return 'バルクアップ (+0.5kg/週)';
+      // 旧形式のサポート（下位互換性）
       case 'weight_loss': return '体重を落としたい';
       case 'healthy_beauty': return '健康的にキレイになりたい';
       case 'weight_gain': return '体重を増やしたい';

@@ -308,19 +308,47 @@ function calculateDynamicValues(answers: any) {
     const goal = answers.primaryGoal || 'weight_loss';
     let targetCalories;
     switch (goal) {
+      case 'rapid_loss':
+        targetCalories = tdee - 700; // -0.7kg/週
+        break;
+      case 'moderate_loss':
+        targetCalories = tdee - 500; // -0.5kg/週
+        break;
+      case 'slow_loss':
+        targetCalories = tdee - 250; // -0.25kg/週
+        break;
+      case 'maintenance':
+        targetCalories = tdee; // 現状維持
+        break;
+      case 'lean_gain':
+        targetCalories = tdee + 200; // +0.2kg/週
+        break;
+      case 'moderate_gain':
+        targetCalories = tdee + 300; // +0.3kg/週
+        break;
+      case 'bulk_gain':
+        targetCalories = tdee + 500; // +0.5kg/週
+        break;
+      // 旧形式のサポート（下位互換性）
       case 'weight_loss':
-        targetCalories = tdee - 500; // アプリと統一（標準的な500kcal減）
+        targetCalories = tdee - 500;
         break;
       case 'muscle_gain':
         targetCalories = tdee + 300;
         break;
-      case 'maintenance':
       default:
         targetCalories = tdee;
     }
     
     // カウンセリングページと同じPFC計算
     let proteinMultiplier = 1.6;
+    
+    // 新しい目標タイプに対応したタンパク質量調整
+    if (goal === 'moderate_gain' || goal === 'bulk_gain') proteinMultiplier = 2.0;
+    if (goal === 'lean_gain') proteinMultiplier = 1.8;
+    if (goal === 'rapid_loss' || goal === 'moderate_loss' || goal === 'slow_loss') proteinMultiplier = 1.8;
+    
+    // 旧形式のサポート
     if (goal === 'muscle_gain') proteinMultiplier = 2.0;
     if (goal === 'weight_loss') proteinMultiplier = 1.8;
     
