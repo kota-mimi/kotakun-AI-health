@@ -485,17 +485,17 @@ export default function SimpleCounselingPage() {
                 }}
               >
                 <optgroup label="減量・ダイエット">
-                  <option value="slow_loss">緩やか減量 (-0.25kg/週)</option>
-                  <option value="moderate_loss">標準減量 (-0.5kg/週)</option>
-                  <option value="rapid_loss">集中減量 (-0.7kg/週)</option>
+                  <option value="slow_loss">緩やか減量</option>
+                  <option value="moderate_loss">標準減量</option>
+                  <option value="rapid_loss">集中減量</option>
                 </optgroup>
                 <optgroup label="現状維持">
-                  <option value="maintenance">健康維持 (±0kg/週)</option>
+                  <option value="maintenance">健康維持</option>
                 </optgroup>
                 <optgroup label="増量・筋肉増加">
-                  <option value="lean_gain">リーンゲイン (+0.2kg/週)</option>
-                  <option value="moderate_gain">筋肉増加 (+0.3kg/週)</option>
-                  <option value="bulk_gain">バルクアップ (+0.5kg/週)</option>
+                  <option value="lean_gain">リーンゲイン</option>
+                  <option value="moderate_gain">筋肉増加</option>
+                  <option value="bulk_gain">バルクアップ</option>
                 </optgroup>
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -592,11 +592,11 @@ export default function SimpleCounselingPage() {
                 MozAppearance: 'none'
               }}
             >
-              <option value="sedentary">ほとんど運動しない (×1.2)</option>
-              <option value="light">軽い運動をする (×1.375)</option>
-              <option value="moderate">定期的に運動する (×1.55)</option>
-              <option value="active">激しい運動をする (×1.725)</option>
-              <option value="very_active">非常に激しい運動 (×1.9)</option>
+              <option value="sedentary">ほとんど運動しない</option>
+              <option value="light">軽い運動をする</option>
+              <option value="moderate">定期的に運動する</option>
+              <option value="active">激しい運動をする</option>
+              <option value="very_active">非常に激しい運動</option>
             </select>
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
