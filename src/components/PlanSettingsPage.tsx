@@ -9,7 +9,9 @@ import {
   Check, 
   Star,
   X,
-  AlertCircle
+  AlertCircle,
+  Gift,
+  Ticket
 } from 'lucide-react';
 
 interface PlanSettingsPageProps {
@@ -17,9 +19,9 @@ interface PlanSettingsPageProps {
 }
 
 interface PlanInfo {
-  plan: 'free' | 'monthly' | 'quarterly';
+  plan: 'free' | 'monthly' | 'quarterly' | 'crowdfund_1m' | 'crowdfund_3m' | 'crowdfund_6m' | 'crowdfund_lifetime' | 'lifetime';
   planName: string;
-  status: 'active' | 'inactive' | 'cancelled' | 'cancel_at_period_end';
+  status: 'active' | 'inactive' | 'cancelled' | 'cancel_at_period_end' | 'lifetime';
   currentPeriodEnd?: Date;
   stripeSubscriptionId?: string;
 }
@@ -35,6 +37,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [isCouponProcessing, setIsCouponProcessing] = useState(false);
+  const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
   // 現在のプラン情報を取得
   useEffect(() => {
@@ -110,6 +115,53 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     }
   };
 
+  // クーポンコード適用処理
+  const handleCouponSubmit = async () => {
+    if (!couponCode.trim()) {
+      setError('クーポンコードを入力してください');
+      return;
+    }
+
+    setIsCouponProcessing(true);
+    setError(null);
+    setCouponSuccess(null);
+    
+    try {
+      if (!liffUser?.userId) {
+        setError('ユーザー情報が取得できません');
+        return;
+      }
+
+      console.log('🎟️ クーポンコード適用開始:', couponCode);
+      
+      const response = await fetch('/api/coupon/redeem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: liffUser.userId,
+          couponCode: couponCode.trim(),
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setCouponSuccess(`✅ クーポンを適用しました！${data.planName}が有効になりました。`);
+        setCouponCode('');
+        // プラン情報を再取得
+        window.location.reload();
+      } else {
+        setError(data.error || 'クーポンの適用に失敗しました');
+      }
+    } catch (err) {
+      console.error('クーポン適用エラー:', err);
+      setError('クーポンの適用でエラーが発生しました');
+    } finally {
+      setIsCouponProcessing(false);
+    }
+  };
 
   // プラン解約処理
   const handleCancel = async () => {
@@ -355,7 +407,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className={
-                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' 
+                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime'
                   ? 'bg-green-100 text-green-700 border-green-300' 
                   : 'bg-gray-100 text-gray-700'
               }>
@@ -364,26 +416,33 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               {currentPlan.plan !== 'free' && (
                 <span className="text-sm text-blue-700">
                   {currentPlan.status === 'active' && '有効'}
+                  {currentPlan.status === 'lifetime' && '永続'}
                   {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
                   {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
                 </span>
               )}
             </div>
             
-            {/* 有効期限表示（有料プランのみ） */}
-            {currentPlan.plan !== 'free' && currentPlan.currentPeriodEnd && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
+            {/* 有効期限表示 */}
+            {currentPlan.plan !== 'free' && (
               <div className="text-sm text-blue-600">
-                {currentPlan.status === 'active' && (
+                {currentPlan.status === 'lifetime' && (
+                  <>♾️ 永続利用プラン（期限なし）</>
+                )}
+                {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && (
                   <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
-                {currentPlan.status === 'cancel_at_period_end' && (
+                {currentPlan.currentPeriodEnd && currentPlan.status === 'cancel_at_period_end' && (
                   <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                )}
+                {currentPlan.currentPeriodEnd && currentPlan.plan.startsWith('crowdfund') && currentPlan.status === 'active' && (
+                  <>🎁 クラファン特典有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
               </div>
             )}
             
-            {/* 解約ボタン（有料プランかつアクティブの場合のみ） */}
-            {currentPlan.status === 'active' && currentPlan.plan !== 'free' && (
+            {/* 解約ボタン（有料プランかつアクティブの場合のみ、永続プランは除外） */}
+            {currentPlan.status === 'active' && currentPlan.plan !== 'free' && currentPlan.status !== 'lifetime' && !currentPlan.plan.startsWith('crowdfund') && (
               <div className="mt-3">
                 <Button 
                   onClick={handleCancel}
@@ -396,6 +455,48 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             )}
           </div>
         </div>
+
+        {/* クーポンコード入力セクション */}
+        <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-sm mb-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <Gift size={20} className="text-blue-600" />
+            <h3 className="font-semibold text-gray-800">クーポンコード</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              クラウドファンディング支援者様向けのクーポンコードをお持ちの方は、こちらで入力してください。
+            </p>
+            
+            <div className="flex space-x-2">
+              <div className="relative flex-1">
+                <Ticket size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="CF600-1M-001"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isCouponProcessing}
+                />
+              </div>
+              <Button 
+                onClick={handleCouponSubmit}
+                disabled={isCouponProcessing || !couponCode.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              >
+                {isCouponProcessing ? '適用中...' : '適用'}
+              </Button>
+            </div>
+            
+            {couponSuccess && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
+                <Check size={16} className="text-green-500" />
+                <span className="text-green-700 text-sm">{couponSuccess}</span>
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* 説明セクション */}
         <div className="text-center mb-6 mt-4">

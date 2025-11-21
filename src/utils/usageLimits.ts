@@ -18,6 +18,31 @@ export const USAGE_LIMITS = {
     aiMessagesPerDay: -1,    // 無制限
     recordsPerDay: -1,       // 無制限
     webAppAiAccess: true     // WebアプリAI機能あり
+  },
+  crowdfund_1m: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
+  },
+  crowdfund_3m: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
+  },
+  crowdfund_6m: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
+  },
+  crowdfund_lifetime: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
+  },
+  lifetime: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
   }
 };
 
@@ -58,10 +83,23 @@ export async function getUserPlan(userId: string): Promise<string> {
       }
     }
     
+    // 永続プランの場合
+    if (subscriptionStatus === 'lifetime') {
+      return 'lifetime';
+    }
+    
     // アクティブなサブスクリプションがある場合
     if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
       if (currentPlan === '月額プラン') return 'monthly';
       if (currentPlan === '3ヶ月プラン') return 'quarterly';
+      
+      // クラファン特典プランの場合
+      if (currentPlan?.includes('クラファン特典')) {
+        if (currentPlan.includes('1ヶ月')) return 'crowdfund_1m';
+        if (currentPlan.includes('3ヶ月')) return 'crowdfund_3m';
+        if (currentPlan.includes('6ヶ月')) return 'crowdfund_6m';
+        if (currentPlan.includes('永久')) return 'crowdfund_lifetime';
+      }
     }
     
     return 'free';

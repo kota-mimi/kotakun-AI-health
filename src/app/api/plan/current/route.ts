@@ -49,13 +49,31 @@ export async function GET(request: NextRequest) {
         let plan = 'free';
         let planName = '無料プラン';
         
-        if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
+        // 永続プランの場合
+        if (subscriptionStatus === 'lifetime') {
+          plan = 'lifetime';
+          planName = currentPlan || '永久利用プラン';
+        }
+        // 通常のアクティブプランの場合
+        else if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
           if (currentPlan === '月額プラン') {
             plan = 'monthly';
             planName = '月額プラン';
           } else if (currentPlan === '3ヶ月プラン') {
             plan = 'quarterly';  
             planName = '3ヶ月プラン';
+          } else if (currentPlan?.includes('クラファン特典')) {
+            // クラファン特典プランの場合
+            if (currentPlan.includes('1ヶ月')) {
+              plan = 'crowdfund_1m';
+            } else if (currentPlan.includes('3ヶ月')) {
+              plan = 'crowdfund_3m';
+            } else if (currentPlan.includes('6ヶ月')) {
+              plan = 'crowdfund_6m';
+            } else if (currentPlan.includes('永久')) {
+              plan = 'crowdfund_lifetime';
+            }
+            planName = currentPlan;
           }
         }
         
