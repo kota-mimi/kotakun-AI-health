@@ -9,9 +9,7 @@ import {
   Check, 
   Star,
   X,
-  AlertCircle,
-  Gift,
-  Ticket
+  AlertCircle
 } from 'lucide-react';
 
 interface PlanSettingsPageProps {
@@ -457,29 +455,19 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* クーポンコード入力セクション */}
-        <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-sm mb-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <Gift size={20} className="text-blue-600" />
-            <h3 className="font-semibold text-gray-800">クーポンコード</h3>
-          </div>
+        <Card className="p-4 bg-gray-50 border border-gray-200 shadow-sm mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3">クーポンコード</h3>
           
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              クラウドファンディング支援者様向けのクーポンコードをお持ちの方は、こちらで入力してください。
-            </p>
-            
+          <div className="space-y-3">
             <div className="flex space-x-2">
-              <div className="relative flex-1">
-                <Ticket size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  placeholder="CF600-1M-001"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={isCouponProcessing}
-                />
-              </div>
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="CF600-1M-001"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={isCouponProcessing}
+              />
               <Button 
                 onClick={handleCouponSubmit}
                 disabled={isCouponProcessing || !couponCode.trim()}
