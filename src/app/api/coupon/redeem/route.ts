@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 // クーポンタイプの定義
 const COUPON_TYPES = {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         code: couponCode,
         type: couponType,
         used: false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       });
     }
 
@@ -76,8 +77,8 @@ export async function POST(request: NextRequest) {
     let updateData: any = {
       subscriptionStatus: 'active',
       currentPlan: couponInfo.planName,
-      subscriptionStartDate: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      subscriptionStartDate: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
       couponUsed: couponCode, // クーポン使用履歴
     };
 
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     await couponRef.update({
       used: true,
       usedBy: userId,
-      usedAt: admin.firestore.FieldValue.serverTimestamp(),
+      usedAt: FieldValue.serverTimestamp(),
     });
 
     console.log('✅ クーポン適用完了:', {
