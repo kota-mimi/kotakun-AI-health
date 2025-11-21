@@ -62,17 +62,21 @@ export async function GET(request: NextRequest) {
           } else if (currentPlan === '3ヶ月プラン') {
             plan = 'quarterly';  
             planName = '3ヶ月プラン';
-          } else if (currentPlan?.includes('クラファン特典')) {
-            // クラファン特典プランの場合
-            if (currentPlan.includes('1ヶ月')) {
-              plan = 'crowdfund_1m';
-            } else if (currentPlan.includes('3ヶ月')) {
-              plan = 'crowdfund_3m';
-            } else if (currentPlan.includes('6ヶ月')) {
-              plan = 'crowdfund_6m';
-            } else if (currentPlan.includes('永久')) {
-              plan = 'crowdfund_lifetime';
-            }
+          } else if (currentPlan?.includes('1ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
+            // クーポン適用の1ヶ月プランの場合
+            plan = 'crowdfund_1m';
+            planName = currentPlan;
+          } else if (currentPlan?.includes('3ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
+            // クーポン適用の3ヶ月プランの場合
+            plan = 'crowdfund_3m';
+            planName = currentPlan;
+          } else if (currentPlan?.includes('6ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
+            // クーポン適用の6ヶ月プランの場合
+            plan = 'crowdfund_6m';
+            planName = currentPlan;
+          } else if (currentPlan?.includes('永久利用プラン') && userData?.couponUsed?.startsWith('CF')) {
+            // クーポン適用の永久利用プランの場合
+            plan = 'crowdfund_lifetime';
             planName = currentPlan;
           }
         }

@@ -434,7 +434,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
                 {currentPlan.currentPeriodEnd && currentPlan.plan.startsWith('crowdfund') && currentPlan.status === 'active' && (
-                  <>🎁 クラファン特典有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  <>📅 有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
               </div>
             )}

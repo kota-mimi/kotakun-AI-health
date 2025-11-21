@@ -94,12 +94,12 @@ export async function getUserPlan(userId: string): Promise<string> {
       if (currentPlan === '月額プラン') return 'monthly';
       if (currentPlan === '3ヶ月プラン') return 'quarterly';
       
-      // クラファン特典プランの場合
-      if (currentPlan?.includes('クラファン特典')) {
-        if (currentPlan.includes('1ヶ月')) return 'crowdfund_1m';
-        if (currentPlan.includes('3ヶ月')) return 'crowdfund_3m';
-        if (currentPlan.includes('6ヶ月')) return 'crowdfund_6m';
-        if (currentPlan.includes('永久')) return 'crowdfund_lifetime';
+      // クーポン適用プランの場合
+      if (userData?.couponUsed?.startsWith('CF')) {
+        if (currentPlan?.includes('1ヶ月プラン')) return 'crowdfund_1m';
+        if (currentPlan?.includes('3ヶ月プラン')) return 'crowdfund_3m';
+        if (currentPlan?.includes('6ヶ月プラン')) return 'crowdfund_6m';
+        if (currentPlan?.includes('永久利用プラン')) return 'crowdfund_lifetime';
       }
     }
     

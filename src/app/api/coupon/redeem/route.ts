@@ -4,10 +4,10 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 // クーポンタイプの定義
 const COUPON_TYPES = {
-  'CF600-1M': { months: 1, planName: '1ヶ月プラン（クラファン特典）' },
-  'CF1500-3M': { months: 3, planName: '3ヶ月プラン（クラファン特典）' },
-  'CF3000-6M': { months: 6, planName: '6ヶ月プラン（クラファン特典）' },
-  'CF15000-LT': { months: -1, planName: '永久利用プラン（クラファン特典）' }, // -1は永続を表す
+  'CF600-1M': { months: 1, planName: '1ヶ月プラン' },
+  'CF1500-3M': { months: 3, planName: '3ヶ月プラン' },
+  'CF3000-6M': { months: 6, planName: '6ヶ月プラン' },
+  'CF15000-LT': { months: -1, planName: '永久利用プラン' }, // -1は永続を表す
 };
 
 export async function POST(request: NextRequest) {
