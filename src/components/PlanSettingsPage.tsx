@@ -427,7 +427,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 {currentPlan.status === 'lifetime' && (
                   <>♾️ 永続利用プラン（期限なし）</>
                 )}
-                {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && (
+                {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && !currentPlan.plan.startsWith('crowdfund') && (
                   <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
                 {currentPlan.currentPeriodEnd && currentPlan.status === 'cancel_at_period_end' && (
