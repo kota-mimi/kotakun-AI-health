@@ -4,10 +4,10 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 // クーポンタイプの定義
 const COUPON_TYPES = {
-  'CF600-1M': { months: 1, planName: '1ヶ月プラン' },
-  'CF1500-3M': { months: 3, planName: '3ヶ月プラン' },
-  'CF3000-6M': { months: 6, planName: '6ヶ月プラン' },
-  'CF15000-LT': { months: -1, planName: '永久利用プラン' }, // -1は永続を表す
+  'CF600-1M': { months: 1, planName: '1ヶ月プラン', maxCount: 100 },
+  'CF1500-3M': { months: 3, planName: '3ヶ月プラン', maxCount: 60 },
+  'CF3000-6M': { months: 6, planName: '6ヶ月プラン', maxCount: 40 },
+  'CF15000-LT': { months: -1, planName: '永久利用プラン', maxCount: 20 }, // -1は永続を表す
 };
 
 export async function POST(request: NextRequest) {
@@ -44,6 +44,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 券番号の範囲をチェック
+    const couponInfo = COUPON_TYPES[couponType as keyof typeof COUPON_TYPES];
+    const numberValue = parseInt(couponNumber, 10);
+    
+    if (numberValue < 1 || numberValue > couponInfo.maxCount) {
+      return NextResponse.json(
+        { success: false, error: `無効なクーポン番号です（1-${couponInfo.maxCount}の範囲）` },
+        { status: 400 }
+      );
+    }
+
     const db = admin.firestore();
 
     // クーポンが使用済みかチェック
@@ -68,8 +79,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // クーポン情報を取得
-    const couponInfo = COUPON_TYPES[couponType as keyof typeof COUPON_TYPES];
+    // 既に取得済みのcouponInfoを使用
 
     // ユーザーのプランを更新
     const userRef = db.collection('users').doc(userId);
