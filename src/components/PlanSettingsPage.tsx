@@ -223,7 +223,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       name: '月額プラン',
       price: 590,
       period: '月額',
-      stripePriceId: 'price_1SPEiCKToWVElLyIaP1UX4Ki',
+      stripePriceId: 'price_1SWKpfKToWVElLyI43EpQWxb',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
