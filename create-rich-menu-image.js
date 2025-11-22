@@ -96,7 +96,7 @@ async function createRichMenuImage() {
     const finalComposite = [...composite, ...lines];
     
     // 最終画像を生成
-    const outputPath = '/Users/toshimitsukotarou/Desktop/kotakun-good/rich-menu-final.png';
+    const outputPath = '/Users/toshimitsukotarou/Desktop/healthy-kun/rich-menu-final.png';
     await baseImage
       .composite(finalComposite)
       .png()

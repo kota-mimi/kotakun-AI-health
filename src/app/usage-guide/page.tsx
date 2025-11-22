@@ -208,7 +208,7 @@ export default function UsageGuidePage() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>
-            AIトレーナーこたくん
+            AIトレーナーヘルシーくん
           </h1>
           <p style={{
             fontSize: '1.2rem',
@@ -221,7 +221,7 @@ export default function UsageGuidePage() {
           <div className="highlight-box">
             <div className="highlight-text">🎯 健康管理を始めよう！</div>
             <p style={{ color: '#555', fontSize: '1rem' }}>
-              こたくんと一緒に、楽しく健康的な生活を送りましょう。<br />
+              ヘルシーくんと一緒に、楽しく健康的な生活を送りましょう。<br />
               簡単な操作で、あなたの健康データを記録・管理できます。
             </p>
           </div>
@@ -477,7 +477,7 @@ export default function UsageGuidePage() {
               marginBottom: '15px'
             }}>通常モード（記録以外の会話）</h3>
             <div className="step-description">
-              記録モード以外では、こたくんに何でも質問できます！
+              記録モード以外では、ヘルシーくんに何でも質問できます！
             </div>
             
             <div style={{ marginBottom: '25px' }}>
@@ -610,7 +610,7 @@ export default function UsageGuidePage() {
             <div className="highlight-text">📱 いつでもサポート</div>
             <p style={{ color: '#555', fontSize: '1rem', marginBottom: '15px' }}>
               ご不明な点やお困りのことがございましたら、<br />
-              いつでもお気軽にこたくんにメッセージをお送りください！
+              いつでもお気軽にヘルシーくんにメッセージをお送りください！
             </p>
             <p style={{ 
               fontSize: '1.1rem', 
@@ -630,7 +630,7 @@ export default function UsageGuidePage() {
           marginTop: '40px'
         }}>
           <p style={{ color: '#888', fontSize: '0.9rem' }}>
-            © 2024 AIトレーナーこたくん. All rights reserved.
+            © 2024 AIトレーナーヘルシーくん. All rights reserved.
           </p>
         </footer>
       </div>

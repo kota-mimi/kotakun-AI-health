@@ -976,14 +976,14 @@ true または false で回答してください。`;
         if (history.length > 0) {
           conversationHistory = '\n\n【過去の会話】\n';
           history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   こたくん: ${conv.aiResponse}\n`;
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ヘルシーくん: ${conv.aiResponse}\n`;
           });
           conversationHistory += '\n';
         }
       }
 
       const prompt = `
-あなたは「こたくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
+あなたは「ヘルシーくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
 ユーザーの「${userMessage}」に対して、**質問の雰囲気やニュアンスに合わせた**健康的で栄養バランスの良いレシピを提案してください。
 
 **ユーザーの表現に応じたレシピ選択：**
@@ -1093,7 +1093,7 @@ true または false で回答してください。`;
 - 材料は12個以内（調味料含む、整合性重視）
 - 手順は12ステップ以内（詳細で分かりやすく）
 - 材料欄にない調味料は作り方で使用禁止（完全な整合性を保つ）
-- 親しみやすい「こたくん」の口調で、ユーザーの表現の雰囲気に合わせて説明
+- 親しみやすい「ヘルシーくん」の口調で、ユーザーの表現の雰囲気に合わせて説明
 - 敬語は使わず、フレンドリーに
 - textResponseもユーザーの表現に応じた雰囲気で（例：「女の子にモテる料理」なら「これでモテモテ間違いなし！」みたいに）
 - **基本は1人前で作成**（ユーザーが「2人分の〜」「4人分の〜」など明確に指定した場合はその分量で調整）
@@ -1191,14 +1191,14 @@ true または false で回答してください。`;
         if (history.length > 0) {
           conversationHistory = '\n\n【過去の会話】\n';
           history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   こたくん: ${conv.aiResponse}\n`;
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ヘルシーくん: ${conv.aiResponse}\n`;
           });
           conversationHistory += '\n';
         }
       }
       
       const prompt = `
-あなたは「こたくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
+あなたは「ヘルシーくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
 ユーザーの「${userMessage}」に対して、質問の種類に応じて適切な長さで回答してください。
 
 【質問パターン別対応】
@@ -1524,14 +1524,14 @@ true または false で回答してください。`;
         if (history.length > 0) {
           conversationHistory = '\n\n【過去の会話】\n';
           history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   こたくん: ${conv.aiResponse}\n`;
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ヘルシーくん: ${conv.aiResponse}\n`;
           });
           conversationHistory += '\n';
         }
       }
       
       const prompt = `
-あなたは「こたくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
+あなたは「ヘルシーくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
 ユーザーの「${userMessage}」に対して、質問の種類に応じて適切な長さで回答してください。
 
 【質問パターン別対応】

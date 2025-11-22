@@ -871,7 +871,7 @@ async function handleFollow(replyToken: string, source: any) {
     altText: 'LINE健康管理へようこそ！',
     template: {
       type: 'buttons',
-      text: 'こんにちは！こたくんです！\n\n健康管理をお手伝いするために、あなたについていくつか教えてもらえる？',
+      text: 'こんにちは！ヘルシーくんです！\n\n健康管理をお手伝いするために、あなたについていくつか教えてもらえる？',
       actions: [{
         type: 'uri',
         label: 'カウンセリング開始',
@@ -3451,7 +3451,7 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
         contents: [
           {
             type: 'text',
-            text: 'こたくんプロ版になりました！',
+            text: 'ヘルシーくんプロ版になりました！',
             weight: 'bold',
             size: 'md',
             margin: 'md'

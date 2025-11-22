@@ -49,7 +49,7 @@ async function uploadFinalRichMenu() {
     console.log('✅ 新しいリッチメニュー作成:', newRichMenuId);
 
     // 2. 作成した画像をアップロード
-    const imagePath = '/Users/toshimitsukotarou/Desktop/kotakun-good/rich-menu-final.png';
+    const imagePath = '/Users/toshimitsukotarou/Desktop/healthy-kun/rich-menu-final.png';
     const imageBuffer = fs.readFileSync(imagePath);
     
     console.log('📊 画像情報:');

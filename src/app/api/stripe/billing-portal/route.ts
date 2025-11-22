@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       // Billing Portalセッションを作成
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: stripeCustomerId,
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kotakun-ai-health.vercel.app'}/plans`,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://healthy-kun-ai-health.vercel.app'}/plans`,
       });
 
       console.log('✅ Billing Portal URL生成成功');

@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "こたくん",
+  title: "ヘルシーくん",
   description: "AIを活用した個人向け健康管理サービス",
   keywords: ["健康管理", "LINE", "AI", "食事記録", "運動記録", "ヘルスケア"],
   openGraph: {
-    title: "こたくん",
+    title: "ヘルシーくん",
     description: "AIを活用した個人向け健康管理サービス",
     type: "website",
     locale: "ja_JP",

@@ -88,7 +88,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
 
   const tabs = [
     { id: 'getting-started', title: 'はじめに', subtitle: 'カウンセリング・初期設定' },
-    { id: 'ai-chat', title: 'こたくんと会話', subtitle: 'LINE基本操作・AI分析' },
+    { id: 'ai-chat', title: 'ヘルシーくんと会話', subtitle: 'LINE基本操作・AI分析' },
     { id: 'recording', title: '記録方法', subtitle: '食事・運動・体重記録' },
     { id: 'feedback', title: 'フィードバック', subtitle: '1日の振り返り・データ活用' },
     { id: 'web-app', title: 'アプリ活用', subtitle: 'Webアプリ・詳細機能' },
@@ -125,7 +125,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           {/* ヘッダー */}
           <div className="text-center mb-16">
             <h1 className="text-3xl font-bold text-gray-800 mb-3">
-              こたくんの使い方
+              ヘルシーくんの使い方
             </h1>
             <p className="text-gray-600">
               LINEで健康管理を始めよう
@@ -139,7 +139,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 1. 友だち追加
               </h2>
               <p className="text-gray-700 leading-relaxed mb-16">
-                LINEで「こたくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
+                LINEで「ヘルシーくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
               </p>
             </div>
           </div>
@@ -190,10 +190,10 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           {/* ヘッダー */}
           <div className="text-center mb-16">
             <h1 className="text-3xl font-bold text-gray-800 mb-3">
-              こたくんとの会話
+              ヘルシーくんとの会話
             </h1>
             <p className="text-gray-600">
-              フィットネスなどに詳しいこたくんがあなたの悩みをサポート
+              フィットネスなどに詳しいヘルシーくんがあなたの悩みをサポート
             </p>
           </div>
 
@@ -201,10 +201,10 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                LINEでこたくんと会話できる
+                LINEでヘルシーくんと会話できる
               </h2>
               <p className="text-gray-700 leading-relaxed mb-16">
-                フィットネスなどに詳しいこたくんにいろいろなことを相談できます
+                フィットネスなどに詳しいヘルシーくんにいろいろなことを相談できます
               </p>
             </div>
           </div>
@@ -327,7 +327,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <div className="bg-yellow-50 p-4 rounded-lg mb-16">
                 <p className="font-semibold text-gray-800 mb-2">注意</p>
                 <p className="text-gray-700 text-sm">
-                  記録モード中は記録しかできません。こたくんと会話したい場合は「通常モードに戻る」を押して戻ってください
+                  記録モード中は記録しかできません。ヘルシーくんと会話したい場合は「通常モードに戻る」を押して戻ってください
                 </p>
               </div>
             </div>
@@ -796,7 +796,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
 
               <div className="mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
-                  <h3 className="font-bold text-gray-800">Q. こたくんが反応しません</h3>
+                  <h3 className="font-bold text-gray-800">Q. ヘルシーくんが反応しません</h3>
                 </div>
                 <p className="text-gray-700 pl-3 mb-16">
                   A. 記録モード中ではありませんか？記録モード中は記録のみ受け付けます。通常モードに戻ってから、もう一度メッセージを送ってください。

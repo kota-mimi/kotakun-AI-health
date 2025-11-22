@@ -8,7 +8,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">第1条（適用）</h2>
               <p>
-                本利用規約（以下「本規約」）は、こたくん（以下「当社」または「運営者」）が提供する健康管理AIサポートサービス「こたくん」（以下「本サービス」）の利用条件を定めるものです。利用者（以下「ユーザー」）は、本サービスを利用することにより、本規約の全条項に同意したものとみなします。
+                本利用規約（以下「本規約」）は、ヘルシーくん（以下「当社」または「運営者」）が提供する健康管理AIサポートサービス「ヘルシーくん」（以下「本サービス」）の利用条件を定めるものです。利用者（以下「ユーザー」）は、本サービスを利用することにより、本規約の全条項に同意したものとみなします。
               </p>
             </section>
 
@@ -412,7 +412,7 @@ export default function TermsOfService() {
                   制定日: 2025年10月20日<br />
                   最終更新日: 2025年10月26日
                 </p>
-                <p className="font-medium text-gray-800">こたくん</p>
+                <p className="font-medium text-gray-800">ヘルシーくん</p>
               </div>
             </div>
           </div>

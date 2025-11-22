@@ -12,8 +12,8 @@ function initializeFirebaseAdmin() {
     console.log('🔧 Firebase Admin初期化開始...');
     
     // 環境変数から認証情報を取得
-    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'kotakun';
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || 'firebase-adminsdk-fbsvc@kotakun.iam.gserviceaccount.com';
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'healthy-kun';
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || 'firebase-adminsdk-fbsvc@healthy-kun.iam.gserviceaccount.com';
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
     
     // 本番環境でのみ詳細ログを出力

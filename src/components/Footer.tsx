@@ -21,7 +21,7 @@ export default function Footer() {
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              © 2025 kotakun ヘルスケアサービス. All rights reserved.
+              © 2025 ヘルシーくん ヘルスケアサービス. All rights reserved.
             </p>
             <p className="text-xs text-gray-400 mt-1">
               本サービスは医療行為ではありません。健康上の問題がある場合は医師にご相談ください。

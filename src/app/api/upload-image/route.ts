@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const storage = admin.storage();
     const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET 
       || process.env.FIREBASE_STORAGE_BUCKET 
-      || 'kotakun-19990629-gmailcoms-projects.appspot.com'; // LINEのWebhookと同じフォールバック
+      || 'healthy-kun-19990629-gmailcoms-projects.appspot.com'; // LINEのWebhookと同じフォールバック
     const bucket = storage.bucket(bucketName);
     
     

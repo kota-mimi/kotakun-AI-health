@@ -71,7 +71,7 @@ async function createRichMenu(accessToken: string) {
     },
     selected: true,
     name: "健康管理メニュー",
-    chatBarText: "こたくんメニュー",
+    chatBarText: "ヘルシーくんメニュー",
     areas: [
       {
         bounds: {

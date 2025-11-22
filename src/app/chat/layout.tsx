@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "kotakun チャット",
-  description: "健康管理アシスタント kotakun との会話",
+  title: "ヘルシーくん チャット",
+  description: "健康管理アシスタント ヘルシーくん との会話",
 };
 
 export const viewport: Viewport = {

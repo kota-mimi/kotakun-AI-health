@@ -83,7 +83,7 @@ async function startAIAdviceMode(replyToken: string, userId: string) {
         contents: [
           {
             type: 'text',
-            text: 'こたくんプロ版になりました！',
+            text: 'ヘルシーくんプロ版になりました！',
             weight: 'bold',
             size: 'md',
             margin: 'md'

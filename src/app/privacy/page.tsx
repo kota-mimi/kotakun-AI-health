@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
           
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              こたくんヘルスケアサービス（以下「当社」）は、ユーザーの個人情報保護を重要事項と位置づけ、
+              ヘルシーくんヘルスケアサービス（以下「当社」）は、ユーザーの個人情報保護を重要事項と位置づけ、
               個人情報保護法その他の関連法令を遵守し、適切な取り扱いに努めます。
             </p>
           </div>
@@ -240,7 +240,7 @@ export default function PrivacyPolicy() {
                     <p><strong>共同利用する個人情報の項目：</strong>ユーザーID、サービス利用状況、技術的ログ情報</p>
                     <p><strong>共同利用する者の範囲：</strong>当社の業務委託先（システム開発・保守業者、カスタマーサポート業者等）</p>
                     <p><strong>共同利用の目的：</strong>サービスの安定運用およびカスタマーサポート</p>
-                    <p><strong>管理責任者：</strong>こたくん ヘルスケアサービス 個人情報保護管理者</p>
+                    <p><strong>管理責任者：</strong>ヘルシーくん ヘルスケアサービス 個人情報保護管理者</p>
                   </div>
                 </div>
                 
@@ -410,7 +410,7 @@ export default function PrivacyPolicy() {
                     上記権利を行使される場合は、以下の方法でご連絡ください：
                   </p>
                   <div className="bg-gray-50 p-3 rounded text-sm">
-                    <p><strong>連絡先：</strong><a href="mailto:kotakun.health@gmail.com" className="text-blue-600 hover:text-blue-800 underline">kotakun.health@gmail.com</a></p>
+                    <p><strong>連絡先：</strong><a href="mailto:healthy-kun.health@gmail.com" className="text-blue-600 hover:text-blue-800 underline">healthy-kun.health@gmail.com</a></p>
                     <p><strong>必要書類：</strong>本人確認書類（運転免許証等）の写し</p>
                     <p><strong>回答期限：</strong>要求受付後30日以内（土日祝日を除く）</p>
                   </div>
@@ -425,7 +425,7 @@ export default function PrivacyPolicy() {
                   個人情報の取扱いに関するお問い合わせは、以下までご連絡ください：
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p>メール: <a href="mailto:kotakun.health@gmail.com" className="text-blue-600 hover:text-blue-800 underline">kotakun.health@gmail.com</a></p>
+                  <p>メール: <a href="mailto:healthy-kun.health@gmail.com" className="text-blue-600 hover:text-blue-800 underline">healthy-kun.health@gmail.com</a></p>
                 </div>
               </div>
             </section>
@@ -466,7 +466,7 @@ export default function PrivacyPolicy() {
                   制定日: 2025年10月20日<br />
                   最終更新日: 2025年10月26日
                 </p>
-                <p className="font-medium text-gray-800">こたくん</p>
+                <p className="font-medium text-gray-800">ヘルシーくん</p>
               </div>
             </div>
           </div>

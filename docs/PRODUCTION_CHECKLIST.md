@@ -69,7 +69,7 @@
 
 ### テスト用固定値
 - **LINE User ID**: `U7fd12476d6263912e0d9c99fc3a6bef9`
-- **App URL**: `https://kotakun-health.ngrok.io`
+- **App URL**: `https://healthy-kun-health.ngrok.io`
 - **環境**: Development
 
 ### 現在の機能状況
