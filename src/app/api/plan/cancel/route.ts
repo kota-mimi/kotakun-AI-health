@@ -73,7 +73,19 @@ export async function POST(request: NextRequest) {
         });
       }
     } else {
-      // Stripe IDがない場合は即座解約
+      // Stripe IDがない場合はクーポンプランかチェック
+      const currentPlan = userData?.currentPlan;
+      const couponUsed = userData?.couponUsed;
+      
+      // クーポンプランの場合は解約を拒否
+      if (couponUsed?.startsWith('CF') || currentPlan?.includes('クラファン特典') || currentPlan?.includes('永久利用')) {
+        return NextResponse.json({
+          success: false,
+          error: 'クラウドファンディング特典プランは解約できません'
+        }, { status: 400 });
+      }
+      
+      // その他の場合は即座解約
       await userRef.update({
         subscriptionStatus: 'cancelled',
         currentPlan: null,
