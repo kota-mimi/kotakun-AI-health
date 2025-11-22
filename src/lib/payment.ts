@@ -48,7 +48,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'monthly',
     name: '月額プラン',
-    price: 890,
+    price: 590,
     period: '月額',
     stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SPEiCKToWVElLyIaP1UX4Ki',
     features: [

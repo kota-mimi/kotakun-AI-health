@@ -221,7 +221,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
     {
       id: 'monthly',
       name: '月額プラン',
-      price: 890,
+      price: 590,
       period: '月額',
       stripePriceId: 'price_1SPEiCKToWVElLyIaP1UX4Ki',
       features: [
