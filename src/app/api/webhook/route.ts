@@ -360,7 +360,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     if (isAdviceMode) {
       // AIアドバイスモード中は記録機能を無効化し、高性能AIで応答
-      const aiResponse = await aiService.generateAdvancedResponse(text, userId);
+      const aiResponse = await aiService.generateGeneralResponse(text, userId);
       
       // 会話履歴を保存
       if (aiResponse) {
@@ -619,7 +619,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       }
     } else {
       // 通常のAI会話（詳細プロンプト・高性能モデル）
-      aiResponse = await aiService.generateAdvancedResponse(text, userId);
+      aiResponse = await aiService.generateGeneralResponse(text, userId);
     }
     
     // 会話履歴を保存
@@ -649,7 +649,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
                    await aiService.generateGeneralResponse(text, userId);
     } else {
       aiResponse = isAdviceMode 
-        ? await aiService.generateAdvancedResponse(text, userId)  // 高性能モデル
+        ? await aiService.generateGeneralResponse(text, userId)  // 統一プロンプト
         : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
     }
     
