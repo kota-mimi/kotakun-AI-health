@@ -50,7 +50,7 @@ export const PLANS: PlanConfig[] = [
     name: '月額プラン',
     price: 590,
     period: '月額',
-    stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SPEiCKToWVElLyIaP1UX4Ki',
+    stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || 'price_1SWKpfKToWVElLyI43EpQWxb',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
