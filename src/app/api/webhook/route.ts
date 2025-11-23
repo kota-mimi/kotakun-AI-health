@@ -1083,12 +1083,30 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         // キャラクター設定を取得してメッセージを生成
         const characterSettings = await getUserCharacterSettings(userId);
         const persona = getCharacterPersona(characterSettings);
+        const language = getCharacterLanguage(characterSettings);
         
         let exitMessage;
-        if (characterSettings?.type === 'sparta') {
-          exitMessage = '\n\nよし、記録お疲れ。通常モードに戻ったぞ。';
+        if (language === 'en') {
+          exitMessage = characterSettings?.type === 'sparta' ? 
+            '\n\nAlright, good job with the recording. Back to normal mode.' :
+            '\n\nBack to normal mode!';
+        } else if (language === 'ko') {
+          exitMessage = characterSettings?.type === 'sparta' ? 
+            '\n\n좋아, 기록 수고했다. 일반 모드로 돌아갔다.' :
+            '\n\n일반 모드로 돌아왔어!';
+        } else if (language === 'zh') {
+          exitMessage = characterSettings?.type === 'sparta' ? 
+            '\n\n好的，记录辛苦了。回到正常模式。' :
+            '\n\n回到正常模式了！';
+        } else if (language === 'es') {
+          exitMessage = characterSettings?.type === 'sparta' ? 
+            '\n\nBien, buen trabajo con el registro. Volviendo al modo normal.' :
+            '\n\n¡De vuelta al modo normal!';
         } else {
-          exitMessage = '\n\n通常モードに戻ったよー！';
+          // デフォルト日本語
+          exitMessage = characterSettings?.type === 'sparta' ? 
+            '\n\nよし、記録お疲れ。通常モードに戻ったぞ。' :
+            '\n\n通常モードに戻ったよー！';
         }
         
         const message = aiComment + exitMessage;
