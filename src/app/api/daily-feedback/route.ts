@@ -179,7 +179,7 @@ async function getUserCharacterSettings(userId: string): Promise<AICharacterSett
     const profileQuery = await db
       .collection('users')
       .doc(userId)
-      .collection('profile_history')
+      .collection('profileHistory')
       .orderBy('changeDate', 'desc')
       .limit(1)
       .get();
