@@ -593,6 +593,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     } else {
       // 通常のAI会話（詳細プロンプト・高性能モデル）
       const characterSettings = await getUserCharacterSettings(userId);
+      console.log('🎭 ユーザーのキャラクター設定:', { userId: userId.substring(0, 8), settings: characterSettings });
       aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     }
     
