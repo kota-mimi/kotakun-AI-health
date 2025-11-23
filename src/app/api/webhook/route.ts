@@ -6,6 +6,7 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getCharacterPersona } from '@/utils/aiCharacterUtils';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
@@ -1077,8 +1078,18 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         await setRecordMode(userId, false);
         console.log('✅ 通常モードに戻る処理完了:', userId);
         
-        // AIコメント付きのメッセージを送信
-        const message = aiComment + '\n\n通常モードに戻ったよー！';
+        // キャラクター設定を取得してメッセージを生成
+        const characterSettings = await getUserCharacterSettings(userId);
+        const persona = getCharacterPersona(characterSettings);
+        
+        let exitMessage;
+        if (characterSettings?.type === 'sparta') {
+          exitMessage = '\n\nよし、記録お疲れ。通常モードに戻ったぞ。';
+        } else {
+          exitMessage = '\n\n通常モードに戻ったよー！';
+        }
+        
+        const message = aiComment + exitMessage;
         
         await replyMessage(replyToken, [{
           type: 'text',
