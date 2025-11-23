@@ -3,6 +3,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { admin } from '@/lib/firebase-admin';
 import { createDailyFeedbackFlexMessage } from '@/services/flexMessageTemplates';
 import { getUserPlan } from '@/utils/usageLimits';
+import { getCharacterPersona, generateCharacterPrompt } from '@/utils/aiCharacterUtils';
+import type { AICharacterSettings } from '@/types';
 
 interface DailyRecord {
   weight?: { value: number; date: string };
@@ -45,8 +47,11 @@ export async function POST(request: NextRequest) {
     // プロファイル履歴から目標値を取得（アプリと統一）
     const targetValues = await getTargetValuesForDate(userId, date);
     
+    // ユーザーのキャラクター設定を取得
+    const characterSettings = await getUserCharacterSettings(userId);
+    
     // フィードバックを生成（目標値情報も含める）
-    const feedback = await generateDailyFeedback(dailyData, date, targetValues, userId);
+    const feedback = await generateDailyFeedback(dailyData, date, targetValues, userId, characterSettings);
 
     // ユーザー名を取得
     const userName = await getUserName(userId);
@@ -167,8 +172,41 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
   }
 }
 
+// ユーザーのキャラクター設定を取得
+async function getUserCharacterSettings(userId: string): Promise<AICharacterSettings> {
+  try {
+    const db = admin.firestore();
+    const profileQuery = await db
+      .collection('users')
+      .doc(userId)
+      .collection('profile_history')
+      .orderBy('changeDate', 'desc')
+      .limit(1)
+      .get();
+    
+    if (!profileQuery.empty) {
+      const latestProfile = profileQuery.docs[0].data();
+      if (latestProfile.aiCharacter) {
+        return latestProfile.aiCharacter as AICharacterSettings;
+      }
+    }
+    
+    // デフォルトはヘルシーくん
+    return { type: 'healthy_kun' };
+  } catch (error) {
+    console.error('キャラクター設定取得エラー:', error);
+    return { type: 'healthy_kun' };
+  }
+}
+
 // AIを使ってフィードバックを生成
-async function generateDailyFeedback(data: DailyRecord, date: string, targetValues?: any, userId?: string): Promise<string> {
+async function generateDailyFeedback(
+  data: DailyRecord, 
+  date: string, 
+  targetValues?: any, 
+  userId?: string,
+  characterSettings?: AICharacterSettings
+): Promise<string> {
   // 栄養データを計算
   const totalCalories = Math.round(data.meals.reduce((sum, meal) => sum + meal.calories, 0));
   const totalProtein = Number(data.meals.reduce((sum, meal) => sum + meal.protein, 0).toFixed(1));
@@ -197,9 +235,19 @@ async function generateDailyFeedback(data: DailyRecord, date: string, targetValu
   // 体重変化の分析（過去3日間の体重を取得して比較）
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
+  // キャラクターのペルソナを取得
+  const persona = getCharacterPersona(characterSettings);
+  
   // プロンプトを作成
   const prompt = `
-あなたは経験豊富な管理栄養士の知識を持つ親しみやすいアドバイザーです。
+あなたは「${persona.name}」として振る舞ってください。
+【キャラクター設定】
+- 名前: ${persona.name}
+- 性格: ${persona.personality}
+- 口調: ${persona.tone}
+- フィードバックスタイル: ${persona.feedbackStyle}
+
+${persona.name}として、経験豊富な管理栄養士の知識を持ちながらも、あなた独自の性格と口調で、
 ユーザーから提供された1日の食事内容と運動内容を分析し、わかりやすく親しみやすいフィードバックを提供してください。
 
 【${date}の記録データ】

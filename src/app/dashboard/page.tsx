@@ -31,6 +31,7 @@ import { PlanSettingsPage } from '@/components/PlanSettingsPage';
 import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
 import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
+import { AICharacterPage } from '@/components/AICharacterPage';
 import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightCard } from '@/components/WeightCard';
 import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
@@ -258,7 +259,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
         <>
-          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showReminderSettings ? (
+          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showReminderSettings && !navigation.showAICharacter ? (
             <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
@@ -267,6 +268,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
                 onNavigateToReminderSettings={navigation.handleNavigateToReminderSettings}
+                onNavigateToAICharacter={navigation.handleNavigateToAICharacter}
                 onNavigateToCounseling={() => {
                   window.location.href = '/counseling';
                 }}
@@ -300,6 +302,10 @@ function DashboardContent({ onError }: { onError: () => void }) {
           ) : navigation.showReminderSettings ? (
             <ReminderSettingsPage 
               onBack={navigation.handleBackFromReminderSettings}
+            />
+          ) : navigation.showAICharacter ? (
+            <AICharacterPage 
+              onBack={navigation.handleBackFromAICharacter}
             />
           ) : null}
         </>

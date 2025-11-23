@@ -17,6 +17,7 @@ export function useNavigationState() {
   const [showContact, setShowContact] = useState(false);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
   const [showReminderSettings, setShowReminderSettings] = useState(false);
+  const [showAICharacter, setShowAICharacter] = useState(false);
 
   // 栄養素設定をlocalStorageで永続化
   const selectedNutrientsStorage = useLocalStorage('healthApp_selectedNutrients', {
@@ -108,6 +109,14 @@ export function useNavigationState() {
     setShowReminderSettings(false);
   };
 
+  const handleNavigateToAICharacter = () => {
+    setShowAICharacter(true);
+  };
+
+  const handleBackFromAICharacter = () => {
+    setShowAICharacter(false);
+  };
+
   return {
     // 基本状態
     selectedDate,
@@ -123,6 +132,7 @@ export function useNavigationState() {
     showContact,
     showWeightSettings,
     showReminderSettings,
+    showAICharacter,
     selectedNutrients: selectedNutrientsStorage.value,
     
     // アクション
@@ -147,6 +157,8 @@ export function useNavigationState() {
     handleBackFromContact,
     handleNavigateToReminderSettings,
     handleBackFromReminderSettings,
+    handleNavigateToAICharacter,
+    handleBackFromAICharacter,
     
     // セッター（必要に応じて）
     setSelectedDate,

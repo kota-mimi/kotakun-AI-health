@@ -28,6 +28,7 @@ export interface UserProfile {
   dietaryRestrictions?: string;
   medicalConditions?: string;
   allergies?: string;
+  aiCharacter?: AICharacterSettings; // AIキャラクター設定
 }
 
 export interface HealthGoal {
@@ -197,4 +198,21 @@ export interface LIFFContext {
   utouId?: string;
   roomId?: string;
   groupId?: string;
+}
+
+// AIキャラクター関連の型定義
+export interface AICharacterSettings {
+  type: 'healthy_kun' | 'sparta' | 'custom'; // キャラクタータイプ
+  customPersonality?: string; // カスタムキャラクターの場合の性格設定
+  customTone?: string; // カスタムキャラクターの場合の口調設定
+}
+
+export interface AICharacterPersona {
+  name: string;
+  personality: string;
+  tone: string;
+  greeting: string;
+  encouragement: string[];
+  warnings: string[];
+  feedbackStyle: string;
 }
