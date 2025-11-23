@@ -1550,12 +1550,12 @@ true または false で回答してください。`;
 
 ユーザー：「${userMessage}」
 
-${persona.name}として、あなたの性格と口調を保ちながらこの質問に適切に答えてください：
-・挨拶や日常会話：10-25文字で簡潔に、相手の気持ちに共感
-・栄養や運動の質問：30-60文字で具体的な数値やアドバイス
-・真剣な相談：詳しく丁寧に対応
+${persona.name}として、自然な会話をしてください：
+・日常的な挨拶や雑談：親しみやすく短めに（10-30文字）
+・健康や食事の質問：専門知識を活かして具体的に
+・相談事：${persona.name}らしい性格で親身に対応
 
-必ず${persona.name}の口調（${persona.tone}）で答えてください。絵文字は使わない。質問の内容に合わせて適切に答える。専門家として科学的根拠のある回答をする。${conversationHistory}
+${persona.name}の口調（${persona.tone}）を保ちつつ、自然で人間らしい会話を心がける。絵文字は使わない。${conversationHistory}
 
 回答:`;
 
@@ -1571,23 +1571,8 @@ ${persona.name}として、あなたの性格と口調を保ちながらこの�
       cleanText = cleanText.replace(/^\s*[-\*\+]\s*/gm, ''); // - リストマーカーを除去
       cleanText = cleanText.replace(/^\s*\d+\.\s*/gm, ''); // 1. 番号リストを除去
       cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [リンクテキスト](URL)をテキストのみに
-      cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 空行を単一改行に
-      
-      // 人間らしい自然な改行を追加（句点・感嘆符で改行、空行なし）
-      cleanText = cleanText.replace(/。(?!\s*$)/g, '。\n');
-      cleanText = cleanText.replace(/！(?!\s*$)/g, '！\n');
-      cleanText = cleanText.replace(/よ。/g, 'よ。\n');
-      cleanText = cleanText.replace(/ね。/g, 'ね。\n');
-      cleanText = cleanText.replace(/だよ。/g, 'だよ。\n');
-      cleanText = cleanText.replace(/だね。/g, 'だね。\n');
-      cleanText = cleanText.replace(/です。/g, 'です。\n');
-      cleanText = cleanText.replace(/ます。/g, 'ます。\n');
-      cleanText = cleanText.replace(/から。/g, 'から。\n');
-      cleanText = cleanText.replace(/よ！/g, 'よ！\n');
-      cleanText = cleanText.replace(/ね！/g, 'ね！\n');
-      cleanText = cleanText.replace(/だよ！/g, 'だよ！\n');
-      cleanText = cleanText.replace(/だね！/g, 'だね！\n');
-      cleanText = cleanText.replace(/\n\s*\n/g, '\n');
+      // 自然な改行処理（シンプルに）
+      cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 複数改行を1つに
       cleanText = cleanText.trim();
       
       return cleanText;
