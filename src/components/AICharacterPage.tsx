@@ -214,7 +214,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
       </div>
 
       {/* 保存ボタン */}
-      <div className="px-4 pt-8 pb-8">
+      <div className="px-4 pt-8 pb-24">
         <Button 
           onClick={handleSaveSettings}
           disabled={isSaving}
