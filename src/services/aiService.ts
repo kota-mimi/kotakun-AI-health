@@ -1519,7 +1519,13 @@ true または false で回答してください。`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // キャラクターのペルソナを取得
+      console.log('🎭 AIサービス - 受信キャラクター設定:', characterSettings);
       const persona = getCharacterPersona(characterSettings);
+      console.log('🎭 AIサービス - 使用ペルソナ:', { 
+        name: persona.name, 
+        personality: persona.personality.substring(0, 50) + '...',
+        tone: persona.tone.substring(0, 30) + '...'
+      });
       
       // 会話履歴を取得
       let conversationHistory = '';
