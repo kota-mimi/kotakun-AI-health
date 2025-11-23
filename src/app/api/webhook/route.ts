@@ -6,7 +6,7 @@ import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getCharacterPersona } from '@/utils/aiCharacterUtils';
+import { getCharacterPersona, getCharacterLanguage } from '@/utils/aiCharacterUtils';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
@@ -138,7 +138,7 @@ async function sendCounselingPrompt(replyToken: string, actionName: string) {
   await replyMessage(replyToken, [counselingMessage]);
 }
 
-// 記録モード統一クイックリプライ
+// 記録モード統一クイックリプライ（日本語固定）
 function getRecordModeQuickReply() {
   return {
     items: [
@@ -502,7 +502,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           // 記録後もクイックリプライで記録モード継続
           return;
         } else {
-          // 食事タイプ選択のクイックリプライ表示
+          // 食事タイプ選択のクイックリプライ表示（日本語固定）
           await stopLoadingAnimation(userId);
           await replyMessage(replyToken, [{
             type: 'text',
