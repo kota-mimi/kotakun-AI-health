@@ -87,7 +87,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
   const currentPersona = getCharacterPersona(selectedCharacter);
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-6 pb-24 min-h-screen">
       {/* ヘッダー */}
       <div className="px-4">
         <div className="flex items-center justify-between mb-4">
@@ -214,7 +214,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
       </div>
 
       {/* 保存ボタン */}
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-8 pb-8">
         <Button 
           onClick={handleSaveSettings}
           disabled={isSaving}
