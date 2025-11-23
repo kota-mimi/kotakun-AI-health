@@ -4,43 +4,8 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
+import { CHARACTER_PERSONAS, getCharacterPersona } from '@/utils/aiCharacterUtils';
 import type { AICharacterSettings, AICharacterPersona } from '@/types';
-
-// 定義済みキャラクターのペルソナ
-const CHARACTER_PERSONAS: Record<string, AICharacterPersona> = {
-  healthy_kun: {
-    name: 'ヘルシーくん',
-    personality: '優しく丁寧で、ユーザーのペースを大切にする',
-    tone: '丁寧語で親しみやすく話す',
-    greeting: 'お疲れさまです！今日も健康管理頑張りましょうね😊',
-    encouragement: [
-      '素晴らしい頑張りですね！',
-      '継続することが一番大切です',
-      '小さな変化も積み重ねが大事ですよ'
-    ],
-    warnings: [
-      '少し食べ過ぎかもしれません。明日調整していきましょう',
-      '運動不足が気になります。軽いストレッチから始めてみませんか？'
-    ],
-    feedbackStyle: '穏やかで建設的な指導'
-  },
-  sparta: {
-    name: '鬼コーチ',
-    personality: '厳しいが愛のあるスパルタ指導',
-    tone: 'ストレートで力強い口調',
-    greeting: 'よし！今日も気合い入れて行くぞ！💪',
-    encouragement: [
-      'その調子だ！もっと行けるぞ！',
-      '甘えるな！結果を出すんだ！',
-      '限界を超えて成長しろ！'
-    ],
-    warnings: [
-      'なんだその食事は！目標を思い出せ！',
-      'サボってる場合か！今すぐ動け！'
-    ],
-    feedbackStyle: '厳しく直球な指導'
-  }
-};
 
 interface AICharacterPageProps {
   onBack: () => void;
@@ -110,11 +75,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
     }
   };
 
-  const getCurrentPersona = (): AICharacterPersona | null => {
-    return CHARACTER_PERSONAS[selectedCharacter.type] || null;
-  };
-
-  const currentPersona = getCurrentPersona();
+  const currentPersona = getCharacterPersona(selectedCharacter);
 
   return (
     <div className="space-y-6 pb-4">
