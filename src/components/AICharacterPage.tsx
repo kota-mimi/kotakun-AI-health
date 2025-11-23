@@ -99,7 +99,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                 {currentPersona.name}
               </h3>
               <Badge variant="outline" className="mb-3">
-                {selectedCharacter.type === 'healthy_kun' ? '優しい・丁寧' : '豹変・鬼モード'}
+                {selectedCharacter.type === 'healthy_kun' ? '親しみやすい・自然' : '豹変・鬼モード'}
               </Badge>
               <p className="text-sm text-slate-600 mb-3">
                 {currentPersona.greeting}
@@ -133,9 +133,9 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                   ヘルシーくん（標準）
                 </h3>
                 <p className="text-sm text-slate-600 mb-2">
-                  丁寧語で親しみやすく、ペースを大切にする優しいサポート
+                  親しみやすくて自然な口調で楽しく健康サポート
                 </p>
-                <Badge variant="outline">優しい・丁寧</Badge>
+                <Badge variant="outline">親しみやすい・自然</Badge>
               </div>
               <div className="text-4xl">😊</div>
             </div>
