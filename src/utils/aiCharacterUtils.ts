@@ -100,10 +100,10 @@ export function getCharacterLanguage(characterSettings?: AICharacterSettings): s
 export function getLanguageInstruction(language: string): string {
   const instructions = {
     ja: '', // 日本語はデフォルトなので指示不要
-    en: 'Please respond naturally in English while maintaining your character personality.',
-    ko: '당신의 캐릭터 성격을 유지하면서 자연스럽게 한국어로 응답해주세요.',
-    zh: '请保持你的角色性格，用自然的中文回答。',
-    es: 'Por favor responde naturalmente en español manteniendo tu personalidad de personaje.'
+    en: 'IMPORTANT: You MUST respond ONLY in English. Do not use any Japanese words or phrases. Maintain your character personality but express everything in natural English.',
+    ko: 'IMPORTANT: 반드시 한국어로만 응답해주세요. 일본어나 다른 언어는 사용하지 마세요. 캐릭터 성격을 유지하면서 자연스러운 한국어로 응답해주세요.',
+    zh: 'IMPORTANT: 你必须只用中文回答。不要使用日语或其他语言。保持你的角色性格，用自然的中文回答。',
+    es: 'IMPORTANT: Debes responder SOLO en español. No uses japonés ni otros idiomas. Mantén tu personalidad de personaje pero expresa todo en español natural.'
   };
   return instructions[language as keyof typeof instructions] || instructions.ja;
 }
