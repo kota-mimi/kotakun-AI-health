@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getCharacterPersona } from '@/utils/aiCharacterUtils';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
 import { admin } from '@/lib/firebase-admin';
@@ -1513,9 +1514,12 @@ true または false で回答してください。`;
   }
 
   // 一般会話機能（エラー時フォールバック用）
-  async generateGeneralResponse(userMessage: string, userId?: string): Promise<string> {
+  async generateGeneralResponse(userMessage: string, userId?: string, characterSettings?: any): Promise<string> {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      // キャラクターのペルソナを取得
+      const persona = getCharacterPersona(characterSettings);
       
       // 会話履歴を取得
       let conversationHistory = '';
@@ -1524,24 +1528,28 @@ true または false で回答してください。`;
         if (history.length > 0) {
           conversationHistory = '\n\n【過去の会話】\n';
           history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ヘルシーくん: ${conv.aiResponse}\n`;
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ${persona.name}: ${conv.aiResponse}\n`;
           });
           conversationHistory += '\n';
         }
       }
       
-      const prompt = `あなたは「ヘルシーくん」という親しみやすいパーソナルトレーナー兼栄養管理士です。
+      const prompt = `あなたは「${persona.name}」として振る舞ってください。
 
-専門知識：栄養学（カロリー・PFC・ビタミン・ミネラル）、筋トレ（セット数・レップ数・重量設定）、ダイエット（基礎代謝・カロリー収支・PFCバランス）、生活習慣（睡眠・ストレス管理・水分摂取）
+【キャラクター設定】
+- 名前: ${persona.name}
+- 性格: ${persona.personality}
+- 口調: ${persona.tone}
+- 専門知識：栄養学（カロリー・PFC・ビタミン・ミネラル）、筋トレ（セット数・レップ数・重量設定）、ダイエット（基礎代謝・カロリー収支・PFCバランス）、生活習慣（睡眠・ストレス管理・水分摂取）
 
 ユーザー：「${userMessage}」
 
-この質問に適切に答えてください：
+${persona.name}として、あなたの性格と口調を保ちながらこの質問に適切に答えてください：
 ・挨拶や日常会話：10-25文字で簡潔に、相手の気持ちに共感
 ・栄養や運動の質問：30-60文字で具体的な数値やアドバイス
 ・真剣な相談：詳しく丁寧に対応
 
-話し方：フレンドリーで敬語なし。「おすすめ」「効果的」など断定的に。絵文字は使わない。質問の内容に合わせて適切に答える。専門家として科学的根拠のある回答をする。${conversationHistory}
+必ず${persona.name}の口調（${persona.tone}）で答えてください。絵文字は使わない。質問の内容に合わせて適切に答える。専門家として科学的根拠のある回答をする。${conversationHistory}
 
 回答:`;
 

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Badge } from './ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
@@ -56,44 +53,20 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<AICharacterSettings>({
     type: 'healthy_kun'
   });
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-  const [customSettings, setCustomSettings] = useState({
-    personality: '',
-    tone: ''
-  });
   const [isSaving, setIsSaving] = useState(false);
 
   // 現在の設定を読み込み
   useEffect(() => {
     if (latestProfile?.aiCharacter) {
       setSelectedCharacter(latestProfile.aiCharacter);
-      if (latestProfile.aiCharacter.type === 'custom') {
-        setCustomSettings({
-          personality: latestProfile.aiCharacter.customPersonality || '',
-          tone: latestProfile.aiCharacter.customTone || ''
-        });
-      }
     }
   }, [latestProfile]);
 
   // キャラクター選択
-  const handleCharacterSelect = (type: 'healthy_kun' | 'sparta' | 'custom') => {
-    if (type === 'custom') {
-      setIsCustomModalOpen(true);
-    } else {
-      setSelectedCharacter({ type });
-    }
+  const handleCharacterSelect = (type: 'healthy_kun' | 'sparta') => {
+    setSelectedCharacter({ type });
   };
 
-  // カスタムキャラクター設定
-  const handleCustomSave = () => {
-    setSelectedCharacter({
-      type: 'custom',
-      customPersonality: customSettings.personality,
-      customTone: customSettings.tone
-    });
-    setIsCustomModalOpen(false);
-  };
 
   // 設定保存
   const handleSaveSettings = async () => {
@@ -138,17 +111,6 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
   };
 
   const getCurrentPersona = (): AICharacterPersona | null => {
-    if (selectedCharacter.type === 'custom') {
-      return {
-        name: 'ヘルシーくん', // LINEの表示名は固定
-        personality: selectedCharacter.customPersonality || '',
-        tone: selectedCharacter.customTone || '',
-        greeting: 'こんにちは！',
-        encouragement: ['頑張って！'],
-        warnings: ['注意が必要です'],
-        feedbackStyle: 'カスタム指導'
-      };
-    }
     return CHARACTER_PERSONAS[selectedCharacter.type] || null;
   };
 
@@ -176,8 +138,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                 {currentPersona.name}
               </h3>
               <Badge variant="outline" className="mb-3">
-                {selectedCharacter.type === 'healthy_kun' ? 'やさしい' :
-                 selectedCharacter.type === 'sparta' ? 'スパルタ' : 'カスタム'}
+                {selectedCharacter.type === 'healthy_kun' ? '優しい・丁寧' : '鬼軍曹'}
               </Badge>
               <p className="text-sm text-slate-600 mb-3">
                 {currentPersona.greeting}
@@ -211,9 +172,9 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                   ヘルシーくん（標準）
                 </h3>
                 <p className="text-sm text-slate-600 mb-2">
-                  優しく丁寧にサポートします
+                  丁寧語で親しみやすく、ペースを大切にする優しいサポート
                 </p>
-                <Badge variant="outline">やさしい</Badge>
+                <Badge variant="outline">優しい・丁寧</Badge>
               </div>
               <div className="text-4xl">😊</div>
             </div>
@@ -236,39 +197,15 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                   鬼コーチ
                 </h3>
                 <p className="text-sm text-slate-600 mb-2">
-                  厳しく愛のあるスパルタ指導
+                  軍隊式の厳格指導、結果を出した時だけ少し優しくなる
                 </p>
-                <Badge variant="destructive">スパルタ</Badge>
+                <Badge variant="destructive">鬼軍曹</Badge>
               </div>
               <div className="text-4xl">💪</div>
             </div>
           </div>
         </Card>
 
-        {/* カスタム */}
-        <Card 
-          className={`cursor-pointer transition-all ${
-            selectedCharacter.type === 'custom' 
-              ? 'bg-purple-50 border-purple-300 shadow-lg' 
-              : 'bg-white/80 border border-white/20'
-          } backdrop-blur-xl rounded-xl shadow-xl`}
-          onClick={() => handleCharacterSelect('custom')}
-        >
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-bold text-slate-900 mb-1">
-                  カスタムキャラクター
-                </h3>
-                <p className="text-sm text-slate-600 mb-2">
-                  自分好みにカスタマイズ
-                </p>
-                <Badge variant="secondary">カスタム</Badge>
-              </div>
-              <div className="text-4xl">🎭</div>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {/* 保存ボタン */}
@@ -282,52 +219,6 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
         </Button>
       </div>
 
-      {/* カスタムキャラクター設定モーダル */}
-      <Dialog open={isCustomModalOpen} onOpenChange={setIsCustomModalOpen}>
-        <DialogContent className="max-w-sm mx-auto my-8">
-          <DialogHeader>
-            <DialogTitle className="text-center">カスタムキャラクター設定</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">性格・特徴</label>
-              <Textarea
-                value={customSettings.personality}
-                onChange={(e) => setCustomSettings(prev => ({ ...prev, personality: e.target.value }))}
-                placeholder="例: フレンドリーで明るい、時には厳しく的確なアドバイスをくれる"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">口調・話し方</label>
-              <Textarea
-                value={customSettings.tone}
-                onChange={(e) => setCustomSettings(prev => ({ ...prev, tone: e.target.value }))}
-                placeholder="例: タメ口で親しみやすく、絵文字をよく使う"
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <div className="flex space-x-2 pt-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsCustomModalOpen(false)}
-              className="flex-1"
-            >
-              キャンセル
-            </Button>
-            <Button 
-              onClick={handleCustomSave}
-              className="flex-1 bg-purple-600 hover:bg-purple-700"
-            >
-              設定
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

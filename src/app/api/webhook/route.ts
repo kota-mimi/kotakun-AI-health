@@ -350,39 +350,11 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     const aiService = new AIHealthService();
     
-    // 記録モード中の場合、絶対にreturnすることを保証
-    if (isInRecordMode) {
-      // 記録モード中は通常AI処理をスキップ
-    }
-    
-    // AIアドバイスモード中かチェック
-    const isAdviceMode = await isAIAdviceMode(userId);
-    
-    if (isAdviceMode) {
-      // AIアドバイスモード中は記録機能を無効化し、高性能AIで応答
-      const aiResponse = await aiService.generateGeneralResponse(text, userId);
-      
-      // 会話履歴を保存
-      if (aiResponse) {
-        await aiService.saveConversation(userId, text, aiResponse);
-        // AI応答成功時に使用回数を記録
-        await recordUsage(userId, 'ai');
-      }
-      
-      await stopLoadingAnimation(userId);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: aiResponse || 'すみません、現在詳細なアドバイスができません。少し時間をおいてもう一度お試しください。'
-      }]);
-      return;
-    }
-    
-    
     // デバッグ: ステータス確認コマンド
     if (text.includes('ステータス') || text.includes('状態')) {
       await replyMessage(replyToken, [{
         type: 'text',
-        text: `現在の状態:\n記録モード: ${isInRecordMode ? 'ON' : 'OFF'}\nAIアドバイスモード: ${isInAdviceMode ? 'ON' : 'OFF'}`
+        text: `現在の状態:\n記録モード: ${isInRecordMode ? 'ON' : 'OFF'}`
       }]);
       return;
     }
@@ -619,7 +591,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       }
     } else {
       // 通常のAI会話（詳細プロンプト・高性能モデル）
-      aiResponse = await aiService.generateGeneralResponse(text, userId);
+      const characterSettings = await getUserCharacterSettings(userId);
+      aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     }
     
     // 会話履歴を保存
@@ -637,21 +610,10 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
   } catch (error) {
     console.error('テキストメッセージ処理エラー:', error);
-    // エラー時は一般会話で応答（AIアドバイスモードを考慮）
+    // エラー時は一般会話で応答
     const aiService = new AIHealthService();
-    const wasAdviceMode = aiAdviceModeUsers.has(userId); // タイムアウト前の状態
-    const isAdviceMode = await isAIAdviceMode(userId);
-    
-    // タイムアウト検出時にお知らせ
-    let aiResponse;
-    if (wasAdviceMode && !isAdviceMode) {
-      aiResponse = 'AIアドバイスモードが終了しました。通常モードに戻ります。\n\n' + 
-                   await aiService.generateGeneralResponse(text, userId);
-    } else {
-      aiResponse = isAdviceMode 
-        ? await aiService.generateGeneralResponse(text, userId)  // 統一プロンプト
-        : await aiService.generateGeneralResponse(text, userId);  // 軽量モデル
-    }
+    const characterSettings = await getUserCharacterSettings(userId);
+    const aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     
     // 会話履歴を保存
     if (aiResponse) {
@@ -699,17 +661,6 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     setProcessing(userId, true);
     
     try {
-      // AIアドバイスモード中かチェック
-      const isAdviceMode = await isAIAdviceMode(userId);
-      
-      if (isAdviceMode) {
-        // AIアドバイスモード中は画像記録を無効化
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: 'AIアドバイスモード中は画像での記録はできません。\n\n画像について相談されたい場合は、まず通常モードに戻ってから再度お試しください。'
-        }]);
-        return;
-      }
     
       // Loading Animation開始（AIが画像分析中）
       await startLoadingAnimation(userId, 30);
@@ -973,12 +924,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
           timeElapsed: `${modeSetTime - startTime}ms`
         });
         
-        // AIアドバイスモード中なら自動終了
-        const wasInAdviceMode = await isAIAdviceMode(userId);
-        if (wasInAdviceMode) {
-          console.log('🤖 AIアドバイスモード自動終了:', userId);
-          await setAIAdviceMode(userId, false);
-        }
         
         try {
           // 記録モード開始のFlexメッセージ
@@ -1090,13 +1035,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       await replyMessage(replyToken, [{
         type: 'text',
         text: '運動記録は記録モードでより自然な言葉で記録できます！\n\n「記録」ボタンを押して記録モードにして、「ランニング30分した」「筋トレした」などと送ってください。'
-      }]);
-      break;
-    case 'exit_ai_advice':
-      await setAIAdviceMode(userId, false);
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '通常モードに戻りました！\n\n記録機能が使えるようになりました。'
       }]);
       break;
     case 'exit_record_mode':
@@ -3420,106 +3358,6 @@ async function showRecordMenu(replyToken: string) {
   await replyMessage(replyToken, [recordMessage]);
 }
 
-// AIアドバイスモードを開始
-async function startAIAdviceMode(replyToken: string, userId: string) {
-  // AIアドバイスモードのフラグを設定（セッション管理）
-  await setAIAdviceMode(userId, true);
-  
-  const adviceMessage = {
-    type: 'flex',
-    altText: '🤖 AIアドバイスモード',
-    contents: {
-      type: 'bubble',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '🤖 AIアドバイスモード',
-            weight: 'bold',
-            size: 'lg',
-            color: '#ffffff'
-          }
-        ],
-        backgroundColor: '#9C27B0',
-        paddingAll: 'md'
-      },
-      body: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: 'ヘルシーくんプロ版になりました！',
-            weight: 'bold',
-            size: 'md',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: '詳細な健康相談・専門的なアドバイスができます',
-            size: 'sm',
-            color: '#666666',
-            wrap: true,
-            margin: 'sm'
-          },
-          {
-            type: 'separator',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: '✨ 利用できる機能',
-            weight: 'bold',
-            margin: 'md'
-          },
-          {
-            type: 'text',
-            text: '• 栄養バランスの詳細分析\n• 運動プログラムの提案\n• 生活習慣の改善案\n• 個別化された健康アドバイス',
-            size: 'sm',
-            color: '#333333',
-            wrap: true,
-            margin: 'sm'
-          },
-          {
-            type: 'text',
-            text: 'お気軽にご相談ください！',
-            size: 'sm',
-            color: '#9C27B0',
-            margin: 'md',
-            weight: 'bold'
-          },
-          {
-            type: 'text',
-            text: '※記録機能は無効になります\n※10分で自動終了します',
-            size: 'xs',
-            color: '#999999',
-            margin: 'md'
-          }
-        ]
-      },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'button',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_ai_advice'
-            },
-            style: 'secondary',
-            color: '#666666'
-          }
-        ]
-      }
-    }
-  };
-
-  await replyMessage(replyToken, [adviceMessage]);
-}
 
 // 記録モード開始
 async function startRecordMode(replyToken: string, userId: string) {
@@ -3587,10 +3425,6 @@ async function startRecordMode(replyToken: string, userId: string) {
   console.log('📊 記録モード開始総時間:', `${apiCallEnd - flexBuildStart}ms`);
 }
 
-// AIアドバイスモードの設定（タイムアウト付きセッション管理）
-const aiAdviceModeUsers = new Map<string, number>();
-const AI_ADVICE_TIMEOUT = 10 * 60 * 1000; // 10分でタイムアウト
-
 // 記録モードの設定（Firestoreベース + メモリキャッシュ）
 const recordModeUsers = new Map<string, number>();
 // タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
@@ -3605,36 +3439,6 @@ const BURST_WINDOW = 10000; // 10秒間のウィンドウ
 const PENALTY_DURATION = 30000; // ペナルティ期間（30秒）
 const penalizedUsers = new Map<string, number>(); // ペナルティ中ユーザー
 
-async function setAIAdviceMode(userId: string, enabled: boolean) {
-  if (enabled) {
-    aiAdviceModeUsers.set(userId, Date.now());
-    console.log(`🤖 AIアドバイスモード開始: ${userId}`);
-  } else {
-    aiAdviceModeUsers.delete(userId);
-    console.log(`⏹️ AIアドバイスモード終了: ${userId}`);
-  }
-}
-
-async function isAIAdviceMode(userId: string): Promise<boolean> {
-  const startTime = aiAdviceModeUsers.get(userId);
-  
-  if (!startTime) {
-    return false; // モードが設定されていない
-  }
-  
-  const elapsed = Date.now() - startTime;
-  
-  if (elapsed > AI_ADVICE_TIMEOUT) {
-    // タイムアウト：自動的に通常モードに戻す
-    aiAdviceModeUsers.delete(userId);
-    console.log(`⏰ AIアドバイスモード タイムアウト (${Math.round(elapsed/1000/60)}分経過): ${userId}`);
-    return false;
-  }
-  
-  // まだ有効：時間を更新
-  aiAdviceModeUsers.set(userId, Date.now());
-  return true;
-}
 
 // 強化された連続タップ防止機能
 function canProcessTap(userId: string): boolean {

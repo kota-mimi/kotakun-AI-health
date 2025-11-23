@@ -202,9 +202,7 @@ export interface LIFFContext {
 
 // AIキャラクター関連の型定義
 export interface AICharacterSettings {
-  type: 'healthy_kun' | 'sparta' | 'custom'; // キャラクタータイプ
-  customPersonality?: string; // カスタムキャラクターの場合の性格設定
-  customTone?: string; // カスタムキャラクターの場合の口調設定
+  type: 'healthy_kun' | 'sparta'; // キャラクタータイプ
 }
 
 export interface AICharacterPersona {
