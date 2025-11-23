@@ -87,7 +87,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
   const currentPersona = getCharacterPersona(selectedCharacter);
 
   return (
-    <div className="space-y-6 pb-24 min-h-screen">
+    <div className="space-y-6 pb-32 min-h-screen overflow-y-auto">
       {/* ヘッダー */}
       <div className="px-4">
         <div className="flex items-center justify-between mb-4">

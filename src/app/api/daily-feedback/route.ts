@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { admin } from '@/lib/firebase-admin';
 import { createDailyFeedbackFlexMessage } from '@/services/flexMessageTemplates';
 import { getUserPlan } from '@/utils/usageLimits';
-import { getCharacterPersona, generateCharacterPrompt } from '@/utils/aiCharacterUtils';
+import { getCharacterPersona, generateCharacterPrompt, getCharacterLanguage, getLanguageInstruction } from '@/utils/aiCharacterUtils';
 import type { AICharacterSettings } from '@/types';
 
 interface DailyRecord {
@@ -235,11 +235,14 @@ async function generateDailyFeedback(
   // 体重変化の分析（過去3日間の体重を取得して比較）
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
-  // キャラクターのペルソナを取得
+  // キャラクターのペルソナと言語を取得
   const persona = getCharacterPersona(characterSettings);
+  const language = getCharacterLanguage(characterSettings);
+  const languageInstruction = getLanguageInstruction(language);
   
   // プロンプトを作成
-  const prompt = `
+  const prompt = `${languageInstruction}
+
 あなたは「${persona.name}」として振る舞ってください。
 【キャラクター設定】
 - 名前: ${persona.name}

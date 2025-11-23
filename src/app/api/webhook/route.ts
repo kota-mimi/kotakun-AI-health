@@ -4199,9 +4199,19 @@ async function getRecentRecordsForComment(userId: string, recordModeStartTime: n
 // 記録データに基づいてAIコメントを生成
 async function generateExitComment(records: any, userId: string): Promise<string> {
   try {
+    // ユーザーのキャラクター設定を取得
+    const characterSettings = await getUserCharacterSettings(userId);
+    const persona = getCharacterPersona(characterSettings);
+    const language = getCharacterLanguage(characterSettings);
+    const languageInstruction = getLanguageInstruction(language);
+    
     // 記録がない場合
     if (records.meals.length === 0 && records.exercises.length === 0 && records.weights.length === 0) {
-      return 'また記録してね！';
+      const fallbackMessages = {
+        healthy_kun: 'また記録してね！',
+        sparta: 'まあいいけど、また記録しろよ。'
+      };
+      return fallbackMessages[characterSettings?.type || 'healthy_kun'];
     }
     
     const aiService = new AIHealthService();
@@ -4230,23 +4240,27 @@ async function generateExitComment(records: any, userId: string): Promise<string
       }
     }
     
-    // AIプロンプト
-    const prompt = `
-以下のユーザーの最近の記録に基づいて、自然で親しみやすい一言コメントを生成してください。
+    // AIプロンプト（キャラクターと言語対応）
+    const prompt = `${languageInstruction}
+
+あなたは「${persona.name}」として振る舞ってください。
+性格: ${persona.personality}
+口調: ${persona.tone}
+
+以下のユーザーの最近の記録に基づいて、${persona.name}として自然で一言コメントを生成してください。
 
 【記録データ】
 ${dataText}
 
 【コメントの条件】
 - 1行で簡潔に（30文字以内）
-- 通常の会話と同じ親しみやすい口調（「だね」「～じゃん」「いいね」など）
+- ${persona.name}の性格と口調を保つ
 - 具体的な記録内容に言及してお疲れさまの気持ちを表現
 - 前向きで励ましの要素を含む
 
-例：
-- "腹筋100回お疲れさま！しっかり頑張ってるね✨"
-- "朝食パンいいね！エネルギー補給できたね"
-- "体重記録ありがとう！継続が大事だよ"
+${persona.name}の口調例：
+- ヘルシーくん: "腹筋100回お疲れさま！しっかり頑張ってるね✨" / "朝食パンいいね！エネルギー補給できたね"
+- ヘルシーくん（鬼モード）: "100回か、少しはやるじゃないか" / "朝食ちゃんと食べたな、当たり前だけど"
 
 コメントのみを返してください（説明不要）：
 `;
