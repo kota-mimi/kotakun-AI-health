@@ -99,7 +99,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                 {currentPersona.name}
               </h3>
               <Badge variant="outline" className="mb-3">
-                {selectedCharacter.type === 'healthy_kun' ? '優しい・丁寧' : '鬼軍曹'}
+                {selectedCharacter.type === 'healthy_kun' ? '優しい・丁寧' : '豹変・鬼モード'}
               </Badge>
               <p className="text-sm text-slate-600 mb-3">
                 {currentPersona.greeting}
@@ -155,14 +155,14 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h3 className="font-bold text-slate-900 mb-1">
-                  鬼コーチ
+                  ヘルシーくん（鬼モード）
                 </h3>
                 <p className="text-sm text-slate-600 mb-2">
-                  軍隊式の厳格指導、結果を出した時だけ少し優しくなる
+                  普段の優しさを封印、豹変して容赦ない厳格指導
                 </p>
-                <Badge variant="destructive">鬼軍曹</Badge>
+                <Badge variant="destructive">豹変・鬼モード</Badge>
               </div>
-              <div className="text-4xl">💪</div>
+              <div className="text-4xl">😈</div>
             </div>
           </div>
         </Card>
