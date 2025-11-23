@@ -4381,7 +4381,7 @@ async function getUserCharacterSettings(userId: string) {
     const profilesSnapshot = await db
       .collection('users')
       .doc(userId)
-      .collection('profiles')
+      .collection('profileHistory')
       .orderBy('changeDate', 'desc')
       .limit(1)
       .get();
