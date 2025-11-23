@@ -4372,3 +4372,27 @@ async function sendRecordConfirmation(replyToken: string) {
 
   await replyMessage(replyToken, [message]);
 }
+
+// ユーザーのキャラクター設定を取得
+async function getUserCharacterSettings(userId: string) {
+  try {
+    const db = admin.firestore();
+    const profilesSnapshot = await db
+      .collection('users')
+      .doc(userId)
+      .collection('profiles')
+      .orderBy('changeDate', 'desc')
+      .limit(1)
+      .get();
+
+    if (profilesSnapshot.empty) {
+      return null; // デフォルトキャラクター（ヘルシーくん）を使用
+    }
+
+    const latestProfile = profilesSnapshot.docs[0].data();
+    return latestProfile.aiCharacter || null;
+  } catch (error) {
+    console.error('キャラクター設定取得エラー:', error);
+    return null; // エラー時はデフォルトキャラクター
+  }
+}
