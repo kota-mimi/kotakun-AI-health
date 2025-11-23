@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
-import { CHARACTER_PERSONAS, getCharacterPersona } from '@/utils/aiCharacterUtils';
+import { CHARACTER_PERSONAS, getCharacterPersona, SUPPORTED_LANGUAGES } from '@/utils/aiCharacterUtils';
 import type { AICharacterSettings, AICharacterPersona } from '@/types';
 
 interface AICharacterPageProps {
@@ -16,20 +16,29 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
   const { latestProfile, refetch: refetchProfile } = useSharedProfile();
   
   const [selectedCharacter, setSelectedCharacter] = useState<AICharacterSettings>({
-    type: 'healthy_kun'
+    type: 'healthy_kun',
+    language: 'ja'
   });
   const [isSaving, setIsSaving] = useState(false);
 
   // 現在の設定を読み込み
   useEffect(() => {
     if (latestProfile?.aiCharacter) {
-      setSelectedCharacter(latestProfile.aiCharacter);
+      setSelectedCharacter({
+        type: latestProfile.aiCharacter.type,
+        language: latestProfile.aiCharacter.language || 'ja' // デフォルト日本語
+      });
     }
   }, [latestProfile]);
 
   // キャラクター選択
   const handleCharacterSelect = (type: 'healthy_kun' | 'sparta') => {
-    setSelectedCharacter({ type });
+    setSelectedCharacter(prev => ({ ...prev, type }));
+  };
+
+  // 言語選択
+  const handleLanguageSelect = (language: string) => {
+    setSelectedCharacter(prev => ({ ...prev, language: language as any }));
   };
 
 
@@ -166,6 +175,41 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
             </div>
           </div>
         </Card>
+
+      </div>
+
+      {/* 言語選択 */}
+      <div className="px-4 space-y-4">
+        <h2 className="text-lg font-semibold text-slate-800">言語設定</h2>
+        
+        <div className="grid grid-cols-2 gap-3">
+          {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+            <Card 
+              key={code}
+              className={`cursor-pointer transition-all ${
+                selectedCharacter.language === code 
+                  ? 'bg-blue-50 border-blue-300 shadow-lg' 
+                  : 'bg-white/80 border border-white/20'
+              } backdrop-blur-xl rounded-xl shadow-xl`}
+              onClick={() => handleLanguageSelect(code)}
+            >
+              <div className="p-3">
+                <div className="text-center">
+                  <div className="text-sm font-medium text-slate-900">
+                    {name}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {code === 'ja' && '🇯🇵'}
+                    {code === 'en' && '🇺🇸'}
+                    {code === 'ko' && '🇰🇷'}
+                    {code === 'zh' && '🇨🇳'}
+                    {code === 'es' && '🇪🇸'}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
 
       </div>
 

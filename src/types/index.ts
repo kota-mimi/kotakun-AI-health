@@ -203,6 +203,7 @@ export interface LIFFContext {
 // AIキャラクター関連の型定義
 export interface AICharacterSettings {
   type: 'healthy_kun' | 'sparta'; // キャラクタータイプ
+  language?: 'ja' | 'en' | 'ko' | 'zh' | 'es'; // 言語設定（オプショナル）
 }
 
 export interface AICharacterPersona {

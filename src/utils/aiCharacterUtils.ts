@@ -1,5 +1,14 @@
 import type { AICharacterSettings, AICharacterPersona } from '@/types';
 
+// サポートする言語
+export const SUPPORTED_LANGUAGES = {
+  ja: '日本語',
+  en: 'English', 
+  ko: '한국어',
+  zh: '中文',
+  es: 'Español'
+} as const;
+
 // 定義済みキャラクターのペルソナ
 export const CHARACTER_PERSONAS: Record<string, AICharacterPersona> = {
   healthy_kun: {
@@ -80,4 +89,21 @@ export function getRandomEncouragement(persona: AICharacterPersona): string {
 // 警告メッセージをランダムに取得
 export function getRandomWarning(persona: AICharacterPersona): string {
   return persona.warnings[Math.floor(Math.random() * persona.warnings.length)];
+}
+
+// キャラクター設定から言語を取得
+export function getCharacterLanguage(characterSettings?: AICharacterSettings): string {
+  return characterSettings?.language || 'ja'; // デフォルト日本語
+}
+
+// 言語別の指示を取得
+export function getLanguageInstruction(language: string): string {
+  const instructions = {
+    ja: '', // 日本語はデフォルトなので指示不要
+    en: 'Please respond naturally in English while maintaining your character personality.',
+    ko: '당신의 캐릭터 성격을 유지하면서 자연스럽게 한국어로 응답해주세요.',
+    zh: '请保持你的角色性格，用自然的中文回答。',
+    es: 'Por favor responde naturalmente en español manteniendo tu personalidad de personaje.'
+  };
+  return instructions[language as keyof typeof instructions] || instructions.ja;
 }

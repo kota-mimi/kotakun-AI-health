@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getCharacterPersona } from '@/utils/aiCharacterUtils';
+import { getCharacterPersona, getCharacterLanguage, getLanguageInstruction } from '@/utils/aiCharacterUtils';
 import { calculateBMI, calculateTDEE, calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import type { UserProfile, CounselingAnswer } from '@/types';
 import { admin } from '@/lib/firebase-admin';
@@ -1518,13 +1518,17 @@ true または false で回答してください。`;
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      // キャラクターのペルソナを取得
+      // キャラクターのペルソナと言語を取得
       console.log('🎭 AIサービス - 受信キャラクター設定:', characterSettings);
       const persona = getCharacterPersona(characterSettings);
+      const language = getCharacterLanguage(characterSettings);
+      const languageInstruction = getLanguageInstruction(language);
+      
       console.log('🎭 AIサービス - 使用ペルソナ:', { 
         name: persona.name, 
         personality: persona.personality.substring(0, 50) + '...',
-        tone: persona.tone.substring(0, 30) + '...'
+        tone: persona.tone.substring(0, 30) + '...',
+        language: language
       });
       
       // 会話履歴を取得
@@ -1540,7 +1544,9 @@ true または false で回答してください。`;
         }
       }
       
-      const prompt = `あなたは「${persona.name}」として振る舞ってください。
+      const prompt = `${languageInstruction}
+
+あなたは「${persona.name}」として振る舞ってください。
 
 【キャラクター設定】
 - 名前: ${persona.name}
