@@ -713,7 +713,8 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       // 3. 食事画像かどうかチェック
       if (!mealAnalysis.isFoodImage) {
         // 食事じゃない画像の場合：一般AIで会話
-        const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId);
+        const characterSettings = await getUserCharacterSettings(userId);
+        const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId, characterSettings);
         
         // 会話履歴を保存
         if (aiResponse) {
@@ -1113,7 +1114,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         await deleteTempMealAnalysis(userId);
         
         const aiService = new AIHealthService();
-        const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは', userId);
+        const characterSettings = await getUserCharacterSettings(userId);
+        const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは', userId, characterSettings);
         
         // 会話履歴を保存
         if (generalResponse) {
@@ -4266,7 +4268,7 @@ ${persona.name}の口調例：
 コメントのみを返してください（説明不要）：
 `;
     
-    const comment = await aiService.generateGeneralResponse(prompt, userId);
+    const comment = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
     return comment || 'お疲れさま！';
     
   } catch (error) {
