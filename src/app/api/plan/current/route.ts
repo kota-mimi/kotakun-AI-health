@@ -62,6 +62,9 @@ export async function GET(request: NextRequest) {
           } else if (currentPlan === '3ヶ月プラン') {
             plan = 'quarterly';  
             planName = '3ヶ月プラン';
+          } else if (currentPlan === '半年プラン（テスト）') {
+            plan = 'biannual';
+            planName = '半年プラン（テスト）';
           } else if (currentPlan?.includes('1ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
             // クーポン適用の1ヶ月プランの場合
             plan = 'crowdfund_1m';
