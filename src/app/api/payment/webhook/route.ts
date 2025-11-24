@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
         planName = '月額プラン';
       } else if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
-        planName = '半年プラン（テスト）';
+        planName = '半年プラン';
       }
 
       // 支払い記録をFirestoreに保存
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
         planName = '月額プラン';
       } else if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
-        planName = '半年プラン（テスト）';
+        planName = '半年プラン';
       }
 
       // ユーザーのサブスクリプション情報を更新

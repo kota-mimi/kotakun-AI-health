@@ -98,7 +98,7 @@ export async function getUserPlan(userId: string): Promise<string> {
     if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
       if (currentPlan === '月額プラン') return 'monthly';
       if (currentPlan === '3ヶ月プラン') return 'quarterly';
-      if (currentPlan === '半年プラン（テスト）') return 'biannual';
+      if (currentPlan === '半年プラン') return 'biannual';
       
       // クーポン適用プランの場合
       if (userData?.couponUsed?.startsWith('CF')) {

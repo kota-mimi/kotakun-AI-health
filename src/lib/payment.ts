@@ -60,16 +60,18 @@ export const PLANS: PlanConfig[] = [
   },
   {
     id: 'biannual',
-    name: '半年プラン（テスト）',
-    price: 100,
+    name: '半年プラン',
+    price: 3000,
     period: '6ヶ月',
-    stripePriceId: process.env.STRIPE_BIANNUAL_PRICE_ID || 'price_1SWwX9KToWVElLyIz83wta0t',
+    originalPrice: 4740,
+    discount: '37%OFF',
+    stripePriceId: process.env.STRIPE_BIANNUAL_PRICE_ID || 'price_1SWx4vKToWVElLyI2TyVD57H',
     features: [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
       '1日のフィードバック機能',
       'アプリからAI記録機能',
-      'テスト用価格！'
+      '月額より37%お得！'
     ]
   }
 ];
