@@ -40,8 +40,7 @@ export async function GET(request: NextRequest) {
     // プラン名を取得
     const planMapping: { [key: string]: string } = {
       [process.env.STRIPE_MONTHLY_PRICE_ID!]: '月額プラン',
-      [process.env.STRIPE_QUARTERLY_PRICE_ID!]: '3ヶ月プラン',
-      [process.env.STRIPE_BIANNUAL_PRICE_ID!]: '半年プラン',
+      [process.env.STRIPE_BIANNUAL_PRICE_ID!]: '半年プラン（テスト）',
     };
 
     const lineItem = session.line_items?.data[0];

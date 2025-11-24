@@ -55,9 +55,21 @@ export const PLANS: PlanConfig[] = [
       'すべての機能が無制限',
       'AI会話・記録が使い放題',
       '1日のフィードバック機能',
-      '詳細な栄養分析',
-      '運動プラン提案',
       'アプリからAI記録機能'
+    ]
+  },
+  {
+    id: 'biannual',
+    name: '半年プラン（テスト）',
+    price: 100,
+    period: '6ヶ月',
+    stripePriceId: process.env.STRIPE_BIANNUAL_PRICE_ID || 'price_1SWwOjKToWVElLyIN3qDNTlL',
+    features: [
+      'すべての機能が無制限',
+      'AI会話・記録が使い放題',
+      '1日のフィードバック機能',
+      'アプリからAI記録機能',
+      'テスト用価格！'
     ]
   }
 ];

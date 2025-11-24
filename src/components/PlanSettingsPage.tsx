@@ -228,8 +228,22 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
-        '詳細な栄養分析',
         'アプリからAI記録機能'
+      ]
+    },
+    {
+      id: 'biannual',
+      name: '半年プラン（テスト）',
+      price: 100,
+      period: '6ヶ月',
+      stripePriceId: 'price_1SWwOjKToWVElLyIN3qDNTlL',
+      isRecommended: true,
+      features: [
+        'すべての機能が無制限',
+        'AI会話・記録が使い放題',
+        '1日のフィードバック機能',
+        'アプリからAI記録機能',
+        'テスト用価格！'
       ]
     }
   ];
