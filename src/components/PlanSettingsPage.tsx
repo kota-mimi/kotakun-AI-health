@@ -17,7 +17,7 @@ interface PlanSettingsPageProps {
 }
 
 interface PlanInfo {
-  plan: 'free' | 'monthly' | 'quarterly' | 'crowdfund_1m' | 'crowdfund_3m' | 'crowdfund_6m' | 'crowdfund_lifetime' | 'lifetime';
+  plan: 'free' | 'monthly' | 'quarterly' | 'biannual' | 'crowdfund_1m' | 'crowdfund_3m' | 'crowdfund_6m' | 'crowdfund_lifetime' | 'lifetime';
   planName: string;
   status: 'active' | 'inactive' | 'cancelled' | 'cancel_at_period_end' | 'lifetime';
   currentPeriodEnd?: Date;
