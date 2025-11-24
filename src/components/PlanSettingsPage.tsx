@@ -236,7 +236,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       name: '半年プラン（テスト）',
       price: 100,
       period: '6ヶ月',
-      stripePriceId: 'price_1SWwOjKToWVElLyIN3qDNTlL',
+      stripePriceId: 'price_1SWwX9KToWVElLyIz83wta0t',
       isRecommended: true,
       features: [
         'すべての機能が無制限',
