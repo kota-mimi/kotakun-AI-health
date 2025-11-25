@@ -721,11 +721,20 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
 
       // 2. 通常モード中の処理
       if (!currentRecordMode) {
-        // 通常モード中：食事記録判定をせずに、すべてAI会話として処理
-        console.log('🤖 通常モード中の画像 - 食事記録判定をスキップしてAI会話のみ');
+        // 通常モード中：画像内容を解析してからAI会話として処理
+        console.log('🤖 通常モード中の画像 - 画像解析してからAI会話');
         const aiService = new AIHealthService();
+        
+        // 画像解析を実行して内容を取得
+        const imageAnalysis = await aiService.analyzeMealFromImage(imageContent);
+        const imageDescription = imageAnalysis.description || '画像の内容を認識できませんでした';
+        
+        console.log('🖼️ 通常モード画像解析結果:', imageDescription);
+        
+        // 画像の内容を含めてAI会話
         const characterSettings = await getUserCharacterSettings(userId);
-        const aiResponse = await aiService.generateGeneralResponse('画像を見ました。この画像について教えてください。', userId, characterSettings);
+        const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
+        const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
         
         // 会話履歴を保存
         if (aiResponse) {
