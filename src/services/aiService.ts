@@ -888,6 +888,47 @@ class AIHealthService {
     }
   }
 
+  // 一般的な画像内容解析（通常モード用）
+  async analyzeGeneralImage(imageBuffer: Buffer): Promise<string> {
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      const prompt = `
+この画像を見て、内容を簡潔に説明してください。
+
+**重要な指示：**
+- 30文字以内で簡潔に
+- 何が写っているかを分かりやすく
+- 食べ物、人、動物、風景、物など主要な被写体を中心に
+- 具体的で親しみやすい表現で
+
+**例：**
+- "美味しそうなラーメンの写真"
+- "可愛い猫が座っている様子"
+- "きれいな夕焼けの空"
+- "机の上にあるコーヒーカップ"
+
+説明文のみを返してください（JSON形式ではなく、文章のみ）。
+`;
+
+      const imagePart = {
+        inlineData: {
+          data: imageBuffer.toString('base64'),
+          mimeType: 'image/jpeg',
+        },
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const description = response.text().trim();
+      
+      return description;
+    } catch (error) {
+      console.error('🖼️ 一般画像解析エラー:', error);
+      return '画像の内容を認識できませんでした';
+    }
+  }
+
   // 食事写真を分析（将来の機能 - 後方互換性のため残す）
   async analyzeMealImage(imageBuffer: Buffer) {
     try {

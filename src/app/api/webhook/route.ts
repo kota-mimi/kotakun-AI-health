@@ -725,9 +725,8 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
         console.log('🤖 通常モード中の画像 - 画像解析してからAI会話');
         const aiService = new AIHealthService();
         
-        // 画像解析を実行して内容を取得
-        const imageAnalysis = await aiService.analyzeMealFromImage(imageContent);
-        const imageDescription = imageAnalysis.description || '画像の内容を認識できませんでした';
+        // 画像内容を解析して取得（通常モード用）
+        const imageDescription = await aiService.analyzeGeneralImage(imageContent);
         
         console.log('🖼️ 通常モード画像解析結果:', imageDescription);
         
