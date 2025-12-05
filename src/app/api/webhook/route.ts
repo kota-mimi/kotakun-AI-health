@@ -320,27 +320,25 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   try {
-    // 記録モード中かチェック
-    const isInRecordMode = await isRecordMode(userId);
+    // 統一モード：「記録」キーワードで記録判定
+    const isRecordIntent = text.includes('記録');
     
-    // 利用制限チェック（記録モードと通常モードで分ける）
-    if (isInRecordMode) {
-      // 記録モード中は記録制限をチェック
+    // 利用制限チェック
+    if (isRecordIntent) {
+      // 記録意図の場合は記録制限をチェック
       const recordLimit = await checkUsageLimit(userId, 'record');
       if (!recordLimit.allowed) {
-        // 記録制限に達した場合、自動で通常モードに戻す
-        await setRecordMode(userId, false);
-        console.log('🔄 記録制限により通常モードに自動切替:', userId);
+        console.log('⚠️ 記録制限達成', { userId, reason: recordLimit.reason });
+        await stopLoadingAnimation(userId);
         await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
         return;
       }
     } else {
-      // 通常モード中はAI会話制限をチェック
+      // 通常会話の場合はAI会話制限をチェック
       const aiLimit = await checkUsageLimit(userId, 'ai');
       if (!aiLimit.allowed) {
-        // AI制限に達した場合、自動で通常モードに戻す
-        await setRecordMode(userId, false);
-        console.log('🔄 AI制限により通常モードに自動切替:', userId);
+        console.log('⚠️ AI会話制限達成', { userId, reason: aiLimit.reason });
+        await stopLoadingAnimation(userId);
         await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
         return;
       }
@@ -355,69 +353,64 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     if (text.includes('ステータス') || text.includes('状態')) {
       await replyMessage(replyToken, [{
         type: 'text',
-        text: `現在の状態:\n記録モード: ${isInRecordMode ? 'ON' : 'OFF'}`
+        text: `現在の状態: 統一モード（記録キーワードで記録処理）`
       }]);
       return;
     }
     
-    if (isInRecordMode) {
-      // 記録モード中：食事・運動・体重記録のみ処理
-      console.log('📝 記録モード中 - 記録処理のみ実行');
+    if (isRecordIntent) {
+      // 統一モード：「記録」キーワードが含まれる場合のみ記録処理
+      console.log('📝 統一モード - 記録キーワード検出、記録処理開始:', text);
       
-      // 連続入力防止（記録処理中の連続投稿を防ぐ）
+      // 連続入力防止
       if (!canProcessTap(userId)) {
-        console.log('🚫 記録モード - 連続入力防止: 処理スキップ');
+        console.log('🚫 統一モード - 連続入力防止: 処理スキップ');
         return;
       }
       
-      // 記録モード終了はクイックリプライの「通常モードに戻る」ボタンのみで可能
-      // テキストでの終了は無効化（記録処理に専念）
-      
       // まず体重記録の判定を行う
-      console.log('📊 記録モード - 体重記録判定開始:', text);
+      console.log('📊 統一モード - 体重記録判定開始:', text);
       const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
-      console.log('📊 記録モード - 体重判定結果:', JSON.stringify(weightJudgment, null, 2));
+      console.log('📊 統一モード - 体重判定結果:', JSON.stringify(weightJudgment, null, 2));
       if (weightJudgment.isWeightRecord) {
         await handleWeightRecord(userId, weightJudgment, replyToken);
         // 記録成功時に使用回数を記録
         await recordUsage(userId, 'record');
-        // 体重記録後もクイックリプライで記録モード継続（食事記録と同様）
         return;
       }
       
-      // 記録モード中は運動関連の言葉を全て直接記録（クイックリプライなし）
-      console.log('🏃‍♂️ 記録モード - AI運動記録判定開始:', { 
+      // 運動記録の判定
+      console.log('🏃‍♂️ 統一モード - AI運動記録判定開始:', { 
         userId,
         text, 
-        isRecordModeConfirmed: await isRecordMode(userId),
         timestamp: new Date().toISOString() 
       });
       try {
         const exerciseJudgment = await aiService.analyzeExerciseRecordIntent(text);
-        console.log('🏃‍♂️ 記録モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
+        console.log('🏃‍♂️ 統一モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
         if (exerciseJudgment.isExerciseRecord) {
-          console.log('✅ 記録モード - 運動として認識、直接記録開始');
+          console.log('✅ 統一モード - 運動として認識、記録開始');
           if (exerciseJudgment.isMultipleExercises) {
-            console.log('🔄 記録モード - 複数運動記録処理');
+            console.log('🔄 統一モード - 複数運動記録処理');
             await handleRecordModeMultipleExercise(userId, exerciseJudgment, replyToken, text);
           } else {
-            console.log('🔄 記録モード - 単一運動記録処理');
+            console.log('🔄 統一モード - 単一運動記録処理');
             await handleRecordModeSingleExercise(userId, exerciseJudgment, replyToken, text);
           }
           // 記録成功時に使用回数を記録
           await recordUsage(userId, 'record');
           return;
         } else {
-          console.log('❌ 記録モード - 運動記録として認識されませんでした');
+          console.log('❌ 統一モード - 運動記録として認識されませんでした');
         }
       } catch (error) {
-        console.error('❌ 記録モード - AI運動記録判定エラー:', error);
+        console.error('❌ 統一モード - AI運動記録判定エラー:', error);
       }
       
       // 食事記録の判定
-      console.log('🍽️ 記録モード - 食事記録判定開始:', text);
+      console.log('🍽️ 統一モード - 食事記録判定開始:', text);
       const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
-      console.log('🍽️ 記録モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
+      console.log('🍽️ 統一モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
       
       if (mealJudgment.isFoodRecord) {
         console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
@@ -894,37 +887,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
   console.log('🎯 Postbackアクション:', { userId, action });
 
   switch (action) {
-    case 'open_dashboard':
-      // カウンセリング完了チェック
-      const isDashboardCounselingCompleted = await isCounselingCompleted(userId);
-      if (!isDashboardCounselingCompleted) {
-        console.log('⚠️ カウンセリング未完了: ダッシュボードアクセスをブロック');
-        await sendCounselingPrompt(replyToken, 'マイページ');
-        return;
-      }
-      
-      // カウンセリング完了済みならダッシュボードに遷移
-      const dashboardUrl = process.env.NEXT_PUBLIC_LIFF_ID 
-        ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard`
-        : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`;
-        
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'マイページを開きます',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'uri',
-                label: 'マイページを開く',
-                uri: dashboardUrl
-              }
-            }
-          ]
-        }
-      }]);
-      break;
+    // 古い6つボタン関連処理削除済み
     case 'meal_breakfast':
     case 'meal_lunch':
     case 'meal_dinner':
@@ -932,70 +895,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       const mealType = action.replace('meal_', '');
       await saveMealRecord(userId, mealType, replyToken);
       break;
-    case 'record_menu':
-      const startTime = Date.now();
-      console.log('🔄 記録モードボタン押下:', { userId, timestamp: new Date().toISOString() });
-      
-      // 既に記録モード中かチェック
-      const alreadyInRecordMode = await isRecordMode(userId);
-      if (alreadyInRecordMode) {
-        console.log('⚠️ 既に記録モード中: ボタン押下を完全無視（無反応）');
-        return;
-      }
-      
-      // 連続タップ防止チェック
-      if (!canProcessTap(userId)) {
-        console.log('🚫 連続タップ防止: 記録モードボタン無視');
-        return;
-      }
-      
-      // 処理中チェック
-      if (isProcessing(userId)) {
-        console.log('⏳ 処理中: 記録モードボタン無視');
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '処理中です。少々お待ちください...'
-        }]);
-        return;
-      }
-      
-      setProcessing(userId, true);
-      
-      try {
-        // 記録モードを開始（複数回押しても安全）
-        await setRecordMode(userId, true);
-        const modeSetTime = Date.now();
-        console.log('✅ 記録モード設定完了:', { 
-          userId, 
-          isNowInRecordMode: await isRecordMode(userId),
-          recordModeUsersSize: recordModeUsers.size,
-          timeElapsed: `${modeSetTime - startTime}ms`
-        });
-        
-        
-        try {
-          // 記録モード開始のFlexメッセージ
-          console.log('📝 記録モードFlexメッセージ送信開始:', userId);
-          const flexStartTime = Date.now();
-          await startRecordMode(replyToken, userId);
-          const flexEndTime = Date.now();
-          console.log('✅ 記録モードFlexメッセージ送信完了:', { 
-            userId,
-            flexProcessTime: `${flexEndTime - flexStartTime}ms`,
-            totalTime: `${flexEndTime - startTime}ms`
-          });
-        } catch (error) {
-          console.error('❌ 記録モードFlexメッセージ送信エラー:', error);
-          // フォールバック: シンプルなテキストメッセージ
-          await replyMessage(replyToken, [{
-            type: 'text',
-            text: '記録モードを開始しました！\n\n食事・運動・体重を記録してください。'
-          }]);
-        }
-      } finally {
-        setProcessing(userId, false);
-      }
-      break;
+    // 記録ボタン削除済み - 統一モードに移行
     case 'daily_feedback':
       // 利用制限チェック（フィードバック機能）
       try {
