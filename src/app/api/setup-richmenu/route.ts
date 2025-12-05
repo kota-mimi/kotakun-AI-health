@@ -67,10 +67,18 @@ export async function POST(request: NextRequest) {
 
     const result = await createResponse.json();
     const richMenuId = result.richMenuId;
+    console.log('✅ リッチメニュー作成成功:', richMenuId);
+
+    // 少し待機してから画像アップロード
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // 画像アップロード
     const imagePath = path.join(process.cwd(), 'rich-menu-final.png');
+    if (!fs.existsSync(imagePath)) {
+      return NextResponse.json({ error: '画像ファイルなし', path: imagePath }, { status: 404 });
+    }
     const imageBuffer = fs.readFileSync(imagePath);
+    console.log('📤 画像アップロード開始:', imageBuffer.length, 'bytes');
     
     const uploadResponse = await fetch(`${LINE_BASE_URL}/richmenu/${richMenuId}/content`, {
       method: 'POST',
@@ -83,8 +91,17 @@ export async function POST(request: NextRequest) {
 
     if (!uploadResponse.ok) {
       const error = await uploadResponse.text();
-      return NextResponse.json({ error: '画像失敗', details: error }, { status: 500 });
+      console.error('❌ 画像アップロードエラー:', uploadResponse.status, error);
+      return NextResponse.json({ 
+        error: '画像アップロード失敗', 
+        status: uploadResponse.status, 
+        details: error,
+        richMenuId,
+        imageSize: imageBuffer.length 
+      }, { status: 500 });
     }
+    
+    console.log('✅ 画像アップロード成功');
 
     // デフォルト設定
     const setDefaultResponse = await fetch(`${LINE_BASE_URL}/user/all/richmenu/${richMenuId}`, {
