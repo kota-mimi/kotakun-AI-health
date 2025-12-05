@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ リッチメニュー作成成功:', richMenuId);
 
     // 2. 画像をアップロード
-    const imagePath = path.join(process.cwd(), 'rich_menu_3buttons.png');
+    const imagePath = path.join(process.cwd(), 'public', 'rich_menu_3buttons.png');
     
     if (!fs.existsSync(imagePath)) {
       console.error('❌ 画像ファイルが見つかりません:', imagePath);
