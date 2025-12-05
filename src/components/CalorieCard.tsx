@@ -150,10 +150,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* タンパク質 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">タンパク質</div>
-                      <div className="text-lg font-bold text-nutrition-protein mb-1">
-                        {displayPfc.protein}
+                      <div className="text-lg font-bold text-nutrition-protein mb-2">
+                        {displayPfc.protein}/{finalProteinTarget}g
                       </div>
-                      <div className="text-xs text-slate-500 mb-2">/{finalProteinTarget}g</div>
                       <Progress 
                         value={Math.min(proteinProgress, 100)} 
                         className="h-2.5" 
@@ -165,10 +164,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* 炭水化物 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">炭水化物</div>
-                      <div className="text-lg font-bold text-nutrition-carbs mb-1">
-                        {displayPfc.carbs}
+                      <div className="text-lg font-bold text-nutrition-carbs mb-2">
+                        {displayPfc.carbs}/{finalCarbsTarget}g
                       </div>
-                      <div className="text-xs text-slate-500 mb-2">/{finalCarbsTarget}g</div>
                       <Progress 
                         value={Math.min(carbsProgress, 100)} 
                         className="h-2.5" 
@@ -180,10 +178,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* 脂質 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">脂質</div>
-                      <div className="text-lg font-bold text-nutrition-fat mb-1">
-                        {displayPfc.fat}
+                      <div className="text-lg font-bold text-nutrition-fat mb-2">
+                        {displayPfc.fat}/{finalFatTarget}g
                       </div>
-                      <div className="text-xs text-slate-500 mb-2">/{finalFatTarget}g</div>
                       <Progress 
                         value={Math.min(fatProgress, 100)} 
                         className="h-2.5" 
