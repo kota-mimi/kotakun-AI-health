@@ -32,8 +32,10 @@ export async function POST() {
     console.log('🎨 3ボタンリッチメニュー設定開始');
 
     if (!LINE_CHANNEL_ACCESS_TOKEN) {
-      return NextResponse.json({ error: 'TOKEN未設定' }, { status: 500 });
+      return NextResponse.json({ error: 'LINE_CHANNEL_ACCESS_TOKEN未設定' }, { status: 500 });
     }
+
+    console.log('🔑 TOKEN確認:', LINE_CHANNEL_ACCESS_TOKEN ? 'あり' : 'なし');
 
     // 既存メニュー削除
     const listResponse = await fetch(`${LINE_BASE_URL}/richmenu/list`, {
@@ -89,8 +91,15 @@ export async function POST() {
 
     if (!uploadResponse.ok) {
       const error = await uploadResponse.text();
-      console.error('❌ 画像アップロード失敗:', error);
-      return NextResponse.json({ error: '画像アップロード失敗', details: error }, { status: 500 });
+      console.error('❌ 画像アップロード失敗:', uploadResponse.status, error);
+      return NextResponse.json({ 
+        error: '画像アップロード失敗', 
+        status: uploadResponse.status,
+        details: error,
+        richMenuId: richMenuId,
+        imageSize: imageBuffer.length,
+        imagePath: imagePath
+      }, { status: 500 });
     }
 
     console.log('✅ 画像アップロード成功');
