@@ -786,6 +786,40 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         setProcessing(userId, false);
       }
       break;
+    case 'my_page':
+      // マイページボタン → LIFFアプリのダッシュボード
+      await replyMessage(replyToken, [{
+        type: 'template',
+        altText: 'マイページを開きます',
+        template: {
+          type: 'buttons',
+          title: '📊 マイページ',
+          text: 'あなたの健康データを確認できます',
+          actions: [{
+            type: 'uri',
+            label: 'マイページを開く',
+            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+          }]
+        }
+      }]);
+      break;
+    case 'usage_guide':
+      // 使い方ボタン → 使い方ガイド
+      await replyMessage(replyToken, [{
+        type: 'template',
+        altText: '使い方ガイドを開きます',
+        template: {
+          type: 'buttons',
+          title: '📖 使い方ガイド',
+          text: 'ヘルシーくんの使い方を確認できます',
+          actions: [{
+            type: 'uri',
+            label: '使い方を見る',
+            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/guide` : `${process.env.NEXT_PUBLIC_APP_URL}/guide`
+          }]
+        }
+      }]);
+      break;
     case 'open_keyboard':
       // キーボードを開くための空のメッセージ（自動でキーボードが開く）
       break;
