@@ -5,21 +5,21 @@ import path from 'path';
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const LINE_BASE_URL = 'https://api.line.me/v2/bot';
 
-// 4ボタン用のリッチメニュー設定 (2500x843) - 元の状態に戻す
+// 3ボタン用のリッチメニュー設定 (2500x843) - 統一モード
 const richMenuData = {
   size: {
     width: 2500,
     height: 843
   },
   selected: false,
-  name: "4ボタンリッチメニュー",
+  name: "3ボタンリッチメニュー",
   chatBarText: "メニュー",
   areas: [
     {
       bounds: {
         x: 0,
         y: 0,
-        width: 625,
+        width: 833,
         height: 843
       },
       action: {
@@ -29,21 +29,9 @@ const richMenuData = {
     },
     {
       bounds: {
-        x: 625,
+        x: 833,
         y: 0,
-        width: 625,
-        height: 843
-      },
-      action: {
-        type: "postback",
-        data: "action=record_menu"
-      }
-    },
-    {
-      bounds: {
-        x: 1250,
-        y: 0,
-        width: 625,
+        width: 834,
         height: 843
       },
       action: {
@@ -53,9 +41,9 @@ const richMenuData = {
     },
     {
       bounds: {
-        x: 1875,
+        x: 1667,
         y: 0,
-        width: 625,
+        width: 833,
         height: 843
       },
       action: {
@@ -94,10 +82,9 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({
             success: true,
             richMenuId: existingMenu.richMenuId,
-            message: '既存の4ボタンリッチメニューが設定されています',
+            message: '既存のリッチメニューが設定されています',
             buttons: [
               { name: 'マイページ', action: 'open_dashboard' },
-              { name: '記録', action: 'record_menu' },
               { name: 'フィードバック', action: 'daily_feedback' },
               { name: '使い方', action: 'usage_guide' }
             ]
@@ -129,7 +116,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ リッチメニュー作成成功:', richMenuId);
 
     // 3. 画像をアップロード
-    const imagePath = path.join(process.cwd(), 'rich-menu-combined.png');
+    const imagePath = path.join(process.cwd(), 'rich-menu-final.png');
     
     if (!fs.existsSync(imagePath)) {
       console.error('❌ 画像ファイルが見つかりません:', imagePath);
