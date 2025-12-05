@@ -138,37 +138,7 @@ async function sendCounselingPrompt(replyToken: string, actionName: string) {
   await replyMessage(replyToken, [counselingMessage]);
 }
 
-// 記録モード統一クイックリプライ（日本語固定）
-function getRecordModeQuickReply() {
-  return {
-    items: [
-      {
-        type: 'action',
-        action: {
-          type: 'postback',
-          label: 'テキストで記録',
-          data: 'action=open_keyboard',
-          inputOption: 'openKeyboard'
-        }
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'camera',
-          label: 'カメラで記録'
-        }
-      },
-      {
-        type: 'action',
-        action: {
-          type: 'postback',
-          label: '通常モードに戻る',
-          data: 'action=exit_record_mode'
-        }
-      }
-    ]
-  };
-}
+// 統一モード：記録後のクイックリプライは削除済み
 
 // 🔒 UserIDをハッシュ化する関数
 function hashUserId(userId: string): string {
@@ -528,8 +498,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       await replyMessage(replyToken, [{
         type: 'text',
         text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
-        quickReply: getRecordModeQuickReply()
-      }]);
+        }]);
       // 記録モードは継続（終了しない）
       return;
     }
@@ -547,8 +516,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       await replyMessage(replyToken, [{
         type: 'text',
         text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
-        quickReply: getRecordModeQuickReply()
-      }]);
+        }]);
       return;
     }
     
@@ -1342,12 +1310,8 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
     
-    // pushMessageでFlexメッセージ送信（クイックリプライ付き）
-    const messageWithQuickReply = {
-      ...flexMessage,
-      quickReply: getRecordModeQuickReply()
-    };
-    await pushMessage(userId, [messageWithQuickReply]);
+    // pushMessageでFlexメッセージ送信（統一モード：クイックリプライなし）
+    await pushMessage(userId, [flexMessage]);
     
     // 記録完了
     
@@ -1361,8 +1325,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     await stopLoadingAnimation(userId);
     await pushMessage(userId, [{
       type: 'text',
-      text: '保存中にエラーが発生しました。もう一度お試しください。',
-      quickReply: getRecordModeQuickReply()
+      text: '保存中にエラーが発生しました。もう一度お試しください。'
     }]);
   }
 }
@@ -1888,7 +1851,6 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
     await replyMessage(replyToken, [{
       type: 'text',
       text: '複数運動記録でエラーが発生しました。もう一度お試しください。',
-      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -2023,19 +1985,11 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     const actionText = existingExerciseIndex !== -1 ? 'セットを追加しました！' : 'を記録しました！';
     const responseText = `🏃‍♂️ ${exerciseName}${actionText}\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${displayCalories}kcal\n\nお疲れさまでした！💪`;
     
-    // 記録モードかどうかでクイックリプライを制御
-    const isInRecordMode = await isRecordMode(userId);
-    const message: any = {
+    // 統一モード：記録後はクイックリプライなし
+    await replyMessage(replyToken, [{
       type: 'text',
       text: responseText
-    };
-    
-    // 記録モードの場合のみクイックリプライを追加
-    if (isInRecordMode) {
-      message.quickReply = getRecordModeQuickReply();
-    }
-    
-    await replyMessage(replyToken, [message]);
+    }]);
     
     console.log('✅ AI運動記録完了:', {
       name: exerciseRecord.name,
@@ -2869,7 +2823,6 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: getRecordModeQuickReply()
     };
     
     await pushMessage(userId, [messageWithQuickReply]);
@@ -2883,7 +2836,6 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     await pushMessage(userId, [{
       type: 'text',
       text: '運動記録でエラーが発生しました。もう一度お試しください。',
-      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -2974,8 +2926,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       if (i === addedExercises.length - 1) {
         messages.push({
           ...flexMessage,
-          quickReply: getRecordModeQuickReply()
-        });
+            });
       } else {
         messages.push(flexMessage);
       }
@@ -2992,7 +2943,6 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
     await replyMessage(replyToken, [{
       type: 'text',
       text: '複数運動記録でエラーが発生しました。もう一度お試しください。',
-      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
@@ -3387,8 +3337,7 @@ async function startRecordMode(replyToken: string, userId: string) {
           }
         ]
       }
-    },
-    quickReply: getRecordModeQuickReply()
+    }
   };
   
   const flexBuildEnd = Date.now();
@@ -3638,7 +3587,6 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     // クイックリプライ付きでFlexメッセージ送信
     const messageWithQuickReply = {
       ...flexMessage,
-      quickReply: getRecordModeQuickReply()
     };
     
     await stopLoadingAnimation(userId);
@@ -3652,7 +3600,6 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     await replyMessage(replyToken, [{
       type: 'text',
       text: '複数食事の記録でエラーが発生しました。もう一度お試しください。',
-      quickReply: getRecordModeQuickReply()
     }]);
   }
 }
