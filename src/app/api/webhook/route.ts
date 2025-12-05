@@ -593,35 +593,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
 
 async function handleImageMessage(replyToken: string, userId: string, messageId: string, user: any) {
   try {
-    console.log('🔥 シンプル画像処理開始:', { userId, messageId });
-    
-    // モード確認後に適切な利用制限チェック
-    const currentRecordMode = await isRecordMode(userId);
-    
-    try {
-      if (currentRecordMode) {
-        // 記録モード中：記録制限をチェック
-        const recordLimit = await checkUsageLimit(userId, 'record');
-        if (!recordLimit.allowed) {
-          // 記録制限に達した場合、自動で通常モードに戻す
-          await setRecordMode(userId, false);
-          console.log('🔄 記録制限により通常モードに自動切替:', userId);
-          await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
-          return;
-        }
-      } else {
-        // 通常モード中：AI制限をチェック
-        const aiLimit = await checkUsageLimit(userId, 'ai');
-        if (!aiLimit.allowed) {
-          console.log('🔄 AI制限に達しました:', userId);
-          await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
-          return;
-        }
-      }
-    } catch (limitError) {
-      console.error('❌ 画像処理制限チェックエラー:', limitError);
-      // エラーの場合は制限なしで続行
-    }
+    console.log('🔥 統一モード画像処理開始:', { userId, messageId });
     
     // 処理中チェック（重複画像処理防止）
     if (isProcessing(userId)) {
@@ -637,7 +609,6 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     setProcessing(userId, true);
     
     try {
-    
       // Loading Animation開始（AIが画像分析中）
       await startLoadingAnimation(userId, 30);
       
@@ -647,141 +618,85 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
         await stopLoadingAnimation(userId);
         await replyMessage(replyToken, [{
           type: 'text',
-          text: '画像がうまく受け取れなかった！もう一度送ってみて？',
-          quickReply: {
-            items: [
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: 'テキストで記録',
-                  data: 'action=open_keyboard',
-                  inputOption: 'openKeyboard'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'camera',
-                  label: 'カメラで記録'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '通常モードに戻る',
-                  data: 'action=exit_record_mode'
-                }
-              }
-            ]
-          }
+          text: '画像がうまく受け取れませんでした。もう一度送ってみてください。'
         }]);
         return;
       }
 
-      // 2. 通常モード中の処理
-      if (!currentRecordMode) {
-        // 通常モード中：画像内容を解析してからAI会話として処理
-        console.log('🤖 通常モード中の画像 - 画像解析してからAI会話');
-        const aiService = new AIHealthService();
-        
-        // 画像内容を解析して取得（通常モード用）
-        const imageDescription = await aiService.analyzeGeneralImage(imageContent);
-        
-        console.log('🖼️ 通常モード画像解析結果:', imageDescription);
-        
-        // 画像の内容を含めてAI会話
-        const characterSettings = await getUserCharacterSettings(userId);
-        const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
-        const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
-        
-        // 会話履歴を保存
-        if (aiResponse) {
-          await aiService.saveConversation(userId, '画像を送信', aiResponse);
-        }
-        
-        // AI応答成功時に使用回数を記録
-        await recordUsage(userId, 'ai');
-        
-        await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: aiResponse
-        }]);
-        return;
-      }
-      
-      // 3. 記録モード中のみ：AI分析実行
+      // 2. 統一モード：まず画像を分析して食事かどうか判定
       const aiService = new AIHealthService();
       const mealAnalysis = await aiService.analyzeMealFromImage(imageContent);
       
-      // 4. 食事画像かどうかチェック
-      if (!mealAnalysis.isFoodImage) {
-        // 食事じゃない画像の場合：一般AIで会話
-        const characterSettings = await getUserCharacterSettings(userId);
-        const aiResponse = await aiService.generateGeneralResponse(`この画像について: ${mealAnalysis.description || '画像を見ました'}`, userId, characterSettings);
-        
-        // 会話履歴を保存
-        if (aiResponse) {
-          await aiService.saveConversation(userId, '画像を送信', aiResponse);
+      console.log('🔍 画像分析結果:', { 
+        isFoodImage: mealAnalysis.isFoodImage, 
+        description: mealAnalysis.description 
+      });
+      
+      // 3. 食事画像の場合：クイックリプライで記録選択肢を表示
+      if (mealAnalysis.isFoodImage) {
+        // 記録制限チェック（食事画像の場合のみ）
+        const recordLimit = await checkUsageLimit(userId, 'record');
+        if (!recordLimit.allowed) {
+          console.log('🔄 記録制限に達しました:', userId);
+          await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
+          return;
         }
         
+        // 食事画像をキャッシュに保存し、分析結果を一時保存
+        const imageCacheKey = cacheImage(userId, imageContent);
+        await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
+        
+        // 画像記録として使用回数をカウント
+        await recordUsage(userId, 'record');
+        
+        // 食事タイプ選択のクイックリプライ表示（「しない」オプション含む）
+        await showMealTypeSelection(replyToken);
         await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: aiResponse
-        }]);
+        
+        console.log('🍽️ 食事画像検出: クイックリプライ表示');
         return;
       }
       
-      // 5. 食事画像の場合：画像をキャッシュに保存し、分析結果を一時保存
-      const imageCacheKey = cacheImage(userId, imageContent);
-      await storeTempMealAnalysis(userId, mealAnalysis, null, '', imageCacheKey);
+      // 4. 食事以外の画像の場合：通常AI会話として処理
+      console.log('🤖 非食事画像: 通常AI会話として処理');
       
-      // 画像記録として使用回数をカウント
-      await recordUsage(userId, 'record');
+      // AI制限チェック（非食事画像の場合）
+      const aiLimit = await checkUsageLimit(userId, 'ai');
+      if (!aiLimit.allowed) {
+        console.log('🔄 AI制限に達しました:', userId);
+        await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
+        return;
+      }
       
-      // 6. 食事タイプ選択のクイックリプライ表示
-      await showMealTypeSelection(replyToken);
-      await stopLoadingAnimation(userId);
+      // 一般的な画像解析を実行
+      const imageDescription = await aiService.analyzeGeneralImage(imageContent);
       
-      console.log('🔥 シンプル画像処理完了');
+      // 画像の内容を含めてAI会話
+      const characterSettings = await getUserCharacterSettings(userId);
+      const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
+      const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
       
-    } catch (error) {
-      console.error('🔥 画像処理エラー:', error);
+      // 会話履歴を保存
+      if (aiResponse) {
+        await aiService.saveConversation(userId, '画像を送信', aiResponse);
+      }
+      
+      // AI応答成功時に使用回数を記録
+      await recordUsage(userId, 'ai');
+      
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: 'テキストで記録',
-                data: 'action=open_keyboard',
-                inputOption: 'openKeyboard'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'camera',
-                label: 'カメラで記録'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '通常モードに戻る',
-                data: 'action=exit_record_mode'
-              }
-            }
-          ]
-        }
+        text: aiResponse
+      }]);
+      return;
+      
+    } catch (error) {
+      console.error('🔥 統一モード画像処理エラー:', error);
+      await stopLoadingAnimation(userId);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'すみません、画像の処理中にエラーが発生しました。もう一度試してみてください。'
       }]);
     } finally {
       // 処理完了フラグをクリア
@@ -789,38 +704,10 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     }
   } catch (outerError) {
     // 外側のtryブロックでのエラー（処理フラグ設定前のエラー）
-    console.error('🔥 画像処理外側エラー:', outerError);
+    console.error('🔥 統一モード画像処理外側エラー:', outerError);
     await replyMessage(replyToken, [{
       type: 'text',
-      text: '画像の処理でちょっと問題が起きちゃった！もう一度試してみて？',
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'camera',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
-        ]
-      }
+      text: 'すみません、画像の処理中にエラーが発生しました。もう一度試してみてください。'
     }]);
   }
 }
@@ -862,6 +749,9 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'meal_snack':
       const mealType = action.replace('meal_', '');
       await saveMealRecord(userId, mealType, replyToken);
+      break;
+    case 'no_record':
+      await handleNoRecordSelection(userId, replyToken);
       break;
     // 記録ボタン削除済み - 統一モードに移行
     case 'daily_feedback':
@@ -1203,12 +1093,78 @@ async function showMealTypeSelection(replyToken: string) {
             label: '間食',
             data: 'action=meal_snack'
           }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'postback',
+            label: 'しない',
+            data: 'action=no_record'
+          }
         }
       ]
     }
   };
   
   await replyMessage(replyToken, [responseMessage]);
+}
+
+// 記録しない選択時の処理（統一モード用）
+async function handleNoRecordSelection(userId: string, replyToken: string) {
+  try {
+    console.log('🔄 記録しない選択: 通常AI会話として処理', { userId });
+    
+    // AI制限チェック
+    const aiLimit = await checkUsageLimit(userId, 'ai');
+    if (!aiLimit.allowed) {
+      console.log('🔄 AI制限に達しました:', userId);
+      await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
+      return;
+    }
+    
+    // 保存済みの画像解析結果を取得
+    const tempAnalysis = await getTempMealAnalysis(userId);
+    if (!tempAnalysis || !tempAnalysis.analysis) {
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: 'すみません、画像データが見つかりませんでした。もう一度画像を送ってください。'
+      }]);
+      return;
+    }
+    
+    // 食事として記録しないため、キャッシュをクリア
+    await clearTempMealAnalysis(userId);
+    clearImageCache(userId);
+    
+    // 一般的な画像会話として処理
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    const imageDescription = tempAnalysis.analysis.description || '画像を見ました';
+    const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
+    
+    const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
+    
+    // 会話履歴を保存
+    if (aiResponse) {
+      await aiService.saveConversation(userId, '画像を送信', aiResponse);
+    }
+    
+    // AI応答成功時に使用回数を記録
+    await recordUsage(userId, 'ai');
+    
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: aiResponse
+    }]);
+    
+    console.log('✅ 記録しない選択処理完了');
+  } catch (error) {
+    console.error('❌ 記録しない選択処理エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: 'すみません、処理中にエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
 }
 
 // 食事記録を保存
