@@ -5,11 +5,11 @@ import path from 'path';
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const LINE_BASE_URL = 'https://api.line.me/v2/bot';
 
-// 3ボタン用のリッチメニュー設定 (2500x632)
+// 3ボタン用のリッチメニュー設定 (2500x843)
 const richMenuData = {
   size: {
     width: 2500,
-    height: 632
+    height: 843
   },
   selected: false,
   name: "3ボタンリッチメニュー",
@@ -20,7 +20,7 @@ const richMenuData = {
         x: 0,
         y: 0,
         width: 833,
-        height: 632
+        height: 843
       },
       action: {
         type: "postback",
@@ -32,7 +32,7 @@ const richMenuData = {
         x: 833,
         y: 0,
         width: 834,
-        height: 632
+        height: 843
       },
       action: {
         type: "postback",
@@ -44,7 +44,7 @@ const richMenuData = {
         x: 1667,
         y: 0,
         width: 833,
-        height: 632
+        height: 843
       },
       action: {
         type: "postback",
