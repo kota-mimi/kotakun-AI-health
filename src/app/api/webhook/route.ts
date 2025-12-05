@@ -713,22 +713,6 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
 }
 
 async function handleFollow(replyToken: string, source: any) {
-  const { userId } = source;
-  
-  // リッチメニューを設定
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/setup-richmenu`, {
-      method: 'POST'
-    });
-    if (response.ok) {
-      console.log('✅ リッチメニュー設定成功 for user:', userId);
-    } else {
-      console.error('❌ リッチメニュー設定失敗:', await response.text());
-    }
-  } catch (error) {
-    console.error('❌ リッチメニュー設定エラー:', error);
-  }
-
   const welcomeMessage = {
     type: 'template',
     altText: 'LINE健康管理へようこそ！',
