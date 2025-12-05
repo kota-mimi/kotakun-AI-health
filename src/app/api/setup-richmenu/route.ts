@@ -5,7 +5,7 @@ import path from 'path';
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const LINE_BASE_URL = 'https://api.line.me/v2/bot';
 
-// 3ボタン用のリッチメニュー設定 (2500x843)
+// 3ボタン用のリッチメニュー設定 (2500x843) - 統一モード
 const richMenuData = {
   size: {
     width: 2500,
@@ -24,7 +24,7 @@ const richMenuData = {
       },
       action: {
         type: "postback",
-        data: "action=my_page"
+        data: "action=open_dashboard"
       }
     },
     {
