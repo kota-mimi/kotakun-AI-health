@@ -71,7 +71,10 @@ export async function POST() {
     console.log('✅ リッチメニュー作成:', richMenuId);
 
     // 画像アップロード
-    const imagePath = path.join(process.cwd(), 'rich-menu-final.png');
+    const imagePath = path.join(process.cwd(), 'public', 'rich-menu-final.png');
+    if (!fs.existsSync(imagePath)) {
+      return NextResponse.json({ error: '画像ファイルが見つかりません', path: imagePath }, { status: 404 });
+    }
     const imageBuffer = fs.readFileSync(imagePath);
     console.log('📤 画像アップロード:', imageBuffer.length, 'bytes');
     
