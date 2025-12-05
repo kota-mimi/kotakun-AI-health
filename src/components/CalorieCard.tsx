@@ -150,8 +150,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* タンパク質 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">タンパク質</div>
-                      <div className="text-lg font-bold text-nutrition-protein mb-2">
-                        {displayPfc.protein}/{finalProteinTarget}g
+                      <div className="text-lg font-bold mb-2">
+                        <span className="text-nutrition-protein">{displayPfc.protein}</span>
+                        <span className="text-slate-500">/{finalProteinTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(proteinProgress, 100)} 
@@ -164,8 +165,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* 炭水化物 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">炭水化物</div>
-                      <div className="text-lg font-bold text-nutrition-carbs mb-2">
-                        {displayPfc.carbs}/{finalCarbsTarget}g
+                      <div className="text-lg font-bold mb-2">
+                        <span className="text-nutrition-carbs">{displayPfc.carbs}</span>
+                        <span className="text-slate-500">/{finalCarbsTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(carbsProgress, 100)} 
@@ -178,8 +180,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     {/* 脂質 */}
                     <div className="text-center">
                       <div className="text-xs text-slate-600 mb-1">脂質</div>
-                      <div className="text-lg font-bold text-nutrition-fat mb-2">
-                        {displayPfc.fat}/{finalFatTarget}g
+                      <div className="text-lg font-bold mb-2">
+                        <span className="text-nutrition-fat">{displayPfc.fat}</span>
+                        <span className="text-slate-500">/{finalFatTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(fatProgress, 100)} 
