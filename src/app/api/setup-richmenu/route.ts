@@ -75,14 +75,30 @@ export async function POST(request: NextRequest) {
         const existingMenus = await existingMenusResponse.json();
         console.log('📋 既存リッチメニュー数:', existingMenus.richmenus?.length || 0);
         
-        // 既存のメニューがあれば、それを使用
+        // 既存のメニューがあれば、デフォルトに設定
         if (existingMenus.richmenus && existingMenus.richmenus.length > 0) {
           const existingMenu = existingMenus.richmenus[0];
           console.log('✅ 既存リッチメニューを使用:', existingMenu.richMenuId);
+          
+          // デフォルトリッチメニューとして設定
+          const setDefaultResponse = await fetch(`${LINE_BASE_URL}/user/all/richmenu/${existingMenu.richMenuId}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
+            }
+          });
+
+          if (!setDefaultResponse.ok) {
+            const error = await setDefaultResponse.text();
+            console.error('❌ デフォルト設定エラー:', error);
+          } else {
+            console.log('✅ デフォルトリッチメニュー設定成功');
+          }
+          
           return NextResponse.json({
             success: true,
             richMenuId: existingMenu.richMenuId,
-            message: '既存のリッチメニューが設定されています',
+            message: '既存のリッチメニューをデフォルトに設定しました',
             buttons: [
               { name: 'マイページ', action: 'open_dashboard' },
               { name: 'フィードバック', action: 'daily_feedback' },
