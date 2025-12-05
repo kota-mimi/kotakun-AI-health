@@ -145,64 +145,50 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                 <div className="space-y-4">
                   <h4 className="font-medium text-slate-900">PFCバランス</h4>
                   
-                  <div className="space-y-3">
+                  {/* 3列グリッドレイアウト */}
+                  <div className="grid grid-cols-3 gap-3">
                     {/* タンパク質 */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full bg-nutrition-protein"></div>
-                          <span className="text-sm text-slate-700">タンパク質</span>
-                        </div>
-                        <span className="text-sm">
-                          <span className="font-bold text-nutrition-protein">{displayPfc.protein}g</span>
-                          <span className="text-slate-500"> / {finalProteinTarget}g</span>
-                        </span>
+                    <div className="text-center">
+                      <div className="text-xs text-slate-600 mb-1">タンパク質</div>
+                      <div className="text-lg font-bold text-nutrition-protein mb-1">
+                        {displayPfc.protein}
                       </div>
+                      <div className="text-xs text-slate-500 mb-2">/{finalProteinTarget}g</div>
                       <Progress 
                         value={Math.min(proteinProgress, 100)} 
-                        className="h-2" 
+                        className="h-2.5" 
                         color={colors.protein}
                         backgroundColor="rgba(239, 68, 68, 0.1)"
                       />
                     </div>
 
-                    {/* 脂質 */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full bg-nutrition-fat"></div>
-                          <span className="text-sm text-slate-700">脂質</span>
-                        </div>
-                        <span className="text-sm">
-                          <span className="font-bold text-nutrition-fat">{displayPfc.fat}g</span>
-                          <span className="text-slate-500"> / {finalFatTarget}g</span>
-                        </span>
+                    {/* 炭水化物 */}
+                    <div className="text-center">
+                      <div className="text-xs text-slate-600 mb-1">炭水化物</div>
+                      <div className="text-lg font-bold text-nutrition-carbs mb-1">
+                        {displayPfc.carbs}
                       </div>
+                      <div className="text-xs text-slate-500 mb-2">/{finalCarbsTarget}g</div>
                       <Progress 
-                        value={Math.min(fatProgress, 100)} 
-                        className="h-2" 
-                        color={colors.fat}
-                        backgroundColor="rgba(245, 158, 11, 0.1)"
+                        value={Math.min(carbsProgress, 100)} 
+                        className="h-2.5" 
+                        color={colors.carbs}
+                        backgroundColor="rgba(16, 185, 129, 0.1)"
                       />
                     </div>
 
-                    {/* 炭水化物 */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full bg-nutrition-carbs"></div>
-                          <span className="text-sm text-slate-700">炭水化物</span>
-                        </div>
-                        <span className="text-sm">
-                          <span className="font-bold text-nutrition-carbs">{displayPfc.carbs}g</span>
-                          <span className="text-slate-500"> / {finalCarbsTarget}g</span>
-                        </span>
+                    {/* 脂質 */}
+                    <div className="text-center">
+                      <div className="text-xs text-slate-600 mb-1">脂質</div>
+                      <div className="text-lg font-bold text-nutrition-fat mb-1">
+                        {displayPfc.fat}
                       </div>
+                      <div className="text-xs text-slate-500 mb-2">/{finalFatTarget}g</div>
                       <Progress 
-                        value={Math.min(carbsProgress, 100)} 
-                        className="h-2" 
-                        color={colors.carbs}
-                        backgroundColor="rgba(16, 185, 129, 0.1)"
+                        value={Math.min(fatProgress, 100)} 
+                        className="h-2.5" 
+                        color={colors.fat}
+                        backgroundColor="rgba(245, 158, 11, 0.1)"
                       />
                     </div>
                   </div>
