@@ -72,6 +72,9 @@ export async function POST() {
     const richMenuId = result.richMenuId;
     console.log('✅ リッチメニュー作成:', richMenuId);
 
+    // LINE APIの準備完了を待機
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     // 画像アップロード
     const imagePath = path.join(process.cwd(), 'public', 'rich-menu-final.png');
     if (!fs.existsSync(imagePath)) {
