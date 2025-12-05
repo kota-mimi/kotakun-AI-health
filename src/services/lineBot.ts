@@ -31,11 +31,6 @@ export class LineBotService {
     return this.makeRequest(`/profile/${userId}`, 'GET');
   }
 
-  // リッチメニュー設定
-  async setRichMenu(userId: string, richMenuId: string) {
-    return this.makeRequest(`/user/${userId}/richmenu/${richMenuId}`, 'POST');
-  }
-
   // プッシュメッセージ送信
   async pushMessage(userId: string, messages: LineMessage[]) {
     return this.makeRequest('/message/push', 'POST', {
