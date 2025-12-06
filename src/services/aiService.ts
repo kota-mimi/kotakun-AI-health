@@ -775,7 +775,8 @@ class AIHealthService {
         calories: 250, // 一般的な1食分（ご飯1杯程度）
         protein: 8.0,  // 控えめなタンパク質
         carbs: 45.0,   // 主食中心
-        fat: 5.0       // 低脂質
+        fat: 5.0,      // 低脂質
+        nutritionAdvice: 'バランスの良い食事を心がけましょう！'
       };
     }
   }
@@ -880,7 +881,13 @@ class AIHealthService {
       const response = await result.response;
       const jsonText = response.text().replace(/```json|```/g, '').trim();
       
-      return JSON.parse(jsonText);
+      const analysis = JSON.parse(jsonText);
+      
+      // 栄養アドバイスを生成して分析結果に追加
+      const nutritionAdvice = await this.generateNutritionAdvice(analysis);
+      analysis.nutritionAdvice = nutritionAdvice;
+      
+      return analysis;
     } catch (error) {
       console.error('食事画像分析エラー:', error);
       // フォールバック値を返す（現実的な値に設定）
@@ -889,7 +896,8 @@ class AIHealthService {
         calories: 300, // 一般的な1食分
         protein: 12.0, // 控えめなタンパク質
         carbs: 45.0,   // 主食中心
-        fat: 8.0       // 適度な脂質
+        fat: 8.0,      // 適度な脂質
+        nutritionAdvice: 'バランスの良い食事を心がけましょう！'
       };
     }
   }
