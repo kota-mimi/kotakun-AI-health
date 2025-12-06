@@ -33,8 +33,8 @@ export async function POST() {
         {
           bounds: { x: 0, y: 0, width: 833, height: 843 },
           action: {
-            type: "postback",
-            data: "action=open_dashboard"
+            type: "uri",
+            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
           }
         },
         {
@@ -48,7 +48,7 @@ export async function POST() {
           bounds: { x: 1666, y: 0, width: 834, height: 843 },
           action: {
             type: "uri",
-            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/usage-guide` : `${process.env.NEXT_PUBLIC_APP_URL}/usage-guide`
+            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/guide` : `${process.env.NEXT_PUBLIC_APP_URL}/guide`
           }
         }
       ]
