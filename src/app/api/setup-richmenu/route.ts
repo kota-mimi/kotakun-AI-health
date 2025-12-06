@@ -48,7 +48,7 @@ export async function POST() {
           bounds: { x: 1666, y: 0, width: 834, height: 843 },
           action: {
             type: "uri",
-            uri: "https://line.me/R/nv/help"
+            uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/usage-guide` : `${process.env.NEXT_PUBLIC_APP_URL}/usage-guide`
           }
         }
       ]
