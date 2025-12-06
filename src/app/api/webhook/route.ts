@@ -484,41 +484,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         }
       }
       
-      // 記録モード中だが、記録として認識されなかった場合
+      // 通常のAI会話で応答
       await stopLoadingAnimation(userId);
-      
-      // 記録モードの状態を確認・維持
-      const isStillInRecordMode = await isRecordMode(userId);
-      if (!isStillInRecordMode) {
-        console.log('⚠️ 記録モード状態が失われていました。再設定します:', userId);
-        await setRecordMode(userId, true);
-      }
-      
-      // 記録モード中は記録処理のみ受付、AI会話は行わない
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
-        }]);
-      // 記録モードは継続（終了しない）
-      return;
-    }
-    
-    // 通常モード：AI会話がメイン、明確な記録意図があれば記録も可能
-    
-    // 通常モードでは記録判定を完全に無効化（純粋なAI会話のみ）
-    console.log('🤖 通常モード - 記録判定をスキップ、AI会話で応答');
-    
-    // 通常モード：AI会話で応答（高性能モデル使用）
-    // 万が一のセーフティガード：記録モード中なら絶対に実行しない
-    const doubleCheckRecordMode = await isRecordMode(userId);
-    if (doubleCheckRecordMode) {
-      console.error('🚨 致命的エラー：記録モード中なのに通常AI処理が実行されそうになりました！', { userId, text });
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: '現在記録モード中です。通常モードに戻りたい時は、通常モードに戻るボタンを押してください！',
-        }]);
-      return;
-    }
     
     console.log('🤖 通常モード - AI会話で応答');
     
@@ -759,9 +726,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       try {
         const feedbackLimit = await checkUsageLimit(userId, 'record'); // フィードバックは記録制限と同様
         if (!feedbackLimit.allowed) {
-          // 利用制限に達した場合、自動で通常モードに戻す
-          await setRecordMode(userId, false);
-          console.log('🔄 フィードバック制限により通常モードに自動切替:', userId);
+          // 利用制限に達した場合
+          console.log('🚫 フィードバック制限:', userId);
           await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
           return;
         }
@@ -847,14 +813,6 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
                   inputOption: 'openKeyboard'
                 }
               },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: '通常モードに戻る',
-                  data: 'action=exit_record_mode'
-                }
-              }
             ]
           }
         }]);
@@ -874,93 +832,8 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       // 古い運動記録クイックリプライは無効化（新しいAI分析システムを使用）
       await replyMessage(replyToken, [{
         type: 'text',
-        text: '運動記録は記録モードでより自然な言葉で記録できます！\n\n「記録」ボタンを押して記録モードにして、「ランニング30分した」「筋トレした」などと送ってください。'
+        text: '運動記録は自然な言葉で記録できます！\n\n「ランニング30分した」「筋トレした」などと送ってください。'
       }]);
-      break;
-    case 'exit_record_mode':
-      console.log('🔄 通常モードに戻るボタン押下:', { userId, timestamp: new Date().toISOString() });
-      
-      // 連続タップ防止チェック
-      if (!canProcessTap(userId)) {
-        console.log('🚫 連続タップ防止: 記録モード終了ボタン無視');
-        return;
-      }
-      
-      // 既に通常モードかチェック
-      const alreadyInNormalMode = !(await isRecordMode(userId));
-      if (alreadyInNormalMode) {
-        console.log('⚠️ 既に通常モード中: ボタン押下を完全無視（無反応）');
-        return;
-      }
-      
-      // 処理中チェック
-      if (isProcessing(userId)) {
-        console.log('⏳ 処理中: 通常モードに戻るボタン無視');
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '処理中です。少々お待ちください...'
-        }]);
-        return;
-      }
-      
-      setProcessing(userId, true);
-      
-      try {
-        // 記録モード開始時間を取得
-        const recordModeStartTime = recordModeUsers.get(userId) || Date.now();
-        
-        // 記録データを取得してAIコメントを生成
-        const records = await getRecentRecordsForComment(userId, recordModeStartTime);
-        const aiComment = await generateExitComment(records, userId);
-        
-        // 記録モードを終了
-        await setRecordMode(userId, false);
-        console.log('✅ 通常モードに戻る処理完了:', userId);
-        
-        // キャラクター設定を取得してメッセージを生成
-        const characterSettings = await getUserCharacterSettings(userId);
-        const persona = getCharacterPersona(characterSettings);
-        const language = getCharacterLanguage(characterSettings);
-        
-        let exitMessage;
-        if (language === 'en') {
-          exitMessage = characterSettings?.type === 'sparta' ? 
-            '\n\nAlright, good job with the recording. Back to normal mode.' :
-            '\n\nBack to normal mode!';
-        } else if (language === 'ko') {
-          exitMessage = characterSettings?.type === 'sparta' ? 
-            '\n\n좋아, 기록 수고했다. 일반 모드로 돌아갔다.' :
-            '\n\n일반 모드로 돌아왔어!';
-        } else if (language === 'zh') {
-          exitMessage = characterSettings?.type === 'sparta' ? 
-            '\n\n好的，记录辛苦了。回到正常模式。' :
-            '\n\n回到正常模式了！';
-        } else if (language === 'es') {
-          exitMessage = characterSettings?.type === 'sparta' ? 
-            '\n\nBien, buen trabajo con el registro. Volviendo al modo normal.' :
-            '\n\n¡De vuelta al modo normal!';
-        } else {
-          // デフォルト日本語
-          exitMessage = characterSettings?.type === 'sparta' ? 
-            '\n\nよし、記録お疲れ。通常モードに戻ったぞ。' :
-            '\n\n通常モードに戻ったよー！';
-        }
-        
-        const message = aiComment + exitMessage;
-        
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: message
-        }]);
-      } catch (error) {
-        console.error('❌ 通常モードに戻る処理エラー:', error);
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: 'エラーが発生しました。もう一度お試しください。'
-        }]);
-      } finally {
-        setProcessing(userId, false);
-      }
       break;
     case 'confirm_record':
       const confirm = params.get('confirm');
@@ -1056,14 +929,6 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
                 label: 'カメラで記録'
               }
             },
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: '通常モードに戻る',
-                data: 'action=exit_record_mode'
-              }
-            }
           ]
         }
       }]);
@@ -2473,14 +2338,6 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
               inputOption: 'openKeyboard'
             }
           },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
         ]
       }
     }]);
@@ -2665,14 +2522,6 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
               inputOption: 'openKeyboard'
             }
           },
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            }
-          }
         ]
       }
     }]);
@@ -3237,113 +3086,8 @@ function checkUserExercisePatterns(userId: string, text: string) {
     }
   }
   return null;
-}// 記録メニューを表示
-async function showRecordMenu(replyToken: string) {
-  const recordMessage = {
-    type: 'text',
-    text: '記録モードです！\n\n食事 体重 運動記録してね！',
-    quickReply: {
-      items: [
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: 'テキストで記録',
-            data: 'action=open_keyboard',
-            inputOption: 'openKeyboard'
-          }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'camera',
-            label: 'カメラで記録'
-          }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: '記録をやめる',
-            data: 'action=cancel_record'
-          }
-        }
-      ]
-    }
-  };
-
-  await replyMessage(replyToken, [recordMessage]);
 }
 
-
-// 記録モード開始
-async function startRecordMode(replyToken: string, userId: string) {
-  const flexBuildStart = Date.now();
-  const recordMessage = {
-    type: 'flex',
-    altText: '記録モード',
-    contents: {
-      type: 'bubble',
-      header: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '記録モード',
-            weight: 'bold',
-            size: 'lg',
-            color: '#ffffff'
-          }
-        ],
-        backgroundColor: '#1E90FF',
-        paddingAll: 'md'
-      },
-      body: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'text',
-            text: '食事・運動・体重を記録できます',
-            weight: 'bold',
-            size: 'md'
-          }
-        ],
-        paddingAll: 'lg'
-      },
-      footer: {
-        type: 'box',
-        layout: 'vertical',
-        contents: [
-          {
-            type: 'button',
-            action: {
-              type: 'postback',
-              label: '通常モードに戻る',
-              data: 'action=exit_record_mode'
-            },
-            style: 'secondary'
-          }
-        ]
-      }
-    }
-  };
-  
-  const flexBuildEnd = Date.now();
-  console.log('🏗️ Flexメッセージ構築時間:', `${flexBuildEnd - flexBuildStart}ms`);
-  
-  const apiCallStart = Date.now();
-  await replyMessage(replyToken, [recordMessage]);
-  const apiCallEnd = Date.now();
-  
-  console.log('📡 LINE API呼び出し時間:', `${apiCallEnd - apiCallStart}ms`);
-  console.log('📊 記録モード開始総時間:', `${apiCallEnd - flexBuildStart}ms`);
-}
-
-// 記録モードの設定（Firestoreベース + メモリキャッシュ）
-const recordModeUsers = new Map<string, number>();
-// タイムアウト制限を削除（ユーザーが手動で終了するまで継続）
 
 // 強化された連続タップ防止機能
 const processingUsers = new Map<string, number>(); // 処理中ユーザー管理
@@ -3424,80 +3168,7 @@ function isProcessing(userId: string): boolean {
 }
 
 // 記録モード管理関数（Firestoreベース + メモリキャッシュ）
-async function setRecordMode(userId: string, enabled: boolean) {
-  try {
-    const db = admin.firestore();
-    const userStateRef = db.collection('userStates').doc(userId);
-    
-    if (enabled) {
-      // Firestoreに保存
-      await userStateRef.set({
-        recordMode: true,
-        recordModeStartedAt: new Date(),
-        lastUpdated: new Date()
-      }, { merge: true });
-      
-      // メモリキャッシュにも保存
-      recordModeUsers.set(userId, Date.now());
-      console.log(`📝 記録モード開始: ${userId}`, {
-        timestamp: new Date().toISOString(),
-        recordModeUsersSize: recordModeUsers.size,
-        isNowSet: recordModeUsers.has(userId),
-        firestoreSaved: true
-      });
-    } else {
-      // Firestoreから削除
-      await userStateRef.set({
-        recordMode: false,
-        recordModeEndedAt: new Date(),
-        lastUpdated: new Date()
-      }, { merge: true });
-      
-      // メモリキャッシュからも削除
-      recordModeUsers.delete(userId);
-      console.log(`⏹️ 記録モード終了: ${userId}`, {
-        timestamp: new Date().toISOString(),
-        recordModeUsersSize: recordModeUsers.size,
-        isNowDeleted: !recordModeUsers.has(userId),
-        firestoreUpdated: true
-      });
-    }
-  } catch (error) {
-    console.error('記録モード状態管理エラー:', error);
-    // フォールバック：メモリのみ
-    if (enabled) {
-      recordModeUsers.set(userId, Date.now());
-    } else {
-      recordModeUsers.delete(userId);
-    }
-  }
-}
-
-async function isRecordMode(userId: string): Promise<boolean> {
-  try {
-    // まずメモリキャッシュをチェック
-    const hasInMemory = recordModeUsers.has(userId);
-    
-    // Firestoreからも確認（サーバー再起動対応）
-    const db = admin.firestore();
-    const userStateDoc = await db.collection('userStates').doc(userId).get();
-    const firestoreState = userStateDoc.exists ? userStateDoc.data()?.recordMode : false;
-    
-    
-    // どちらかがtrueなら記録モード中
-    if (firestoreState && !hasInMemory) {
-      // Firestoreにはあるがメモリにない場合、メモリにも復元
-      recordModeUsers.set(userId, Date.now());
-      console.log('🔄 記録モード状態をメモリに復元:', userId);
-    }
-    
-    return hasInMemory || firestoreState;
-  } catch (error) {
-    console.error('記録モード状態確認エラー:', error);
-    // エラー時はメモリキャッシュのみ使用
-    return recordModeUsers.has(userId);
-  }
-}// 複数食事時間の記録処理
+// 複数食事時間の記録処理
 async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], replyToken: string) {
   try {
     console.log('🍽️ 複数食事時間記録開始:', { userId, mealTimes });
@@ -3672,13 +3343,11 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
         console.log('✅ 1日フィードバック（テキスト）送信完了:', userId);
       }
       
-      // フィードバック送信後、記録モードを解除して通常モードに戻す
-      await setRecordMode(userId, false);
-      console.log('🔄 フィードバック送信後、通常モードに自動切替:', userId);
+      // フィードバック送信完了
+      console.log('✅ フィードバック送信完了:', userId);
     } else if (response.status === 403) {
-      // 利用制限エラーの場合、自動で通常モードに戻す
-      await setRecordMode(userId, false);
-      console.log('🔄 フィードバック制限により通常モードに自動切替:', userId);
+      // 利用制限エラーの場合
+      console.log('🚫 フィードバック制限:', userId);
       await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
       console.log('🚫 フィードバック利用制限:', userId);
     } else {
@@ -4099,83 +3768,6 @@ async function getRecentRecordsForComment(userId: string, recordModeStartTime: n
   }
 }
 
-// 記録データに基づいてAIコメントを生成
-async function generateExitComment(records: any, userId: string): Promise<string> {
-  try {
-    // ユーザーのキャラクター設定を取得
-    const characterSettings = await getUserCharacterSettings(userId);
-    const persona = getCharacterPersona(characterSettings);
-    const language = getCharacterLanguage(characterSettings);
-    const languageInstruction = getLanguageInstruction(language);
-    
-    // 記録がない場合
-    if (records.meals.length === 0 && records.exercises.length === 0 && records.weights.length === 0) {
-      const fallbackMessages = {
-        healthy_kun: 'また記録してね！',
-        sparta: 'まあいいけど、また記録しろよ。'
-      };
-      return fallbackMessages[characterSettings?.type || 'healthy_kun'];
-    }
-    
-    const aiService = new AIHealthService();
-    
-    // 記録データを整理
-    let dataText = '';
-    
-    if (records.meals.length > 0) {
-      const latestMeal = records.meals[0];
-      dataText += `最近の食事：${latestMeal.foodItems?.join(', ') || latestMeal.displayName || '食事記録'} (${Math.round(latestMeal.calories || 0)}kcal)\n`;
-    }
-    
-    if (records.exercises.length > 0) {
-      const latestExercise = records.exercises[0];
-      dataText += `最近の運動：${latestExercise.displayName || latestExercise.type} ${latestExercise.duration ? latestExercise.duration + '分' : ''} ${latestExercise.reps ? latestExercise.reps + '回' : ''}\n`;
-    }
-    
-    if (records.weights.length > 0) {
-      const latestWeight = records.weights[0];
-      const previousWeight = records.weights[1];
-      if (previousWeight) {
-        const change = latestWeight.value - previousWeight.value;
-        dataText += `体重：${latestWeight.value}kg (前回から${change > 0 ? '+' : ''}${change.toFixed(1)}kg)\n`;
-      } else {
-        dataText += `体重：${latestWeight.value}kg\n`;
-      }
-    }
-    
-    // AIプロンプト（キャラクターと言語対応）
-    const prompt = `${languageInstruction}
-
-あなたは「${persona.name}」として振る舞ってください。
-性格: ${persona.personality}
-口調: ${persona.tone}
-
-以下のユーザーの最近の記録に基づいて、${persona.name}として自然で一言コメントを生成してください。
-
-【記録データ】
-${dataText}
-
-【コメントの条件】
-- 1行で簡潔に（30文字以内）
-- ${persona.name}の性格と口調を保つ
-- 具体的な記録内容に言及してお疲れさまの気持ちを表現
-- 前向きで励ましの要素を含む
-
-${persona.name}の口調例：
-- ヘルシーくん: "腹筋100回お疲れさま！しっかり頑張ってるね✨" / "朝食パンいいね！エネルギー補給できたね"
-- ヘルシーくん（鬼モード）: "100回か、少しはやるじゃないか" / "朝食ちゃんと食べたな、当たり前だけど"
-
-コメントのみを返してください（説明不要）：
-`;
-    
-    const comment = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
-    return comment || 'お疲れさま！';
-    
-  } catch (error) {
-    console.error('🤖 AIコメント生成エラー:', error);
-    return 'お疲れさま！';
-  }
-}
 
 // 利用制限時のFlexメッセージを作成
 function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
