@@ -1832,17 +1832,21 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
       console.log('⚠️ キャッシュクリア中にエラー:', error);
     }
     
-    // 成功メッセージ（セット追加の場合は更新されたカロリーを表示）
+    // AI応答で記録完了メッセージを生成（キャラクター口調で）
     const timeText = duration && duration > 0 ? `${duration}分` : '時間なし';
     const displayCalories = existingExerciseIndex !== -1 ? 
       existingExercises[existingExerciseIndex].calories : caloriesBurned;
-    const actionText = existingExerciseIndex !== -1 ? 'セットを追加しました！' : 'を記録しました！';
-    const responseText = `🏃‍♂️ ${exerciseName}${actionText}\n\n⏱️ 時間: ${timeText}\n🔥 推定消費カロリー: ${displayCalories}kcal\n\nお疲れさまでした！💪`;
+    const actionText = existingExerciseIndex !== -1 ? 'セットを追加' : 'を記録';
+    
+    const recordInfo = `${exerciseName}${actionText}しました。時間: ${timeText}、推定消費カロリー: ${displayCalories}kcal`;
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     // 統一モード：記録後はクイックリプライなし
     await replyMessage(replyToken, [{
       type: 'text',
-      text: responseText
+      text: aiResponse || '記録完了！お疲れ様！'
     }]);
     
     console.log('✅ AI運動記録完了:', {
@@ -2312,20 +2316,24 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
       updatedAt: new Date()
     }, { merge: true });
     
-    // 応答メッセージ作成
-    let responseText = `${exerciseName} ${duration}分 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+    // AI応答でキャラクター口調の記録完了メッセージ生成
+    let recordInfo = `${exerciseName} ${duration}分を記録しました。消費カロリー: ${caloriesBurned}kcal`;
     
     if (match.distance) {
-      responseText = `${exerciseName} ${match.distance}km ${duration}分 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+      recordInfo = `${exerciseName} ${match.distance}km ${duration}分を記録しました。消費カロリー: ${caloriesBurned}kcal`;
     } else if (match.weight && match.reps && match.sets) {
-      responseText = `${exerciseName} ${match.weight}kg ${match.reps}回 ${match.sets}セット を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+      recordInfo = `${exerciseName} ${match.weight}kg ${match.reps}回 ${match.sets}セットを記録しました。消費カロリー: ${caloriesBurned}kcal`;
     } else if (match.weight && match.reps) {
-      responseText = `${exerciseName} ${match.weight}kg ${match.reps}回 を記録したよ！\n消費カロリー: ${caloriesBurned}kcal`;
+      recordInfo = `${exerciseName} ${match.weight}kg ${match.reps}回を記録しました。消費カロリー: ${caloriesBurned}kcal`;
     }
+    
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: responseText,
+      text: aiResponse || recordInfo,
       quickReply: {
         items: [
           {
@@ -2410,16 +2418,20 @@ async function recordMultipleWeightExercise(userId: string, match: any, replyTok
       updatedAt: new Date()
     }, { merge: true });
     
-    // 詳細な成功メッセージ
+    // AI応答でキャラクター口調の詳細記録完了メッセージ生成
     const setsInfo = sets.map((set, index) => 
       `${index + 1}セット目: ${set.weight}kg × ${set.reps}回`
     ).join('\n');
     
-    const responseText = `💪 ${exerciseName}を記録しました！\n\n📊 詳細:\n${setsInfo}\n\n📈 統計:\n・総セット数: ${totalSets}セット\n・総回数: ${exerciseData.totalReps}回\n・平均重量: ${exerciseData.avgWeight}kg\n・推定時間: ${estimatedDuration}分\n🔥 推定消費カロリー: ${caloriesBurned}kcal\n\n段階的な重量アップ、素晴らしいトレーニングです！💪`;
+    const recordInfo = `${exerciseName}の複数セット記録が完了しました。詳細: ${setsInfo}、総セット数: ${totalSets}セット、総回数: ${exerciseData.totalReps}回、平均重量: ${exerciseData.avgWeight}kg、推定時間: ${estimatedDuration}分、推定消費カロリー: ${caloriesBurned}kcal。段階的な重量アップでのトレーニングでした。`;
+    
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: responseText,
+      text: aiResponse || `${exerciseName}記録完了！`,
       quickReply: {
         items: [
           {
@@ -2507,9 +2519,15 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
       updatedAt: new Date()
     }, { merge: true });
     
+    // AI応答でキャラクター口調の記録完了メッセージ生成
+    const recordInfo = `${exerciseName} ${weight}kg ${reps}回 ${sets}セットを記録しました。推定時間: ${estimatedDuration}分、消費カロリー: ${caloriesBurned}kcal`;
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
+    
     await replyMessage(replyToken, [{
       type: 'text',
-      text: `${exerciseName} ${weight}kg ${reps}回 ${sets}セット を記録したよ！\n推定時間: ${estimatedDuration}分\n消費カロリー: ${caloriesBurned}kcal`,
+      text: aiResponse || `${exerciseName}記録完了！`,
       quickReply: {
         items: [
           {
