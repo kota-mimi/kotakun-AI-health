@@ -28,7 +28,7 @@ export async function POST() {
       size: { width: 2500, height: 843 },
       selected: false,
       name: "3ボタンメニュー",
-      chatBarText: "メニュー",
+      chatBarText: "ヘルシーくん",
       areas: [
         {
           bounds: { x: 0, y: 0, width: 833, height: 843 },
