@@ -759,9 +759,6 @@ class AIHealthService {
       
       const analysis = JSON.parse(jsonText);
       
-      // 栄養アドバイスを生成して分析結果に追加
-      const nutritionAdvice = await this.generateNutritionAdvice(analysis);
-      analysis.nutritionAdvice = nutritionAdvice;
       
       return analysis;
     } catch (error) {
@@ -883,9 +880,6 @@ class AIHealthService {
       
       const analysis = JSON.parse(jsonText);
       
-      // 栄養アドバイスを生成して分析結果に追加
-      const nutritionAdvice = await this.generateNutritionAdvice(analysis);
-      analysis.nutritionAdvice = nutritionAdvice;
       
       return analysis;
     } catch (error) {
@@ -1743,44 +1737,6 @@ ${languageSpecificPrompt}`;
     }
   }
 
-  // 栄養アドバイス生成
-  async generateNutritionAdvice(analysis: any): Promise<string> {
-    try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-      
-      const calories = analysis.totalCalories || analysis.calories || 0;
-      const protein = analysis.totalProtein || analysis.protein || 0;
-      const fat = analysis.totalFat || analysis.fat || 0;
-      const carbs = analysis.totalCarbs || analysis.carbs || 0;
-      
-      const prompt = `
-栄養士として以下の食事を分析し、2-3行の簡潔で親しみやすいアドバイスをしてください：
-
-カロリー: ${calories}kcal
-タンパク質: ${protein}g
-脂質: ${fat}g  
-炭水化物: ${carbs}g
-
-アドバイス要件：
-- 2-3行（最大80文字程度）
-- 親しみやすく前向きな表現
-- 具体的で実用的
-- 褒める要素があれば積極的に
-- 改善点があれば優しく提案
-
-例：
-「タンパク質がしっかり摂れていて素晴らしいです！野菜を追加するとさらにバランス良くなりますよ。」
-「カロリー控えめで健康的ですね。次回はもう少しタンパク質を意識してみてください。」
-`;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
-    } catch (error) {
-      console.error('栄養アドバイス生成エラー:', error);
-      return 'バランスの良い食事を心がけましょう！';
-    }
-  }
 }
 
 export default AIHealthService;
