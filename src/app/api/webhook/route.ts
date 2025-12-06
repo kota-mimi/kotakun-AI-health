@@ -483,9 +483,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           return;
         }
       }
-      
-      // 通常のAI会話で応答
-      await stopLoadingAnimation(userId);
+    }
     
     console.log('🤖 通常モード - AI会話で応答');
     
@@ -1345,7 +1343,8 @@ async function deleteTempMealAnalysis(userId: string) {
 }
 
 // 🚨 緊急: 全ユーザーの一時データを削除する関数
-export async function cleanupAllTempMealData() {
+// TODO: この関数は別ファイルに移動する必要があります
+/* export */ async function cleanupAllTempMealData() {
   try {
     const db = admin.firestore();
     const usersRef = db.collection('users');
