@@ -1460,7 +1460,8 @@ async function getTempMealAnalysis(userId: string) {
       const data = doc.data();
       return {
         analysis: data.analysis,
-        imageContent: data.imageCacheKey ? getCachedImage(data.imageCacheKey) : null
+        imageContent: data.imageCacheKey ? getCachedImage(data.imageCacheKey) : null,
+        originalText: data.originalText || ''
       };
     }
     return null;
