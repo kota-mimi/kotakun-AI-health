@@ -141,6 +141,28 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             color: '#4a90e2',
             align: 'end',
             margin: 'md'
+          },
+          // 栄養アドバイスセクション
+          {
+            type: 'separator',
+            margin: 'md',
+            color: '#e0e0e0'
+          },
+          {
+            type: 'text',
+            text: '💡 栄養アドバイス',
+            size: 'sm',
+            weight: 'bold',
+            color: '#1E90FF',
+            margin: 'md'
+          },
+          {
+            type: 'text',
+            text: analysis.nutritionAdvice || 'バランスの良い食事を心がけましょう！',
+            size: 'xs',
+            color: '#555555',
+            wrap: true,
+            margin: 'sm'
           }
         ]
       }
@@ -361,6 +383,28 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 ]
               }
             ]
+          },
+          // 栄養アドバイスセクション
+          {
+            type: 'separator',
+            margin: 'md',
+            color: '#e0e0e0'
+          },
+          {
+            type: 'text',
+            text: '💡 栄養アドバイス',
+            size: 'sm',
+            weight: 'bold',
+            color: '#1E90FF',
+            margin: 'md'
+          },
+          {
+            type: 'text',
+            text: analysis.nutritionAdvice || 'バランスの良い食事を心がけましょう！',
+            size: 'xs',
+            color: '#555555',
+            wrap: true,
+            margin: 'sm'
           }
         ]
       }
