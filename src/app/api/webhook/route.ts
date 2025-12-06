@@ -1435,8 +1435,9 @@ async function storeTempMealAnalysis(userId: string, mealAnalysis: any, imageCon
       // 分量情報を追加
       displayName: mealAnalysis.displayName || '',
       baseFood: mealAnalysis.baseFood || '',
-      portion: mealAnalysis.portion || ''
-      // adviceは意図的に除外
+      portion: mealAnalysis.portion || '',
+      // 栄養アドバイスも保持
+      nutritionAdvice: mealAnalysis.nutritionAdvice || 'バランスの良い食事を心がけましょう！'
     };
     
     const db = admin.firestore();
