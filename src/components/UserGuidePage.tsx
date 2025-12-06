@@ -298,36 +298,33 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             </p>
           </div>
 
-          {/* 記録モードについて */}
+          {/* 統合モードについて */}
           <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                記録モードで記録する
+                簡単記録機能
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                LINEの下にあるリッチメニューから記録ボタンを押すと記録モードに入り、体重・運動・食事の記録が手軽にできます
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                記録方法は3つから選べます
+                「記録」という言葉をメッセージに含めて送ると、自動で記録モードになり、体重・運動・食事の記録ができます
               </p>
               <div className="space-y-3 text-gray-800 mb-4">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>テキストで記録</span>
+                  <span>「朝食記録したい」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>カメラで記録</span>
+                  <span>「体重記録」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>通常モードに戻る</span>
+                  <span>「運動記録お願いします」</span>
                 </div>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg mb-16">
-                <p className="font-semibold text-gray-800 mb-2">注意</p>
+              <div className="bg-blue-50 p-4 rounded-lg mb-16">
+                <p className="font-semibold text-gray-800 mb-2">ポイント</p>
                 <p className="text-gray-700 text-sm">
-                  記録モード中は記録しかできません。ヘルシーくんと会話したい場合は「通常モードに戻る」を押して戻ってください
+                  「記録」という言葉があれば、どんな文章でも記録モードになります。普通にヘルシーくんと会話したい場合は「記録」という言葉を入れずにメッセージを送ってください
                 </p>
               </div>
             </div>
@@ -787,19 +784,19 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
 
               <div className="mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
-                  <h3 className="font-bold text-gray-800">Q. 記録モードから通常モードに戻れません</h3>
+                  <h3 className="font-bold text-gray-800">Q. 記録したいのに普通の会話になります</h3>
                 </div>
                 <p className="text-gray-700 pl-3 mb-16">
-                  A. クイックリプライに表示される「通常モードに戻る」ボタンを押してください。記録モード中は、このボタンを押さない限り記録専用モードのままです。
+                  A. メッセージに「記録」という言葉を含めて送ってください。例：「朝食記録したい」「体重記録」など。
                 </p>
               </div>
 
               <div className="mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg mb-3">
-                  <h3 className="font-bold text-gray-800">Q. ヘルシーくんが反応しません</h3>
+                  <h3 className="font-bold text-gray-800">Q. ヘルシーくんと会話したいのに記録になります</h3>
                 </div>
                 <p className="text-gray-700 pl-3 mb-16">
-                  A. 記録モード中ではありませんか？記録モード中は記録のみ受け付けます。通常モードに戻ってから、もう一度メッセージを送ってください。
+                  A. メッセージに「記録」という言葉が含まれていませんか？「記録」という言葉を入れずにメッセージを送ってください。
                 </p>
               </div>
 
@@ -907,7 +904,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <h3 className="font-bold text-gray-800">Q. 体重が記録されません</h3>
                 </div>
                 <p className="text-gray-700 pl-3 mb-16">
-                  A. 「体重」という文字と数字を含めて送ってください。例：「体重 78kg」または「78」（記録モード中）
+                  A. 「記録」と「体重」という言葉と数字を含めて送ってください。例：「体重記録 78kg」「体重 78kg 記録したい」
                 </p>
               </div>
 

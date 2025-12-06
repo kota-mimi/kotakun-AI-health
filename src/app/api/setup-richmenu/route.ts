@@ -47,8 +47,8 @@ export async function POST() {
         {
           bounds: { x: 1666, y: 0, width: 834, height: 843 },
           action: {
-            type: "postback",
-            data: "action=usage_guide"
+            type: "uri",
+            uri: "https://line.me/R/nv/help"
           }
         }
       ]
