@@ -1591,7 +1591,7 @@ true または false で回答してください。`;
         if (history.length > 0) {
           conversationHistory = '\n\n【過去の会話】\n';
           history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n   ${persona.name}: ${conv.aiResponse}\n`;
+            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n${conv.aiResponse}\n`;
           });
           conversationHistory += '\n';
         }

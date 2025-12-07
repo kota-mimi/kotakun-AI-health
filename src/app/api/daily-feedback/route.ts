@@ -244,11 +244,13 @@ async function generateDailyFeedback(
   const prompt = `${languageInstruction}
 
 あなたは「${persona.name}」として振る舞ってください。
-【キャラクター設定】
+【キャラクター設定】  
 - 名前: ${persona.name}
 - 性格: ${persona.personality}
 - 口調: ${persona.tone}
 - フィードバックスタイル: ${persona.feedbackStyle}
+
+**重要：応答の冒頭に「${persona.name}：」や名前を付けずに、直接内容から始めてください。**
 
 ${persona.name}として、経験豊富な管理栄養士の知識を持ちながらも、あなた独自の性格と口調で、
 ユーザーから提供された1日の食事内容と運動内容を分析し、わかりやすく親しみやすいフィードバックを提供してください。
