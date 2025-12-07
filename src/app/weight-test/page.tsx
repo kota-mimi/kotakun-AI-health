@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { WeightChart } from '@/components/WeightChart';
 import { ArrowLeft, Plus, Trash2, Download, Upload } from 'lucide-react';
 
 interface WeightEntry {
@@ -165,19 +164,10 @@ export default function WeightTestPage() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 左側: グラフ表示 */}
-        <div className="lg:col-span-2">
-          <WeightChart
-            data={weightData}
-            period={period}
-            height={170} // 身長（cm）
-            targetWeight={targetWeight}
-            currentWeight={currentWeight}
-          />
-        </div>
-
-        {/* 右側: 入力フォーム */}
-        <div className="space-y-6">
+        {/* グラフ表示は削除済み */}
+        
+        {/* 入力フォーム */}
+        <div className="lg:col-span-3 space-y-6">
           {/* データ追加 */}
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
