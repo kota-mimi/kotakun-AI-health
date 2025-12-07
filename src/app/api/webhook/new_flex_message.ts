@@ -1043,58 +1043,34 @@ function getDisplayItemsForCategory(category: string, exercise: any): any[] {
       if (exercise.distance && exercise.distance > 0) {
         details.push(createDetailRow('距離', `${exercise.distance}km`));
       }
-      if (exercise.intensity) {
-        const intensityMap = { 'low': '軽め', 'moderate': '中程度', 'high': '激しい', 'light': '軽い', 'medium': '中程度' };
-        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
-      }
       break;
       
     case 'sports': // スポーツ・球技
-      if (exercise.intensity) {
-        const intensityMap = { 'low': '練習', 'moderate': '通常', 'high': '試合', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
-      }
+      // 基本情報のみ表示（時間は上で共通処理）
       break;
       
     case 'flexibility': // ストレッチ・ヨガ
-      if (exercise.intensity) {
-        const intensityMap = { 'low': 'リラックス', 'moderate': '通常', 'high': 'パワー', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
-      }
+      // 基本情報のみ表示（時間は上で共通処理）
       break;
       
     case 'martial_arts': // 格闘技
       if (exercise.reps && exercise.reps > 0) {
-        details.push(createDetailRow('技数', `${exercise.reps}回`));
-      }
-      if (exercise.intensity) {
-        const intensityMap = { 'low': '基本', 'moderate': '練習', 'high': '試合', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
+        details.push(createDetailRow('回数', `${exercise.reps}回`));
       }
       break;
       
     case 'dance': // ダンス
-      if (exercise.intensity) {
-        const intensityMap = { 'low': 'ゆっくり', 'moderate': '通常', 'high': '激しい', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('テンポ', intensityMap[exercise.intensity] || exercise.intensity));
-      }
+      // 基本情報のみ表示（時間は上で共通処理）
       break;
       
     case 'winter': // ウィンタースポーツ
       if (exercise.distance && exercise.distance > 0) {
         details.push(createDetailRow('距離', `${exercise.distance}km`));
       }
-      if (exercise.intensity) {
-        const intensityMap = { 'low': '初心者', 'moderate': '中級', 'high': '上級', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('レベル', intensityMap[exercise.intensity] || exercise.intensity));
-      }
       break;
       
     case 'daily': // 日常活動
-      if (exercise.intensity) {
-        const intensityMap = { 'low': '軽い', 'moderate': '普通', 'high': '激しい', 'light': '軽め', 'medium': '中程度' };
-        details.push(createDetailRow('強度', intensityMap[exercise.intensity] || exercise.intensity));
-      }
+      // 基本情報のみ表示（時間は上で共通処理）
       break;
       
     default:
