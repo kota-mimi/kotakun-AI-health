@@ -792,27 +792,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
       try {
         await replyMessage(replyToken, [{
           type: 'text',
-          text: 'また記録してね！',
-          quickReply: {
-            items: [
-              {
-                type: 'action',
-                action: {
-                  type: 'camera',
-                  label: 'カメラで記録'
-                }
-              },
-              {
-                type: 'action',
-                action: {
-                  type: 'postback',
-                  label: 'テキストで記録',
-                  data: 'action=open_keyboard',
-                  inputOption: 'openKeyboard'
-                }
-              },
-            ]
-          }
+          text: 'また記録してね！'
         }]);
         console.log('✅ 記録しないボタン処理完了:', userId);
       } catch (error) {
@@ -908,27 +888,7 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
       );
       
       await replyMessage(replyToken, [{
-        ...weightFlexMessage,
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'postback',
-                label: 'テキストで記録',
-                data: 'action=open_keyboard',
-                inputOption: 'openKeyboard'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'camera',
-                label: 'カメラで記録'
-              }
-            },
-          ]
-        }
+        ...weightFlexMessage
       }]);
       
       console.log('📊 体重記録完了');
@@ -2333,20 +2293,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: aiResponse || recordInfo,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-        ]
-      }
+      text: aiResponse || recordInfo
     }]);
     
     console.log('✅ 運動記録完了:', exerciseData);
@@ -2431,32 +2378,7 @@ async function recordMultipleWeightExercise(userId: string, match: any, replyTok
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: aiResponse || `${exerciseName}記録完了！`,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'テキストで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: 'カメラで記録'
-            }
-          },
-          {
-            type: 'action',
-            action: {
-              type: 'text',
-              label: '通常モード'
-            }
-          }
-        ]
-      }
+      text: aiResponse || `${exerciseName}記録完了！`
     }]);
     
     console.log('✅ 複数重量運動記録完了:', exerciseData);
@@ -2527,20 +2449,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     
     await replyMessage(replyToken, [{
       type: 'text',
-      text: aiResponse || `${exerciseName}記録完了！`,
-      quickReply: {
-        items: [
-          {
-            type: 'action',
-            action: {
-              type: 'postback',
-              label: 'テキストで記録',
-              data: 'action=open_keyboard',
-              inputOption: 'openKeyboard'
-            }
-          },
-        ]
-      }
+      text: aiResponse || `${exerciseName}記録完了！`
     }]);
     
     console.log('✅ 詳細運動記録完了:', exerciseData);
@@ -2778,14 +2687,8 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       
       const flexMessage = createExerciseFlexMessage(singleExerciseData, originalText);
       
-      // 最後のメッセージにのみクイックリプライを追加
-      if (i === addedExercises.length - 1) {
-        messages.push({
-          ...flexMessage,
-            });
-      } else {
-        messages.push(flexMessage);
-      }
+      // Flexメッセージのみ追加（クイックリプライは削除済み）
+      messages.push(flexMessage);
     }
     
     await replyMessage(replyToken, messages);
@@ -3880,31 +3783,11 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
   };
 }
 
-// 記録確認メッセージを送信
+// 記録確認メッセージを送信（クイックリプライ削除済み）
 async function sendRecordConfirmation(replyToken: string) {
   const message = {
     type: 'text',
-    text: 'フィードバックしますか？\n\n記録がないとちゃんとしたフィードバックができません。今日の食事や運動は記録しましたか？',
-    quickReply: {
-      items: [
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: 'はい（記録済み）',
-            data: 'action=feedback_with_records'
-          }
-        },
-        {
-          type: 'action',
-          action: {
-            type: 'postback',
-            label: 'いいえ（記録なし）',
-            data: 'action=feedback_no_records'
-          }
-        }
-      ]
-    }
+    text: 'フィードバックしますか？\n\n記録がないとちゃんとしたフィードバックができません。今日の食事や運動は記録しましたか？'
   };
 
   await replyMessage(replyToken, [message]);
