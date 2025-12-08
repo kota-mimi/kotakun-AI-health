@@ -1165,74 +1165,53 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
     }
   }
   
-  // カテゴリ別の動的詳細表示
-  const details = getDisplayItemsForCategory(exerciseType, exercise);
-  
-  // コンパクトな表示内容を構築
-  const compactDetails = [];
-  
-  // 主要な情報のみ抽出（最大2個まで）
-  const importantDetails = details.filter(detail => 
-    detail.type === 'box' && 
-    detail.layout === 'horizontal' &&
-    detail.contents?.[0]?.text !== '消費カロリー'
-  ).slice(0, 2);
-  
-  // 消費カロリーは別途表示
-  const calorieDetail = details.find(detail => 
-    detail.type === 'box' && 
-    detail.contents?.[0]?.text === '消費カロリー'
-  );
-
   const contents = [
-    // 運動記録（ワンライン）
+    // 運動記録ヘッダー
+    {
+      type: 'text',
+      text: '運動記録',
+      size: 'md',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'none'
+    },
+    // 区切り線
+    {
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    },
+    // 運動名と時刻
     {
       type: 'box',
       layout: 'horizontal',
+      margin: 'md',
       contents: [
         {
           type: 'text',
-          text: '運動記録',
-          size: 'sm',
+          text: exercise.name || '運動',
+          size: 'xl',
           weight: 'bold',
           color: '#333333',
-          flex: 1
+          flex: 1,
+          wrap: true
         },
         {
           type: 'text',
           text: currentTime,
-          size: 'xs',
+          size: 'md',
           color: '#999999',
           flex: 0
         }
       ]
-    },
-    // 運動名（大きく表示）
-    {
-      type: 'text',
-      text: exercise.name || '運動',
-      size: 'lg',
-      weight: 'bold',
-      color: '#333333',
-      margin: 'sm',
-      wrap: true
-    },
-    // 主要詳細（コンパクト）
-    ...importantDetails.map(detail => ({
-      ...detail,
-      margin: 'xs'
-    })),
-    // 消費カロリー（目立つ表示）
-    ...(calorieDetail ? [{
-      type: 'text',
-      text: calorieDetail.contents[1].text,
-      size: 'xl',
-      weight: 'bold',
-      color: '#4a90e2',
-      align: 'center',
-      margin: 'sm'
-    }] : [])
+    }
   ];
+
+  // カテゴリ別の動的詳細表示
+  const details = getDisplayItemsForCategory(exerciseType, exercise);
+
+  // 詳細を追加
+  contents.push(...details);
 
   return {
     type: 'flex',
@@ -1246,8 +1225,8 @@ export function createExerciseFlexMessage(exerciseData: any, originalText?: stri
       body: {
         type: 'box',
         layout: 'vertical',
-        paddingAll: '10px',
-        spacing: 'sm',
+        paddingAll: '16px',
+        spacing: 'md',
         contents: contents
       }
     }
@@ -1474,10 +1453,51 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
   };
 }
 
-// 体重記録用のFlexメッセージ（コンパクト版）
+// 体重記録用のFlexメッセージ
 export function createWeightFlexMessage(weight: number) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
   
+  const contents = [
+    // 体重記録ヘッダー
+    {
+      type: 'text',
+      text: '体重記録',
+      size: 'md',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'none'
+    },
+    // 区切り線
+    {
+      type: 'separator',
+      margin: 'md',
+      color: '#e0e0e0'
+    },
+    // 体重と時刻
+    {
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: `${weight}kg`,
+          size: 'xl',
+          weight: 'bold',
+          color: '#333333',
+          flex: 1
+        },
+        {
+          type: 'text',
+          text: currentTime,
+          size: 'md',
+          color: '#999999',
+          flex: 0
+        }
+      ]
+    }
+  ];
+
   return {
     type: 'flex',
     altText: '体重記録完了',
@@ -1490,42 +1510,9 @@ export function createWeightFlexMessage(weight: number) {
       body: {
         type: 'box',
         layout: 'vertical',
-        paddingAll: '10px',
-        spacing: 'sm',
-        contents: [
-          // 体重記録（ワンライン）
-          {
-            type: 'box',
-            layout: 'horizontal',
-            contents: [
-              {
-                type: 'text',
-                text: '体重記録',
-                size: 'sm',
-                weight: 'bold',
-                color: '#333333',
-                flex: 1
-              },
-              {
-                type: 'text',
-                text: currentTime,
-                size: 'xs',
-                color: '#999999',
-                flex: 0
-              }
-            ]
-          },
-          // 体重（大きく表示）
-          {
-            type: 'text',
-            text: `${weight}kg`,
-            size: 'xxl',
-            weight: 'bold',
-            color: '#4a90e2',
-            align: 'center',
-            margin: 'sm'
-          }
-        ]
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: contents
       }
     }
   };
