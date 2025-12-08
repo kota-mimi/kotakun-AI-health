@@ -53,7 +53,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             contents: [
               {
                 type: 'text',
-                text: originalMealName || analysis.displayName || analysis.foodItems?.[0] || '食事',
+                text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
                 size: 'xl',
                 weight: 'bold',
                 color: '#333333',
@@ -405,7 +405,7 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
           // 食事名
           {
             type: 'text',
-            text: analysis.displayName || originalMealName,
+            text: analysis.displayName || analysis.foodItems?.[0] || originalMealName,
             size: 'xl',
             weight: 'bold',
             color: '#333333',
