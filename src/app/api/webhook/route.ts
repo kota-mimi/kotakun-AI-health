@@ -291,8 +291,17 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   try {
-    // 統一モード：「記録」キーワードで記録判定
-    const isRecordIntent = text.includes('記録');
+    // 統一モード：多言語「記録」キーワードで記録判定
+    const recordKeywords = [
+      '記録', 'きろく',           // 日本語・ひらがな
+      'record', 'log', 'save',   // 英語
+      '기록', '기록해',          // 韓国語  
+      '记录', '記錄',            // 中国語（簡体字・繁体字）
+      'registro', 'registrar'    // スペイン語
+    ];
+    const isRecordIntent = recordKeywords.some(keyword => 
+      text.toLowerCase().includes(keyword.toLowerCase())
+    );
     
     // 利用制限チェック
     if (isRecordIntent) {
@@ -324,14 +333,14 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     if (text.includes('ステータス') || text.includes('状態')) {
       await replyMessage(replyToken, [{
         type: 'text',
-        text: `現在の状態: 統一モード（記録キーワードで記録処理）`
+        text: `現在の状態: 統一モード（多言語記録キーワードで記録処理）\n対応キーワード: 記録/きろく/record/log/save/기록/记录/記錄/registro/registrar`
       }]);
       return;
     }
     
     if (isRecordIntent) {
-      // 統一モード：「記録」キーワードが含まれる場合のみ記録処理
-      console.log('📝 統一モード - 記録キーワード検出、記録処理開始:', text);
+      // 統一モード：多言語「記録」キーワードが含まれる場合のみ記録処理
+      console.log('📝 統一モード - 多言語記録キーワード検出、記録処理開始:', text);
       
       // 連続入力防止
       if (!canProcessTap(userId)) {
