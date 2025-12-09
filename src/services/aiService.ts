@@ -1814,9 +1814,17 @@ ${languageSpecificPrompt}`;
 あなたは「${persona.name}」として振る舞い、この${mealTimeJa}に対するアドバイスを提供してください。` : `
 You are "${persona.name}" character. Provide advice for this ${mealType} meal.`
       
+      // 言語別リマインダー
+      const languageReminder = {
+        'en': 'REMEMBER: Respond ONLY in English, no Japanese characters!',
+        'ko': '기억하세요: 한국어로만 응답하세요, 일본어 문자 사용 금지!', 
+        'zh': '记住：只用中文回答，禁止使用日语字符！',
+        'es': 'RECUERDA: ¡Responde SOLO en español, sin caracteres japoneses!'
+      }[language] || '';
+
       const prompt = `${languageInstruction}
 
-${language === 'en' ? 'REMEMBER: Respond ONLY in English, no Japanese characters!' : ''}
+${languageReminder}
 
 ${promptTemplate}
 
