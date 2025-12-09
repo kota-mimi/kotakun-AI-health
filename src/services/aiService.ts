@@ -1773,6 +1773,7 @@ ${languageSpecificPrompt}`;
       // キャラクター設定の取得
       const persona = getCharacterPersona(characterSettings);
       const language = getCharacterLanguage(characterSettings);
+      const languageInstruction = getLanguageInstruction(language);
       
       // 食事タイミングの日本語化
       const mealTimeJa = {
@@ -1808,10 +1809,18 @@ ${languageSpecificPrompt}`;
         `複数食事: ${mealAnalysis.meals.map((meal: any) => `${meal.displayName}(${meal.calories}kcal)`).join('、')}` :
         `単一食事: ${mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || '不明'}(${mealAnalysis.calories || 0}kcal)`;
       
-      const prompt = `
-あなたは「${persona.name}」として振る舞い、この${mealTimeJa}に対するアドバイスを提供してください。
+      // 言語別プロンプト作成
+      const promptTemplate = language === 'ja' ? `
+あなたは「${persona.name}」として振る舞い、この${mealTimeJa}に対するアドバイスを提供してください。` : `
+You are "${persona.name}" character. Provide advice for this ${mealType} meal.`
+      
+      const prompt = `${languageInstruction}
 
-## あなたのキャラクター設定
+${language === 'en' ? 'REMEMBER: Respond ONLY in English, no Japanese characters!' : ''}
+
+${promptTemplate}
+
+## キャラクター設定 / Character Settings
 キャラクター名: ${persona.name}
 性格: ${persona.personality}
 口調: ${persona.tone}
