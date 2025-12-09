@@ -1832,44 +1832,36 @@ ${language}
 - 不足しがちな栄養素の指摘
 - 次の食事や今後への具体的提案
 
-**出力形式**: 3〜5行のアドバイステキスト（改行で区切る）
+**出力形式**: 1つの段落形式で3〜5行程度の文章（改行なし）
 **口調**: ${characterSettings?.aiCharacter || 'healthy-kun'}のキャラクターに合わせる
 
 例:
-・タンパク質が豊富で筋肉作りに◎
-・脂質がやや多めなので野菜を追加推奨
-・夜は炭水化物控えめが理想的
-・水分補給も忘れずに！
-・明日の朝食で食物繊維を意識しましょう
+納豆は良質なタンパク質と食物繊維が豊富で朝食にぴったりですね！ただ、このままではエネルギー不足や脂質がやや多めに感じられるため、ご飯やパンを少し足してエネルギーを補い、さらに野菜や果物をプラスすると、ビタミン・ミネラル・食物繊維も摂れて、よりバランスが良くなりますよ。水分補給も忘れずに、明日の朝食でも「彩り」を意識して、色々な食材を取り入れてみてください！
       `;
       
       const result = await model.generateContent(prompt);
       const response = await result.response;
       let adviceText = response.text().trim();
       
-      // 改行で分割して3〜5行に調整
-      let adviceLines = adviceText.split('\n').filter(line => line.trim());
+      // 複数行や箇条書きを1つの段落にまとめる
+      adviceText = adviceText
+        .replace(/\n+/g, ' ')  // 改行を削除
+        .replace(/[・•\-\*]\s*/g, '')  // 箇条書き記号を削除
+        .replace(/\s+/g, ' ')  // 複数スペースを1つに
+        .trim();
       
-      // 行数調整
-      if (adviceLines.length > 5) {
-        adviceLines = adviceLines.slice(0, 5);
-      } else if (adviceLines.length < 3) {
-        // 行数が少ない場合の補完
-        while (adviceLines.length < 3) {
-          adviceLines.push('・バランスの良い食事を心がけましょう！');
+      // 長すぎる場合は適切な長さに調整（約200文字程度）
+      if (adviceText.length > 200) {
+        const sentences = adviceText.split(/[。！？]/);
+        let truncated = '';
+        for (const sentence of sentences) {
+          if ((truncated + sentence + '。').length > 200) break;
+          truncated += sentence + '。';
         }
+        adviceText = truncated || adviceText.substring(0, 200) + '...';
       }
       
-      // 各行に・を付ける（既についていない場合）
-      adviceLines = adviceLines.map(line => {
-        const trimmed = line.trim();
-        if (!trimmed.startsWith('・') && !trimmed.startsWith('-') && !trimmed.startsWith('*')) {
-          return `・${trimmed}`;
-        }
-        return trimmed;
-      });
-      
-      const finalAdvice = adviceLines.join('\n');
+      const finalAdvice = adviceText;
       
       console.log('✅ パーソナル食事アドバイス生成完了:', finalAdvice);
       
@@ -1878,23 +1870,19 @@ ${language}
     } catch (error) {
       console.error('❌ パーソナル食事アドバイス生成エラー:', error);
       
-      // フォールバック: 基本的なアドバイス
-      const fallbackAdvices = [
-        '・栄養バランスを意識した素晴らしい食事ですね！',
-        '・適量の摂取で健康的な食生活を継続中',
-        '・次回も野菜と水分補給を忘れずに',
-        '・継続的な記録が健康への第一歩です',
-        '・今日も1日頑張りましょう！'
-      ];
+      // フォールバック: 基本的なアドバイス（段落形式）
+      let fallbackAdvice = '栄養バランスを意識した素晴らしい食事ですね！適量の摂取で健康的な食生活を継続中です。';
       
       // 食事タイプに応じたカスタマイズ
       if (mealType === 'breakfast') {
-        fallbackAdvices[1] = '・朝食でエネルギーチャージ完了！';
+        fallbackAdvice += '朝食でエネルギーチャージ完了！今日も1日頑張りましょう。';
       } else if (mealType === 'dinner') {
-        fallbackAdvices[2] = '・夜は消化に良い食材で体をいたわりましょう';
+        fallbackAdvice += '夜は消化に良い食材で体をいたわりましょう。質の良い睡眠にもつながります。';
+      } else {
+        fallbackAdvice += '次回も野菜と水分補給を忘れずに、継続的な記録が健康への第一歩です。';
       }
       
-      return fallbackAdvices.slice(0, 4).join('\n');
+      return fallbackAdvice;
     }
   }
 
