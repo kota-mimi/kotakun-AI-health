@@ -291,17 +291,20 @@ async function handleMessage(replyToken: string, source: any, message: any) {
 
 async function handleTextMessage(replyToken: string, userId: string, text: string, user: any) {
   try {
-    // 統一モード：多言語「記録」キーワードで記録判定
-    const recordKeywords = [
-      '記録', 'きろく',           // 日本語・ひらがな
-      'record', 'log', 'save',   // 英語
-      '기록', '기록해',          // 韓国語  
-      '记录', '記錄',            // 中国語（簡体字・繁体字）
-      'registro', 'registrar'    // スペイン語
-    ];
-    const isRecordIntent = recordKeywords.some(keyword => 
-      text.toLowerCase().includes(keyword.toLowerCase())
-    );
+    // 統一モード：「記録」キーワードで記録判定（多言語機能は一時無効化）
+    const isRecordIntent = text.includes('記録');
+    
+    // 多言語キーワード（将来復活予定）
+    // const recordKeywords = [
+    //   '記録', 'きろく',           // 日本語・ひらがな
+    //   'record', 'log', 'save',   // 英語
+    //   '기록', '기록해',          // 韓国語  
+    //   '记录', '記錄',            // 中国語（簡体字・繁体字）
+    //   'registro', 'registrar'    // スペイン語
+    // ];
+    // const isRecordIntent = recordKeywords.some(keyword => 
+    //   text.toLowerCase().includes(keyword.toLowerCase())
+    // );
     
     // 利用制限チェック
     if (isRecordIntent) {

@@ -676,7 +676,9 @@ class AIHealthService {
       const prompt = `
 食事内容のテキスト「${mealText}」を分析して、以下の形式のJSONで返してください。
 
+${/* 多言語対応指示（一時無効化 - 将来復活予定）
 **重要**: この食事は日本語、英語、韓国語、中国語、スペイン語など任意の言語で入力されています。言語に関係なく正確な栄養分析を行い、食品名は入力された言語のまま保持してください。
+*/}
 
 複数の食事が含まれている場合：
 {
@@ -732,11 +734,14 @@ class AIHealthService {
 - 「と」「、」「＋」「&」などで複数の食事が結ばれている場合は複数食事として扱う
 - カロリーは整数、PFC（タンパク質・脂質・炭水化物）は小数点第1位まで正確に計算
 - 単位は含めない（例：カロリー350、タンパク質23.4）
+- 食品名・料理名は日本語で
+${/* 多言語対応指示（一時無効化 - 将来復活予定）
 - **多言語対応**: 食品名・料理名は入力された言語のまま保持
   * 英語入力 → 英語で出力 (例: "fried chicken" → name: "fried chicken")
   * 韓国語入力 → 韓国語で出力 (例: "치킨" → name: "치킨")  
   * 中国語入力 → 中国語で出力 (例: "炸鸡" → name: "炸鸡")
   * 日本語以外でも正確な栄養分析を行う
+*/}
 - **重要: 分量が指定されている場合は必ずその分量で正確に計算する**
 - **displayNameにはユーザーが入力した文字をそのまま記録（勝手に分量を追加しない）**
 - **nameには基本的な食品名のみ（「(3個)」「(1人前)」などの分量表記は追加しない）**
@@ -1778,10 +1783,14 @@ ${languageSpecificPrompt}`;
       
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      // キャラクター設定の取得
+      // キャラクター設定の取得（言語機能は一時無効化）
       const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
-      const languageInstruction = getLanguageInstruction(language);
+      const language = 'ja'; // 常に日本語固定
+      const languageInstruction = ''; // 言語指示無効化
+      
+      // 多言語機能（将来復活予定）
+      // const language = getCharacterLanguage(characterSettings);
+      // const languageInstruction = getLanguageInstruction(language);
       
       // 食事タイミングの日本語化
       const mealTimeJa = {
@@ -1822,13 +1831,16 @@ ${languageSpecificPrompt}`;
 あなたは「${persona.name}」として振る舞い、この${mealTimeJa}に対するアドバイスを提供してください。` : `
 You are "${persona.name}" character. Provide advice for this ${mealType} meal.`
       
-      // 言語別リマインダー
-      const languageReminder = {
-        'en': 'REMEMBER: Respond ONLY in English, no Japanese characters!',
-        'ko': '기억하세요: 한국어로만 응답하세요, 일본어 문자 사용 금지!', 
-        'zh': '记住：只用中文回答，禁止使用日语字符！',
-        'es': 'RECUERDA: ¡Responde SOLO en español, sin caracteres japoneses!'
-      }[language] || '';
+      // 言語別リマインダー（一時無効化）
+      const languageReminder = ''; // 日本語固定なのでリマインダー不要
+      
+      // 多言語リマインダー（将来復活予定）
+      // const languageReminder = {
+      //   'en': 'REMEMBER: Respond ONLY in English, no Japanese characters!',
+      //   'ko': '기억하세요: 한국어로만 응답하세요, 일본어 문자 사용 금지!', 
+      //   'zh': '记住：只用中文回答，禁止使用日语字符！',
+      //   'es': 'RECUERDA: ¡Responde SOLO en español, sin caracteres japoneses!'
+      // }[language] || '';
 
       const prompt = `${languageInstruction}
 

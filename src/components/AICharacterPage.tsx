@@ -33,13 +33,13 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
 
   // キャラクター選択
   const handleCharacterSelect = (type: 'healthy_kun' | 'sparta') => {
-    setSelectedCharacter(prev => ({ ...prev, type }));
+    setSelectedCharacter(prev => ({ ...prev, type, language: 'ja' })); // 常に日本語固定
   };
 
-  // 言語選択
-  const handleLanguageSelect = (language: string) => {
-    setSelectedCharacter(prev => ({ ...prev, language: language as any }));
-  };
+  // 言語選択 - 一時的に無効化（将来的に復活予定）
+  // const handleLanguageSelect = (language: string) => {
+  //   setSelectedCharacter(prev => ({ ...prev, language: language as any }));
+  // };
 
 
   // 設定保存
@@ -180,7 +180,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
 
       </div>
 
-      {/* 言語選択 */}
+      {/* 言語選択 - 一時的に無効化（将来的に復活予定）
       <div className="px-4 space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">🌍 応答言語</h2>
         <p className="text-sm text-slate-600 mb-3">AIの応答で使用する言語を選択してください</p>
@@ -220,6 +220,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
         </div>
 
       </div>
+      */}
 
       {/* 保存ボタン */}
       <div className="px-4 pt-8 pb-24">
