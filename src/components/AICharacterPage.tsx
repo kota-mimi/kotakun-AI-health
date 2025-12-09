@@ -112,13 +112,9 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
               <Badge variant="outline" className="mb-3">
                 {selectedCharacter.type === 'healthy_kun' ? '親しみやすい・自然' : '豹変・鬼モード'}
               </Badge>
-              <p className="text-sm text-slate-600 mb-3">
+              <p className="text-sm text-slate-600">
                 {currentPersona.greeting}
               </p>
-              <div className="text-xs text-slate-500">
-                <p>性格: {currentPersona.personality}</p>
-                <p>口調: {currentPersona.tone}</p>
-              </div>
             </div>
           </Card>
         </div>
@@ -126,7 +122,7 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
 
       {/* キャラクター選択 */}
       <div className="px-4 space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800">🎭 AIキャラクター</h2>
+        <h2 className="text-lg font-semibold text-slate-800">AIキャラクター</h2>
         
         {/* ヘルシーくん */}
         <Card 
@@ -148,7 +144,6 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                 </p>
                 <Badge variant="outline">親しみやすい・自然</Badge>
               </div>
-              <div className="text-4xl">😊</div>
             </div>
           </div>
         </Card>
@@ -173,7 +168,6 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
                 </p>
                 <Badge variant="destructive">豹変・鬼モード</Badge>
               </div>
-              <div className="text-4xl">😈</div>
             </div>
           </div>
         </Card>
