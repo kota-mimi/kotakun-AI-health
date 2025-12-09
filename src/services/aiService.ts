@@ -1746,6 +1746,158 @@ ${languageSpecificPrompt}`;
     }
   }
 
+  // 食事記録完了時の管理栄養士レベルパーソナルアドバイス生成
+  async generateMealAdvice(
+    mealAnalysis: any,
+    mealType: string,
+    userId: string,
+    userProfile?: any,
+    dailyProgress?: any,
+    characterSettings?: any
+  ) {
+    try {
+      console.log('🧠 パーソナル食事アドバイス生成開始:', { userId, mealType });
+      
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+      
+      // キャラクター設定の取得
+      const persona = getCharacterPersona(characterSettings?.aiCharacter || 'healthy-kun');
+      const language = getCharacterLanguage(characterSettings?.aiCharacter || 'healthy-kun');
+      
+      // 食事タイミングの日本語化
+      const mealTimeJa = {
+        'breakfast': '朝食',
+        'lunch': '昼食', 
+        'dinner': '夕食',
+        'snack': '間食'
+      }[mealType] || '食事';
+      
+      // ユーザープロフィール情報の整理
+      const profileInfo = userProfile ? `
+        - 年齢: ${userProfile.age || '不明'}歳
+        - 性別: ${userProfile.gender === 'male' ? '男性' : userProfile.gender === 'female' ? '女性' : '不明'}
+        - 身長: ${userProfile.height || '不明'}cm
+        - 体重: ${userProfile.weight || '不明'}kg
+        - 目標体重: ${userProfile.targetWeight || '不明'}kg
+        - 活動レベル: ${userProfile.activityLevel || '普通'}
+        - 健康目標: ${userProfile.primaryGoal || '健康維持'}
+      ` : '- プロフィール情報: 未設定';
+      
+      // 今日の進捗情報
+      const progressInfo = dailyProgress ? `
+        - 本日の摂取カロリー: ${dailyProgress.totalCalories || 0}kcal
+        - 目標カロリー: ${dailyProgress.targetCalories || 2000}kcal
+        - タンパク質: ${dailyProgress.totalProtein || 0}g / 目標: ${dailyProgress.targetProtein || 120}g
+        - 脂質: ${dailyProgress.totalFat || 0}g / 目標: ${dailyProgress.targetFat || 67}g
+        - 炭水化物: ${dailyProgress.totalCarbs || 0}g / 目標: ${dailyProgress.targetCarbs || 250}g
+        - 食事回数: ${dailyProgress.mealCount || 1}回
+      ` : '- 本日の進捗: 未計算';
+      
+      // 記録された食事情報
+      const mealInfo = mealAnalysis.isMultipleMeals ? 
+        `複数食事: ${mealAnalysis.meals.map((meal: any) => `${meal.displayName}(${meal.calories}kcal)`).join('、')}` :
+        `単一食事: ${mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || '不明'}(${mealAnalysis.calories || 0}kcal)`;
+      
+      const prompt = `
+あなたは経験豊富な管理栄養士です。以下の情報を基に、この${mealTimeJa}に対する専門的で実用的なアドバイスを3〜5行で提供してください。
+
+## ユーザー情報
+${profileInfo}
+
+## 本日の栄養進捗
+${progressInfo}
+
+## 記録された${mealTimeJa}
+- ${mealInfo}
+- カロリー: ${mealAnalysis.calories || mealAnalysis.totalCalories || 0}kcal
+- タンパク質: ${mealAnalysis.protein || mealAnalysis.totalProtein || 0}g
+- 脂質: ${mealAnalysis.fat || mealAnalysis.totalFat || 0}g
+- 炭水化物: ${mealAnalysis.carbs || mealAnalysis.totalCarbs || 0}g
+
+## キャラクター設定
+${persona}
+${language}
+
+## アドバイス要件
+1. **管理栄養士の専門性**: 栄養学的根拠に基づく具体的なアドバイス
+2. **パーソナライゼーション**: ユーザーの目標・プロフィール・進捗に合わせた個別指導
+3. **実用性**: 今すぐ実践できる具体的な提案
+4. **バランス重視**: 栄養バランス、食事タイミング、分量の適正性を評価
+5. **ポジティブ**: 良い点を褒めつつ、改善点を優しく提案
+
+## 重点評価項目
+- この食事の栄養バランス（PFC比率）
+- 食事タイミングの適正性
+- カロリー収支の妥当性
+- 不足しがちな栄養素の指摘
+- 次の食事や今後への具体的提案
+
+**出力形式**: 3〜5行のアドバイステキスト（改行で区切る）
+**口調**: ${characterSettings?.aiCharacter || 'healthy-kun'}のキャラクターに合わせる
+
+例:
+・タンパク質が豊富で筋肉作りに◎
+・脂質がやや多めなので野菜を追加推奨
+・夜は炭水化物控えめが理想的
+・水分補給も忘れずに！
+・明日の朝食で食物繊維を意識しましょう
+      `;
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let adviceText = response.text().trim();
+      
+      // 改行で分割して3〜5行に調整
+      let adviceLines = adviceText.split('\n').filter(line => line.trim());
+      
+      // 行数調整
+      if (adviceLines.length > 5) {
+        adviceLines = adviceLines.slice(0, 5);
+      } else if (adviceLines.length < 3) {
+        // 行数が少ない場合の補完
+        while (adviceLines.length < 3) {
+          adviceLines.push('・バランスの良い食事を心がけましょう！');
+        }
+      }
+      
+      // 各行に・を付ける（既についていない場合）
+      adviceLines = adviceLines.map(line => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('・') && !trimmed.startsWith('-') && !trimmed.startsWith('*')) {
+          return `・${trimmed}`;
+        }
+        return trimmed;
+      });
+      
+      const finalAdvice = adviceLines.join('\n');
+      
+      console.log('✅ パーソナル食事アドバイス生成完了:', finalAdvice);
+      
+      return finalAdvice;
+      
+    } catch (error) {
+      console.error('❌ パーソナル食事アドバイス生成エラー:', error);
+      
+      // フォールバック: 基本的なアドバイス
+      const fallbackAdvices = [
+        '・栄養バランスを意識した素晴らしい食事ですね！',
+        '・適量の摂取で健康的な食生活を継続中',
+        '・次回も野菜と水分補給を忘れずに',
+        '・継続的な記録が健康への第一歩です',
+        '・今日も1日頑張りましょう！'
+      ];
+      
+      // 食事タイプに応じたカスタマイズ
+      if (mealType === 'breakfast') {
+        fallbackAdvices[1] = '・朝食でエネルギーチャージ完了！';
+      } else if (mealType === 'dinner') {
+        fallbackAdvices[2] = '・夜は消化に良い食材で体をいたわりましょう';
+      }
+      
+      return fallbackAdvices.slice(0, 4).join('\n');
+    }
+  }
+
 }
 
 export default AIHealthService;

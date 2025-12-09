@@ -1,7 +1,7 @@
-export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string) {
+export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string, aiAdvice?: string) {
   // 複数食事の場合
   if (analysis.isMultipleMeals) {
-    return createMultipleMealFlexMessage(mealTypeJa, analysis, imageUrl, originalMealName);
+    return createMultipleMealFlexMessage(mealTypeJa, analysis, imageUrl, originalMealName, aiAdvice);
   }
   
   // 単一食事の場合（既存のロジック）
@@ -141,7 +141,51 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             color: '#4a90e2',
             align: 'end',
             margin: 'md'
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              backgroundColor: '#f8f9ff',
+              cornerRadius: '12px',
+              borderWidth: '1px',
+              borderColor: '#e6f0ff',
+              paddingAll: '12px',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 1
+                    }
+                  ],
+                  margin: 'none'
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#333333',
+                  wrap: true,
+                  margin: 'sm',
+                  lineSpacing: 'sm'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }
@@ -149,7 +193,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
 }
 
 // 複数食事用のFlexメッセージ
-function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string) {
+function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageUrl: string | null, originalMealName?: string, aiAdvice?: string) {
   const currentTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
   
   // 各食事のアイテムを生成（薄い線のフレームで囲む）
@@ -361,7 +405,51 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 ]
               }
             ]
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              backgroundColor: '#f8f9ff',
+              cornerRadius: '12px',
+              borderWidth: '1px',
+              borderColor: '#e6f0ff',
+              paddingAll: '12px',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 1
+                    }
+                  ],
+                  margin: 'none'
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#333333',
+                  wrap: true,
+                  margin: 'sm',
+                  lineSpacing: 'sm'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }
@@ -483,7 +571,51 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
             color: '#4a90e2',
             align: 'end',
             margin: 'md'
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              backgroundColor: '#f8f9ff',
+              cornerRadius: '12px',
+              borderWidth: '1px',
+              borderColor: '#e6f0ff',
+              paddingAll: '12px',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 1
+                    }
+                  ],
+                  margin: 'none'
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#333333',
+                  wrap: true,
+                  margin: 'sm',
+                  lineSpacing: 'sm'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }
@@ -672,7 +804,51 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                 ]
               }
             ]
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              backgroundColor: '#f8f9ff',
+              cornerRadius: '12px',
+              borderWidth: '1px',
+              borderColor: '#e6f0ff',
+              paddingAll: '12px',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 1
+                    }
+                  ],
+                  margin: 'none'
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#333333',
+                  wrap: true,
+                  margin: 'sm',
+                  lineSpacing: 'sm'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }

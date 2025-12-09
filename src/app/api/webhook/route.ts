@@ -7,6 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getCharacterPersona, getCharacterLanguage } from '@/utils/aiCharacterUtils';
+import { calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
@@ -1118,7 +1119,92 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     
     // 元のユーザー入力テキストを取得
     const originalText = tempData.originalText || tempData.analysis.displayName || tempData.analysis.foodItems?.[0] || tempData.analysis.meals?.[0]?.name || '食事';
-    const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, originalText);
+    
+    // 🧠 AIアドバイス生成
+    console.log('🧠 パーソナル食事アドバイス生成開始');
+    const aiService = new AIHealthService();
+    const characterSettings = await getUserCharacterSettings(userId);
+    
+    // ユーザープロフィール取得（アドバイスの個別化のため）
+    let userProfile = null;
+    try {
+      const db = admin.firestore();
+      const profileSnapshot = await db
+        .collection('users')
+        .doc(userId)
+        .collection('profileHistory')
+        .orderBy('changeDate', 'desc')
+        .limit(1)
+        .get();
+      
+      if (!profileSnapshot.empty) {
+        userProfile = profileSnapshot.docs[0].data();
+        console.log('📊 ユーザープロフィール取得成功');
+      }
+    } catch (profileError) {
+      console.log('⚠️ ユーザープロフィール取得失敗（アドバイス生成は継続）:', profileError);
+    }
+    
+    // 今日の栄養進捗取得（アドバイスの精度向上のため）
+    let dailyProgress = null;
+    try {
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const recordRef = admin.firestore().collection('users').doc(userId).collection('dailyRecords').doc(today);
+      const recordDoc = await recordRef.get();
+      
+      if (recordDoc.exists) {
+        const dayData = recordDoc.data();
+        
+        // 今日の合計栄養計算（この食事含む）
+        const meals = dayData.meals || [];
+        const totalCalories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+        const totalProtein = meals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+        const totalFat = meals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+        const totalCarbs = meals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+        
+        // 目標値計算（プロフィールベース）
+        const targetCalories = userProfile ? calculateCalorieTarget(userProfile) : 2000;
+        const targetProtein = userProfile ? calculateMacroTargets(userProfile, targetCalories).protein : 120;
+        const targetFat = userProfile ? calculateMacroTargets(userProfile, targetCalories).fat : 67;
+        const targetCarbs = userProfile ? calculateMacroTargets(userProfile, targetCalories).carbs : 250;
+        
+        dailyProgress = {
+          totalCalories: totalCalories + (tempData.analysis.calories || tempData.analysis.totalCalories || 0),
+          totalProtein: totalProtein + (tempData.analysis.protein || tempData.analysis.totalProtein || 0),
+          totalFat: totalFat + (tempData.analysis.fat || tempData.analysis.totalFat || 0),
+          totalCarbs: totalCarbs + (tempData.analysis.carbs || tempData.analysis.totalCarbs || 0),
+          targetCalories,
+          targetProtein,
+          targetFat,
+          targetCarbs,
+          mealCount: meals.length + 1
+        };
+        
+        console.log('📈 今日の栄養進捗計算成功');
+      }
+    } catch (progressError) {
+      console.log('⚠️ 今日の栄養進捗取得失敗（アドバイス生成は継続）:', progressError);
+    }
+    
+    // パーソナルアドバイス生成
+    let aiAdvice = null;
+    try {
+      aiAdvice = await aiService.generateMealAdvice(
+        tempData.analysis,
+        mealType,
+        userId,
+        userProfile,
+        dailyProgress,
+        characterSettings
+      );
+      console.log('✅ パーソナル食事アドバイス生成完了:', aiAdvice);
+    } catch (adviceError) {
+      console.error('❌ パーソナル食事アドバイス生成エラー:', adviceError);
+      // エラーでもFlexメッセージは送信
+      aiAdvice = null;
+    }
+    
+    const flexMessage = createMealFlexMessage(mealTypeJa, tempData.analysis, imageUrl, originalText, aiAdvice);
     
     // 直接保存（画像URLを使用）
     await saveMealDirectly(userId, mealType, tempData.analysis, imageUrl);
