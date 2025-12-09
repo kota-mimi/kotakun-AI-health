@@ -1618,7 +1618,11 @@ ${persona.name}の口調（${persona.tone}）を保ちつつ、自然で人間�
 
 **絶対禁止ワード**：「だが」「しかし」「である」「のである」「おう」「おお」「おい」などの古風・不自然な表現は一切使わない。
 
-**重要：応答の冒頭に「${persona.name}：」「ヘルシーくん：」「ヘルシーくん（鬼モード）：」などの名前やキャラクター名を一切付けずに、直接内容から始めてください。**
+**重要：
+- 応答の冒頭に「${persona.name}：」「ヘルシーくん：」「ヘルシーくん（鬼モード）：」などの名前やキャラクター名を一切付けない
+- ユーザーの質問を繰り返したり、オウム返ししない
+- 「唐揚げのカロリーなに？」→「一般的に100gあたり約290kcalだよ」（質問部分を削除）
+- 直接答えから始めてください**
 ${conversationHistory}
 
 回答:` : 
@@ -1640,7 +1644,11 @@ As ${persona.name}, have a natural conversation:
 
 Maintain ${persona.name}'s tone while being natural and human-like. Don't use emojis. Avoid unnatural interjections like "Oh", "Hey", "Well" at the start of sentences.
 
-**Important: Never start your response with "${persona.name}:", character names, or mode descriptions. Start directly with the content.**${conversationHistory}
+**Important: 
+- Never start your response with "${persona.name}:", character names, or mode descriptions
+- Don't repeat or echo the user's question
+- Example: "What's the calories in fried chicken?" → "Generally about 290kcal per 100g" (remove question part)
+- Start directly with the answer**${conversationHistory}
 
 Response:`;
 
