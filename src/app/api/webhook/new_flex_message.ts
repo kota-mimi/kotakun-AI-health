@@ -152,11 +152,6 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             {
               type: 'box',
               layout: 'vertical',
-              backgroundColor: '#f8f9ff',
-              cornerRadius: '12px',
-              borderWidth: '1px',
-              borderColor: '#e6f0ff',
-              paddingAll: '12px',
               margin: 'md',
               contents: [
                 {
@@ -415,11 +410,6 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
             {
               type: 'box',
               layout: 'vertical',
-              backgroundColor: '#f8f9ff',
-              cornerRadius: '12px',
-              borderWidth: '1px',
-              borderColor: '#e6f0ff',
-              paddingAll: '12px',
               margin: 'md',
               contents: [
                 {
@@ -580,11 +570,6 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
             {
               type: 'box',
               layout: 'vertical',
-              backgroundColor: '#f8f9ff',
-              cornerRadius: '12px',
-              borderWidth: '1px',
-              borderColor: '#e6f0ff',
-              paddingAll: '12px',
               margin: 'md',
               contents: [
                 {
@@ -812,11 +797,6 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
             {
               type: 'box',
               layout: 'vertical',
-              backgroundColor: '#f8f9ff',
-              cornerRadius: '12px',
-              borderWidth: '1px',
-              borderColor: '#e6f0ff',
-              paddingAll: '12px',
               margin: 'md',
               contents: [
                 {
