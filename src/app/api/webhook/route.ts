@@ -500,41 +500,11 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     
     console.log('🤖 通常モード - AI会話で応答');
     
-    // レシピ質問かどうかをチェック
-    console.log('🔍 レシピ判定開始:', text.substring(0, 50));
-    const isRecipe = await aiService.isRecipeQuestion(text);
-    console.log('🍳 レシピ判定結果:', { isRecipe, text });
+    // 全て通常会話として処理（レシピ質問も含む）
+    const characterSettings = await getUserCharacterSettings(userId);
+    console.log('🎭 ユーザーのキャラクター設定:', { userId: userId.substring(0, 8), settings: characterSettings });
     
-    let aiResponse;
-    
-    if (isRecipe) {
-      console.log('🍳 レシピFlexメッセージ生成開始');
-      const recipeResult = await aiService.generateRecipeWithFlex(text, userId);
-      console.log('🍳 レシピ生成完了:', { hasFlexMessage: !!recipeResult.flexMessage });
-      
-      if (recipeResult.flexMessage) {
-        console.log('🍳 レシピFlexメッセージ送信開始');
-        // Flexメッセージと通常テキストを送信
-        await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [
-          recipeResult.flexMessage
-        ]);
-        
-        // 会話履歴を保存
-        await aiService.saveConversation(userId, text, recipeResult.textResponse);
-        // AI応答成功時に使用回数を記録
-        await recordUsage(userId, 'ai');
-        console.log('🍳 レシピFlexメッセージ送信完了');
-        return;
-      } else {
-        aiResponse = recipeResult.textResponse;
-      }
-    } else {
-      // 通常のAI会話（詳細プロンプト・高性能モデル）
-      const characterSettings = await getUserCharacterSettings(userId);
-      console.log('🎭 ユーザーのキャラクター設定:', { userId: userId.substring(0, 8), settings: characterSettings });
-      aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
-    }
+    let aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     
     // 会話履歴を保存
     if (aiResponse) {

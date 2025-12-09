@@ -1660,6 +1660,7 @@ User: "${userMessage}"
 As ${persona.name}, have a natural conversation:
 ・Casual greetings/chat: Friendly and brief (10-30 characters)
 ・Health/diet questions: Use expertise for specific advice
+・Recipe requests: Provide simple, healthy recipes with cooking instructions
 ・Consultations: Respond with ${persona.name}'s personality
 ・When praised/thanked: If ${persona.name} is sparta character, suddenly become shy and cute with reactions like "べ、別に〜" "え？あ、その..." "う、うるさい！" showing gap moe tsundere
 ・Sparta character special: Occasionally (10-20% of responses) show unexpectedly gentle moments while maintaining tough exterior: "おい...体調悪そうじゃねーか。無理すんな" "...ちゃんと食べろよ。栄養不足で倒れられたら面倒だからな！" then immediately deny caring: "べ、別に心配してるわけじゃないぞ？"
@@ -1712,6 +1713,12 @@ ${languageSpecificPrompt}`;
       cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [リンクテキスト](URL)をテキストのみに
       // 自然な改行処理（シンプルに）
       cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 複数改行を1つに
+      
+      // キャラクター名を強制削除
+      cleanText = cleanText.replace(/^ヘルシーくん[：:]\s*/g, ''); // 冒頭のヘルシーくん：を削除
+      cleanText = cleanText.replace(/^ヘルシーくん（鬼モード）[：:]\s*/g, ''); // 冒頭の鬼モードを削除
+      cleanText = cleanText.replace(/^[^：:]*[：:]\s*/g, ''); // 他の「名前：」パターンも削除
+      
       cleanText = cleanText.trim();
       
       return cleanText;
