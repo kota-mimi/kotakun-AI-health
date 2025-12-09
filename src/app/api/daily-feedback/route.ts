@@ -235,10 +235,14 @@ async function generateDailyFeedback(
   // 体重変化の分析（過去3日間の体重を取得して比較）
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
-  // キャラクターのペルソナと言語を取得
+  // キャラクターのペルソナを取得（言語機能は一時無効化）
   const persona = getCharacterPersona(characterSettings);
-  const language = getCharacterLanguage(characterSettings);
-  const languageInstruction = getLanguageInstruction(language);
+  const language = 'ja'; // 常に日本語固定
+  const languageInstruction = ''; // 言語指示無効化
+  
+  // 多言語機能（将来復活予定）
+  // const language = getCharacterLanguage(characterSettings);
+  // const languageInstruction = getLanguageInstruction(language);
   
   // プロンプトを作成
   const prompt = `${languageInstruction}
@@ -286,9 +290,11 @@ ${persona.name}として、経験豊富な管理栄養士の知識を持ちな�
 ${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
 
 【絶対厳守ルール】
-- 親しみやすく、友達のような口調で書く（敬語は使わない）
+- **キャラクター一貫性**: 設定されたキャラクター（${persona.name}）の口調・性格を完全に再現する
+- **口調統一**: 食事記録アドバイスと同じトーン・表現を使用する
+- **励ましパターン**: ${persona.encouragement.join('、')}
+- **警告パターン**: ${persona.warnings.join('、')}
 - 難しい言葉は使わず、分かりやすい表現にする
-- 箇条書きは「・」で始める
 - パーセンテージや達成率などの数字は使わない（「バッチリ」「いい感じ」「もう少し」など感覚的表現を使う）
 - 良かった点は200-300文字でしっかりと詳しく書く
 - 改善点は150-200文字で具体的に書く
