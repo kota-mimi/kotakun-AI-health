@@ -181,7 +181,6 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                   color: '#333333',
                   wrap: true,
                   margin: 'sm',
-                  lineSpacing: 'sm'
                 }
               ]
             }
@@ -445,7 +444,6 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                   color: '#333333',
                   wrap: true,
                   margin: 'sm',
-                  lineSpacing: 'sm'
                 }
               ]
             }
@@ -611,7 +609,6 @@ export function createCalorieAnalysisFlexMessage(analysis: any, originalMealName
                   color: '#333333',
                   wrap: true,
                   margin: 'sm',
-                  lineSpacing: 'sm'
                 }
               ]
             }
@@ -844,7 +841,6 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
                   color: '#333333',
                   wrap: true,
                   margin: 'sm',
-                  lineSpacing: 'sm'
                 }
               ]
             }
