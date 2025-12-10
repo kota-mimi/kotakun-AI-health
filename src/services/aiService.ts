@@ -1841,26 +1841,7 @@ ${languageSpecificPrompt}`;
         'snack': '間食'
       }[mealType] || '食事';
       
-      // ユーザープロフィール情報の整理
-      const profileInfo = userProfile ? `
-        - 年齢: ${userProfile.age || '不明'}歳
-        - 性別: ${userProfile.gender === 'male' ? '男性' : userProfile.gender === 'female' ? '女性' : '不明'}
-        - 身長: ${userProfile.height || '不明'}cm
-        - 体重: ${userProfile.weight || '不明'}kg
-        - 目標体重: ${userProfile.targetWeight || '不明'}kg
-        - 活動レベル: ${userProfile.activityLevel || '普通'}
-        - 健康目標: ${userProfile.primaryGoal || '健康維持'}
-      ` : '- プロフィール情報: 未設定';
-      
-      // 今日の進捗情報
-      const progressInfo = dailyProgress ? `
-        - 本日の摂取カロリー: ${dailyProgress.totalCalories || 0}kcal
-        - 目標カロリー: ${dailyProgress.targetCalories || 2000}kcal
-        - タンパク質: ${dailyProgress.totalProtein || 0}g / 目標: ${dailyProgress.targetProtein || 120}g
-        - 脂質: ${dailyProgress.totalFat || 0}g / 目標: ${dailyProgress.targetFat || 67}g
-        - 炭水化物: ${dailyProgress.totalCarbs || 0}g / 目標: ${dailyProgress.targetCarbs || 250}g
-        - 食事回数: ${dailyProgress.mealCount || 1}回
-      ` : '- 本日の進捗: 未計算';
+      // 食事の詳細情報（プロフィール・進捗情報は使用しない）
       
       // 記録された食事情報
       const mealInfo = mealAnalysis.isMultipleMeals ? 
@@ -1889,7 +1870,7 @@ ${languageReminder}
 
 ${promptTemplate}
 
-## キャラクター設定 / Character Settings
+## キャラクター設定
 キャラクター名: ${persona.name}
 性格: ${persona.personality}
 口調: ${persona.tone}
@@ -1897,46 +1878,38 @@ ${promptTemplate}
 
 **重要**: 
 - 必ずこのキャラクターの口調・性格・言葉遣いで一貫してアドバイスしてください
-- 管理栄養士的な硬い口調は絶対に使わないでください
 - 【禁止】「おっ」「やっと」「はっ」「ほう」「なるほど」「さて」などの不自然な文頭
 - 【禁止】「カツ丼だね！」「納豆だね！」など食事名を繰り返すこと
-- 【禁止】ユーザーの質問をオウム返しすること（例：「唐揚げのカロリーなに？唐揚げは〜」）
+- 【禁止】ユーザーの質問をオウム返しすること
 - 【禁止】応答の冒頭にキャラクター名や質問を付けること
 - 栄養評価や改善点から直接始めてください
-- このキャラクターが普段話すような自然な口調で話してください
-- キャラクターらしい励ましや注意の仕方を参考にしてください
 
 励ましの例: ${persona.encouragement.join('、')}
 注意・警告の例: ${persona.warnings.join('、')}
 
-## ユーザー情報
-${profileInfo}
-
-## 本日の栄養進捗
-${progressInfo}
-
 ## 記録された${mealTimeJa}
-- ${mealInfo}
+- 食事: ${mealInfo}
 - カロリー: ${mealAnalysis.calories || mealAnalysis.totalCalories || 0}kcal
 - タンパク質: ${mealAnalysis.protein || mealAnalysis.totalProtein || 0}g
 - 脂質: ${mealAnalysis.fat || mealAnalysis.totalFat || 0}g
 - 炭水化物: ${mealAnalysis.carbs || mealAnalysis.totalCarbs || 0}g
 
-## アドバイス要件
-1. **専門知識ベース**: 管理栄養士・パーソナルトレーナーレベルの専門知識で厳密評価
-2. **キャラクター一貫性**: 専門的評価をキャラクターの口調・性格で表現
-3. **正直で建設的**: 良い点は褒め、問題点は遠慮なく指摘。甘い評価禁止
-4. **科学的根拠**: PFC比率、カロリー収支、栄養タイミング、目標適合性を厳格評価
-5. **パーソナライゼーション**: ユーザーの目標・体型・進捗に基づく個別指導
+## アドバイス要件（食事内容特化型）
+1. **この食事の栄養バランス**: PFC比率の評価（理想的か偏っているか）
+2. **食材の栄養価**: 使用食材のメリット・デメリットを具体的に指摘
+3. **食事タイミング**: ${mealTimeJa}に食べる食事として適切かを評価
+4. **改善提案**: より健康的な調理法・食べ方・追加食材の提案
+5. **キャラクター一貫性**: 専門的評価をキャラクターの口調で表現
 
-## 専門的評価基準
-- **PFC比率**: タンパク質・脂質・炭水化物の適正バランス評価
-- **カロリー評価**: 目標カロリーに対する過不足の厳密チェック
-- **栄養タイミング**: 食事時間帯に適した栄養構成かの判断
-- **目標整合性**: 減量・増量・維持目標との一致度
-- **微量栄養素**: ビタミン・ミネラル・食物繊維の充足度
+## 評価基準
+- **PFC比率**: この食事のタンパク質・脂質・炭水化物のバランス
+- **食材評価**: 栄養価の高い食材か、添加物・油の使用状況
+- **時間適性**: 朝・昼・夜・間食として適切な内容か
+- **栄養密度**: カロリーに対する栄養価の効率
 
-**重要**: 栄養学・運動学の専門知識で厳格に評価し、問題点は遠慮なく指摘すること
+**禁止事項**:
+- 目標体重、今日の進捗、プロフィール情報への言及は一切禁止
+- この食事についてのみ評価すること
 
 **出力形式**: 1つの段落形式で3〜5行程度の文章（改行なし）
 **口調**: 設定されたキャラクターの口調・性格を完全に再現
@@ -1944,13 +1917,12 @@ ${progressInfo}
 ## 出力例（キャラクター別）
 
 **ヘルシーくん（専門的だけど優しい）の場合**:
-- 本当に良い食事: PFC比率が理想的で、カロリーも目標にぴったり合ってるね！この栄養バランスなら筋肉維持しながら脂肪燃焼できるよ。
-- 問題ある食事: タンパク質は良いけど、炭水化物が不足してて基礎代謝が下がっちゃう可能性があるよ。朝は300-400kcalは必要だから、ご飯150gくらい追加してみよう。
+- 良い食事: "タンパク質30gでバッチリ！筋肉合成に最適な量だね。アボカドの良質な脂質とサーモンのオメガ3で最強の組み合わせ！肌も綺麗になるよ。"
+- 改善が必要: "タンパク質が5gだけ？この食事だと筋肉が分解されちゃうかも。卵1個追加するだけで20g増えるよ！朝の炭水化物は脳のエネルギー源として大切だから、ご飯も少し増やそう。"
 
 **スパルタ（厳しく正直）の場合**:
-- 本当に良い食事: すげーじゃねーか！PFC比率も完璧、カロリーも適正だ。この調子で続けろ、絶対結果出るからな！
-- まあまあ良い食事: 悪くない結果だが、調子に乗るなよ？もうちょいタンパク質増やせるはずだ。
-- 問題ある食事: 100kcalだけで朝食のつもりか？基礎代謝1500kcalなのに300kcal以下って、体が飢餓モードに入って逆に太るぞ。ちゃんと炭水化物も摂れ！
+- 良い食事: "これは文句なしの食事だ！PFC比率も完璧、食材選択も最高レベル。この調子で続けろ、絶対結果出るからな！"
+- 改善が必要: "揚げ物だけで夜食とか正気か？酸化した油で体に負担かけてるぞ。同じ鶏肉なら照り焼きにすれば脂質半分でタンパク質は同じだ。頭使えよ！"
       `;
       
       const result = await model.generateContent(prompt);
@@ -1984,16 +1956,26 @@ ${progressInfo}
     } catch (error) {
       console.error('❌ パーソナル食事アドバイス生成エラー:', error);
       
-      // フォールバック: 基本的なアドバイス（段落形式）
-      let fallbackAdvice = '栄養バランスを意識した素晴らしい食事ですね！適量の摂取で健康的な食生活を継続中です。';
+      // フォールバック: 食事内容特化型アドバイス
+      const calories = mealAnalysis.calories || mealAnalysis.totalCalories || 0;
+      const protein = mealAnalysis.protein || mealAnalysis.totalProtein || 0;
+      const carbs = mealAnalysis.carbs || mealAnalysis.totalCarbs || 0;
       
-      // 食事タイプに応じたカスタマイズ
+      let fallbackAdvice = '';
+      
+      // 食事タイプと栄養内容に基づいたフォールバック
       if (mealType === 'breakfast') {
-        fallbackAdvice += '朝食でエネルギーチャージ完了！今日も1日頑張りましょう。';
+        fallbackAdvice = carbs > 30 ? 
+          '朝の炭水化物は脳のエネルギー源として完璧！今日1日のパフォーマンスが上がるね。' :
+          '朝食はもう少し炭水化物が欲しいかも。脳のエネルギー源としてご飯やパンを追加してみよう。';
       } else if (mealType === 'dinner') {
-        fallbackAdvice += '夜は消化に良い食材で体をいたわりましょう。質の良い睡眠にもつながります。';
+        fallbackAdvice = calories > 600 ? 
+          '夜にこの量は消化に時間がかかるかも。野菜中心の軽めの食事にすると睡眠の質が上がるよ。' :
+          '夜は適量で消化に優しい食事だね。タンパク質もしっかり摂れていて、筋肉の回復にも良いよ。';
       } else {
-        fallbackAdvice += '次回も野菜と水分補給を忘れずに、継続的な記録が健康への第一歩です。';
+        fallbackAdvice = protein > 15 ? 
+          'タンパク質がしっかり摂れていて良い感じ！筋肉の維持・合成に必要な量だね。' :
+          'タンパク質がもう少し欲しいかも。卵、豆腐、魚、肉類などを追加するとバランスが良くなるよ。';
       }
       
       return fallbackAdvice;
