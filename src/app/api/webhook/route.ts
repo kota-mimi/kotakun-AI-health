@@ -351,10 +351,71 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         return;
       }
       
-      // まず体重記録の判定を行う
-      console.log('📊 統一モード - 体重記録判定開始:', text);
-      const weightJudgment = await aiService.analyzeWeightRecordIntent(text);
-      console.log('📊 統一モード - 体重判定結果:', JSON.stringify(weightJudgment, null, 2));
+      // 体重記録のパターンマッチング判定（AI呼び出しを削除）
+      console.log('📊 統一モード - 体重記録パターン判定開始:', text);
+
+      function analyzeWeightPattern(text: string) {
+        try {
+          // 疑問符チェック（質問・相談を除外）
+          const hasQuestionMark = /[？?]/.test(text);
+          const hasQuestionWords = /(どう|何|なに|いくつ|どのくらい|どれくらい)/.test(text);
+          
+          if (hasQuestionMark || hasQuestionWords) {
+            console.log('❌ 体重判定 - 質問・相談として除外:', text);
+            return { isWeightRecord: false, reason: '質問・相談' };
+          }
+          
+          // 体重数値の抽出（優先度順）
+          const patterns = [
+            // 1. 明確な単位付き
+            /(\d+(?:\.\d+)?)\s*(kg|ｋｇ|キロ|キログラム)/i,
+            // 2. 体重文脈での数値のみ
+            /体重.*?(\d+(?:\.\d+)?)/i,
+            // 3. 数値のみ（体重関連キーワードが必要）
+            /^(\d+(?:\.\d+)?)$/
+          ];
+          
+          for (let i = 0; i < patterns.length; i++) {
+            const match = text.match(patterns[i]);
+            if (match) {
+              const weight = parseFloat(match[1]);
+              
+              // 妥当性チェック（極端な値は記録するが警告）
+              if (weight < 20 || weight > 300) {
+                console.log('⚠️ 体重値が極端です:', weight);
+                // でも記録は続行（ユーザーの意図を尊重）
+              }
+              
+              // パターン3の場合は体重キーワードが必要
+              if (i === 2) {
+                const hasWeightContext = /体重|weight/i.test(text);
+                if (!hasWeightContext) {
+                  console.log('❌ 数値のみ - 体重文脈なし:', text);
+                  continue;
+                }
+              }
+              
+              console.log('✅ 体重記録パターンマッチ成功:', { weight, pattern: i + 1 });
+              return {
+                isWeightRecord: true,
+                weight: weight,
+                confidence: i === 0 ? 0.95 : (i === 1 ? 0.9 : 0.8)
+              };
+            }
+          }
+          
+          console.log('❌ 体重パターンマッチ失敗:', text);
+          return { isWeightRecord: false, reason: 'パターン不一致' };
+          
+        } catch (error) {
+          console.error('体重パターン判定エラー:', error);
+          return { isWeightRecord: false, reason: 'エラー' };
+        }
+      }
+
+      const weightJudgment = analyzeWeightPattern(text);
+      console.log('📊 統一モード - 体重パターン判定結果:', JSON.stringify(weightJudgment, null, 2));
+
       if (weightJudgment.isWeightRecord) {
         await handleWeightRecord(userId, weightJudgment, replyToken);
         // 記録成功時に使用回数を記録
