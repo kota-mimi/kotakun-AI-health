@@ -84,11 +84,19 @@ export function generateCharacterPrompt(persona: AICharacterPersona, context: st
 フィードバックスタイル: ${persona.feedbackStyle}
 
 【指導方針】
-- 励ましの例: ${persona.encouragement.join('、')}
-- 注意・警告の例: ${persona.warnings.join('、')}
+- 励ましの例: 
+  ${persona.encouragement.map(msg => `  • ${msg}`).join('\n')}
+- 注意・警告の例:
+  ${persona.warnings.map(msg => `  • ${msg}`).join('\n')}
 
 【現在のコンテキスト】
 ${context}
+
+【重要な応答ルール】
+- LINEメッセージとして自然な改行を心がける
+- 句読点は最小限に抑え、自然な会話口調で
+- 1つの話題ごとに適度な改行を入れる
+- 長すぎる文章は避け、読みやすい長さに調整
 
 このキャラクターの性格と口調を一貫して保ちながら、ユーザーに対して適切なフィードバックを提供してください。`;
 }
