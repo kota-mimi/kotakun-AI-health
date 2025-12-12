@@ -299,10 +299,10 @@ function DashboardContent({ onError }: { onError: () => void }) {
       console.log('📊 Exercise data:', exerciseManager?.exerciseData);
       console.log('📊 Weight data:', weightManager?.weightData);
       
-      // URLパラメータとしてデータを渡して共有ページに遷移
+      // URLパラメータとしてデータを渡してVercel共有ページに遷移
       const dataParam = encodeURIComponent(JSON.stringify(dailyLogData));
       console.log('📊 URL param length:', dataParam.length);
-      window.location.href = `/share?data=${dataParam}`;
+      window.location.href = `https://health-share-ten.vercel.app?data=${dataParam}`;
       
     } catch (error) {
       console.error('❌ Share navigation error:', error);
