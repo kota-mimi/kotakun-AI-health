@@ -160,18 +160,14 @@ export function MealSummaryCard({
 
 						return (
 							<div key={mealType} className="space-y-1.5">
-								{/* 食事タイプヘッダー - クリック可能 */}
+								{/* 食事タイプヘッダー - クリック可能テキストのみ */}
 								<div
 									onClick={() => onAddMeal(mealType)}
-									className="cursor-pointer"
+									className="cursor-pointer py-2"
 								>
-									<div className="flex items-center justify-between w-full bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl p-2 hover:from-slate-200 hover:via-slate-100 hover:to-slate-200 transition-all duration-300 border border-slate-200/50 shadow-sm hover:shadow-md">
-										<div className="flex items-center justify-between w-full">
-											<h4 className="text-base font-semibold text-slate-800">
-												{mealTimeLabels[mealType]}
-											</h4>
-										</div>
-									</div>
+									<h4 className="text-base font-semibold text-slate-800 hover:text-slate-600 transition-colors">
+										{mealTimeLabels[mealType]}
+									</h4>
 								</div>
 
 								{/* 食事リスト */}
