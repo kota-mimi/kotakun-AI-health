@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LINEで簡単ダイエット | AI食事記録ヘルシーくん - 無料健康管理アプリ",
+  title: "ヘルシーくん",
   description: "LINEで写真を送るだけでAIが栄養計算！面倒な入力なしで続けられるダイエットアプリ。体重・食事・運動を簡単記録。完全無料で今すぐ始められます。",
   keywords: ["LINE ダイエット", "AI 食事記録", "無料 健康管理アプリ", "写真 栄養計算", "簡単 体重管理", "ダイエット アプリ おすすめ", "食事記録 アプリ", "LINE bot 健康", "AI栄養士", "カロリー計算 自動"],
   openGraph: {
