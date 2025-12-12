@@ -6,9 +6,11 @@ import { DailyLogCard } from '@/components/share/DailyLogCard';
 import { DailyLogData, ThemeColor, LayoutConfig, FontStyleId } from '@/types/dailyLog';
 import { RefreshCw, Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { useAuth } from '@/hooks/useAuth';
 
-const MOCK_DATA: DailyLogData = {
-  date: new Date(),
+// スクリーンショットのデータに基づいたリアルなデフォルトデータ
+const REALISTIC_DEFAULT_DATA: DailyLogData = {
+  date: new Date(2024, 11, 13), // DEC 13に設定
   weight: {
     current: 72.4,
     diff: -0.4,
@@ -111,8 +113,9 @@ const UI_TEXT = {
 function SharePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   
-  // URLパラメータから記録データを取得
+  // URLパラメータから記録データを取得、または実際のFirebaseデータを使用
   const [data, setData] = useState<DailyLogData>(() => {
     try {
       const dataParam = searchParams.get('data');
@@ -122,7 +125,7 @@ function SharePageContent() {
         const parsed = JSON.parse(decodeURIComponent(dataParam));
         console.log('🔍 Share page - Parsed data:', parsed);
         
-        const processedData = {
+        const processedData: DailyLogData = {
           ...parsed,
           date: new Date(parsed.date),
           pfc: {
@@ -140,9 +143,9 @@ function SharePageContent() {
       console.error('❌ Failed to parse data from URL:', error);
     }
     
-    // デフォルトデータ
+    // デフォルトデータ（スクリーンショットに基づくリアルデータ）
     console.warn('⚠️ Share page - Using default data (no URL params found)');
-    return MOCK_DATA;
+    return REALISTIC_DEFAULT_DATA;
   });
 
   const [theme, setTheme] = useState<ThemeColor>(ThemeColor.EMERALD);
@@ -165,6 +168,11 @@ function SharePageContent() {
   // Touch state for pinch zoom
   const touchStartDist = useRef<number | null>(null);
   const startScale = useRef<number>(1);
+
+  // TODO: 後でFirebaseからの実際のデータ取得を実装
+  // useEffect(() => {
+  //   // 実際のデータ取得ロジック
+  // }, [user, searchParams]);
 
   // Simulate AI data generation
   const handleRegenerate = () => {
