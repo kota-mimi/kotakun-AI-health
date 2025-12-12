@@ -87,7 +87,7 @@ export function MyProfilePage({
     return (
       <div className="space-y-6 animate-pulse">
         {/* プロフィールカードスケルトン */}
-        <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
             <div className="flex-1">
@@ -457,7 +457,7 @@ export function MyProfilePage({
       
       {/* メニューカード - iOS風 */}
       <div className="mx-4">
-        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               return (
@@ -487,7 +487,7 @@ export function MyProfilePage({
     <div key={`${refreshKey}-${latestProfile?.changeDate || 'default'}`} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - iOS風アバター付き */}
       <div className="px-4">
-        <Card className={`relative bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
+        <Card className={`relative bg-white rounded-xl shadow-sm border border-gray-200 p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
@@ -515,14 +515,14 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">体重</div>
                 <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
               </button>
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">目標</div>
                 <div className="font-bold text-slate-900 text-sm">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
@@ -533,28 +533,28 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">カロリー</div>
                 <div className="font-bold text-slate-900 text-sm">{finalCalories}</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">P</div>
                 <div className="font-bold text-red-600 text-sm">{finalProtein}g</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">F</div>
                 <div className="font-bold text-orange-600 text-sm">{finalFat}g</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-white/60 rounded-lg hover:bg-white/80 transition-colors"
+                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
               >
                 <div className="text-xs text-slate-500">C</div>
                 <div className="font-bold text-green-600 text-sm">{finalCarbs}g</div>
