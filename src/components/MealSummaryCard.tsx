@@ -159,11 +159,11 @@ export function MealSummaryCard({
 						);
 
 						return (
-							<div key={mealType} className="space-y-1.5">
+							<div key={mealType} className="space-y-0">
 								{/* 食事タイプヘッダー - クリック可能テキストのみ */}
 								<div
 									onClick={() => onAddMeal(mealType)}
-									className="cursor-pointer py-2"
+									className="cursor-pointer pb-1"
 								>
 									<h4 className="text-base font-semibold text-slate-800 hover:text-slate-600 transition-colors">
 										{mealTimeLabels[mealType]}
