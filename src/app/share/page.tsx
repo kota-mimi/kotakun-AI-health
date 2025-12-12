@@ -115,38 +115,8 @@ function SharePageContent() {
   const router = useRouter();
   const { user } = useAuth();
   
-  // URLパラメータから記録データを取得、または実際のFirebaseデータを使用
-  const [data, setData] = useState<DailyLogData>(() => {
-    try {
-      const dataParam = searchParams.get('data');
-      console.log('🔍 Share page - URL param received:', dataParam ? 'YES' : 'NO');
-      
-      if (dataParam) {
-        const parsed = JSON.parse(decodeURIComponent(dataParam));
-        console.log('🔍 Share page - Parsed data:', parsed);
-        
-        const processedData: DailyLogData = {
-          ...parsed,
-          date: new Date(parsed.date),
-          pfc: {
-            p: { current: parsed.pfc.p.current, target: parsed.pfc.p.target, unit: 'g' },
-            f: { current: parsed.pfc.f.current, target: parsed.pfc.f.target, unit: 'g' },
-            c: { current: parsed.pfc.c.current, target: parsed.pfc.c.target, unit: 'g' }
-          },
-          achievementRate: parsed.achievementRate || 88
-        };
-        
-        console.log('🔍 Share page - Final data:', processedData);
-        return processedData;
-      }
-    } catch (error) {
-      console.error('❌ Failed to parse data from URL:', error);
-    }
-    
-    // デフォルトデータ（スクリーンショットに基づくリアルデータ）
-    console.warn('⚠️ Share page - Using default data (no URL params found)');
-    return REALISTIC_DEFAULT_DATA;
-  });
+  // デフォルトデータで初期化（SSR対応）
+  const [data, setData] = useState<DailyLogData>(REALISTIC_DEFAULT_DATA);
 
   const [theme, setTheme] = useState<ThemeColor>(ThemeColor.EMERALD);
   const [bgIndex, setBgIndex] = useState(0);
@@ -169,10 +139,37 @@ function SharePageContent() {
   const touchStartDist = useRef<number | null>(null);
   const startScale = useRef<number>(1);
 
-  // TODO: 後でFirebaseからの実際のデータ取得を実装
-  // useEffect(() => {
-  //   // 実際のデータ取得ロジック
-  // }, [user, searchParams]);
+  // URLパラメータの処理（クライアントサイド）
+  useEffect(() => {
+    try {
+      const dataParam = searchParams.get('data');
+      console.log('🔍 Share page - URL param received:', dataParam ? 'YES' : 'NO');
+      
+      if (dataParam) {
+        const parsed = JSON.parse(decodeURIComponent(dataParam));
+        console.log('🔍 Share page - Parsed data:', parsed);
+        
+        const processedData: DailyLogData = {
+          ...parsed,
+          date: new Date(parsed.date),
+          pfc: {
+            p: { current: parsed.pfc.p.current, target: parsed.pfc.p.target, unit: 'g' },
+            f: { current: parsed.pfc.f.current, target: parsed.pfc.f.target, unit: 'g' },
+            c: { current: parsed.pfc.c.current, target: parsed.pfc.c.target, unit: 'g' }
+          },
+          achievementRate: parsed.achievementRate || 88
+        };
+        
+        console.log('🔍 Share page - Setting processed data:', processedData);
+        setData(processedData);
+      } else {
+        console.log('🔍 Share page - No URL params, using default realistic data');
+      }
+    } catch (error) {
+      console.error('❌ Failed to parse data from URL:', error);
+      console.log('🔍 Share page - Fallback to default realistic data');
+    }
+  }, [searchParams]);
 
   // Simulate AI data generation
   const handleRegenerate = () => {
@@ -534,7 +531,7 @@ function SharePageContent() {
               onClick={handleThemeChange}
               className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg border border-zinc-700 transition-all duration-200"
             >
-              <Palette size={16} className={theme.split(' ')[0]} />
+              <Palette size={16} className="text-emerald-400" />
               <span className="font-mono text-xs">{ui.accentColor}</span>
             </button>
 

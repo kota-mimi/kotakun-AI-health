@@ -142,7 +142,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
     return <Minus size={14} />;
   };
 
-  const diffColor = data.weight.diff < 0 ? theme.split(' ')[0] : (data.weight.diff > 0 ? 'text-rose-400' : styles.textSecondary);
+  const diffColor = data.weight.diff < 0 ? 'text-emerald-400' : (data.weight.diff > 0 ? 'text-rose-400' : styles.textSecondary);
 
   // Helper to determine text color for numbers
   const numColorClass = numberColor !== 'auto' ? numberColor : styles.textPrimary;
@@ -167,7 +167,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
       ) : (
         <>
           <div className={`absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] ${isDarkMode ? 'from-zinc-800/20' : 'from-zinc-200/40'} via-transparent to-transparent z-0 pointer-events-none`} />
-          <div className={`absolute top-0 right-0 w-64 h-64 opacity-5 blur-[100px] rounded-full pointer-events-none ${theme.replace('text-', 'bg-').split(' ')[0]}`} />
+          <div className={`absolute top-0 right-0 w-64 h-64 opacity-5 blur-[100px] rounded-full pointer-events-none bg-emerald-500`} />
         </>
       )}
 
