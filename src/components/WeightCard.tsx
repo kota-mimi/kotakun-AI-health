@@ -73,7 +73,7 @@ export function WeightCard({
 		: 0;
 
 	return (
-		<Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 overflow-hidden">
+		<Card className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
 			<div className="p-2">
 				<div className="grid grid-cols-3 gap-1.5">
 					{/* 現在の体重 */}
