@@ -121,13 +121,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
       </div>
 
       {/* コンテンツエリア */}
-      <div className="relative p-3 pt-12">
-        {/* タイトル - 左上にコンパクト */}
-        <div className="absolute top-3 left-3">
-          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
-            {currentView === 'intake' ? '摂取カロリー' : '消費カロリー'}
-          </span>
-        </div>
+      <div className="p-3 pt-3">
         
         {currentView === 'intake' ? (
           <div className="space-y-4">
