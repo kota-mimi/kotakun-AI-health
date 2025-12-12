@@ -257,6 +257,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー
   const handleShareRecord = async () => {
     try {
+      console.log('📤 Share button clicked!');
+      console.log('Selected date:', navigation?.selectedDate);
+      console.log('Meal data:', mealManager?.mealData);
+      console.log('Exercise data:', exerciseManager?.exerciseData);
+      console.log('Weight data:', weightManager?.weightData);
+      
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
@@ -264,17 +270,20 @@ function DashboardContent({ onError }: { onError: () => void }) {
         weightManager?.weightData || {}
       );
       
+      console.log('📊 Record data formatted:', recordData);
+      
       const result = await shareRecord.shareRecord(recordData);
       
       if (result.success) {
-        console.log('Share successful:', result.method);
-        // 必要に応じてトースト通知等
+        console.log('✅ Share successful:', result.method);
+        alert(`共有成功！方法: ${result.method}`);
       } else {
-        console.error('Share failed:', result.error);
-        // エラー通知
+        console.error('❌ Share failed:', result.error);
+        alert(`共有失敗: ${result.error}`);
       }
     } catch (error) {
-      console.error('Share error:', error);
+      console.error('❌ Share error:', error);
+      alert(`エラー: ${error.message}`);
     }
   };
 
