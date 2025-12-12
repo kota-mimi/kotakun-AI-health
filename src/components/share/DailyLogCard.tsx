@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { DailyLogData, ThemeColor, LayoutConfig } from '@/types/dailyLog';
+import { DailyLogData, ThemeColor, LayoutConfig, FontStyleId } from '@/types/dailyLog';
 import { StatBar } from './StatBar';
 import { TrendingDown, TrendingUp, Minus, Lock } from 'lucide-react';
 import Draggable from 'react-draggable';
@@ -19,6 +19,8 @@ interface DailyLogCardProps {
   onLayoutChange?: (x: number, y: number) => void;
   isEditing?: boolean;
   globalScale?: number;
+  fontStyle?: FontStyleId;
+  numberColor?: string;
 }
 
 const TEXT = {
@@ -68,10 +70,37 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
   layoutConfig = { x: 0, y: 0 },
   onLayoutChange,
   isEditing = false,
-  globalScale = 1
+  globalScale = 1,
+  fontStyle = 'standard',
+  numberColor = 'auto'
 }) => {
   const t = isJapanese ? TEXT.ja : TEXT.en;
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Font class switching
+  const getFontClasses = () => {
+    switch (fontStyle) {
+      case 'sketch': 
+        return { label: 'font-hand font-bold tracking-[0.1em]', val: 'font-hand' };
+      case 'marker': 
+        return { label: 'font-marker font-bold tracking-[0.05em]', val: 'font-marker' };
+      case 'pen': 
+        return { label: 'font-pen font-bold tracking-[0.05em]', val: 'font-pen' };
+      case 'novel': 
+        return { label: 'font-serif font-bold tracking-[0.2em]', val: 'font-serif' };
+      case 'pixel': 
+        return { label: 'font-pixel tracking-[0.1em]', val: 'font-pixel' };
+      case 'cute': 
+        return { label: 'font-cute tracking-[0.05em]', val: 'font-cute' };
+      case 'elegant': 
+        return { label: 'font-elegant font-bold tracking-[0.15em]', val: 'font-elegant' };
+      case 'standard':
+      default: 
+        return { label: 'font-sans font-bold tracking-[0.2em]', val: 'font-mono' };
+    }
+  };
+  
+  const fonts = getFontClasses();
 
   // Define styles based on mode (if no custom image)
   const effectiveIsDarkMode = customImage ? true : isDarkMode;
@@ -115,6 +144,9 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
 
   const diffColor = data.weight.diff < 0 ? theme.split(' ')[0] : (data.weight.diff > 0 ? 'text-rose-400' : styles.textSecondary);
 
+  // Helper to determine text color for numbers
+  const numColorClass = numberColor !== 'auto' ? numberColor : styles.textPrimary;
+
   return (
     <div 
       id={id}
@@ -154,14 +186,14 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
              transform: `scale(${globalScale})`
           }}
         >
-          {/* Inner Flex Container to maintain layout structure */}
+          {/* Inner Flex Container */}
           <div className="flex flex-col h-full pointer-events-none">
             
             {/* Header */}
             <header className={`flex justify-between items-start mb-8 border-b ${styles.border} pb-4`}>
               <div className="flex flex-col">
-                <span className={`text-[10px] tracking-[0.3em] font-bold uppercase mb-1 ${styles.textSecondary}`}>{t.date}</span>
-                <h1 className={`text-3xl font-mono font-bold tracking-tight ${styles.textPrimary}`}>{formatDate(data.date)}</h1>
+                <span className={`text-[10px] uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.date}</span>
+                <h1 className={`text-3xl ${fonts.val} font-bold tracking-tight ${numColorClass}`}>{formatDate(data.date)}</h1>
               </div>
             </header>
 
@@ -170,29 +202,29 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
               {/* Weight */}
               <div className="flex flex-col">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] tracking-[0.2em] font-bold uppercase ${styles.textSecondary}`}>{t.weight}</span>
+                    <span className={`text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.weight}</span>
                   </div>
                   
                   {hideWeight ? (
                     <div className="flex items-baseline gap-1">
-                      <div className={`text-6xl font-mono font-bold tracking-tighter flex items-center h-[60px] ${styles.textTertiary}`}>
+                      <div className={`text-6xl ${fonts.val} font-bold tracking-tighter flex items-center h-[60px] ${styles.textTertiary}`}>
                         <span className="text-4xl">●●●</span>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-baseline gap-1">
-                      <span className={`text-6xl font-mono font-bold tracking-tighter ${styles.textPrimary}`}>{data.weight.current}</span>
-                      <span className={`text-sm font-bold ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
+                      <span className={`text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.weight.current}</span>
+                      <span className={`text-sm font-bold ${fonts.val} ${effectiveIsDarkMode ? 'text-white/60' : 'text-zinc-500'}`}>KG</span>
                     </div>
                   )}
                   
                   {hideWeight ? (
-                    <div className={`flex items-center gap-1 mt-1 text-xs font-mono ${styles.textMuted}`}>
+                    <div className={`flex items-center gap-1 mt-1 text-xs ${fonts.val} ${styles.textMuted}`}>
                       <Lock size={12} />
                       <span>PRIVATE</span>
                     </div>
                   ) : (
-                    <div className={`flex items-center gap-1 mt-1 text-sm font-mono ${diffColor}`}>
+                    <div className={`flex items-center gap-1 mt-1 text-sm ${fonts.val} ${diffColor}`}>
                       {getWeightDiffIcon(data.weight.diff)}
                       <span>{Math.abs(data.weight.diff)} kg</span>
                     </div>
@@ -202,12 +234,12 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
               {/* Calories */}
               <div className="flex flex-col items-end">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] tracking-[0.2em] font-bold uppercase ${styles.textSecondary}`}>{t.intake}</span>
+                    <span className={`text-[10px] uppercase ${fonts.label} ${styles.textSecondary}`}>{t.intake}</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-6xl font-mono font-bold tracking-tighter ${styles.textPrimary}`}>{data.calories.current}</span>
+                    <span className={`text-6xl ${fonts.val} font-bold tracking-tighter ${numColorClass}`}>{data.calories.current}</span>
                   </div>
-                  <div className={`flex items-center gap-1 mt-1 text-sm font-mono ${styles.textSecondary}`}>
+                  <div className={`flex items-center gap-1 mt-1 text-sm ${fonts.val} ${styles.textSecondary}`}>
                     <span>/ {data.calories.target} KCAL</span>
                   </div>
                 </div>
@@ -216,7 +248,7 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
             {/* PFC Visualizer */}
             <div className="mb-8">
                 <div className="flex justify-between items-end mb-4">
-                  <span className={`text-[10px] tracking-[0.2em] font-bold uppercase ${styles.textMuted}`}>{t.macroTitle}</span>
+                  <span className={`text-[10px] uppercase ${fonts.label} ${styles.textMuted}`}>{t.macroTitle}</span>
                 </div>
                 <div className="mt-2">
                   <StatBar 
@@ -226,6 +258,8 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                     unit="g" 
                     colorClass="text-red-500" 
                     isDarkMode={effectiveIsDarkMode}
+                    fontStyle={fontStyle}
+                    numberColor={numberColor}
                   />
                   <div className="h-4" />
                   <StatBar 
@@ -235,6 +269,8 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                     unit="g" 
                     colorClass="text-yellow-400" 
                     isDarkMode={effectiveIsDarkMode}
+                    fontStyle={fontStyle}
+                    numberColor={numberColor}
                   />
                   <div className="h-4" />
                   <StatBar 
@@ -244,34 +280,36 @@ export const DailyLogCard: React.FC<DailyLogCardProps> = ({
                     unit="g" 
                     colorClass="text-green-500" 
                     isDarkMode={effectiveIsDarkMode}
+                    fontStyle={fontStyle}
+                    numberColor={numberColor}
                   />
                 </div>
               </div>
 
-            {/* Bottom Section: Exercise Only (2 Columns) */}
+            {/* Bottom Section: Exercise Only */}
             <div>
                 <div className="flex items-start pt-2">
                   {/* Time */}
                   <div className="flex-1 flex flex-col pr-6 border-r border-dashed border-zinc-700/50">
-                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${styles.textSecondary}`}>{t.minutes}</div>
-                      <div className={`text-5xl font-mono font-bold leading-none ${styles.textPrimary}`}>{data.exercise.minutes}</div>
+                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.minutes}</div>
+                      <div className={`text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.minutes}</div>
                   </div>
 
                   {/* Burned */}
                   <div className="flex-1 flex flex-col pl-8">
-                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${styles.textSecondary}`}>{t.burned}</div>
-                      <div className={`text-5xl font-mono font-bold leading-none ${styles.textPrimary}`}>{data.exercise.caloriesBurned}</div>
+                      <div className={`text-[10px] tracking-wider uppercase mb-1 ${fonts.label} ${styles.textSecondary}`}>{t.burned}</div>
+                      <div className={`text-5xl ${fonts.val} font-bold leading-none ${numColorClass}`}>{data.exercise.caloriesBurned}</div>
                   </div>
                 </div>
               </div>
 
-            {/* Footer - Pushed to bottom */}
+            {/* Footer */}
             <footer className={`mt-auto pt-4 border-t ${styles.border} flex justify-between items-center opacity-50`}>
               <div className={`text-[9px] uppercase tracking-widest flex items-center gap-1.5 ${styles.footer}`}>
                 <div className={`w-1 h-1 rounded-full ${effectiveIsDarkMode ? 'bg-white/60' : 'bg-zinc-400'}`} />
                 {t.hidden}
               </div>
-              <div className={`text-[9px] font-mono flex items-center gap-1.5 ${styles.footer}`}>
+              <div className={`text-[9px] ${fonts.val} flex items-center gap-1.5 ${styles.footer}`}>
                 {t.powered}
               </div>
             </footer>
