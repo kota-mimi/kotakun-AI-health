@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     // AI解析実行
     const aiService = new AIHealthService();
-    const analysis = await aiService.analyzeMealFromImage(buffer);
+    const analysis = await aiService.analyzeMealFromImage(buffer, userId);
 
     return NextResponse.json({
       success: true,

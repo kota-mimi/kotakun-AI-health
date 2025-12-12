@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // AI解析実行
     const aiService = new AIHealthService();
-    const analysis = await aiService.analyzeMealFromText(text);
+    const analysis = await aiService.analyzeMealFromText(text, userId);
 
     return NextResponse.json({
       success: true,

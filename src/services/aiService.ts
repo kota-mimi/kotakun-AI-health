@@ -669,11 +669,43 @@ class AIHealthService {
   }
 
   // テキストから食事内容を分析
-  async analyzeMealFromText(mealText: string) {
+  async analyzeMealFromText(mealText: string, userId?: string) {
     try {
+      // ユーザーのキャラクター設定を取得
+      let characterSettings = null;
+      if (userId) {
+        try {
+          const db = admin.firestore();
+          const profileRef = db.collection(`users/${userId}/profile`).orderBy('createdAt', 'desc').limit(1);
+          const profileSnap = await profileRef.get();
+          if (!profileSnap.empty) {
+            characterSettings = profileSnap.docs[0].data()?.aiCharacter;
+          }
+        } catch (error) {
+          console.warn('キャラクター設定取得エラー:', error);
+        }
+      }
+
+      const persona = getCharacterPersona(characterSettings);
+      const language = getCharacterLanguage(characterSettings);
+      const languageInstruction = getLanguageInstruction(language);
+
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `
+      const prompt = `${languageInstruction}
+
+あなたは「${persona.name}」として振る舞ってください。
+
+【キャラクター設定】
+性格: ${persona.personality}
+口調: ${persona.tone}
+
+【重要なLINE応答ルール】
+- nutritionAdviceは1-2行の短いメッセージ
+- 改行を使って読みやすく
+- 句読点は最小限
+- キャラクターの口調を反映
+
 食事内容のテキスト「${mealText}」を分析して、以下の形式のJSONで返してください。
 
 // 多言語対応指示（一時無効化 - 将来復活予定）
@@ -720,7 +752,8 @@ class AIHealthService {
   "calories": 推定カロリー数値（整数）,
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
-  "fat": 脂質のグラム数（小数点第1位まで）
+  "fat": 脂質のグラム数（小数点第1位まで）,
+  "nutritionAdvice": "キャラクターの口調で1-2行の短いアドバイス（改行含む）"
 }
 
 **重要：材料列挙は一つの料理として認識**
@@ -788,11 +821,43 @@ class AIHealthService {
   }
 
   // 画像から食事内容を分析
-  async analyzeMealFromImage(imageBuffer: Buffer) {
+  async analyzeMealFromImage(imageBuffer: Buffer, userId?: string) {
     try {
+      // ユーザーのキャラクター設定を取得
+      let characterSettings = null;
+      if (userId) {
+        try {
+          const db = admin.firestore();
+          const profileRef = db.collection(`users/${userId}/profile`).orderBy('createdAt', 'desc').limit(1);
+          const profileSnap = await profileRef.get();
+          if (!profileSnap.empty) {
+            characterSettings = profileSnap.docs[0].data()?.aiCharacter;
+          }
+        } catch (error) {
+          console.warn('キャラクター設定取得エラー:', error);
+        }
+      }
+
+      const persona = getCharacterPersona(characterSettings);
+      const language = getCharacterLanguage(characterSettings);
+      const languageInstruction = getLanguageInstruction(language);
+
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `
+      const prompt = `${languageInstruction}
+
+あなたは「${persona.name}」として振る舞ってください。
+
+【キャラクター設定】
+性格: ${persona.personality}
+口調: ${persona.tone}
+
+【重要なLINE応答ルール】
+- nutritionAdviceは1-2行の短いメッセージ
+- 改行を使って読みやすく
+- 句読点は最小限
+- キャラクターの口調を反映
+
 この画像を分析してください。まず、この画像が食事・料理・食べ物の写真かどうかを判定してください。
 
 **重要**: 料理名・食品名は、その料理の一般的な言語で出力してください（和食→日本語、洋食→英語、韓国料理→韓国語、中華料理→中国語など）。適切な言語がない場合は英語を使用してください。
@@ -837,7 +902,8 @@ class AIHealthService {
   "calories": 推定カロリー数値（整数）,
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
-  "fat": 脂質のグラム数（小数点第1位まで）
+  "fat": 脂質のグラム数（小数点第1位まで）,
+  "nutritionAdvice": "キャラクターの口調で1-2行の短いアドバイス（改行含む）"
 }
 
 注意：
