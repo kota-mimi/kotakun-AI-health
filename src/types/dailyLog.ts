@@ -19,7 +19,7 @@ export interface DailyLogData {
   };
 }
 
-export type ThemeColor = string;
+export type ThemeColor = 'text-emerald-500' | 'text-cyan-500' | 'text-blue-500' | 'text-indigo-500' | 'text-purple-500' | 'text-pink-500' | string;
 
 export interface LayoutConfig {
   x: number;

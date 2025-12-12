@@ -254,12 +254,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
     delta: 50, // 50px以上のスワイプで発動
   });
 
-  // 共有機能ハンドラー（シンプルテスト版）
-  const handleShareRecord = async () => {
+  // 共有機能ハンドラー - 共有ページに遷移
+  const handleShareRecord = () => {
     try {
-      console.log('📤 Share button clicked - testing!');
-      alert('共有ボタンが動作しています！');
+      console.log('📤 Share button clicked - navigating to share page');
       
+      // 記録データを整形（目標値も含める）
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
@@ -267,19 +267,40 @@ function DashboardContent({ onError }: { onError: () => void }) {
         weightManager?.weightData || {}
       );
       
-      console.log('📊 Record data formatted:', recordData);
+      // 目標値を取得
+      const targetCalories = mealManager?.calorieData?.targetCalories || 2000;
+      const targetPFC = mealManager?.calorieData?.pfc || { proteinTarget: 120, fatTarget: 67, carbsTarget: 250 };
       
-      const result = await shareRecord.shareRecord(recordData);
+      // DailyLogData形式に変換
+      const dailyLogData = {
+        date: navigation?.selectedDate || new Date(),
+        weight: {
+          current: recordData.weight || 0,
+          diff: 0 // TODO: 前日との差分計算
+        },
+        calories: {
+          current: recordData.calories,
+          target: targetCalories
+        },
+        pfc: {
+          p: { current: recordData.protein, target: targetPFC.proteinTarget },
+          f: { current: recordData.fat, target: targetPFC.fatTarget },
+          c: { current: recordData.carbs, target: targetPFC.carbsTarget }
+        },
+        exercise: {
+          minutes: recordData.exerciseTime,
+          caloriesBurned: recordData.exerciseBurned
+        }
+      };
       
-      if (result.success) {
-        console.log('✅ Share successful:', result.method);
-        alert(`共有成功！方法: ${result.method}`);
-      } else {
-        console.error('❌ Share failed:', result.error);
-        alert(`共有失敗: ${result.error}`);
-      }
+      console.log('📊 Daily log data formatted:', dailyLogData);
+      
+      // URLパラメータとしてデータを渡して共有ページに遷移
+      const dataParam = encodeURIComponent(JSON.stringify(dailyLogData));
+      window.location.href = `/share?data=${dataParam}`;
+      
     } catch (error) {
-      console.error('❌ Share error:', error);
+      console.error('❌ Share navigation error:', error);
       alert(`エラー: ${error.message}`);
     }
   };
