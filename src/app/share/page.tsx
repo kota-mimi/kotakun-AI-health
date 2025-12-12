@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { DailyLogCard } from '@/components/share/DailyLogCard';
 import { DailyLogData, ThemeColor, LayoutConfig, FontStyleId } from '@/types/dailyLog';
 import { RefreshCw, Download, Palette, Globe, Calendar, EyeOff, Eye, Moon, Sun, Image as ImageIcon, Move, Maximize2, X, PenTool, Type, Gamepad2, Feather, BookOpen, Edit3, Heart, Sparkles, PaintBucket, Check } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 const MOCK_DATA: DailyLogData = {
   date: new Date(),
@@ -158,6 +159,7 @@ function SharePageContent() {
   const [isEditing, setIsEditing] = useState(false);
   const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>(INITIAL_LAYOUT);
   const [globalScale, setGlobalScale] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Touch state for pinch zoom
@@ -245,6 +247,57 @@ function SharePageContent() {
 
   const handleTouchEnd = () => {
     touchStartDist.current = null;
+  };
+
+  // 画像生成とダウンロード/共有
+  const handleDownload = async () => {
+    setIsGenerating(true);
+    try {
+      const cardElement = document.getElementById('share-card');
+      if (!cardElement) throw new Error('Card element not found');
+
+      const canvas = await html2canvas(cardElement, {
+        width: 375,
+        height: 640,
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Failed to generate blob'));
+        }, 'image/png', 0.95);
+      });
+
+      // Web Share API または ダウンロード
+      const fileName = `healthy-record-${data.date.toLocaleDateString('ja-JP')}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `ヘルシーくん記録 - ${data.date.toLocaleDateString('ja-JP')}`,
+          text: `${data.date.toLocaleDateString('ja-JP')}の記録\n🔥 ${data.calories.current}kcal\n💪 ${data.exercise.minutes}分運動`
+        });
+      } else {
+        // フォールバック: ダウンロード
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+    } catch (error) {
+      console.error('Share/Download failed:', error);
+      alert('共有に失敗しました');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const currentBg = BACKGROUNDS[bgIndex];
@@ -480,11 +533,18 @@ function SharePageContent() {
             <div className="h-px bg-zinc-800 my-1" />
 
              <button 
-              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-              onClick={() => alert("In a real app, this would use html-to-image to download the card.")}
+              onClick={handleDownload}
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download size={16} />
-              <span className="font-mono text-xs font-bold">{ui.shareSave}</span>
+              {isGenerating ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <Download size={16} />
+              )}
+              <span className="font-mono text-xs font-bold">
+                {isGenerating ? '生成中...' : ui.shareSave}
+              </span>
             </button>
           </div>
         </div>
