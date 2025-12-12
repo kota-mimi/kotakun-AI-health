@@ -114,7 +114,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
   });
 
   return (
-    <div className="bg-white shadow-sm border border-gray-200 rounded-xl mx-4 my-2">
+    <div className="bg-white border-b border-gray-200 shadow-sm">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
         {/* 共有ボタン（左）- 常に表示 */}
