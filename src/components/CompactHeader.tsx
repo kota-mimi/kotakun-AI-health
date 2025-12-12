@@ -158,7 +158,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
             <ChevronLeft size={16} />
           </Button>
           
-          <div className="grid grid-cols-7 gap-2 flex-1 mx-3">
+          <div className="flex gap-2 flex-1 mx-3 justify-between">
             {weekDates.map((date, index) => {
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
@@ -168,32 +168,34 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               console.log(`📅 Date ${debugDateKey}: hasRecords=${hasRecords}`);
               
               return (
-                <div key={dateKey} className="flex flex-col items-center space-y-1">
+                <button
+                  key={dateKey}
+                  onClick={() => onDateSelect(date)}
+                  className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all ${
+                    isSameDate(date, currentDate)
+                      ? 'bg-health-primary text-white shadow-lg'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                  style={{
+                    ...(hasRecords && !isSameDate(date, currentDate) && {
+                      borderColor: '#60a5fa'
+                    })
+                  }}
+                >
                   {/* 曜日名 */}
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <span className={`text-xs font-medium mb-1 ${
+                    isSameDate(date, currentDate) ? 'text-white' : 'text-slate-500'
+                  }`}>
                     {dayNames[date.getDay()]}
                   </span>
                   
-                  {/* 日付ボタン */}
-                  <Button
-                    variant="ghost"
-                    onClick={() => onDateSelect(date)}
-                    className={`w-10 h-10 p-0 rounded-2xl transition-all ${
-                      isSameDate(date, currentDate)
-                        ? 'bg-slate-900 text-white shadow-lg'
-                        : 'text-slate-700 hover:bg-slate-100'
-                    }`}
-                    style={{
-                      ...(hasRecords && !isSameDate(date, currentDate) && {
-                        border: '1px solid #60a5fa'
-                      })
-                    }}
-                  >
-                    <span className="text-sm font-semibold">
-                      {date.getDate()}
-                    </span>
-                  </Button>
-                </div>
+                  {/* 日付 */}
+                  <span className={`text-sm font-semibold ${
+                    isSameDate(date, currentDate) ? 'text-white' : 'text-slate-700'
+                  }`}>
+                    {date.getDate()}
+                  </span>
+                </button>
               );
             })}
           </div>
