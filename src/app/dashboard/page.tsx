@@ -13,6 +13,7 @@ import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useShareRecord } from '@/hooks/useShareRecord';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { CalorieCard } from '@/components/CalorieCard';
@@ -96,6 +97,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const dateBasedDataManager = useDateBasedData();
   const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
+  const shareRecord = useShareRecord(); // 📤 共有機能
   
   // 🚀 統合ダッシュボードデータ取得（コスト削減）
   const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
@@ -252,6 +254,30 @@ function DashboardContent({ onError }: { onError: () => void }) {
     delta: 50, // 50px以上のスワイプで発動
   });
 
+  // 共有機能ハンドラー
+  const handleShareRecord = async () => {
+    try {
+      const recordData = shareRecord.formatRecordData(
+        navigation?.selectedDate || new Date(),
+        mealManager?.mealData || {},
+        exerciseManager?.exerciseData || [],
+        weightManager?.weightData || {}
+      );
+      
+      const result = await shareRecord.shareRecord(recordData);
+      
+      if (result.success) {
+        console.log('Share successful:', result.method);
+        // 必要に応じてトースト通知等
+      } else {
+        console.error('Share failed:', result.error);
+        // エラー通知
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+    }
+  };
+
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-orange-50 to-amber-50">
@@ -325,6 +351,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToData={() => {}} // 削除：データページなし
                 counselingResult={counselingResult}
                 hasRecordsForDate={hasRecordsForDate}
+                onShareRecord={handleShareRecord}
               />
             )}
           </div>

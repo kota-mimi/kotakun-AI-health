@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Share2 } from 'lucide-react';
 
 interface CompactHeaderProps {
   currentDate: Date;
@@ -11,9 +11,10 @@ interface CompactHeaderProps {
   customContent?: React.ReactNode;
   counselingResult?: any;
   hasRecordsForDate?: (date: Date) => boolean;
+  onShareRecord?: () => void;
 }
 
-export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult, hasRecordsForDate }: CompactHeaderProps) {
+export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigateToProfile, onNavigateToData, customContent, counselingResult, hasRecordsForDate, onShareRecord }: CompactHeaderProps) {
   // currentDateから今日までの週オフセットを計算（日曜日始まりの週で計算）
   const calculateWeekOffset = () => {
     const today = new Date();
@@ -116,15 +117,27 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     <div className="backdrop-blur-xl bg-white/80 border-b border-white/20 shadow-2xl shadow-sky-400/30">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
-        {/* 左スペーサー */}
-        <div className="w-8"></div>
+        {/* 共有ボタン（左） */}
+        {onShareRecord ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShareRecord}
+            className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl transition-all"
+            title="記録を共有"
+          >
+            <Share2 size={20} />
+          </Button>
+        ) : (
+          <div className="w-8"></div>
+        )}
 
         {/* 月表示（中央） */}
         <div className="flex-1 text-center">
           {customContent || <h1 className="text-lg font-semibold text-slate-900">{currentMonth}</h1>}
         </div>
 
-        {/* カレンダーボタン */}
+        {/* カレンダーボタン（右） */}
         <Button
           variant="ghost"
           size="sm"

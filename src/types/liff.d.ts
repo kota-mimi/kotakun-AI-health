@@ -17,8 +17,24 @@ declare global {
       }) => void;
       closeWindow: () => void;
       sendMessages: (messages: unknown[]) => Promise<void>;
-      shareTargetPicker: (messages: unknown[]) => Promise<void>;
+      shareTargetPicker: (messages: {
+        type: 'image';
+        originalContentUrl: string;
+        previewImageUrl: string;
+      }[]) => Promise<void>;
     };
+  }
+  
+  interface Navigator {
+    canShare?: (data?: ShareData) => boolean;
+    share?: (data: ShareData) => Promise<void>;
+  }
+  
+  interface ShareData {
+    title?: string;
+    text?: string;
+    url?: string;
+    files?: File[];
   }
 }
 
