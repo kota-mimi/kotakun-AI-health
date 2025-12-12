@@ -94,12 +94,12 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 space-y-0">
-      {/* セグメントコントロール - iOS風 */}
-      <div className="p-3 pb-0">
-        <div className="bg-slate-100/80 rounded-xl p-1 flex">
+      {/* セグメントコントロール - 右寄せ */}
+      <div className="p-3 pb-0 flex justify-end">
+        <div className="bg-slate-100/80 rounded-xl p-1 flex w-auto">
           <button
                 onClick={() => setCurrentView('intake')}
-                className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
+                className={`py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
                   currentView === 'intake'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
@@ -109,7 +109,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
               </button>
               <button
                 onClick={() => setCurrentView('burn')}
-                className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
+                className={`py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center ${
                   currentView === 'burn'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-800'
