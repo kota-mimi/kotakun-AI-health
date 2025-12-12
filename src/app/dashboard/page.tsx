@@ -271,36 +271,39 @@ function DashboardContent({ onError }: { onError: () => void }) {
       const targetCalories = mealManager?.calorieData?.targetCalories || 2000;
       const targetPFC = mealManager?.calorieData?.pfc || { proteinTarget: 120, fatTarget: 67, carbsTarget: 250 };
       
-      // DailyLogData形式に変換
-      const dailyLogData = {
-        date: navigation?.selectedDate || new Date(),
-        weight: {
-          current: recordData.weight || 0,
-          diff: 0 // TODO: 前日との差分計算
-        },
-        calories: {
-          current: recordData.calories,
-          target: targetCalories
-        },
-        pfc: {
-          p: { current: recordData.protein, target: targetPFC.proteinTarget },
-          f: { current: recordData.fat, target: targetPFC.fatTarget },
-          c: { current: recordData.carbs, target: targetPFC.carbsTarget }
-        },
-        exercise: {
-          minutes: recordData.exerciseTime,
-          caloriesBurned: recordData.exerciseBurned
-        }
+      // 体重の前日差分計算
+      const selectedDateStr = (navigation?.selectedDate || new Date()).toLocaleDateString('sv-SE');
+      const yesterday = new Date(navigation?.selectedDate || new Date());
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
+      
+      const todayWeight = weightManager?.realWeightData?.find((w: any) => w.date === selectedDateStr)?.weight;
+      const yesterdayWeight = weightManager?.realWeightData?.find((w: any) => w.date === yesterdayStr)?.weight;
+      const weightDiff = (todayWeight && yesterdayWeight) ? todayWeight - yesterdayWeight : 0;
+
+      // Vite共有アプリが期待するフラット形式に変換
+      const shareData = {
+        date: (navigation?.selectedDate || new Date()).toISOString(),
+        weight: recordData.weight || todayWeight || 0,
+        weightDiff: weightDiff,
+        calories: recordData.calories,
+        caloriesTarget: targetCalories,
+        protein: recordData.protein,
+        fat: recordData.fat,
+        carbs: recordData.carbs,
+        exerciseTime: recordData.exerciseTime,
+        exerciseBurned: recordData.exerciseBurned,
+        achievementRate: Math.round((recordData.calories / targetCalories) * 100)
       };
       
       console.log('📊 Raw record data:', recordData);
-      console.log('📊 Daily log data formatted:', dailyLogData);
+      console.log('📊 Share data formatted:', shareData);
       console.log('📊 Meal data:', mealManager?.mealData);
       console.log('📊 Exercise data:', exerciseManager?.exerciseData);
       console.log('📊 Weight data:', weightManager?.weightData);
       
       // URLパラメータとしてデータを渡してVercel共有ページに遷移
-      const dataParam = encodeURIComponent(JSON.stringify(dailyLogData));
+      const dataParam = encodeURIComponent(JSON.stringify(shareData));
       console.log('📊 URL param length:', dataParam.length);
       window.location.href = `https://health-share-ten.vercel.app?data=${dataParam}`;
       
