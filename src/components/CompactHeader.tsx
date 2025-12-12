@@ -143,7 +143,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
       </div>
 
       {/* 週間カレンダー */}
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-3">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -158,7 +158,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
             <ChevronLeft size={16} />
           </Button>
           
-          <div className="grid grid-cols-7 gap-1 flex-1 mx-3">
+          <div className="grid grid-cols-7 gap-2 flex-1 mx-3">
             {weekDates.map((date, index) => {
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
@@ -168,27 +168,32 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               console.log(`📅 Date ${debugDateKey}: hasRecords=${hasRecords}`);
               
               return (
-                <Button
-                  key={dateKey}
-                  variant="ghost"
-                  onClick={() => onDateSelect(date)}
-                  className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
-                    isSameDate(date, currentDate)
-                      ? 'bg-health-primary text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100/60'
-                  }`}
-                  style={{
-                    ...(hasRecords && {
-                      border: '2px dotted #60a5fa',
-                      borderStyle: 'dotted'
-                    })
-                  }}
-                >
-                <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
-                <span className="text-sm font-semibold">
-                  {date.getDate()}
-                </span>
-              </Button>
+                <div key={dateKey} className="flex flex-col items-center space-y-1">
+                  {/* 曜日名 */}
+                  <span className="text-xs font-medium text-slate-500 uppercase">
+                    {dayNames[date.getDay()]}
+                  </span>
+                  
+                  {/* 日付ボタン */}
+                  <Button
+                    variant="ghost"
+                    onClick={() => onDateSelect(date)}
+                    className={`w-10 h-10 p-0 rounded-2xl transition-all ${
+                      isSameDate(date, currentDate)
+                        ? 'bg-slate-900 text-white shadow-lg'
+                        : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                    style={{
+                      ...(hasRecords && !isSameDate(date, currentDate) && {
+                        border: '1px solid #60a5fa'
+                      })
+                    }}
+                  >
+                    <span className="text-sm font-semibold">
+                      {date.getDate()}
+                    </span>
+                  </Button>
+                </div>
               );
             })}
           </div>
