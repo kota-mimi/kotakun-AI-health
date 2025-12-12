@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { getTargetValuesForDate } from '@/hooks/useProfileHistory';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
+import { useCounselingData } from '@/hooks/useCounselingData';
 import { TargetSettingsModal } from './TargetSettingsModal';
 
 interface ProfilePageProps {
@@ -34,7 +35,8 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
   
   // 最新プロフィールデータを取得
   const { latestProfile: profileData, refetch } = useSharedProfile();
-  const targetValues = getTargetValuesForDate(profileData, null);
+  const { counselingResult } = useCounselingData();
+  const targetValues = getTargetValuesForDate(profileData, counselingResult);
 
   // LIFF認証完了まで待機（ちらつき防止）
   if (!isLiffReady || !isLoggedIn) {
