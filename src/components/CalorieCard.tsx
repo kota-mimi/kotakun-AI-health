@@ -121,15 +121,21 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
       </div>
 
       {/* コンテンツエリア */}
-      <div className="p-3 pt-3">
+      <div className="relative p-3 pt-12">
+        {/* タイトル - 左上にコンパクト */}
+        <div className="absolute top-3 left-3">
+          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+            {currentView === 'intake' ? '摂取カロリー' : '消費カロリー'}
+          </span>
+        </div>
+        
         {currentView === 'intake' ? (
           <div className="space-y-4">
                 {/* 摂取カロリー */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-slate-900">摂取カロリー</span>
+                  <div className="flex items-center justify-end mb-2">
                     <div className="text-right">
-                      <span className="font-bold text-health-primary">{displayTotalCalories}</span>
+                      <span className="font-bold text-health-primary text-xl">{displayTotalCalories}</span>
                       <span className="text-sm text-slate-400"> / {finalTargetCalories}kcal</span>
                     </div>
                   </div>
@@ -198,11 +204,10 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
               <div className="space-y-4">
                 {/* 消費カロリー */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-slate-900">消費カロリー</span>
+                  <div className="flex items-center justify-end mb-2">
                     <div className="text-right">
-                      <span className="font-bold" style={{color: colors.burn}}>{burnedCalories}</span>
-                      <span className="text-slate-500"> kcal</span>
+                      <span className="font-bold text-xl" style={{color: colors.burn}}>{burnedCalories}</span>
+                      <span className="text-slate-400 text-sm"> kcal</span>
                     </div>
                   </div>
                   <Progress 
