@@ -158,7 +158,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
             <ChevronLeft size={16} />
           </Button>
           
-          <div className="flex gap-2 flex-1 mx-3 justify-between">
+          <div className="grid grid-cols-7 gap-1 flex-1 mx-3">
             {weekDates.map((date, index) => {
               // 日付が無効な場合のフォールバック
               const dateKey = isNaN(date.getTime()) ? `invalid-${index}` : date.toISOString();
@@ -168,34 +168,27 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               console.log(`📅 Date ${debugDateKey}: hasRecords=${hasRecords}`);
               
               return (
-                <button
+                <Button
                   key={dateKey}
+                  variant="ghost"
                   onClick={() => onDateSelect(date)}
-                  className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all ${
+                  className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
                     isSameDate(date, currentDate)
-                      ? 'bg-health-primary text-white shadow-lg'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                      ? 'bg-health-primary text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-slate-100/60'
                   }`}
                   style={{
-                    ...(hasRecords && !isSameDate(date, currentDate) && {
-                      borderColor: '#60a5fa'
+                    ...(hasRecords && {
+                      border: '2px dotted #60a5fa',
+                      borderStyle: 'dotted'
                     })
                   }}
                 >
-                  {/* 曜日名 */}
-                  <span className={`text-xs font-medium mb-1 ${
-                    isSameDate(date, currentDate) ? 'text-white' : 'text-slate-500'
-                  }`}>
-                    {dayNames[date.getDay()]}
-                  </span>
-                  
-                  {/* 日付 */}
-                  <span className={`text-sm font-semibold ${
-                    isSameDate(date, currentDate) ? 'text-white' : 'text-slate-700'
-                  }`}>
-                    {date.getDate()}
-                  </span>
-                </button>
+                <span className="text-xs font-medium opacity-80">{dayNames[date.getDay()]}</span>
+                <span className="text-sm font-semibold">
+                  {date.getDate()}
+                </span>
+              </Button>
               );
             })}
           </div>
