@@ -94,8 +94,8 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 space-y-0">
-      {/* セグメントコントロール - 右寄せ */}
-      <div className="p-3 pb-0 flex justify-end">
+      {/* セグメントコントロール - 左寄せ */}
+      <div className="p-3 pb-0 flex justify-start">
         <div className="bg-slate-100/80 rounded-xl p-1 flex w-auto">
           <button
                 onClick={() => setCurrentView('intake')}
