@@ -312,7 +312,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-orange-50 to-amber-50">
+    <div className="min-h-screen relative bg-gray-50">
       
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (

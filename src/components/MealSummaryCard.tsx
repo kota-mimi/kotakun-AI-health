@@ -141,7 +141,7 @@ export function MealSummaryCard({
 	];
 
 	return (
-		<div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4 space-y-3">
+		<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
 					{mealTypeOrder.map((mealType) => {
 						const mealItems = expandedMealData[mealType];
 						const totalCaloriesForType = getMealCalories(mealType);

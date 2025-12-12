@@ -177,7 +177,7 @@ export function WorkoutSummaryCard({ exerciseData, selectedDate, onNavigateToWor
 
   return (
     <>
-      <div className="backdrop-blur-xl bg-white/80 border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         {hasWorkout ? (
           <div className="space-y-3">
             {/* 統計サマリー */}
