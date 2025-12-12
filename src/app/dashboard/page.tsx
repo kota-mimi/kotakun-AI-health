@@ -293,10 +293,15 @@ function DashboardContent({ onError }: { onError: () => void }) {
         }
       };
       
+      console.log('📊 Raw record data:', recordData);
       console.log('📊 Daily log data formatted:', dailyLogData);
+      console.log('📊 Meal data:', mealManager?.mealData);
+      console.log('📊 Exercise data:', exerciseManager?.exerciseData);
+      console.log('📊 Weight data:', weightManager?.weightData);
       
       // URLパラメータとしてデータを渡して共有ページに遷移
       const dataParam = encodeURIComponent(JSON.stringify(dailyLogData));
+      console.log('📊 URL param length:', dataParam.length);
       window.location.href = `/share?data=${dataParam}`;
       
     } catch (error) {

@@ -8,6 +8,7 @@ interface DailyRecordData {
   fat: number;
   carbs: number;
   exerciseTime: number;
+  exerciseBurned: number;
   exercises: Array<{
     type: string;
     duration: number;
@@ -196,6 +197,11 @@ export function useShareRecord() {
       return sum + (exercise.duration || 0);
     }, 0);
     
+    // 消費カロリー計算（運動データから）
+    const totalBurnedCalories = todayExercises.reduce((sum, exercise) => {
+      return sum + (exercise.caloriesBurned || 0);
+    }, 0);
+    
     // 体重データ（現在の実装に合わせて調整）
     const todayWeight = weightData?.current ? { weight: weightData.current } : undefined;
     
@@ -207,6 +213,7 @@ export function useShareRecord() {
       fat: Math.round(totalFat * 10) / 10,
       carbs: Math.round(totalCarbs * 10) / 10,
       exerciseTime: totalExerciseTime,
+      exerciseBurned: totalBurnedCalories,
       exercises: todayExercises.map(ex => ({
         type: ex.type || ex.name || '運動',
         duration: ex.duration || 0,

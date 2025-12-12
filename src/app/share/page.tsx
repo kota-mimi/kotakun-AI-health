@@ -27,18 +27,26 @@ function SharePageContent() {
   const [data, setData] = useState<DailyLogData>(() => {
     try {
       const dataParam = searchParams.get('data');
+      console.log('🔍 Share page - URL param received:', dataParam ? 'YES' : 'NO');
+      
       if (dataParam) {
         const parsed = JSON.parse(decodeURIComponent(dataParam));
-        return {
+        console.log('🔍 Share page - Parsed data:', parsed);
+        
+        const processedData = {
           ...parsed,
           date: new Date(parsed.date)
         };
+        
+        console.log('🔍 Share page - Final data:', processedData);
+        return processedData;
       }
     } catch (error) {
-      console.error('Failed to parse data from URL:', error);
+      console.error('❌ Failed to parse data from URL:', error);
     }
     
     // デフォルトデータ
+    console.warn('⚠️ Share page - Using default data (no URL params found)');
     return {
       date: new Date(),
       weight: { current: 0, diff: 0 },
