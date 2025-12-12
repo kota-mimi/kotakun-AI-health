@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import React from 'react';
 import html2canvas from 'html2canvas';
 import { DailyLogData } from '@/types/dailyLog';
 
@@ -67,7 +68,7 @@ export function useStravaShare() {
             
             // コンポーネントをレンダリング
             root.render(
-              DailyLogCard({
+              React.createElement(DailyLogCard, {
                 data: cardData,
                 theme: 'text-blue-500',
                 id: 'share-card',

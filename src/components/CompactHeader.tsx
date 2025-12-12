@@ -118,15 +118,13 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
         {/* 共有ボタン（左）- 常に表示 */}
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
           onClick={onShareRecord || (() => console.log('Share clicked but no handler'))}
-          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl transition-all"
+          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl transition-all bg-transparent border-none cursor-pointer flex items-center justify-center"
           title="記録を共有"
         >
           <Share2 size={20} />
-        </Button>
+        </button>
 
         {/* 月表示（中央） */}
         <div className="flex-1 text-center">

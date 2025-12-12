@@ -13,7 +13,7 @@ import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { useStravaShare } from '@/hooks/useStravaShare';
+import { useShareRecord } from '@/hooks/useShareRecord';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { CalorieCard } from '@/components/CalorieCard';
@@ -97,7 +97,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const dateBasedDataManager = useDateBasedData();
   const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
-  const shareRecord = useStravaShare(); // 📤 Strava風共有機能
+  const shareRecord = useShareRecord(); // 📤 共有機能（テスト用に戻す）
   
   // 🚀 統合ダッシュボードデータ取得（コスト削減）
   const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
@@ -254,44 +254,32 @@ function DashboardContent({ onError }: { onError: () => void }) {
     delta: 50, // 50px以上のスワイプで発動
   });
 
-  // 共有機能ハンドラー
+  // 共有機能ハンドラー（シンプルテスト版）
   const handleShareRecord = async () => {
     try {
-      console.log('📤 Strava-style share button clicked!');
-      console.log('Selected date:', navigation?.selectedDate);
-      console.log('Meal data:', mealManager?.mealData);
-      console.log('Exercise data:', exerciseManager?.exerciseData);
-      console.log('Weight data:', weightManager?.weightData);
+      console.log('📤 Share button clicked - testing!');
+      alert('共有ボタンが動作しています！');
       
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
         exerciseManager?.exerciseData || [],
-        weightManager?.weightData || {},
-        // 目標値も渡す
-        {
-          targetCalories: mealManager?.calorieData?.targetCalories || 2000,
-          macros: mealManager?.calorieData?.pfc ? {
-            protein: mealManager.calorieData.pfc.proteinTarget || 120,
-            fat: mealManager.calorieData.pfc.fatTarget || 67,
-            carbs: mealManager.calorieData.pfc.carbsTarget || 250
-          } : undefined
-        }
+        weightManager?.weightData || {}
       );
       
-      console.log('📊 Strava-style record data formatted:', recordData);
+      console.log('📊 Record data formatted:', recordData);
       
       const result = await shareRecord.shareRecord(recordData);
       
       if (result.success) {
-        console.log('✅ Strava-style share successful:', result.method);
+        console.log('✅ Share successful:', result.method);
         alert(`共有成功！方法: ${result.method}`);
       } else {
-        console.error('❌ Strava-style share failed:', result.error);
+        console.error('❌ Share failed:', result.error);
         alert(`共有失敗: ${result.error}`);
       }
     } catch (error) {
-      console.error('❌ Strava-style share error:', error);
+      console.error('❌ Share error:', error);
       alert(`エラー: ${error.message}`);
     }
   };
