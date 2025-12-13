@@ -17,7 +17,7 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt,
+      salt: salt as ArrayBuffer,
       iterations: 100000, // 高いイテレーション数でセキュリティ強化
       hash: 'SHA-256'
     },
