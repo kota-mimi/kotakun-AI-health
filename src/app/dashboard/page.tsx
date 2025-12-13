@@ -297,6 +297,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
       };
       
       console.log('📊 Raw record data:', recordData);
+      console.log('📊 Record data details:', {
+        calories: recordData.calories,
+        protein: recordData.protein,
+        fat: recordData.fat,
+        carbs: recordData.carbs,
+        exerciseTime: recordData.exerciseTime,
+        exerciseBurned: recordData.exerciseBurned
+      });
       console.log('📊 Share data formatted:', shareData);
       console.log('📊 Meal data:', mealManager?.mealData);
       console.log('📊 Exercise data:', exerciseManager?.exerciseData);
