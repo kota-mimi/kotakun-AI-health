@@ -255,7 +255,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   });
 
   // 共有機能ハンドラー - 共有ページに遷移
-  const handleShareRecord = () => {
+  const handleShareRecord = async () => {
     try {
       
       // 記録データを整形（目標値も含める）
