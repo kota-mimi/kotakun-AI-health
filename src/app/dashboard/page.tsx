@@ -304,15 +304,38 @@ function DashboardContent({ onError }: { onError: () => void }) {
         exerciseTime: recordData.exerciseTime,
         exerciseBurned: recordData.exerciseBurned
       });
-      console.log('📊 Share data formatted:', shareData);
-      console.log('📊 Meal data:', mealManager?.mealData);
-      console.log('📊 Exercise data:', exerciseManager?.exerciseData);
-      console.log('📊 Weight data:', weightManager?.weightData);
+      // セキュアな共有データを構築
+      const currentUserId = counselingResult?.answers?.lineUserId || 'anonymous';
+      const { encryptData, hashUserId, generateSessionId } = await import('@/lib/encryption');
       
-      // URLパラメータとしてデータを渡してVercel共有ページに遷移
-      const dataParam = encodeURIComponent(JSON.stringify(shareData));
-      console.log('📊 URL param length:', dataParam.length);
-      window.location.href = `https://health-share-ten.vercel.app?data=${dataParam}`;
+      // ユーザーIDをハッシュ化（個人情報保護）
+      const hashedUserId = await hashUserId(currentUserId);
+      const sessionId = generateSessionId();
+      const timestamp = Date.now();
+      const expiresAt = timestamp + (10 * 60 * 1000); // 10分で期限切れ
+      
+      const secureShareData = {
+        userId: hashedUserId,
+        timestamp,
+        expiresAt,
+        sessionId,
+        data: shareData
+      };
+      
+      console.log('🔒 Secure share data prepared:', {
+        userId: hashedUserId,
+        sessionId,
+        expiresAt: new Date(expiresAt).toISOString()
+      });
+      
+      // データを暗号化
+      const encryptedData = await encryptData(secureShareData, hashedUserId);
+      const shareUrl = `https://health-share-ten.vercel.app?secure=${encodeURIComponent(encryptedData)}&t=${timestamp}&u=${hashedUserId}`;
+      
+      console.log('🔗 Generated secure share URL length:', shareUrl.length);
+      
+      // 新しいタブで共有ページを開く
+      window.open(shareUrl, '_blank');
       
     } catch (error) {
       console.error('❌ Share navigation error:', error);

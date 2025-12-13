@@ -21,6 +21,14 @@ interface DailyRecordData {
   }>;
 }
 
+interface SecureShareData {
+  userId: string; // ユーザー識別用ハッシュ
+  timestamp: number; // データ生成時刻
+  expiresAt: number; // 有効期限
+  sessionId: string; // セッション識別子
+  data: DailyRecordData; // 実際のデータ
+}
+
 export function useShareRecord() {
   const [isGenerating, setIsGenerating] = useState(false);
   
