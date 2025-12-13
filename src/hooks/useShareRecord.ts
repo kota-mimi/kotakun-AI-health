@@ -187,10 +187,29 @@ export function useShareRecord() {
     });
     
     // 運動データ集計
+    console.log('🔍 運動データフィルタリング開始:', {
+      selectedDate,
+      targetDate: selectedDate.toLocaleDateString('sv-SE'),
+      exerciseDataLength: exerciseData.length,
+      allExercises: exerciseData.map(ex => ({
+        date: ex.date,
+        formattedDate: new Date(ex.date).toLocaleDateString('sv-SE'),
+        duration: ex.duration,
+        caloriesBurned: ex.caloriesBurned
+      }))
+    });
+    
     const todayExercises = exerciseData.filter(exercise => {
       const exerciseDate = new Date(exercise.date).toLocaleDateString('sv-SE');
       const targetDate = selectedDate.toLocaleDateString('sv-SE');
-      return exerciseDate === targetDate;
+      const matches = exerciseDate === targetDate;
+      console.log(`🔍 運動データ比較:`, {
+        exerciseDate,
+        targetDate,
+        matches,
+        exercise: { duration: exercise.duration, caloriesBurned: exercise.caloriesBurned }
+      });
+      return matches;
     });
     
     const totalExerciseTime = todayExercises.reduce((sum, exercise) => {
