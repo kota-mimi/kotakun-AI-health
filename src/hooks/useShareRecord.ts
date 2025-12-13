@@ -153,6 +153,15 @@ export function useShareRecord() {
   ): DailyRecordData => {
     const dateString = selectedDate.toLocaleDateString('ja-JP');
     
+    // デバッグ: 入力データを確認
+    console.log('🔍 formatRecordData inputs:', {
+      selectedDate,
+      mealData,
+      exerciseData,
+      weightData
+    });
+    alert(`formatRecordData入力データ:\n日付: ${selectedDate}\n食事データ: ${JSON.stringify(mealData)}\n運動データ: ${JSON.stringify(exerciseData)}\n体重データ: ${JSON.stringify(weightData)}`);
+    
     // 食事データ集計
     const allMeals: any[] = [];
     const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -205,7 +214,7 @@ export function useShareRecord() {
     // 体重データ（現在の実装に合わせて調整）
     const todayWeight = weightData?.current ? { weight: weightData.current } : undefined;
     
-    return {
+    const result = {
       date: dateString,
       weight: todayWeight?.weight,
       calories: Math.round(totalCalories),
@@ -221,6 +230,12 @@ export function useShareRecord() {
       })),
       meals: allMeals
     };
+    
+    // デバッグ: 計算結果を確認
+    console.log('🔍 formatRecordData result:', result);
+    alert(`計算結果:\n炭水化物: ${result.carbs}g\n運動時間: ${result.exerciseTime}分\n消費カロリー: ${result.exerciseBurned}kcal\n今日の運動: ${JSON.stringify(todayExercises)}`);
+    
+    return result;
   }, []);
   
   // 共有実行
