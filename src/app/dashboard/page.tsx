@@ -258,6 +258,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const handleShareRecord = () => {
     try {
       console.log('📤 Share button clicked - navigating to share page');
+      alert('共有ボタンが押されました！コンソールを確認してください');
       
       // 記録データを整形（目標値も含める）
       const recordData = shareRecord.formatRecordData(
