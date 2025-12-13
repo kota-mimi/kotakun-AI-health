@@ -200,15 +200,33 @@ export function useShareRecord() {
     });
     
     const todayExercises = exerciseData.filter(exercise => {
-      const exerciseDate = new Date(exercise.date).toLocaleDateString('sv-SE');
-      const targetDate = selectedDate.toLocaleDateString('sv-SE');
-      const matches = exerciseDate === targetDate;
+      // より柔軟な日付比較
+      const exerciseDate = exercise.date;
+      const targetDateStr = selectedDate.toLocaleDateString('sv-SE');
+      
+      // 複数の日付フォーマットをチェック
+      let matches = false;
+      
+      if (typeof exerciseDate === 'string') {
+        // YYYY-MM-DD形式の場合
+        matches = exerciseDate === targetDateStr;
+        
+        // YYYY/MM/DD形式やその他の場合
+        if (!matches) {
+          const normalizedExerciseDate = new Date(exerciseDate).toLocaleDateString('sv-SE');
+          matches = normalizedExerciseDate === targetDateStr;
+        }
+      } else if (exerciseDate instanceof Date) {
+        matches = exerciseDate.toLocaleDateString('sv-SE') === targetDateStr;
+      }
+      
       console.log(`🔍 運動データ比較:`, {
-        exerciseDate,
-        targetDate,
+        originalExerciseDate: exerciseDate,
+        targetDate: targetDateStr,
         matches,
         exercise: { duration: exercise.duration, caloriesBurned: exercise.caloriesBurned }
       });
+      
       return matches;
     });
     
