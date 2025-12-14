@@ -7,6 +7,19 @@ import { admin } from '@/lib/firebase-admin';
 class AIHealthService {
   private genAI: GoogleGenerativeAI;
 
+  // 会話履歴を文字列に変換する共通メソッド
+  private formatConversationHistory(conversations: any[] | undefined): string {
+    if (!conversations || conversations.length === 0) {
+      return '';
+    }
+    
+    let conversationHistory = '\n\n【過去の会話】\n';
+    conversations.slice(-3).forEach((conv, index) => {
+      conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n${conv.aiResponse}\n`;
+    });
+    return conversationHistory + '\n';
+  }
+
   constructor() {
     const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
     if (!apiKey) {
@@ -1110,17 +1123,8 @@ true または false で回答してください。`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // 会話履歴を取得
-      let conversationHistory = '';
-      if (userId) {
-        const history = await this.getConversationHistory(userId);
-        if (history.length > 0) {
-          conversationHistory = '\n\n【過去の会話】\n';
-          history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n${conv.aiResponse}\n`;
-          });
-          conversationHistory += '\n';
-        }
-      }
+      const history = userId ? await this.getConversationHistory(userId) : [];
+      const conversationHistory = this.formatConversationHistory(history);
 
       const prompt = `
 あなたは「ヘルシーくん」という親しみやすく経験豊富なパーソナルトレーナー兼栄養管理士です。タメ口で親しみやすい自然な口調で、友達感覚で話してください。
@@ -1332,17 +1336,8 @@ true または false で回答してください。`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // 会話履歴を取得
-      let conversationHistory = '';
-      if (userId) {
-        const history = await this.getConversationHistory(userId);
-        if (history.length > 0) {
-          conversationHistory = '\n\n【過去の会話】\n';
-          history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n${conv.aiResponse}\n`;
-          });
-          conversationHistory += '\n';
-        }
-      }
+      const history = userId ? await this.getConversationHistory(userId) : [];
+      const conversationHistory = this.formatConversationHistory(history);
       
       const prompt = `
 あなたは「ヘルシーくん」という親しみやすく経験豊富なパーソナルトレーナー兼栄養管理士です。
@@ -1391,117 +1386,27 @@ true または false で回答してください。`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
-テキスト「${text}」を分析して、運動記録の意図があるかどうか以下のJSONで返してください：
+「${text}」が運動記録かどうか判定し、以下のJSON形式で返してください：
 
-単一の運動の場合：
-{
+単一運動: {
   "isExerciseRecord": boolean,
   "isMultipleExercises": false,
   "exerciseType": string,
   "exerciseName": string,
   "displayName": string,
   "duration": number,
-  "intensity": string,
-  "hasSpecificDetails": boolean,
   "sets": number,
   "reps": number,
   "weight": number,
   "distance": number,
-  "timeOfDay": string,
-  "weightSets": [{"weight": number, "reps": number, "sets": number}],
   "confidence": number
 }
 
-複数の運動が含まれている場合：
-{
-  "isExerciseRecord": boolean,
-  "isMultipleExercises": true,
-  "exercises": [
-    {
-      "exerciseType": string,
-      "exerciseName": string,
-      "displayName": string,
-      "duration": number,
-      "intensity": string,
-      "hasSpecificDetails": boolean,
-      "sets": number,
-      "reps": number,
-      "weight": number,
-      "distance": number,
-      "timeOfDay": string,
-      "weightSets": [{"weight": number, "reps": number, "sets": number}]
-    }
-  ],
-  "confidence": number
-}
+複数運動: {"isExerciseRecord": true, "isMultipleExercises": true, "exercises": [...]}
 
-判定基準：
-- 運動・スポーツ・トレーニングに関する動詞（した、やった、行った、練習した、鍛えた、走った、歩いた、泳いだ、踊った、etc）
-- 運動・スポーツ名（野球、サッカー、ランニング、筋トレ、ジム、ヨガ、テニス、バスケ、etc）
-- 身体活動（散歩、ウォーキング、ジョギング、ストレッチ、腹筋、腕立て、スクワット、etc）
-- 過去形表現（〜した、〜やった、〜行った）
-- 時間・場所の表現（朝、夜、今日、昨日、ジムで、公園で、家で、etc）
+運動タイプ: strength(筋トレ), cardio(有酸素), sports(スポーツ), water(水泳), martial_arts(格闘技), dance(ダンス), winter(ウィンター), flexibility(ストレッチ), daily(日常活動)
 
-運動の分類：
-- "strength": 筋トレ、ウェイトトレーニング（腹筋、腕立て、スクワット、ベンチプレス、懸垂、バーベル、ダンベル、etc）
-- "cardio": 有酸素運動（ランニング、ジョギング、ウォーキング、歩行、サイクリング、ハイキング、etc）
-- "sports": スポーツ活動（野球、サッカー、テニス、バスケ、バレー、卓球、バドミントン、ゴルフ、etc）
-- "water": 水中運動（水泳、プール、サーフィン、ダイビング、カヤック、ウィンドサーフィン、水中エアロ、etc）
-- "martial_arts": 格闘技（空手、柔道、剣道、ボクシング、キックボクシング、武術、合気道、etc）
-- "dance": ダンス（社交ダンス、ヒップホップダンス、バレエ、エアロビクスダンス、踊り、etc）
-- "winter": ウィンタースポーツ（スキー、スノーボード、アイススケート、雪かき、etc）
-- "flexibility": ストレッチ、ヨガ、ピラティス、太極拳、柔軟
-- "daily": 日常活動（掃除、階段昇降、買い物、家事、ガーデニング、etc）
-
-**重要：記録モード中はより敏感に判定し、運動の可能性があるものは積極的に記録として扱う**
-
-**短縮表記の正式名称変換規則：**
-- 腕立て → 腕立て伏せ
-- 腹筋 → 腹筋運動
-- 背筋 → 背筋運動
-- スクワット → スクワット
-- ベンチ → ベンチプレス
-- デッド → デッドリフト
-
-**カタカナ・数字のみ表記の対応：**
-- キロ/kg → 重量単位として認識
-- セット → セット数として認識
-- 数字のみ（例：「ベンチ 120 10」）→ 重量 + 回数として解釈
-- 運動名 + 数字のみ（例：「腕立て 10」）→ 運動名 + 回数として解釈
-- 「回」がなくても数字は回数として認識
-
-例：
-- 「今日野球した！」→ isMultipleExercises: false, exerciseType: "sports", exerciseName: "野球", displayName: "野球", duration: 0, intensity: null
-- 「朝起きて軽くランニングした」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ランニング", displayName: "ランニング", duration: 0, intensity: "light", timeOfDay: "朝"
-- 「プールで泳いだ」→ isMultipleExercises: false, exerciseType: "water", exerciseName: "水泳", displayName: "水泳", duration: 0
-- 「空手の練習した」→ isMultipleExercises: false, exerciseType: "martial_arts", exerciseName: "空手", displayName: "空手", duration: 0
-- 「社交ダンス踊った」→ isMultipleExercises: false, exerciseType: "dance", exerciseName: "社交ダンス", displayName: "社交ダンス", duration: 0
-- 「スキーしてきた」→ isMultipleExercises: false, exerciseType: "winter", exerciseName: "スキー", displayName: "スキー", duration: 0
-- 「腹筋100回やった」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腹筋運動", displayName: "腹筋 100回", reps: 100, hasSpecificDetails: true
-- 「腕立て10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
-- 「腕立て 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回", reps: 10, hasSpecificDetails: true
-- 「腕立て 10回 3セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "腕立て伏せ", displayName: "腕立て伏せ 10回 3セット", reps: 10, sets: 3, hasSpecificDetails: true, weightSets: [{"weight": 0, "reps": 10, "sets": 3}]
-- 「ベンチ 120キロ 10回」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
-- 「ベンチ 120 10」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回", weight: 120, reps: 10, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 1}]
-- 「ベンチ120kg 10回 2セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス 120kg 10回 2セット", weight: 120, reps: 10, sets: 2, hasSpecificDetails: true, weightSets: [{"weight": 120, "reps": 10, "sets": 2}]
-- 「ベンチプレス 100kg 10回 1セット 120kg 10回 1セット」→ isMultipleExercises: false, exerciseType: "strength", exerciseName: "ベンチプレス", displayName: "ベンチプレス", weightSets: [{"weight": 100, "reps": 10, "sets": 1}, {"weight": 120, "reps": 10, "sets": 1}], hasSpecificDetails: true
-- 「今日野球して、ジムに行って筋トレした」→ 
-  isMultipleExercises: true, exercises: [
-    {exerciseType: "sports", exerciseName: "野球", displayName: "野球"},
-    {exerciseType: "strength", exerciseName: "筋トレ", displayName: "筋トレ"}
-  ]
-- 「朝15分くらい歩いた！多分3キロくらい」→ isMultipleExercises: false, exerciseType: "cardio", exerciseName: "ウォーキング", displayName: "ウォーキング 3km 15分", duration: 15, distance: 3, timeOfDay: "朝"
-
-判定しない例：
-- 「野球のルール教えて」→ isExerciseRecord: false（質問）
-- 「ランニングシューズ買った」→ isExerciseRecord: false（買い物）
-- 「ジムに行こうと思う」→ isExerciseRecord: false（予定・意図）
-
-**重要：ユーザーの入力をそのまま保持する**
-- duration: 明記されている場合のみ数値、されていない場合は0
-- intensity: 明記されている場合のみ設定、されていない場合はnull
-- sets, reps, weight, distance: 明記されている場合のみ数値、されていない場合は0
-- **デフォルト値は一切追加せず、ユーザーが入力した情報のみを抽出する**
+判定条件: 運動名 + 過去形動詞（した、やった、行った等）
 `;
 
       const result = await model.generateContent(prompt);
@@ -1600,17 +1505,8 @@ true または false で回答してください。`;
       });
       
       // 会話履歴を取得
-      let conversationHistory = '';
-      if (userId) {
-        const history = await this.getConversationHistory(userId);
-        if (history.length > 0) {
-          conversationHistory = '\n\n【過去の会話】\n';
-          history.forEach((conv, index) => {
-            conversationHistory += `${index + 1}. ユーザー: ${conv.userMessage}\n${conv.aiResponse}\n`;
-          });
-          conversationHistory += '\n';
-        }
-      }
+      const history = userId ? await this.getConversationHistory(userId) : [];
+      const conversationHistory = this.formatConversationHistory(history);
       
       const prompt = `
 あなたは「${persona.name}」として振る舞ってください。
