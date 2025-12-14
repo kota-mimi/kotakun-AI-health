@@ -200,10 +200,14 @@ export function useShareRecord() {
       targetDate: selectedDate.toLocaleDateString('sv-SE'),
       exerciseDataLength: exerciseData.length,
       allExercises: exerciseData.map(ex => ({
+        id: ex.id,
+        name: ex.name,
         date: ex.date,
-        formattedDate: new Date(ex.date).toLocaleDateString('sv-SE'),
+        timestamp: ex.timestamp,
         duration: ex.duration,
-        caloriesBurned: ex.caloriesBurned
+        calories: ex.calories,
+        caloriesBurned: ex.caloriesBurned,
+        notes: ex.notes
       }))
     });
     
@@ -238,6 +242,13 @@ export function useShareRecord() {
       else {
         const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
         matches = targetDateStr === today;
+      }
+      
+      // 4. LINEから記録された運動は強制的に含める（日付問題を回避）
+      if (!matches && exercise.notes && exercise.notes.includes('LINE記録')) {
+        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+        matches = targetDateStr === today;
+        console.log('🔍 LINE記録の運動を強制的に含める:', exercise.name);
       }
       
       console.log(`🔍 運動データ比較:`, {
@@ -289,6 +300,14 @@ export function useShareRecord() {
         timestamp: ex.timestamp
       }))
     });
+    
+    // デバッグ用：運動データをアラートで表示
+    if (exerciseData.length > 0) {
+      const exerciseSummary = exerciseData.map(ex => 
+        `${ex.name}: ${ex.calories || 0}kcal (${ex.notes ? '※' + ex.notes.substring(0, 10) : 'APP'})`
+      ).join('\n');
+      alert(`📊 運動データ確認:\n\n${exerciseSummary}\n\n今日の運動: ${todayExercises.length}件\n合計カロリー: ${totalBurnedCalories}kcal`);
+    }
     
     // 体重データ（現在の実装に合わせて調整）
     const todayWeight = weightData?.current ? { weight: weightData.current } : undefined;
