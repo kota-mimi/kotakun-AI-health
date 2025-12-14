@@ -131,6 +131,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const updateDateData = (updates: any) => {
     try {
       dateBasedDataManager?.updateDateData?.(navigation?.selectedDate, updates);
+      
+      // 体重データが更新された場合、統合ダッシュボードキャッシュも無効化
+      if (updates.weightEntries || updates.weight) {
+        dashboardData.invalidateCache();
+        console.log('🔄 体重更新により統合ダッシュボードキャッシュを無効化');
+      }
     } catch (error) {
       console.error('updateDateData error:', error);
       onError();
@@ -184,7 +190,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
     updateDateData,
     counselingResult,
     sharedProfile,
-    dashboardData.weightData // 🚀 統合データから取得
+    dashboardData.weightData, // 🚀 統合データから取得
+    dashboardData.invalidateCache // 🔄 ダッシュボードキャッシュ無効化関数を渡す
   );
 
   const feedbackManager = useFeedbackData(

@@ -29,7 +29,7 @@ interface WeightSettings {
   reminderEnabled: boolean;
 }
 
-export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[]) {
+export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[], invalidateDashboardCache?: () => void) {
   const { liffUser } = useAuth();
   const latestProfile = sharedProfile?.latestProfile; // 🔄 統合プロフィールから取得
   
@@ -359,6 +359,12 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           
           return updatedData;
         });
+        
+        // 統合ダッシュボードキャッシュも無効化
+        if (invalidateDashboardCache) {
+          invalidateDashboardCache();
+          console.log('🔄 体重記録により統合ダッシュボードキャッシュを無効化');
+        }
         
         // ローディング状態をリセット（UI即座反映）
         setIsLoadingWeightData(false);
