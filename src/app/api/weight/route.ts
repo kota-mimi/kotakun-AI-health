@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
+import { apiCache, createCacheKey } from '@/lib/cache';
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,7 +69,15 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       }, { merge: true });
       
+      // 関連キャッシュを無効化（LINEからの記録でもダッシュボード即座更新）
+      const weightCacheKey = createCacheKey('weight', lineUserId, 'month');
+      const dashboardCacheKey = createCacheKey('dashboard', lineUserId, targetDate);
+      
+      apiCache.delete(weightCacheKey);
+      apiCache.delete(dashboardCacheKey);
+      
       console.log('✅ プロフィール体重・履歴も同期更新:', recordData.weight);
+      console.log('🔄 体重・ダッシュボードキャッシュを無効化（LINE記録）');
     }
 
     return NextResponse.json({ 
