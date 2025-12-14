@@ -259,6 +259,22 @@ export function useShareRecord() {
       }))
     });
     
+    // 🔍 デバッグ：LINEとアプリの運動データの違いを特定
+    const lineExercises = todayExercises.filter(ex => ex.notes?.includes('LINE記録'));
+    const appExercises = todayExercises.filter(ex => ex.notes?.includes('APP記録'));
+    
+    alert(`🔍 運動データ調査結果:
+
+【LINEから記録】(${lineExercises.length}件)
+${lineExercises.map(ex => `${ex.name}: ${ex.calories}kcal`).join('\n')}
+
+【アプリから記録】(${appExercises.length}件)  
+${appExercises.map(ex => `${ex.name}: ${ex.calories}kcal`).join('\n')}
+
+【合計消費カロリー】${totalBurnedCalories}kcal
+【今日判定】isToday: ${isToday}
+【選択日付】${selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })}`);
+    
     
     // 体重データ（最新データを最優先、フォールバックは最新データがない場合のみ）
     const hasRecentWeight = weightData?.current && weightData.current > 0;
