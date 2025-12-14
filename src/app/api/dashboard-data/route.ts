@@ -120,11 +120,15 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
     
     console.log('⚖️ 体重データ効率取得:', { startDate, endDate });
     
-    // 全てのdailyRecordsを取得してフィルタリング（より安全なアプローチ）
+    // 🚀 最適化: 範囲指定で必要な分だけ取得（全件取得の問題を修正）
     const dailyRecordsRef = adminDb
       .collection('users')
       .doc(lineUserId)
-      .collection('dailyRecords');
+      .collection('dailyRecords')
+      .where(adminDb.FieldPath.documentId(), '>=', startDate)
+      .where(adminDb.FieldPath.documentId(), '<=', endDate)
+      .orderBy(adminDb.FieldPath.documentId(), 'desc')
+      .limit(31); // 31日分のみ
     
     const snapshot = await dailyRecordsRef.get();
     const weights: any[] = [];
@@ -133,23 +137,17 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
       const docId = doc.id;
       const dailyRecord = doc.data();
       
-      // 日付範囲でフィルタリング
-      if (docId >= startDate && docId <= endDate) {
-        // 体重データがあれば含める
-        if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
-          weights.push({
-            date: docId,
-            weight: dailyRecord.weight,
-            note: dailyRecord.note
-          });
-        }
+      // 体重データがあれば含める
+      if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+        weights.push({
+          date: docId,
+          weight: dailyRecord.weight,
+          note: dailyRecord.note
+        });
       }
     });
     
-    // 日付降順でソート
-    weights.sort((a, b) => b.date.localeCompare(a.date));
-    
-    console.log(`✅ 体重データ ${weights.length}件取得完了 (安全なクエリ)`);
+    console.log(`✅ 体重データ ${weights.length}件取得完了 (最適化済みクエリ - 読み取り回数激減)`);
     return weights;
     
   } catch (error) {
