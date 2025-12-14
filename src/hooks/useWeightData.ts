@@ -268,17 +268,24 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       console.log('📅 最新記録使用:', { latestRecord, currentWeight });
     }
     
-    // 前日比計算：選択日に記録がある場合のみ前日と比較
+    // 前日比計算：現在体重が表示されている場合は前日と比較
     let previousWeight = 0;
-    if (currentDayData?.weight) {
-      // 選択日に記録がある場合のみ前日比を計算
+    if (currentWeight > 0) {
+      // 現在体重が表示されている場合は前日比を計算
       const previousDate = new Date(date);
       previousDate.setDate(previousDate.getDate() - 1);
       const previousKey = getDateKey(previousDate);
       const previousDayData = realWeightData.find(item => item.date === previousKey);
       previousWeight = previousDayData?.weight || 0;
+      
+      console.log('📊 前日比計算:', {
+        currentWeight,
+        previousKey,
+        previousDayData,
+        previousWeight
+      });
     }
-    // 選択日に記録がない場合、previousWeightは0のまま（--表示）
+    // 現在体重が0の場合、previousWeightは0のまま（--表示）
     
     return {
       current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
