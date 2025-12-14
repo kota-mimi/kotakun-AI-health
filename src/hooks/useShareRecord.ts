@@ -260,8 +260,20 @@ export function useShareRecord() {
     
     // 消費カロリー計算（運動データから）
     const totalBurnedCalories = todayExercises.reduce((sum, exercise) => {
-      // caloriesBurned ではなく calories プロパティを使用
-      return sum + (exercise.caloriesBurned || exercise.calories || 0);
+      const caloriesBurned = exercise.caloriesBurned || 0;
+      const calories = exercise.calories || 0;
+      const finalCalories = caloriesBurned || calories;
+      
+      console.log('🔍 個別運動カロリー詳細:', {
+        exerciseName: exercise.name,
+        caloriesBurned: caloriesBurned,
+        calories: calories,
+        finalCalories: finalCalories,
+        notes: exercise.notes,
+        timestamp: exercise.timestamp
+      });
+      
+      return sum + finalCalories;
     }, 0);
     
     console.log('🔍 運動集計結果:', {
@@ -272,7 +284,9 @@ export function useShareRecord() {
         name: ex.name,
         duration: ex.duration,
         calories: ex.calories,
-        caloriesBurned: ex.caloriesBurned
+        caloriesBurned: ex.caloriesBurned,
+        notes: ex.notes,
+        timestamp: ex.timestamp
       }))
     });
     
