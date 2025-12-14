@@ -40,6 +40,11 @@ export function useDashboardData(selectedDate: Date) {
         // キャッシュキー生成（日付ベース）
         const cacheKey = createCacheKey('dashboard', lineUserId, dateStr);
         
+        console.log('🔍 ダッシュボードデータ取得:');
+        console.log('  - キー:', cacheKey);
+        console.log('  - 日付:', dateStr);
+        console.log('  - ユーザー:', lineUserId);
+        
         // キャッシュチェック
         const cachedData = apiCache.get(cacheKey);
         if (cachedData) {
@@ -48,6 +53,8 @@ export function useDashboardData(selectedDate: Date) {
           setIsLoading(false);
           return;
         }
+        
+        console.log('🆕 キャッシュなし - APIから取得');
 
         console.log('🚀 統合ダッシュボードデータをAPIから取得');
         setIsLoading(true);

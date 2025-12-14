@@ -73,11 +73,31 @@ export async function POST(request: NextRequest) {
       const weightCacheKey = createCacheKey('weight', lineUserId, 'month');
       const dashboardCacheKey = createCacheKey('dashboard', lineUserId, targetDate);
       
+      console.log('🔑 無効化するキャッシュキー:');
+      console.log('  - 体重:', weightCacheKey);
+      console.log('  - ダッシュボード:', dashboardCacheKey);
+      console.log('  - 対象日付:', targetDate);
+      
       apiCache.delete(weightCacheKey);
       apiCache.delete(dashboardCacheKey);
       
       console.log('✅ プロフィール体重・履歴も同期更新:', recordData.weight);
       console.log('🔄 体重・ダッシュボードキャッシュを無効化（LINE記録）');
+      
+      // 追加：全ての関連キャッシュも削除（より確実に）
+      const allCacheStats = apiCache.getStats();
+      console.log('📊 全キャッシュ削除前:', allCacheStats.keys.length, '個');
+      
+      // lineUserIdを含む全キャッシュを削除（より確実な更新のため）
+      for (const key of allCacheStats.keys) {
+        if (key.includes(lineUserId)) {
+          apiCache.delete(key);
+          console.log('🗑️ キャッシュ削除:', key);
+        }
+      }
+      
+      const afterStats = apiCache.getStats();
+      console.log('📊 全キャッシュ削除後:', afterStats.keys.length, '個');
     }
 
     return NextResponse.json({ 
