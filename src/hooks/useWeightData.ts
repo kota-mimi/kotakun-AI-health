@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '@/lib/utils';
@@ -525,15 +525,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
 
 
-  // 🔍 デバッグ：返すweightDataの詳細ログ
-  const currentWeightData = getWeightDataForDate(selectedDate);
-  console.log('⚖️ useWeightData返却値:', {
-    selectedDate: selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
-    currentWeightData,
-    realWeightDataLength: realWeightData.length,
-    realWeightData: realWeightData.slice(-3), // 最新3件
-    isLoadingWeightData
-  });
+  // 🔧 メモ化でパフォーマンス改善と無限ループ防止
+  const currentWeightData = useMemo(() => {
+    const result = getWeightDataForDate(selectedDate);
+    console.log('⚖️ useWeightData返却値 (メモ化):', {
+      selectedDate: selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
+      result,
+      realWeightDataLength: realWeightData.length,
+      realWeightData: realWeightData.slice(-3), // 最新3件
+    });
+    return result;
+  }, [selectedDate, realWeightData, weightSettingsStorage.value.targetWeight, counselingResult, latestProfile]);
 
   return {
     // データ
