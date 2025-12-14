@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
       getFeedbackData(adminDb, lineUserId, date)
     ]);
 
-    console.log('✅ 統合ダッシュボードデータ取得完了');
 
     return NextResponse.json({
       success: true,
@@ -99,7 +98,6 @@ async function getMealData(adminDb: any, lineUserId: string, date?: string) {
       });
     });
     
-    console.log(`✅ 食事データ ${meals.length}件取得完了`);
     return meals;
     
   } catch (error) {
@@ -147,7 +145,6 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
       }
     });
     
-    console.log(`✅ 体重データ ${weights.length}件取得完了 (最適化済みクエリ - 読み取り回数激減)`);
     return weights;
     
   } catch (error) {
@@ -188,7 +185,6 @@ async function getFeedbackData(adminDb: any, lineUserId: string, date?: string) 
       });
     });
     
-    console.log(`✅ フィードバックデータ ${feedback.length}件取得完了`);
     return feedback;
     
   } catch (error) {
