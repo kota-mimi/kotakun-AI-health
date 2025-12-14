@@ -700,12 +700,9 @@ class AIHealthService {
       }
 
       const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
-      const languageInstruction = getLanguageInstruction(language);
-
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `${languageInstruction}
+      const prompt = `
 
 あなたは「${persona.name}」として振る舞ってください。
 
@@ -854,12 +851,9 @@ class AIHealthService {
       }
 
       const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
-      const languageInstruction = getLanguageInstruction(language);
-
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `${languageInstruction}
+      const prompt = `
 
 あなたは「${persona.name}」として振る舞ってください。
 
@@ -1353,14 +1347,10 @@ true または false で回答してください。`;
       // キャラクターのペルソナと言語を取得
       console.log('🎭 AIサービス - 受信キャラクター設定:', characterSettings);
       const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
-      const languageInstruction = getLanguageInstruction(language);
-      
       console.log('🎭 AIサービス - 使用ペルソナ:', { 
         name: persona.name, 
         personality: persona.personality.substring(0, 50) + '...',
-        tone: persona.tone.substring(0, 30) + '...',
-        language: language
+        tone: persona.tone.substring(0, 30) + '...'
       });
       
       // 会話履歴を取得
