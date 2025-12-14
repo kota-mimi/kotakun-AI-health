@@ -508,17 +508,17 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">体重</div>
-                <div className="font-bold text-slate-900 text-sm">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
+                <div className="font-bold text-slate-900 text-lg">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
               </button>
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-green-300 hover:bg-green-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">目標</div>
-                <div className="font-bold text-slate-900 text-sm">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
+                <div className="font-bold text-slate-900 text-lg">{userProfile.targetWeight ? `${userProfile.targetWeight}kg` : '-'}</div>
               </button>
             </div>
             
@@ -526,31 +526,31 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">カロリー</div>
-                <div className="font-bold text-slate-900 text-sm">{finalCalories}</div>
+                <div className="font-bold text-blue-600 text-base">{finalCalories}</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-red-300 hover:bg-red-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">P</div>
-                <div className="font-bold text-red-600 text-sm">{finalProtein}g</div>
+                <div className="font-bold text-red-600 text-base">{finalProtein}g</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-orange-300 hover:bg-orange-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">F</div>
-                <div className="font-bold text-orange-600 text-sm">{finalFat}g</div>
+                <div className="font-bold text-orange-600 text-base">{finalFat}g</div>
               </button>
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-green-300 hover:bg-green-50/50 transition-all duration-200 shadow-sm"
               >
                 <div className="text-xs text-slate-500">C</div>
-                <div className="font-bold text-green-600 text-sm">{finalCarbs}g</div>
+                <div className="font-bold text-green-600 text-base">{finalCarbs}g</div>
               </button>
             </div>
           </div>
