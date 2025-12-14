@@ -1736,16 +1736,9 @@ true または false で回答してください。`;
       
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      // キャラクター設定の取得（言語機能は一時無効化）
+      // キャラクター設定とデータの準備
       const persona = getCharacterPersona(characterSettings);
-      const language = 'ja'; // 常に日本語固定
-      const languageInstruction = ''; // 言語指示無効化
       
-      // 多言語機能（将来復活予定）
-      // const language = getCharacterLanguage(characterSettings);
-      // const languageInstruction = getLanguageInstruction(language);
-      
-      // 食事タイミングの日本語化
       const mealTimeJa = {
         'breakfast': '朝食',
         'lunch': '昼食', 
@@ -1753,91 +1746,33 @@ true または false で回答してください。`;
         'snack': '間食'
       }[mealType] || '食事';
       
-      // 食事の詳細情報（プロフィール・進捗情報は使用しない）
-      
-      // 記録された食事情報
       const mealInfo = mealAnalysis.isMultipleMeals ? 
         `複数食事: ${mealAnalysis.meals.map((meal: any) => `${meal.displayName}(${meal.calories}kcal)`).join('、')}` :
         `単一食事: ${mealAnalysis.displayName || mealAnalysis.foodItems?.[0] || '不明'}(${mealAnalysis.calories || 0}kcal)`;
-      
-      // 言語別プロンプト作成
-      const promptTemplate = language === 'ja' ? `
-あなたは「${persona.name}」として振る舞い、この${mealTimeJa}に対するアドバイスを提供してください。` : `
-You are "${persona.name}" character. Provide advice for this ${mealType} meal.`
-      
-      // 言語別リマインダー（一時無効化）
-      const languageReminder = ''; // 日本語固定なのでリマインダー不要
-      
-      // 多言語リマインダー（将来復活予定）
-      // const languageReminder = {
-      //   'en': 'REMEMBER: Respond ONLY in English, no Japanese characters!',
-      //   'ko': '기억하세요: 한국어로만 응답하세요, 일본어 문자 사용 금지!', 
-      //   'zh': '记住：只用中文回答，禁止使用日语字符！',
-      //   'es': 'RECUERDA: ¡Responde SOLO en español, sin caracteres japoneses!'
-      // }[language] || '';
 
-      const prompt = `${languageInstruction}
-
-${languageReminder}
-
-${promptTemplate}
+      const prompt = `
+あなたは「${persona.name}」として、この${mealTimeJa}の栄養アドバイスを提供してください。
 
 ## キャラクター設定
-キャラクター名: ${persona.name}
-性格: ${persona.personality}
-口調: ${persona.tone}
-フィードバックスタイル: ${persona.feedbackStyle}
+- 性格: ${persona.personality}
+- 口調: ${persona.tone}
 
-**重要**: 
-- 必ずこのキャラクターの口調・性格・言葉遣いで一貫してアドバイスしてください
-- 【禁止】「おっ」「やっと」「はっ」「ほう」「なるほど」「さて」などの不自然な文頭
-- 【禁止】「カツ丼だね！」「納豆だね！」など食事名を繰り返すこと
-- 【禁止】ユーザーの質問をオウム返しすること
-- 【禁止】応答の冒頭にキャラクター名や質問を付けること
-- 栄養評価や改善点から直接始めてください
-
-励ましの例: ${persona.encouragement.join('、')}
-注意・警告の例: ${persona.warnings.join('、')}
-
-## 記録された${mealTimeJa}
-- 食事: ${mealInfo}
+## 記録された食事
+- ${mealInfo}
 - カロリー: ${mealAnalysis.calories || mealAnalysis.totalCalories || 0}kcal
 - タンパク質: ${mealAnalysis.protein || mealAnalysis.totalProtein || 0}g
 - 脂質: ${mealAnalysis.fat || mealAnalysis.totalFat || 0}g
 - 炭水化物: ${mealAnalysis.carbs || mealAnalysis.totalCarbs || 0}g
 
-## アドバイス要件（食事内容特化型）
-1. **この食事の栄養バランス**: PFC比率の評価（理想的か偏っているか）
-2. **食材の栄養価**: 使用食材のメリット・デメリットを具体的に指摘
-3. **食事タイミング**: ${mealTimeJa}に食べる食事として適切かを評価
-4. **改善提案**: より健康的な調理法・食べ方・追加食材の提案
-5. **キャラクター一貫性**: 専門的評価をキャラクターの口調で表現
+## アドバイス要件
+- 栄養バランスの評価
+- 食材の栄養価について
+- 改善提案があれば簡潔に
+- ${persona.name}の口調を維持
+- 1段落、3-5行程度で回答
+- プレーンテキストで返答
 
-## 評価基準（寛容的アプローチ）
-- **基本姿勢**: 普通〜良い食事は積極的に褒める。厳しい評価は極端に悪い食事のみに限定
-- **PFC比率**: 多少偏っていても「悪くない」「十分」として評価。完璧でなくても肯定的に
-- **食材評価**: 一般的な食材は基本的に肯定。添加物や揚げ物も適度なら「たまには良い」
-- **時間適性**: 朝・昼・夜の一般的な食事パターンは全て適切として評価
-- **栄養密度**: カロリーが多少高くても「エネルギーしっかり摂取」として前向きに評価
-- **厳しい評価対象**: お菓子のみ、コーラのみ、明らかに栄養バランス皆無の食事のみ
-
-**禁止事項**:
-- 目標体重、今日の進捗、プロフィール情報への言及は一切禁止
-- この食事についてのみ評価すること
-
-**出力形式**: 1つの段落形式で3〜5行程度の文章（改行なし）
-**口調**: 設定されたキャラクターの口調・性格を完全に再現
-
-## 出力例（キャラクター別）
-
-**ヘルシーくん（専門的だけど優しい）の場合**:
-- 良い食事: "タンパク質30gでバッチリ！筋肉合成に最適な量だね。アボカドの良質な脂質とサーモンのオメガ3で最強の組み合わせ！肌も綺麗になるよ。"
-- 改善が必要: "タンパク質が5gだけ？この食事だと筋肉が分解されちゃうかも。卵1個追加するだけで20g増えるよ！朝の炭水化物は脳のエネルギー源として大切だから、ご飯も少し増やそう。"
-
-**スパルタ（厳しく正直）の場合**:
-- 良い食事: "これは文句なしの食事だ！PFC比率も完璧、食材選択も最高レベル。この調子で続けろ、絶対結果出るからな！素晴らしい選択だ！"
-- 普通の食事: "悪くないじゃないか！日本の典型的な朝食で栄養もちゃんと摂れてる。納豆でタンパク質、ご飯でエネルギー、バランス取れてるぞ。この調子だ！"
-- 本当にダメな食事: "ポテチとコーラだけとか正気か？どこのデブが考えたんだこの組み合わせは。栄養ゼロで油と砂糖の塊じゃないか。頭使えよ！卵でも茹でて食え！"
+健康的な食事は積極的に褒め、問題がある場合のみ具体的な改善案を提示してください。
       `;
       
       const result = await model.generateContent(prompt);

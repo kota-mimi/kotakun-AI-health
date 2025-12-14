@@ -235,94 +235,48 @@ async function generateDailyFeedback(
   // 体重変化の分析（過去3日間の体重を取得して比較）
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
-  // キャラクターのペルソナを取得（言語機能は一時無効化）
+  // キャラクターのペルソナを取得
   const persona = getCharacterPersona(characterSettings);
-  const language = 'ja'; // 常に日本語固定
-  const languageInstruction = ''; // 言語指示無効化
-  
-  // 多言語機能（将来復活予定）
-  // const language = getCharacterLanguage(characterSettings);
-  // const languageInstruction = getLanguageInstruction(language);
   
   // プロンプトを作成
-  const prompt = `${languageInstruction}
+  const prompt = `
+あなたは「${persona.name}」として、1日の食事と運動記録をフィードバックしてください。
 
-あなたは「${persona.name}」として振る舞ってください。
-【キャラクター設定】  
-- 名前: ${persona.name}
+## キャラクター設定
 - 性格: ${persona.personality}
 - 口調: ${persona.tone}
-- フィードバックスタイル: ${persona.feedbackStyle}
 
-**重要：応答の冒頭に「${persona.name}：」や名前を付けずに、直接内容から始めてください。**
+## 記録データ（${date}）
+### 食事記録
+- カロリー: ${totalCalories}kcal (目標: ${targetCalories}kcal)
+- タンパク質: ${totalProtein}g
+- 脂質: ${totalFat}g  
+- 炭水化物: ${totalCarbs}g
+- 食事内容: ${data.meals.map(meal => meal.foods.join(', ')).join('、') || '記録なし'}
 
-${persona.name}として、経験豊富な管理栄養士の知識を持ちながらも、あなた独自の性格と口調で、
-ユーザーから提供された1日の食事内容と運動内容を分析し、わかりやすく親しみやすいフィードバックを提供してください。
+### 運動記録
+- 運動時間: ${exerciseTime}分
+- 運動内容: ${data.exercises.map(ex => ex.displayName || ex.type).join('、') || '記録なし'}
 
-【${date}の記録データ】
-📊 基本情報:
+### 体重
 - 体重: ${data.weight?.value || '未記録'}kg
-- 体重変化: ${weightTrend}
+- 変化: ${weightTrend}
 
-🔥 カロリー状況:
-- 今日の摂取: ${totalCalories}kcal 
-- 目標: ${targetCalories}kcal
-- 状況: ${calorieAchievement >= 90 && calorieAchievement <= 110 ? 'ちょうどいい感じ！' : calorieAchievement < 90 ? 'ちょっと少なめかも' : 'ちょっと多めかも'}
-
-🎯 栄養バランス状況:
-- タンパク質: ${totalProtein}g ${proteinAchievement >= 90 ? '(バッチリ！)' : '(もう少し摂れるといいね)'}
-- 脂質: ${totalFat}g ${fatAchievement >= 80 && fatAchievement <= 120 ? '(いい感じ！)' : '(バランス調整してみよう)'}
-- 炭水化物: ${totalCarbs}g ${carbsAchievement >= 80 && carbsAchievement <= 120 ? '(いい感じ！)' : '(バランス調整してみよう)'}
-
-💪 運動記録:
-- 今日の運動: ${exerciseTime > 0 ? `${exerciseTime}分間お疲れさま！` : '運動記録なし'}
-- 運動内容: ${data.exercises.map(ex => {
-  const details = [];
-  if (ex.duration > 0) details.push(`${ex.duration}分`);
-  if (ex.reps > 0) details.push(`${ex.reps}回`);
-  if (ex.weight > 0) details.push(`${ex.weight}kg`);
-  if (ex.setsCount > 0) details.push(`${ex.setsCount}セット`);
-  if (ex.distance > 0) details.push(`${ex.distance}km`);
-  return `${ex.displayName || ex.type}${details.length > 0 ? ` (${details.join(', ')})` : ''}`;
-}).join(', ') || '今日は運動お休み'}
-
-🍽️ 食事詳細:
-${data.meals.map((meal, i) => `${i+1}. ${meal.timestamp || '時間不明'}: ${meal.foods.join(', ')} (${meal.calories}kcal)`).join('\n') || '詳細記録なし'}
-
-【絶対厳守ルール】
-- **キャラクター一貫性**: 設定されたキャラクター（${persona.name}）の口調・性格を完全に再現する
-- **口調統一**: 食事記録アドバイスと同じトーン・表現を使用する
-- **励ましパターン**: ${persona.encouragement.join('、')}
-- **警告パターン**: ${persona.warnings.join('、')}
-- 難しい言葉は使わず、分かりやすい表現にする
-- パーセンテージや達成率などの数字は使わない（「バッチリ」「いい感じ」「もう少し」など感覚的表現を使う）
-- 良かった点は200-300文字でしっかりと詳しく書く
-- 改善点は150-200文字で具体的に書く
-- 完全に記録が0の場合のみ「記録なし」を使う
-- 少しでも記録があれば「もう少し詳しく記録できるともっといいね」など前向きに書く
-- 食事評価では絶対に食事・栄養の話のみ（運動の話は書くな）
-- 運動評価では褒めるだけ（改善提案やアドバイスは一切書くな）
-
-【フィードバック形式】
+## フィードバック要件
+以下の形式で回答してください：
 
 ■ 食事評価
+良かった点: [食事・栄養面で良かったことを褒める]
+改善点: [食事・栄養面の改善提案があれば簡潔に]
 
-良かった点:
-・[食事・栄養で良かったことを詳しく褒めて、今後も続けるためのアドバイスも含める。少しでも記録があれば具体的に褒める。完全に記録が0の場合のみ「記録なし」]
+■ 運動評価  
+良かった点: [運動面で良かったことを褒める]
 
-改善点:
-・[食事・栄養で改善すべき点を親しみやすく提案。記録が少なくても前向きに書く。完全に記録が0の場合のみ「記録なし」]
-
-■ 運動評価
-
-良かった点:
-・[運動・身体活動で良かったことを詳しく褒める。記録があれば褒めて励ます。完全に記録が0の場合のみ「記録なし」]
-
-【絶対厳守！違反禁止！】
-🚫 運動評価では改善提案・アドバイス・今後の提案を一切書くな！褒めるだけ！
-🚫 運動評価では食事・栄養・タンパク質・水分補給・食べ物の話を一切書くな！
-🚫 食事評価では運動・筋トレ・有酸素運動・体を動かすことの話を一切書くな！
-🚫 数字やパーセンテージは使うな！感覚的な表現のみ！
+## 指示
+- ${persona.name}の口調を維持
+- 記録があれば積極的に褒める
+- 具体的で分かりやすく
+- プレーンテキストで返答
 `;
 
   try {
