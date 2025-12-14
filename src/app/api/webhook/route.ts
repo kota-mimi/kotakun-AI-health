@@ -1042,7 +1042,7 @@ async function showMealTypeSelection(replyToken: string) {
 // 記録しない選択時の処理（統一モード用）
 async function handleNoRecordSelection(userId: string, replyToken: string) {
   try {
-    console.log('🔄 記録しない選択: 通常AI会話として処理', { userId });
+    console.log('🔄 記録しない選択: 画像について会話します', { userId });
     
     // AI制限チェック
     const aiLimit = await checkUsageLimit(userId, 'ai');
@@ -1054,29 +1054,28 @@ async function handleNoRecordSelection(userId: string, replyToken: string) {
     
     // 保存済みの画像解析結果を取得
     const tempAnalysis = await getTempMealAnalysis(userId);
-    if (!tempAnalysis || !tempAnalysis.analysis) {
-      await replyMessage(replyToken, [{
-        type: 'text',
-        text: 'すみません、画像データが見つかりませんでした。もう一度画像を送ってください。'
-      }]);
-      return;
-    }
     
     // 食事として記録しないため、キャッシュをクリア
     await clearTempMealAnalysis(userId);
     clearImageCache(userId);
     
-    // 一般的な画像会話として処理
+    // 画像について会話
     const aiService = new AIHealthService();
-    const characterSettings = null;
-    const imageDescription = tempAnalysis.analysis.description || '画像を見ました';
-    const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
+    let aiResponse;
     
-    const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
+    if (tempAnalysis?.analysis?.description) {
+      // 画像解析結果がある場合
+      const imageDescription = tempAnalysis.analysis.description;
+      const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。食事記録ではなく、この画像について自然に会話してください。`;
+      aiResponse = await aiService.generateGeneralResponse(prompt, userId, null);
+    } else {
+      // 画像解析結果がない場合はシンプルに応答
+      aiResponse = 'おいしそうな写真ですね！他に何かお話ししましょうか？';
+    }
     
     // 会話履歴を保存
     if (aiResponse) {
-      await aiService.saveConversation(userId, '画像を送信', aiResponse);
+      await aiService.saveConversation(userId, '画像について会話', aiResponse);
     }
     
     // AI応答成功時に使用回数を記録
@@ -1090,9 +1089,10 @@ async function handleNoRecordSelection(userId: string, replyToken: string) {
     console.log('✅ 記録しない選択処理完了');
   } catch (error) {
     console.error('❌ 記録しない選択処理エラー:', error);
+    // シンプルなフォールバック
     await replyMessage(replyToken, [{
       type: 'text',
-      text: 'すみません、処理中にエラーが発生しました。もう一度お試しください。'
+      text: 'おいしそうな写真ですね！他に何かお話ししましょうか？'
     }]);
   }
 }
