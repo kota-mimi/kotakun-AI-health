@@ -378,25 +378,83 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   };
 
   // 体重記録を更新
-  const handleUpdateWeightEntry = (entryId: string, updates: Partial<WeightEntry>) => {
+  const handleUpdateWeightEntry = async (entryId: string, updates: Partial<WeightEntry>) => {
+    const lineUserId = liffUser?.userId;
+    if (!lineUserId) return;
+    
     const currentData = getCurrentDateData();
     const updatedEntries = (currentData.weightEntries || []).map((entry: WeightEntry) =>
       entry.id === entryId ? { ...entry, ...updates } : entry
     );
     
+    // ローカルデータ更新
     updateDateData({
       weightEntries: updatedEntries
     });
+    
+    // 🔧 重要: 体重が更新された場合はrealWeightDataとキャッシュも即座に更新
+    if (updates.weight && updates.weight > 0) {
+      const dateStr = getDateKey(selectedDate);
+      const newRealWeightEntry = {
+        date: dateStr,
+        weight: updates.weight
+      };
+      
+      setRealWeightData(prevData => {
+        // 既存の同じ日付のデータを削除して新しいデータを追加
+        const filteredData = prevData.filter(item => item.date !== dateStr);
+        const updatedData = [...filteredData, newRealWeightEntry].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        // キャッシュを即座に更新（データ整合性確保）
+        const cacheKey = createCacheKey('weight', lineUserId, 'month');
+        apiCache.set(cacheKey, updatedData, CACHE_TTL.WEIGHT);
+        
+        console.log('🔄 体重更新によりrealWeightDataとキャッシュを即座更新');
+        return updatedData;
+      });
+      
+      // 統合ダッシュボードキャッシュも無効化
+      if (invalidateDashboardCache) {
+        invalidateDashboardCache();
+        console.log('🔄 体重更新により統合ダッシュボードキャッシュを無効化');
+      }
+    }
   };
 
   // 体重記録を削除
   const handleDeleteWeightEntry = (entryId: string) => {
+    const lineUserId = liffUser?.userId;
+    if (!lineUserId) return;
+    
     const currentData = getCurrentDateData();
     const filteredEntries = (currentData.weightEntries || []).filter((entry: WeightEntry) => entry.id !== entryId);
     
+    // ローカルデータ更新
     updateDateData({
       weightEntries: filteredEntries
     });
+    
+    // 🔧 重要: 体重記録削除時もrealWeightDataとキャッシュを即座に更新
+    const dateStr = getDateKey(selectedDate);
+    setRealWeightData(prevData => {
+      // 削除された日付のデータを除去
+      const updatedData = prevData.filter(item => item.date !== dateStr);
+      
+      // キャッシュを即座に更新
+      const cacheKey = createCacheKey('weight', lineUserId, 'month');
+      apiCache.set(cacheKey, updatedData, CACHE_TTL.WEIGHT);
+      
+      console.log('🗑️ 体重削除によりrealWeightDataとキャッシュを即座更新');
+      return updatedData;
+    });
+    
+    // 統合ダッシュボードキャッシュも無効化
+    if (invalidateDashboardCache) {
+      invalidateDashboardCache();
+      console.log('🔄 体重削除により統合ダッシュボードキャッシュを無効化');
+    }
   };
 
   // 目標体重を設定（localStorage自動保存）
