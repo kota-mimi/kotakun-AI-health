@@ -671,23 +671,8 @@ class AIHealthService {
   // テキストから食事内容を分析
   async analyzeMealFromText(mealText: string, userId?: string) {
     try {
-      // ユーザーのキャラクター設定を取得
-      let characterSettings = null;
-      if (userId) {
-        try {
-          const db = admin.firestore();
-          const profileRef = db.collection(`users/${userId}/profile`).orderBy('createdAt', 'desc').limit(1);
-          const profileSnap = await profileRef.get();
-          if (!profileSnap.empty) {
-            characterSettings = profileSnap.docs[0].data()?.aiCharacter;
-          }
-        } catch (error) {
-          console.warn('キャラクター設定取得エラー:', error);
-        }
-      }
-
-      const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
+      const persona = getCharacterPersona(null);
+      const language = getCharacterLanguage(null);
       const languageInstruction = getLanguageInstruction(language);
 
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
@@ -842,23 +827,8 @@ ${languageInstruction}
   // 画像から食事内容を分析
   async analyzeMealFromImage(imageBuffer: Buffer, userId?: string) {
     try {
-      // ユーザーのキャラクター設定を取得
-      let characterSettings = null;
-      if (userId) {
-        try {
-          const db = admin.firestore();
-          const profileRef = db.collection(`users/${userId}/profile`).orderBy('createdAt', 'desc').limit(1);
-          const profileSnap = await profileRef.get();
-          if (!profileSnap.empty) {
-            characterSettings = profileSnap.docs[0].data()?.aiCharacter;
-          }
-        } catch (error) {
-          console.warn('キャラクター設定取得エラー:', error);
-        }
-      }
-
-      const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
+      const persona = getCharacterPersona(null);
+      const language = getCharacterLanguage(null);
       const languageInstruction = getLanguageInstruction(language);
 
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
@@ -1699,14 +1669,13 @@ true または false で回答してください。`;
   }
 
   // 一般会話機能（エラー時フォールバック用）
-  async generateGeneralResponse(userMessage: string, userId?: string, characterSettings?: any): Promise<string> {
+  async generateGeneralResponse(userMessage: string, userId?: string): Promise<string> {
     try {
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // キャラクターのペルソナと言語を取得
-      console.log('🎭 AIサービス - 受信キャラクター設定:', characterSettings);
-      const persona = getCharacterPersona(characterSettings);
-      const language = getCharacterLanguage(characterSettings);
+      const persona = getCharacterPersona(null);
+      const language = getCharacterLanguage(null);
       const languageInstruction = getLanguageInstruction(language);
       
       console.log('🎭 AIサービス - 使用ペルソナ:', { 
@@ -1930,8 +1899,7 @@ ${languageSpecificPrompt}`;
     mealType: string,
     userId: string,
     userProfile?: any,
-    dailyProgress?: any,
-    characterSettings?: any
+    dailyProgress?: any
   ) {
     try {
       console.log('🧠 パーソナル食事アドバイス生成開始:', { userId, mealType });
@@ -1939,7 +1907,7 @@ ${languageSpecificPrompt}`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       // キャラクター設定の取得（言語機能は一時無効化）
-      const persona = getCharacterPersona(characterSettings);
+      const persona = getCharacterPersona(null);
       const language = 'ja'; // 常に日本語固定
       const languageInstruction = ''; // 言語指示無効化
       

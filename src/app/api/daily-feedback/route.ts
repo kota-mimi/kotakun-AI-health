@@ -47,11 +47,9 @@ export async function POST(request: NextRequest) {
     // プロファイル履歴から目標値を取得（アプリと統一）
     const targetValues = await getTargetValuesForDate(userId, date);
     
-    // ユーザーのキャラクター設定を取得
-    const characterSettings = await getUserCharacterSettings(userId);
     
     // フィードバックを生成（目標値情報も含める）
-    const feedback = await generateDailyFeedback(dailyData, date, targetValues, userId, characterSettings);
+    const feedback = await generateDailyFeedback(dailyData, date, targetValues, userId);
 
     // ユーザー名を取得
     const userName = await getUserName(userId);
@@ -172,40 +170,13 @@ async function getDailyRecords(userId: string, date: string): Promise<DailyRecor
   }
 }
 
-// ユーザーのキャラクター設定を取得
-async function getUserCharacterSettings(userId: string): Promise<AICharacterSettings> {
-  try {
-    const db = admin.firestore();
-    const profileQuery = await db
-      .collection('users')
-      .doc(userId)
-      .collection('profileHistory')
-      .orderBy('changeDate', 'desc')
-      .limit(1)
-      .get();
-    
-    if (!profileQuery.empty) {
-      const latestProfile = profileQuery.docs[0].data();
-      if (latestProfile.aiCharacter) {
-        return latestProfile.aiCharacter as AICharacterSettings;
-      }
-    }
-    
-    // デフォルトはヘルシーくん
-    return { type: 'healthy_kun' };
-  } catch (error) {
-    console.error('キャラクター設定取得エラー:', error);
-    return { type: 'healthy_kun' };
-  }
-}
 
 // AIを使ってフィードバックを生成
 async function generateDailyFeedback(
   data: DailyRecord, 
   date: string, 
   targetValues?: any, 
-  userId?: string,
-  characterSettings?: AICharacterSettings
+  userId?: string
 ): Promise<string> {
   // 栄養データを計算
   const totalCalories = Math.round(data.meals.reduce((sum, meal) => sum + meal.calories, 0));
@@ -236,7 +207,7 @@ async function generateDailyFeedback(
   const weightTrend = userId ? await getWeightTrend(userId, date) : '体重変化データなし';
   
   // キャラクターのペルソナを取得
-  const persona = getCharacterPersona(characterSettings);
+  const persona = getCharacterPersona(null);
   
   // プロンプトを作成
   const prompt = `

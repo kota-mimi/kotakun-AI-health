@@ -592,8 +592,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       }
     } else {
       // 通常のAI会話
-      const characterSettings = await getUserCharacterSettings(userId);
-      console.log('🎭 ユーザーのキャラクター設定:', { userId: userId.substring(0, 8), settings: characterSettings });
+      const characterSettings = null;
       aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     }
     
@@ -614,7 +613,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     console.error('テキストメッセージ処理エラー:', error);
     // エラー時は一般会話で応答
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const aiResponse = await aiService.generateGeneralResponse(text, userId, characterSettings);
     
     // 会話履歴を保存
@@ -711,7 +710,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       const imageDescription = await aiService.analyzeGeneralImage(imageContent);
       
       // 画像の内容を含めてAI会話
-      const characterSettings = await getUserCharacterSettings(userId);
+      const characterSettings = null;
       const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
       const aiResponse = await aiService.generateGeneralResponse(prompt, userId, characterSettings);
       
@@ -894,7 +893,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         await deleteTempMealAnalysis(userId);
         
         const aiService = new AIHealthService();
-        const characterSettings = await getUserCharacterSettings(userId);
+        const characterSettings = null;
         const generalResponse = await aiService.generateGeneralResponse(tempData?.originalText || 'こんにちは', userId, characterSettings);
         
         // 会話履歴を保存
@@ -1069,7 +1068,7 @@ async function handleNoRecordSelection(userId: string, replyToken: string) {
     
     // 一般的な画像会話として処理
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const imageDescription = tempAnalysis.analysis.description || '画像を見ました';
     const prompt = `画像を送ってもらいました。画像の内容：「${imageDescription}」。この画像について何か話しましょう。`;
     
@@ -1196,7 +1195,7 @@ async function saveMealRecord(userId: string, mealType: string, replyToken: stri
     // 🧠 AIアドバイス生成
     console.log('🧠 パーソナル食事アドバイス生成開始');
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     
     // ユーザープロフィール取得（アドバイスの個別化のため）
     let userProfile = null;
@@ -1959,7 +1958,7 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     
     const recordInfo = `${exerciseName}${actionText}しました。時間: ${timeText}、推定消費カロリー: ${displayCalories}kcal`;
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     // 統一モード：記録後はクイックリプライなし
@@ -2447,7 +2446,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     }
     
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     await replyMessage(replyToken, [{
@@ -2532,7 +2531,7 @@ async function recordMultipleWeightExercise(userId: string, match: any, replyTok
     const recordInfo = `${exerciseName}の複数セット記録が完了しました。詳細: ${setsInfo}、総セット数: ${totalSets}セット、総回数: ${exerciseData.totalReps}回、平均重量: ${exerciseData.avgWeight}kg、推定時間: ${estimatedDuration}分、推定消費カロリー: ${caloriesBurned}kcal。段階的な重量アップでのトレーニングでした。`;
     
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     await replyMessage(replyToken, [{
@@ -2603,7 +2602,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     // AI応答でキャラクター口調の記録完了メッセージ生成
     const recordInfo = `${exerciseName} ${weight}kg ${reps}回 ${sets}セットを記録しました。推定時間: ${estimatedDuration}分、消費カロリー: ${caloriesBurned}kcal`;
     const aiService = new AIHealthService();
-    const characterSettings = await getUserCharacterSettings(userId);
+    const characterSettings = null;
     const aiResponse = await aiService.generateGeneralResponse(recordInfo, userId, characterSettings);
     
     await replyMessage(replyToken, [{
@@ -3952,34 +3951,3 @@ async function sendRecordConfirmation(replyToken: string) {
   await replyMessage(replyToken, [message]);
 }
 
-// ユーザーのキャラクター設定を取得
-async function getUserCharacterSettings(userId: string) {
-  try {
-    console.log('🎭 キャラクター設定取得開始:', userId);
-    const db = admin.firestore();
-    const profilesSnapshot = await db
-      .collection('users')
-      .doc(userId)
-      .collection('profileHistory')
-      .orderBy('changeDate', 'desc')
-      .limit(1)
-      .get();
-
-    if (profilesSnapshot.empty) {
-      console.log('🎭 プロフィールが空 - デフォルトキャラクター使用:', userId);
-      return null; // デフォルトキャラクター（ヘルシーくん）を使用
-    }
-
-    const latestProfile = profilesSnapshot.docs[0].data();
-    const characterSettings = latestProfile.aiCharacter || null;
-    console.log('🎭 キャラクター設定取得完了:', { 
-      userId, 
-      characterSettings,
-      profileChangeDate: latestProfile.changeDate 
-    });
-    return characterSettings;
-  } catch (error) {
-    console.error('🎭 キャラクター設定取得エラー:', error);
-    return null; // エラー時はデフォルトキャラクター
-  }
-}
