@@ -799,7 +799,18 @@ class AIHealthService {
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      let jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      // JSONを壊す日本語文字を修正
+      jsonText = jsonText
+        .replace(/[「」]/g, '"')  // 日本語括弧を英語に変換
+        .replace(/[『』]/g, '"')  // 日本語二重括弧を英語に変換
+        .replace(/['']/g, "'")   // カーブした引用符を直線に変換
+        .replace(/[""]/g, '"')   // カーブした二重引用符を直線に変換
+        .replace(/[…]/g, '...')  // 日本語省略記号を英語に変換
+        .replace(/[～〜]/g, '~') // 日本語チルダを英語に変換
+        .replace(/[－—―]/g, '-') // 日本語ダッシュを英語に変換
+        .replace(/[０-９]/g, (match) => String.fromCharCode(match.charCodeAt(0) - 0xFF10 + 0x30)); // 全角数字を半角に変換
       
       const analysis = JSON.parse(jsonText);
       
