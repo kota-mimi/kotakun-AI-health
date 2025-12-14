@@ -463,7 +463,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         const learnedFood = await findLearnedFood(userId, mealJudgment.foodText || text);
         let mealAnalysis;
         
-        if (learnedFood && learnedFood.confidence === 'high') {
+        if (false) { // 学習済み食事マッチを無効化してAI分析を強制
           console.log('🎯 学習済み食事マッチ:', learnedFood.food, '信頼度:', learnedFood.confidence);
           mealAnalysis = {
             calories: learnedFood.data.calories,
