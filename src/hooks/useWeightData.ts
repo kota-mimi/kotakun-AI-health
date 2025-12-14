@@ -300,8 +300,19 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const previousKey = getDateKey(previousDate);
       console.log('🔑 前日キー:', { previousKey });
       
-      const previousDayData = realWeightData.find(item => item.date === previousKey);
-      console.log('🔍 前日データ検索:', { 
+      // 前日のデータを探す
+      let previousDayData = realWeightData.find(item => item.date === previousKey);
+      
+      // 前日にデータがない場合は、直近の過去データを使用
+      if (!previousDayData) {
+        const pastData = realWeightData
+          .filter(item => item.date < dateKey && item.weight > 0)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+        previousDayData = pastData;
+        console.log('📅 前日データなし、直近データ使用:', { previousKey, pastData });
+      }
+      
+      console.log('🔍 前日データ検索結果:', { 
         previousKey, 
         previousDayData,
         realWeightDataDates: realWeightData.map(item => item.date)
