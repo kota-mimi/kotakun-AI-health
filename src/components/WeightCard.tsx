@@ -32,6 +32,13 @@ export function WeightCard({
 	selectedDate,
 	sharedProfile,
 }: WeightCardProps) {
+	// 🔍 デバッグ：WeightCardが受け取っているデータを確認
+	console.log('🏠 WeightCard受信データ:', {
+		data,
+		selectedDate: selectedDate?.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
+		sharedProfile_latestWeight: sharedProfile?.latestProfile?.weight,
+		counseling_weight: counselingResult?.answers?.weight
+	});
 	// 未来日付かどうかの判定
 	const today = new Date().toLocaleDateString("sv-SE", {
 		timeZone: "Asia/Tokyo",

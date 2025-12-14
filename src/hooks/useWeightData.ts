@@ -247,9 +247,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const currentDayData = realWeightData.find(item => item.date === dateKey);
     let currentWeight = 0;
     
+    console.log('🔍 getWeightDataForDate詳細:', {
+      dateKey,
+      currentDayData,
+      realWeightDataCount: realWeightData.length,
+      realWeightDataDates: realWeightData.map(item => item.date)
+    });
+    
     if (currentDayData?.weight && currentDayData.weight > 0) {
       // 選択日に記録がある場合のみその日の体重を使用
       currentWeight = currentDayData.weight;
+      console.log('✅ 選択日の記録使用:', currentWeight);
     } else {
       // 選択日に記録がない場合は最新の記録体重を表示
       const latestRecord = realWeightData
@@ -257,6 +265,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       
       currentWeight = latestRecord?.weight || 0;
+      console.log('📅 最新記録使用:', { latestRecord, currentWeight });
     }
     
     // 前日比計算：選択日に記録がある場合のみ前日と比較
@@ -492,9 +501,19 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
 
 
+  // 🔍 デバッグ：返すweightDataの詳細ログ
+  const currentWeightData = getWeightDataForDate(selectedDate);
+  console.log('⚖️ useWeightData返却値:', {
+    selectedDate: selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
+    currentWeightData,
+    realWeightDataLength: realWeightData.length,
+    realWeightData: realWeightData.slice(-3), // 最新3件
+    isLoadingWeightData
+  });
+
   return {
     // データ
-    weightData: getWeightDataForDate(selectedDate),
+    weightData: currentWeightData,
     weightSettings: weightSettingsStorage.value,
     realWeightData, // 実データを追加
     isLoadingWeightData, // ローディング状態を追加
