@@ -254,6 +254,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       realWeightDataDates: realWeightData.map(item => item.date)
     });
     
+    console.log('🔍 currentWeight計算詳細:', {
+      currentDayData,
+      hasCurrentDayWeight: currentDayData?.weight,
+      currentDayWeightValue: currentDayData?.weight,
+      isCurrentDayWeightGreaterThan0: currentDayData?.weight > 0,
+      condition1: currentDayData?.weight && currentDayData.weight > 0
+    });
+    
     if (currentDayData?.weight && currentDayData.weight > 0) {
       // 選択日に記録がある場合のみその日の体重を使用
       currentWeight = currentDayData.weight;
