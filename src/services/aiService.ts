@@ -700,9 +700,12 @@ class AIHealthService {
       }
 
       const persona = getCharacterPersona(characterSettings);
+      const language = getCharacterLanguage(characterSettings);
+      const languageInstruction = getLanguageInstruction(language);
+
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `
+      const prompt = `${languageInstruction}
 
 あなたは「${persona.name}」として振る舞ってください。
 
