@@ -270,6 +270,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     // 前日比計算：現在体重が表示されている場合は前日と比較
     let previousWeight = 0;
+    
+    console.log('🔍 前日比計算条件チェック:', {
+      currentWeight,
+      currentWeightType: typeof currentWeight,
+      isCurrentWeightGreaterThan0: currentWeight > 0,
+      dateKey,
+      realWeightDataLength: realWeightData.length
+    });
+    
     if (currentWeight > 0) {
       // 現在体重が表示されている場合は前日比を計算
       const previousDate = new Date(date);
