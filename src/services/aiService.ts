@@ -1487,6 +1487,8 @@ true または false で回答してください。`;
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
       const prompt = `
+**CRITICAL: 必ず日本語で応答してください。exerciseNameとdisplayNameは入力言語と同じ言語で返してください。**
+
 テキスト「${text}」を分析して、運動記録の意図があるかどうか以下のJSONで返してください：
 
 単一の運動の場合：
@@ -1598,11 +1600,24 @@ true または false で回答してください。`;
 - intensity: 明記されている場合のみ設定、されていない場合はnull
 - sets, reps, weight, distance: 明記されている場合のみ数値、されていない場合は0
 - **デフォルト値は一切追加せず、ユーザーが入力した情報のみを抽出する**
+
+**CRITICAL REMINDER: exerciseNameとdisplayNameは必ず入力と同じ言語で返してください（日本語入力→日本語出力、英語入力→英語出力）**
 `;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      const jsonText = response.text().replace(/```json|```/g, '').trim();
+      let jsonText = response.text().replace(/```json|```/g, '').trim();
+      
+      // JSONを壊す日本語文字を修正
+      jsonText = jsonText
+        .replace(/[「」]/g, '"')  // 日本語括弧を英語に変換
+        .replace(/[『』]/g, '"')  // 日本語二重括弧を英語に変換
+        .replace(/['']/g, "'")   // カーブした引用符を直線に変換
+        .replace(/[""]/g, '"')   // カーブした二重引用符を直線に変換
+        .replace(/[…]/g, '...')  // 日本語省略記号を英語に変換
+        .replace(/[～〜]/g, '~') // 日本語チルダを英語に変換
+        .replace(/[－—―]/g, '-') // 日本語ダッシュを英語に変換
+        .replace(/[０-９]/g, (match) => String.fromCharCode(match.charCodeAt(0) - 0xFF10 + 0x30)); // 全角数字を半角に変換
       
       return JSON.parse(jsonText);
     } catch (error) {
