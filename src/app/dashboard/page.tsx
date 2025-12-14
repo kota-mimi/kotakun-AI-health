@@ -189,8 +189,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
     counselingResult,
-    sharedProfile
-    // 統合ダッシュボードデータを使わず、プロフィールと同じように直接取得
+    sharedProfile,
+    dashboardData.weightData, // 🔧 統合ダッシュボードデータを渡す
+    dashboardData.invalidateCache // 🔧 キャッシュ無効化関数を渡す
   );
 
   const feedbackManager = useFeedbackData(
