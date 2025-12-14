@@ -52,47 +52,6 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
         </Card>
       </div>
 
-      {/* 言語選択 - 一時的に無効化（将来的に復活予定）
-      <div className="px-4 space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800">🌍 応答言語</h2>
-        <p className="text-sm text-slate-600 mb-3">AIの応答で使用する言語を選択してください</p>
-        
-        <div className="grid grid-cols-2 gap-3">
-          {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
-            <Card 
-              key={code}
-              className={`cursor-pointer transition-all ${
-                selectedCharacter.language === code 
-                  ? 'bg-green-50 border-green-300 shadow-lg ring-2 ring-green-200' 
-                  : 'bg-white/80 border border-white/20 hover:border-green-200'
-              } backdrop-blur-xl rounded-xl shadow-xl`}
-              onClick={() => handleLanguageSelect(code)}
-            >
-              <div className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl mb-1">
-                    {code === 'ja' && '🇯🇵'}
-                    {code === 'en' && '🇺🇸'}
-                    {code === 'ko' && '🇰🇷'}
-                    {code === 'zh' && '🇨🇳'}
-                    {code === 'es' && '🇪🇸'}
-                  </div>
-                  <div className="text-sm font-medium text-slate-900">
-                    {name}
-                  </div>
-                  {selectedCharacter.language === code && (
-                    <div className="text-xs text-green-600 mt-1 font-medium">
-                      選択中
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-      </div>
-      */}
 
       {/* 説明メッセージ */}
       <div className="px-4 pt-8 pb-24">

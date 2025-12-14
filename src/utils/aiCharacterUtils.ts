@@ -1,14 +1,5 @@
 import type { AICharacterSettings, AICharacterPersona } from '@/types';
 
-// サポートする言語
-export const SUPPORTED_LANGUAGES = {
-  ja: '日本語',
-  en: 'English', 
-  ko: '한국어',
-  zh: '中文',
-  es: 'Español'
-} as const;
-
 // 定義済みキャラクターのペルソナ（ヘルシーくんのみ）
 export const CHARACTER_PERSONAS: Record<string, AICharacterPersona> = {
   healthy_kun: {
@@ -60,21 +51,6 @@ ${context}
 - 長すぎる文章は避け、読みやすい長さに調整
 
 このキャラクターの性格と口調を一貫して保ちながら、ユーザーに対して適切なフィードバックを提供してください。`;
-}
-
-// 挨拶メッセージを取得
-export function getCharacterGreeting(persona: AICharacterPersona): string {
-  return persona.greeting;
-}
-
-// 励ましメッセージをランダムに取得
-export function getRandomEncouragement(persona: AICharacterPersona): string {
-  return persona.encouragement[Math.floor(Math.random() * persona.encouragement.length)];
-}
-
-// 警告メッセージをランダムに取得
-export function getRandomWarning(persona: AICharacterPersona): string {
-  return persona.warnings[Math.floor(Math.random() * persona.warnings.length)];
 }
 
 // キャラクター設定から言語を取得
