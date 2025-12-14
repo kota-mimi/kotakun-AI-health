@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { useSharedProfile } from '@/hooks/useSharedProfile';
-import { CHARACTER_PERSONAS, getCharacterPersona, SUPPORTED_LANGUAGES } from '@/utils/aiCharacterUtils';
+import { getCharacterPersona } from '@/utils/aiCharacterUtils';
 import type { AICharacterSettings, AICharacterPersona } from '@/types';
 
 interface AICharacterPageProps {
@@ -12,79 +10,12 @@ interface AICharacterPageProps {
 }
 
 export function AICharacterPage({ onBack }: AICharacterPageProps) {
-  const { liffUser } = useAuth();
-  const { latestProfile, refetch: refetchProfile } = useSharedProfile();
-  
-  const [selectedCharacter, setSelectedCharacter] = useState<AICharacterSettings>({
+  // 固定設定（ヘルシーくんのみ）
+  const selectedCharacter: AICharacterSettings = {
     type: 'healthy_kun',
     language: 'ja'
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
-  // 現在の設定を読み込み
-  useEffect(() => {
-    if (latestProfile?.aiCharacter) {
-      setSelectedCharacter({
-        type: latestProfile.aiCharacter.type,
-        language: latestProfile.aiCharacter.language || 'ja' // デフォルト日本語
-      });
-    }
-  }, [latestProfile]);
-
-  // キャラクター選択
-  const handleCharacterSelect = (type: 'healthy_kun' | 'sparta') => {
-    setSelectedCharacter(prev => ({ ...prev, type, language: 'ja' })); // 常に日本語固定
   };
 
-  // 言語選択 - 一時的に無効化（将来的に復活予定）
-  // const handleLanguageSelect = (language: string) => {
-  //   setSelectedCharacter(prev => ({ ...prev, language: language as any }));
-  // };
-
-
-  // 設定保存
-  const handleSaveSettings = async () => {
-    if (!liffUser?.userId) return;
-
-    setIsSaving(true);
-    
-    try {
-      console.log('🎭 保存するキャラクター設定:', selectedCharacter);
-      
-      // プロフィールに AIキャラクター設定を保存
-      const response = await fetch('/api/profile/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lineUserId: liffUser.userId,
-          profileData: {
-            ...latestProfile,
-            aiCharacter: selectedCharacter,
-            changeDate: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('保存に失敗しました');
-      }
-
-      // プロフィールを再取得
-      await refetchProfile();
-      
-      // 保存完了通知
-      alert('AIキャラクターの設定を保存しました！');
-      onBack();
-      
-    } catch (error) {
-      console.error('AIキャラクター設定保存エラー:', error);
-      alert('保存に失敗しました。もう一度お試しください。');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const currentPersona = getCharacterPersona(selectedCharacter);
 
@@ -101,77 +32,24 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
         </div>
       </div>
 
-      {/* 現在の設定プレビュー */}
-      {currentPersona && (
-        <div className="px-4">
-          <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-4">
-            <div className="text-center">
-              <h3 className="text-lg font-bold text-slate-900 mb-2">
-                {currentPersona.name}
-              </h3>
-              <Badge variant="outline" className="mb-3">
-                {selectedCharacter.type === 'healthy_kun' ? '親しみやすい・自然' : '豹変・鬼モード'}
-              </Badge>
-              <p className="text-sm text-slate-600">
-                {currentPersona.greeting}
-              </p>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* キャラクター選択 */}
-      <div className="px-4 space-y-4">
-        <h2 className="text-lg font-semibold text-slate-800">AIキャラクター</h2>
-        
-        {/* ヘルシーくん */}
-        <Card 
-          className={`cursor-pointer transition-all ${
-            selectedCharacter.type === 'healthy_kun' 
-              ? 'bg-blue-50 border-blue-300 shadow-lg' 
-              : 'bg-white/80 border border-white/20'
-          } backdrop-blur-xl rounded-xl shadow-xl`}
-          onClick={() => handleCharacterSelect('healthy_kun')}
-        >
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-bold text-slate-900 mb-1">
-                  ヘルシーくん（標準）
-                </h3>
-                <p className="text-sm text-slate-600 mb-2">
-                  親しみやすくて自然な口調で楽しく健康サポート
-                </p>
-                <Badge variant="outline">親しみやすい・自然</Badge>
-              </div>
-            </div>
+      {/* ヘルシーくん固定表示 */}
+      <div className="px-4">
+        <Card className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl shadow-sky-400/30 p-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-slate-900 mb-3">
+              ヘルシーくん
+            </h3>
+            <Badge variant="outline" className="mb-4">
+              親しみやすい・自然
+            </Badge>
+            <p className="text-slate-600 mb-4">
+              {currentPersona.greeting}
+            </p>
+            <p className="text-sm text-slate-500">
+              親しみやすく経験豊富なパーソナルトレーナー兼栄養管理士として、気さくで話しやすい自然な口調で健康サポートを行います。
+            </p>
           </div>
         </Card>
-
-        {/* 鬼スパルタ */}
-        <Card 
-          className={`cursor-pointer transition-all ${
-            selectedCharacter.type === 'sparta' 
-              ? 'bg-red-50 border-red-300 shadow-lg' 
-              : 'bg-white/80 border border-white/20'
-          } backdrop-blur-xl rounded-xl shadow-xl`}
-          onClick={() => handleCharacterSelect('sparta')}
-        >
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-bold text-slate-900 mb-1">
-                  ヘルシーくん（鬼モード）
-                </h3>
-                <p className="text-sm text-slate-600 mb-2">
-                  普段の優しさを封印、豹変して容赦ない厳格指導
-                </p>
-                <Badge variant="destructive">豹変・鬼モード</Badge>
-              </div>
-            </div>
-          </div>
-        </Card>
-
       </div>
 
       {/* 言語選択 - 一時的に無効化（将来的に復活予定）
@@ -216,14 +94,17 @@ export function AICharacterPage({ onBack }: AICharacterPageProps) {
       </div>
       */}
 
-      {/* 保存ボタン */}
+      {/* 説明メッセージ */}
       <div className="px-4 pt-8 pb-24">
+        <div className="text-center text-slate-600 text-sm">
+          ヘルシーくんが親しみやすい口調で<br />
+          あなたの健康管理をサポートします！
+        </div>
         <Button 
-          onClick={handleSaveSettings}
-          disabled={isSaving}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+          onClick={onBack}
+          className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
         >
-          {isSaving ? '保存中...' : '設定を保存'}
+          戻る
         </Button>
       </div>
 

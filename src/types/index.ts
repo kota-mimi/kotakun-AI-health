@@ -202,7 +202,7 @@ export interface LIFFContext {
 
 // AIキャラクター関連の型定義
 export interface AICharacterSettings {
-  type: 'healthy_kun' | 'sparta'; // キャラクタータイプ
+  type: 'healthy_kun'; // キャラクタータイプ（ヘルシーくんのみ）
   language?: 'ja'; // 日本語のみ対応
 }
 

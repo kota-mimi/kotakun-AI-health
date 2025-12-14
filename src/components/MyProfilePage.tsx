@@ -27,7 +27,6 @@ interface MyProfilePageProps {
   onNavigateToContact?: () => void;
   onNavigateToReminderSettings?: () => void;
   onNavigateToCounseling?: () => void;
-  onNavigateToAICharacter?: () => void;
 }
 
 export function MyProfilePage({ 
@@ -37,8 +36,7 @@ export function MyProfilePage({
   onNavigateToUserGuide,
   onNavigateToContact,
   onNavigateToReminderSettings,
-  onNavigateToCounseling,
-  onNavigateToAICharacter
+  onNavigateToCounseling
 }: MyProfilePageProps) {
   // 編集モーダルの状態
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -406,11 +404,6 @@ export function MyProfilePage({
 
 
   const accountMenuItems = [
-    {
-      label: 'AIキャラクター設定',
-      color: '#8B5CF6',
-      action: onNavigateToAICharacter || (() => {})
-    },
     {
       label: 'リマインダー設定',
       color: '#8B5CF6',
