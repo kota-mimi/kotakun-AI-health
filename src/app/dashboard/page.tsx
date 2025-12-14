@@ -431,6 +431,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   counselingResult={counselingResult}
                   selectedDate={navigation.selectedDate}
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
+                  sharedProfile={sharedProfile} // 🚀 即座表示用フォールバックデータを追加
                 />
               )}
             </div>
