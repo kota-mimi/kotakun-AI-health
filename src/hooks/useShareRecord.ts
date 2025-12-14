@@ -301,13 +301,6 @@ export function useShareRecord() {
       }))
     });
     
-    // デバッグ用：運動データをアラートで表示
-    if (exerciseData.length > 0) {
-      const exerciseSummary = exerciseData.map(ex => 
-        `${ex.name}: ${ex.calories || 0}kcal (${ex.notes ? '※' + ex.notes.substring(0, 10) : 'APP'})`
-      ).join('\n');
-      alert(`📊 運動データ確認:\n\n${exerciseSummary}\n\n今日の運動: ${todayExercises.length}件\n合計カロリー: ${totalBurnedCalories}kcal`);
-    }
     
     // 体重データ（現在の実装に合わせて調整）
     const todayWeight = weightData?.current ? { weight: weightData.current } : undefined;
