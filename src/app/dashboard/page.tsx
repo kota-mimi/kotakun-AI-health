@@ -14,6 +14,7 @@ import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useShareRecord } from '@/hooks/useShareRecord';
+import { useLiff } from '@/contexts/LiffContext';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { CalorieCard } from '@/components/CalorieCard';
@@ -97,6 +98,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
   const shareRecord = useShareRecord(); // 📤 共有機能（テスト用に戻す）
+  const liff = useLiff(); // 🔍 デバッグ用
   
   // 🚀 統合ダッシュボードデータ取得（コスト削減）
   const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
@@ -262,6 +264,38 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー - 共有ページに遷移
   const handleShareRecord = async () => {
     try {
+      // 🚨 デバッグ：運動データ取得調査
+      const selectedDate = navigation?.selectedDate || new Date();
+      const dateString = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      // まず直接APIを呼んで、サーバーに運動データがあるか確認
+      let apiDataCheck = 'API呼び出し失敗';
+      try {
+        const response = await fetch(`/api/exercises?lineUserId=${liff?.user?.userId}&date=${dateString}`);
+        const apiResult = await response.json();
+        apiDataCheck = `API成功: ${apiResult.success ? apiResult.data?.length || 0 : 0}件 | ${JSON.stringify(apiResult).substring(0, 100)}...`;
+      } catch (err) {
+        apiDataCheck = `API エラー: ${err}`;
+      }
+      
+      // 🚨 デバッグ：運動データ確認
+      alert(`🚨 運動データ調査結果:
+      
+【基本情報】
+- 選択日付: ${dateString}
+- LINE UID: ${liff?.user?.userId || 'なし'}
+- LIFF Ready: ${liff?.isReady || false}
+- LIFF Logged In: ${liff?.isLoggedIn || false}
+
+【APIデータ確認】
+${apiDataCheck}
+
+【exerciseManager.exerciseData】
+- 配列長: ${exerciseManager?.exerciseData?.length || 0}
+- データ例: ${exerciseManager?.exerciseData?.length > 0 ? `${exerciseManager.exerciseData[0].name}: ${exerciseManager.exerciseData[0].calories}kcal` : 'データなし'}
+      
+【詳細リスト】
+${exerciseManager?.exerciseData?.map((ex, i) => `${i+1}. ${ex.name}: ${ex.calories}kcal (${ex.notes})`).join('\n') || 'データなし'}`);
       
       // 記録データを整形（目標値も含める + カウンセリング結果追加）
       const recordData = shareRecord.formatRecordData(
