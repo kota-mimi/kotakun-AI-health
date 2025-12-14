@@ -832,7 +832,7 @@ function createMultipleCalorieAnalysisFlexMessage(analysis: any, originalMealNam
 }
 
 // 複数食事時間の記録用Flexメッセージ
-export function createMultipleMealTimesFlexMessage(mealData: any) {
+export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: string) {
   const mealTypeNames = {
     breakfast: '朝食',
     lunch: '昼食', 
@@ -1047,6 +1047,42 @@ export function createMultipleMealTimesFlexMessage(mealData: any) {
       }
     ]
   });
+
+  // AIアドバイスセクション（提供されている場合のみ表示）
+  if (aiAdvice) {
+    contents.push(
+      {
+        type: 'separator',
+        margin: 'lg'
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#f8f9fa',
+        cornerRadius: '12px',
+        paddingAll: '16px',
+        margin: 'md',
+        contents: [
+          {
+            type: 'text',
+            text: '🤖 AIアドバイス',
+            size: 'sm',
+            weight: 'bold',
+            color: '#4a90e2',
+            margin: 'none'
+          },
+          {
+            type: 'text',
+            text: aiAdvice,
+            size: 'sm',
+            color: '#333333',
+            wrap: true,
+            margin: 'sm'
+          }
+        ]
+      }
+    );
+  }
 
   return {
     type: 'flex',

@@ -3320,8 +3320,73 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
       console.log(`🍽️ ${mealTime} 保存完了`);
     }
     
-    // 複数食事時間用のFlexメッセージを作成・送信
-    const flexMessage = createMultipleMealTimesFlexMessage(mealData);
+    // 🧠 AIアドバイス生成（複数食事時間用）
+    console.log('🧠 複数食事時間 - パーソナル食事アドバイス生成開始');
+    let aiAdvice = null;
+    
+    try {
+      // ユーザープロフィール取得（アドバイスの個別化のため）
+      let userProfile = null;
+      try {
+        const db = admin.firestore();
+        const profileSnapshot = await db
+          .collection('users')
+          .doc(userId)
+          .collection('profileHistory')
+          .orderBy('changeDate', 'desc')
+          .limit(1)
+          .get();
+        
+        if (!profileSnapshot.empty) {
+          userProfile = profileSnapshot.docs[0].data();
+        }
+        console.log('📊 ユーザープロフィール取得成功');
+      } catch (profileError) {
+        console.error('❌ プロフィール取得エラー:', profileError);
+      }
+
+      // 今日の栄養進捗を取得
+      let dailyProgress = null;
+      try {
+        dailyProgress = await getDailyNutritionProgress(userId);
+      } catch (progressError) {
+        console.log('⚠️ 今日の栄養進捗取得失敗（アドバイス生成は継続）:', progressError);
+      }
+
+      // 全ての食事を統合した分析データを作成
+      const allMeals = Object.values(mealData).flat();
+      const totalCalories = allMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+      const totalProtein = allMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+      const totalCarbs = allMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+      const totalFat = allMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+      
+      const combinedAnalysis = {
+        calories: totalCalories,
+        protein: totalProtein,
+        carbs: totalCarbs,
+        fat: totalFat,
+        displayName: '複数の食事時間の記録',
+        foodItems: allMeals.map(meal => meal.name)
+      };
+
+      // AIアドバイス生成
+      aiAdvice = await aiService.generateMealAdvice(
+        combinedAnalysis,
+        'multiple', // 複数食事時間を示す特別なmealType
+        userId,
+        userProfile,
+        dailyProgress,
+        null
+      );
+      console.log('✅ 複数食事時間 - パーソナル食事アドバイス生成完了:', aiAdvice);
+    } catch (adviceError) {
+      console.error('❌ 複数食事時間 - パーソナル食事アドバイス生成エラー:', adviceError);
+      // エラーでもFlexメッセージは送信
+      aiAdvice = null;
+    }
+    
+    // 複数食事時間用のFlexメッセージを作成・送信（AIアドバイス付き）
+    const flexMessage = createMultipleMealTimesFlexMessage(mealData, aiAdvice);
     
     // クイックリプライ付きでFlexメッセージ送信
     const messageWithQuickReply = {
