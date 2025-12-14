@@ -260,11 +260,11 @@ export function useShareRecord() {
     });
     
     
-    // 体重データ（即座表示のための複数フォールバック）
-    const currentWeight = weightData?.current || 
-                         counselingResult?.answers?.weight || 
-                         counselingResult?.userProfile?.weight || 
-                         0;
+    // 体重データ（最新データを最優先、フォールバックは最新データがない場合のみ）
+    const hasRecentWeight = weightData?.current && weightData.current > 0;
+    const currentWeight = hasRecentWeight ? 
+                         weightData.current : 
+                         (counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || 0);
     const todayWeight = currentWeight > 0 ? { weight: currentWeight } : undefined;
     
     const result = {
