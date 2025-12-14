@@ -1053,31 +1053,36 @@ export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: str
     contents.push(
       {
         type: 'separator',
-        margin: 'lg'
+        margin: 'lg',
+        color: '#e0e0e0'
       },
       {
         type: 'box',
         layout: 'vertical',
-        backgroundColor: '#f8f9fa',
-        cornerRadius: '12px',
-        paddingAll: '16px',
         margin: 'md',
         contents: [
           {
-            type: 'text',
-            text: '🤖 AIアドバイス',
-            size: 'sm',
-            weight: 'bold',
-            color: '#4a90e2',
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'text',
+                text: 'AIアドバイス',
+                size: 'sm',
+                weight: 'bold',
+                color: '#4a90e2',
+                flex: 1
+              }
+            ],
             margin: 'none'
           },
           {
             type: 'text',
             text: aiAdvice,
-            size: 'sm',
+            size: 'xs',
             color: '#333333',
             wrap: true,
-            margin: 'sm'
+            margin: 'sm',
           }
         ]
       }
