@@ -247,25 +247,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     const currentDayData = realWeightData.find(item => item.date === dateKey);
     let currentWeight = 0;
     
-    console.log('🔍 getWeightDataForDate詳細:', {
-      dateKey,
-      currentDayData,
-      realWeightDataCount: realWeightData.length,
-      realWeightDataDates: realWeightData.map(item => item.date)
-    });
-    
-    console.log('🔍 currentWeight計算詳細:', {
-      currentDayData,
-      hasCurrentDayWeight: currentDayData?.weight,
-      currentDayWeightValue: currentDayData?.weight,
-      isCurrentDayWeightGreaterThan0: currentDayData?.weight > 0,
-      condition1: currentDayData?.weight && currentDayData.weight > 0
-    });
-    
     if (currentDayData?.weight && currentDayData.weight > 0) {
       // 選択日に記録がある場合のみその日の体重を使用
       currentWeight = currentDayData.weight;
-      console.log('✅ 選択日の記録使用:', currentWeight);
     } else {
       // 選択日に記録がない場合は最新の記録体重を表示
       const latestRecord = realWeightData
@@ -273,32 +257,16 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       
       currentWeight = latestRecord?.weight || 0;
-      console.log('📅 最新記録使用:', { latestRecord, currentWeight });
     }
     
     // 前日比計算：現在体重が表示されている場合は前日と比較
     let previousWeight = 0;
     
-    console.log('🔍 前日比計算条件チェック:', {
-      currentWeight,
-      currentWeightType: typeof currentWeight,
-      isCurrentWeightGreaterThan0: currentWeight > 0,
-      dateKey,
-      realWeightDataLength: realWeightData.length
-    });
-    
     if (currentWeight > 0) {
-      console.log('🚀 前日比計算開始!', { currentWeight });
-      
       // 現在体重が表示されている場合は前日比を計算
       const previousDate = new Date(date);
-      console.log('📅 前日日付作成:', { originalDate: date, previousDate });
-      
       previousDate.setDate(previousDate.getDate() - 1);
-      console.log('📅 前日日付計算完了:', { previousDate });
-      
       const previousKey = getDateKey(previousDate);
-      console.log('🔑 前日キー:', { previousKey });
       
       // 前日のデータを探す
       let previousDayData = realWeightData.find(item => item.date === previousKey);
@@ -309,25 +277,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           .filter(item => item.date < dateKey && item.weight > 0)
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
         previousDayData = pastData;
-        console.log('📅 前日データなし、直近データ使用:', { previousKey, pastData });
       }
       
-      console.log('🔍 前日データ検索結果:', { 
-        previousKey, 
-        previousDayData,
-        realWeightDataDates: realWeightData.map(item => item.date)
-      });
-      
       previousWeight = previousDayData?.weight || 0;
-      
-      console.log('📊 前日比計算完了:', {
-        currentWeight,
-        previousKey,
-        previousDayData,
-        previousWeight
-      });
-    } else {
-      console.log('❌ 前日比計算スキップ - currentWeight <= 0:', { currentWeight });
     }
     // 現在体重が0の場合、previousWeightは0のまま（--表示）
     
@@ -554,14 +506,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
 
   // 🔧 メモ化でパフォーマンス改善と無限ループ防止
   const currentWeightData = useMemo(() => {
-    const result = getWeightDataForDate(selectedDate);
-    console.log('⚖️ useWeightData返却値 (メモ化):', {
-      selectedDate: selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
-      result,
-      realWeightDataLength: realWeightData.length,
-      realWeightData: realWeightData.slice(-3), // 最新3件
-    });
-    return result;
+    return getWeightDataForDate(selectedDate);
   }, [selectedDate, realWeightData, weightSettingsStorage.value.targetWeight, counselingResult, latestProfile]);
 
   return {
