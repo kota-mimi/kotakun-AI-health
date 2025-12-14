@@ -157,7 +157,8 @@ export function useShareRecord() {
     selectedDate: Date,
     mealData: any,
     exerciseData: any[],
-    weightData: any
+    weightData: any,
+    counselingResult?: any
   ): DailyRecordData => {
     const dateString = selectedDate.toLocaleDateString('ja-JP');
     
@@ -211,57 +212,14 @@ export function useShareRecord() {
       }))
     });
     
-    const todayExercises = exerciseData.filter(exercise => {
-      // 日本時間ベースで日付比較（他のフックと同じ）
-      const targetDateStr = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-      
-      let matches = false;
-      
-      // 運動データは日付プロパティを持っていない場合が多いので、他の方法で判定
-      // 1. exercise.dateがある場合
-      if (exercise.date) {
-        const exerciseDate = exercise.date;
-        
-        if (typeof exerciseDate === 'string') {
-          matches = exerciseDate === targetDateStr;
-          
-          if (!matches) {
-            const normalizedDate = new Date(exerciseDate).toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-            matches = normalizedDate === targetDateStr;
-          }
-        } else if (exerciseDate instanceof Date) {
-          matches = exerciseDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) === targetDateStr;
-        }
-      }
-      // 2. timestampがある場合
-      else if (exercise.timestamp) {
-        const timestampDate = new Date(exercise.timestamp);
-        matches = timestampDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) === targetDateStr;
-      }
-      // 3. 日付情報がない場合は今日とみなす（当日入力の運動）
-      else {
-        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        matches = targetDateStr === today;
-      }
-      
-      // 4. LINEから記録された運動は強制的に含める（日付問題を回避）
-      if (!matches && exercise.notes && exercise.notes.includes('LINE記録')) {
-        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        matches = targetDateStr === today;
-        console.log('🔍 LINE記録の運動を強制的に含める:', exercise.name);
-      }
-      
-      console.log(`🔍 運動データ比較:`, {
-        exerciseId: exercise.id,
-        exerciseName: exercise.name,
-        exerciseDate: exercise.date,
-        exerciseTimestamp: exercise.timestamp,
-        targetDate: targetDateStr,
-        matches,
-        exercise: { duration: exercise.duration, calories: exercise.calories }
-      });
-      
-      return matches;
+    // 🚀 高速化：今日の運動として全データを含める（共有時は当日のみ想定）
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    const isToday = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) === today;
+    
+    const todayExercises = isToday ? exerciseData : exerciseData.filter(exercise => {
+      // 今日でない場合のみ簡単な日付チェック
+      return exercise.date === selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) ||
+             (exercise.timestamp && new Date(exercise.timestamp).toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) === selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }));
     });
     
     const totalExerciseTime = todayExercises.reduce((sum, exercise) => {
@@ -302,8 +260,12 @@ export function useShareRecord() {
     });
     
     
-    // 体重データ（現在の実装に合わせて調整）
-    const todayWeight = weightData?.current ? { weight: weightData.current } : undefined;
+    // 体重データ（即座表示のための複数フォールバック）
+    const currentWeight = weightData?.current || 
+                         counselingResult?.answers?.weight || 
+                         counselingResult?.userProfile?.weight || 
+                         0;
+    const todayWeight = currentWeight > 0 ? { weight: currentWeight } : undefined;
     
     const result = {
       date: dateString,

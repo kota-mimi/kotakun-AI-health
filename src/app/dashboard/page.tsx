@@ -263,12 +263,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const handleShareRecord = async () => {
     try {
       
-      // 記録データを整形（目標値も含める）
+      // 記録データを整形（目標値も含める + カウンセリング結果追加）
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
         exerciseManager?.exerciseData || [],
-        weightManager?.weightData || {}
+        weightManager?.weightData || {},
+        counselingResult // 🚀 体重フォールバック用
       );
       
       // 目標値を取得
