@@ -118,14 +118,13 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
     
     console.log('⚖️ 体重データ効率取得:', { startDate, endDate });
     
-    // 🚀 最適化: 範囲指定で必要な分だけ取得（全件取得の問題を修正）
+    // 🔧 安全なクエリ: orderBy削除でインデックスエラー回避、コスト削減維持
     const dailyRecordsRef = adminDb
       .collection('users')
       .doc(lineUserId)
       .collection('dailyRecords')
       .where(adminDb.FieldPath.documentId(), '>=', startDate)
       .where(adminDb.FieldPath.documentId(), '<=', endDate)
-      .orderBy(adminDb.FieldPath.documentId(), 'desc')
       .limit(31); // 31日分のみ
     
     const snapshot = await dailyRecordsRef.get();
@@ -144,6 +143,9 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
         });
       }
     });
+    
+    // JavaScriptでソート（Firestoreのorder削除のため）
+    weights.sort((a, b) => b.date.localeCompare(a.date));
     
     return weights;
     

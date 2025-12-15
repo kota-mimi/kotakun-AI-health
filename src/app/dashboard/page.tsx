@@ -10,7 +10,7 @@ import { useExerciseData } from '@/hooks/useExerciseData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
-import { useGlobalLoading } from '@/hooks/useGlobalLoading';
+// import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useShareRecord } from '@/hooks/useShareRecord';
@@ -94,7 +94,7 @@ export default function DashboardPage() {
 function DashboardContent({ onError }: { onError: () => void }) {
   const navigation = useNavigationState();
   const dateBasedDataManager = useDateBasedData();
-  const globalLoading = useGlobalLoading();
+  // const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
   const shareRecord = useShareRecord(); // 📤 共有機能（テスト用に戻す）
   
@@ -198,29 +198,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     updateDateData
   );
 
-  // グローバルローディング状態を更新
-  React.useEffect(() => {
-    globalLoading.setLoadingState('counseling', isCounselingLoading);
-  }, [isCounselingLoading]);
-
-
-  React.useEffect(() => {
-    globalLoading.setLoadingState('meal', mealManager.isLoading);
-  }, [mealManager.isLoading]);
-
-  React.useEffect(() => {
-    globalLoading.setLoadingState('feedback', feedbackManager.isLoading);
-  }, [feedbackManager.isLoading]);
-
-  // 運動データのローディング状態（現在はhookで管理されていないため固定でfalse）
-  React.useEffect(() => {
-    globalLoading.setLoadingState('exercise', false);
-  }, []);
-
-  // 初期データ読み込み中はローディング画面を表示（一時的に無効化）
-  // if (isInitialLoading) {
-  //   return <AppLoadingScreen />;
-  // }
+  // ローディング機能完全削除
 
   // 現在の時間に基づいて適切な食事タイプを判定
 
