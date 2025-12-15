@@ -285,7 +285,11 @@ export function useShareRecord() {
     
     const result = {
       date: dateString,
-      weight: todayWeight?.weight,
+      weight: todayWeight?.weight ? {
+        current: todayWeight.weight,
+        diff: weightData?.previous && weightData.previous > 0 ? 
+              Math.round((todayWeight.weight - weightData.previous) * 10) / 10 : 0
+      } : undefined,
       calories: Math.round(totalCalories),
       protein: Math.round(totalProtein * 10) / 10,
       fat: Math.round(totalFat * 10) / 10,
