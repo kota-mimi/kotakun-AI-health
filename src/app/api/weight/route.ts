@@ -129,33 +129,58 @@ export async function GET(request: NextRequest) {
     const days = periodDays[period as keyof typeof periodDays] || 30;
     const weightData = [];
 
-    // 指定期間のデータを取得
-    for (let i = 0; i < days; i++) {
-      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    try {
+      // 効率的なクエリで全ての日次記録を一括取得
+      const dailyRecordsRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords');
       
-      try {
-        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
-        const recordDoc = await recordRef.get();
+      // 期間の開始日を計算（日本時間基準）
+      const startDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+      const startDateStr = startDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      // 一括取得クエリ（日付フィールドでフィルタ）
+      const snapshot = await dailyRecordsRef
+        .where('date', '>=', startDateStr)
+        .orderBy('date', 'desc')
+        .get();
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
         
-        if (recordDoc.exists) {
-          const dailyRecord = recordDoc.data();
-          // 体重データがあれば含める
-          if (dailyRecord && dailyRecord.weight) {
-            // 体重が0以下の場合は除外（無効なデータとして扱う）
-            const weightValue = dailyRecord.weight;
-            if (weightValue && weightValue > 0) {
+        // 体重データがあれば含める
+        if (data && data.weight && data.weight > 0) {
+          weightData.push({
+            date: data.date || doc.id,
+            weight: data.weight,
+            note: data.note
+          });
+        }
+      });
+    } catch (error) {
+      console.error('体重データ一括取得エラー:', error);
+      
+      // フォールバック：従来のループ処理
+      console.log('フォールバック処理を開始...');
+      for (let i = 0; i < Math.min(days, 30); i++) {
+        const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+        const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+        
+        try {
+          const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+          const recordDoc = await recordRef.get();
+          
+          if (recordDoc.exists) {
+            const dailyRecord = recordDoc.data();
+            if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
               weightData.push({
                 date: dateStr,
-                weight: weightValue,
+                weight: dailyRecord.weight,
                 note: dailyRecord.note
               });
             }
           }
+        } catch (docError) {
+          continue;
         }
-      } catch (error) {
-        // エラーは無視して続行
-        continue;
       }
     }
 

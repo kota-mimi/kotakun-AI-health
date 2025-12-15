@@ -52,14 +52,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   useEffect(() => {
     if (!isClient) return;
     
-    // 統合データがある場合は即座に使用（undefinedでない場合）
-    if (dashboardWeightData !== undefined) {
-      console.log('⚡ 統合データから体重データを取得:', dashboardWeightData.length, '件');
-      setRealWeightData(dashboardWeightData);
-      setIsLoadingWeightData(false);
-      return;
-    }
-    
     const fetchWeightData = async () => {
       const lineUserId = liffUser?.userId;
       if (!lineUserId) {
@@ -72,6 +64,14 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       // キャッシュキー生成（月単位）
       const cacheKey = createCacheKey('weight', lineUserId, 'month');
       
+      // 統合データがある場合はそれを使用（ダッシュボードからの場合）
+      if (dashboardWeightData !== undefined) {
+        console.log('⚡ 統合データから体重データを取得:', dashboardWeightData.length, '件');
+        setRealWeightData(dashboardWeightData);
+        setIsLoadingWeightData(false);
+        return;
+      }
+      
       // キャッシュチェック
       const cachedData = apiCache.get(cacheKey);
       
@@ -80,30 +80,36 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const selectedKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       const isTodaySelected = selectedKey === today;
       
-      // キャッシュがあれば常に即座に表示（アプリ起動時の高速化）
+      // キャッシュがある場合の処理
       if (cachedData) {
-        // 体重データをキャッシュから即座に取得
+        // キャッシュデータを表示
         setRealWeightData(cachedData);
         setIsLoadingWeightData(false);
         
-        // キャッシュから取得完了（バックグラウンド取得削除でAPI半減）
-        return;
-      } else {
-        // キャッシュなし：API取得
+        // 今日が選択されている場合は、バックグラウンドで最新データもチェック
+        if (isTodaySelected) {
+          console.log('🔄 今日のデータ：キャッシュ表示後、最新データをバックグラウンド確認');
+          // バックグラウンド更新は下記のAPI取得処理で行う
+        } else {
+          // 過去日付の場合はキャッシュで十分
+          return;
+        }
       }
       
       try {
-        console.log('🔄 体重データをAPIから取得');
+        console.log('🔄 体重データをAPIから取得', isTodaySelected ? '（今日：最新確認）' : '（過去日：通常取得）');
         const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
         if (response.ok) {
           const result = await response.json();
           const weightData = result.data || [];
           
-          // キャッシュに保存（30分間有効 - 体重データ最適化）
+          console.log('📊 API取得データ:', weightData.length, '件');
+          
+          // キャッシュに保存（30分間有効）
           apiCache.set(cacheKey, weightData, CACHE_TTL.WEIGHT);
           
-          // 今日の場合、既にキャッシュデータを表示済みなら、差分がある場合のみ更新
-          if (isTodaySelected && cachedData) {
+          // キャッシュと最新データを比較
+          if (cachedData) {
             const hasChanges = JSON.stringify(cachedData) !== JSON.stringify(weightData);
             if (hasChanges) {
               console.log('🔄 最新データに差分があるため更新');
@@ -112,7 +118,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
               console.log('✅ キャッシュと最新データが同じため更新不要');
             }
           } else {
-            // キャッシュがない場合や過去日付の場合は通常通り更新
+            // キャッシュがない場合は通常通り更新
+            console.log('🔄 キャッシュなし：最新データを設定');
             setRealWeightData(weightData);
           }
           
@@ -138,7 +145,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     };
 
     fetchWeightData();
-  }, [liffUser?.userId, isClient, dashboardWeightData]); // 統合データ追加
+  }, [liffUser?.userId, isClient, dashboardWeightData, selectedDate]); // 選択日付も追加
   
   // 今日の日付が選択された場合のみ最新データチェック
   useEffect(() => {
