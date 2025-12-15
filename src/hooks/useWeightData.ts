@@ -371,6 +371,9 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         
         // ローディング状態をリセット（UI即座反映）
         setIsLoadingWeightData(false);
+        
+        // 🔧 重要：統合ダッシュボードキャッシュも無効化
+        updateDateData({ weight: data.weight });
       }
 
       console.log('記録が正常に保存されました');
