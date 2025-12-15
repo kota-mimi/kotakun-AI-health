@@ -263,45 +263,19 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー - 共有ページに遷移
   const handleShareRecord = async () => {
     try {
-      // 🔍 デバッグ: 元のデータ確認
-      console.log('🔍 共有前データ確認:', {
-        dashboardWeight: dashboardData?.weight,
-        weightData: weightManager?.weightData,
-        realWeightData: weightManager?.realWeightData,
-        selectedDate: navigation?.selectedDate || new Date()
-      });
-
-      // 記録データを整形（目標値も含める + カウンセリング結果追加）
+      // シンプル化：体重は共有しない
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
         exerciseManager?.exerciseData || [],
-        weightManager?.weightData || {},
-        counselingResult // 🚀 体重フォールバック用
+        {},  // 体重データは空
+        counselingResult
       );
       
-      console.log('🔍 formatRecordData結果:', recordData);
-      
-      // 目標値を取得
       const targetCalories = mealManager?.calorieData?.targetCalories || 2000;
-      const targetPFC = mealManager?.calorieData?.pfc || { proteinTarget: 120, fatTarget: 67, carbsTarget: 250 };
-      
-      // 体重の前日差分計算
-      const selectedDateStr = (navigation?.selectedDate || new Date()).toLocaleDateString('sv-SE');
-      const yesterday = new Date(navigation?.selectedDate || new Date());
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toLocaleDateString('sv-SE');
-      
-      const todayWeight = weightManager?.realWeightData?.find((w: any) => w.date === selectedDateStr)?.weight;
-      const yesterdayWeight = weightManager?.realWeightData?.find((w: any) => w.date === yesterdayStr)?.weight;
-      const weightDiff = (todayWeight && yesterdayWeight) ? todayWeight - yesterdayWeight : 0;
 
-      // Vite共有アプリが期待するフラット形式に変換
       const shareData = {
         date: (navigation?.selectedDate || new Date()).toISOString(),
-        weight: weightManager?.weightData?.current || 0,
-        weightDiff: weightManager?.weightData?.current && weightManager?.weightData?.previous ? 
-                   Math.round((weightManager.weightData.current - weightManager.weightData.previous) * 10) / 10 : 0,
         calories: recordData.calories,
         caloriesTarget: targetCalories,
         protein: recordData.protein,
@@ -311,8 +285,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
         exerciseBurned: recordData.exerciseBurned,
         achievementRate: Math.round((recordData.calories / targetCalories) * 100)
       };
-
-      console.log('🔍 最終送信データ:', shareData);
       
       console.log('📊 Raw record data:', recordData);
       console.log('📊 Record data details:', {
