@@ -263,12 +263,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー - 共有ページに遷移
   const handleShareRecord = async () => {
     try {
-      // シンプル化：体重は共有しない
+      // シンプル体重取得
+      const currentWeight = weightManager?.weightData?.current || 0;
+      
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
         exerciseManager?.exerciseData || [],
-        {},  // 体重データは空
+        {},  // formatRecordDataでは体重使わない
         counselingResult
       );
       
@@ -276,6 +278,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
       const shareData = {
         date: (navigation?.selectedDate || new Date()).toISOString(),
+        weight: currentWeight,  // シンプルに数値で送信
+        weightDiff: 0,  // 差分は後で計算
         calories: recordData.calories,
         caloriesTarget: targetCalories,
         protein: recordData.protein,
@@ -285,6 +289,11 @@ function DashboardContent({ onError }: { onError: () => void }) {
         exerciseBurned: recordData.exerciseBurned,
         achievementRate: Math.round((recordData.calories / targetCalories) * 100)
       };
+      
+      console.log('🔍 シンプル送信データ:', {
+        currentWeight,
+        shareData
+      });
       
       console.log('📊 Raw record data:', recordData);
       console.log('📊 Record data details:', {
