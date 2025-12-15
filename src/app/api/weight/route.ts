@@ -53,21 +53,8 @@ export async function POST(request: NextRequest) {
     
     await recordRef.set(mergedData, { merge: true });
 
-    // ユーザープロファイルの体重も更新（データ整合性確保）
+    // 体重記録はdailyRecordsのみに保存（プロフィールの自動更新は削除）
     if (recordData.weight) {
-      const userRef = adminDb.collection('users').doc(lineUserId);
-      await userRef.update({
-        'profile.weight': recordData.weight,
-        updatedAt: new Date(),
-      });
-      
-      // プロフィール履歴も同時更新（完全なデータ同期）
-      const profileHistoryRef = adminDb.collection('users').doc(lineUserId).collection('profileHistory').doc(targetDate);
-      await profileHistoryRef.set({
-        weight: recordData.weight,
-        changeDate: targetDate,
-        updatedAt: new Date(),
-      }, { merge: true });
       
       // 関連キャッシュを無効化（LINEからの記録でもダッシュボード即座更新）
       const weightCacheKey = createCacheKey('weight', lineUserId, 'month');
