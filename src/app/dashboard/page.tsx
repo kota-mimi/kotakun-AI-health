@@ -263,6 +263,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー - 共有ページに遷移
   const handleShareRecord = async () => {
     try {
+      // 🔍 デバッグ: 元のデータ確認
+      console.log('🔍 共有前データ確認:', {
+        weightData: weightManager?.weightData,
+        realWeightData: weightManager?.realWeightData,
+        selectedDate: navigation?.selectedDate || new Date()
+      });
+
       // 記録データを整形（目標値も含める + カウンセリング結果追加）
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
@@ -271,6 +278,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
         weightManager?.weightData || {},
         counselingResult // 🚀 体重フォールバック用
       );
+      
+      console.log('🔍 formatRecordData結果:', recordData);
       
       // 目標値を取得
       const targetCalories = mealManager?.calorieData?.targetCalories || 2000;
@@ -300,6 +309,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
         exerciseBurned: recordData.exerciseBurned,
         achievementRate: Math.round((recordData.calories / targetCalories) * 100)
       };
+
+      console.log('🔍 最終送信データ:', shareData);
       
       console.log('📊 Raw record data:', recordData);
       console.log('📊 Record data details:', {
