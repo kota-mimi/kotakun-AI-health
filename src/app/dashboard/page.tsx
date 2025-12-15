@@ -263,8 +263,11 @@ function DashboardContent({ onError }: { onError: () => void }) {
   // 共有機能ハンドラー - 共有ページに遷移
   const handleShareRecord = async () => {
     try {
-      // シンプル体重取得
-      const currentWeight = weightManager?.weightData?.current || 0;
+      // シンプル体重取得（WeightCardと同じロジック）
+      const currentWeight = weightManager?.weightData?.current || 
+                           sharedProfile?.latestProfile?.weight ||
+                           counselingResult?.answers?.weight || 
+                           counselingResult?.userProfile?.weight || 0;
       
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
