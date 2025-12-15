@@ -411,9 +411,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {globalLoading.isMealLoading || globalLoading.isCounselingLoading ? (
-                <CalorieCardSkeleton />
-              ) : mealManager ? (
+              {mealManager ? (
                 <CalorieCard 
                   totalCalories={mealManager.calorieData?.totalCalories || 0}
                   targetCalories={mealManager.calorieData?.targetCalories || 2000}
@@ -427,9 +425,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
             </div>
 
             {/* 食事カード */}
-            {globalLoading.isMealLoading ? (
-              <MealCardSkeleton />
-            ) : mealManager?.mealData ? (
+            {mealManager?.mealData ? (
               <MealSummaryCard
                 meals={mealManager.mealData}
                 onAddMeal={mealManager.handleAddMeal || (() => {})}
@@ -447,9 +443,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
             {/* 運動カード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {globalLoading.isExerciseLoading ? (
-                <WorkoutCardSkeleton />
-              ) : exerciseManager?.exerciseData && navigation?.selectedDate ? (
+              {exerciseManager?.exerciseData && navigation?.selectedDate ? (
                 <WorkoutSummaryCard 
                   exerciseData={exerciseManager.exerciseData}
                   selectedDate={navigation.selectedDate}
