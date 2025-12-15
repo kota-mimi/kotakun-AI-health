@@ -53,7 +53,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     if (!isClient) return;
     
     // 統合データがある場合は即座に使用（undefinedでない場合）
-    if (dashboardWeightData !== undefined) {
+    // ただし、realWeightDataが既にある場合（記録後など）は統合データで上書きしない
+    if (dashboardWeightData !== undefined && realWeightData.length === 0) {
       console.log('⚡ 統合データから体重データを取得:', dashboardWeightData.length, '件');
       setRealWeightData(dashboardWeightData);
       setIsLoadingWeightData(false);
@@ -372,8 +373,13 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         // ローディング状態をリセット（UI即座反映）
         setIsLoadingWeightData(false);
         
-        // 🔧 重要：統合ダッシュボードキャッシュも無効化
-        updateDateData({ weight: data.weight });
+        // 🔧 重要：統合ダッシュボードに新体重データを即座反映
+        const newWeightRecord = { date: dateStr, weight: data.weight, note: data.note };
+        
+        // カスタムイベントで統合ダッシュボードに通知
+        window.dispatchEvent(new CustomEvent('weightDataUpdated', {
+          detail: { weight: data.weight, date: dateStr, record: newWeightRecord }
+        }));
       }
 
       console.log('記録が正常に保存されました');
