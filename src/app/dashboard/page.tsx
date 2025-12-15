@@ -189,8 +189,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
     counselingResult,
-    sharedProfile, // 🔧 プロフィール体重フォールバック有効化
-    dashboardData.weightData // 🚀 統合データ使用で二重取得解消
+    sharedProfile // 🔧 プロフィール体重フォールバック有効化
   );
 
   const feedbackManager = useFeedbackData(
