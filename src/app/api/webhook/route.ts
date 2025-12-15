@@ -365,6 +365,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
             return { isWeightRecord: false, reason: '質問・相談' };
           }
           
+          // 運動文脈チェック（運動記録を除外）
+          const exerciseKeywords = /(ベンチ|プレス|スクワット|デッド|リフト|腕立て|腹筋|背筋|ランニング|ジョギング|ウォーキング|走|歩|泳|筋トレ|ジム|トレーニング|セット|回|記録して|やった|した|行った|練習|カール|プル|プッシュ)/i;
+          const hasExerciseContext = exerciseKeywords.test(text);
+          
+          if (hasExerciseContext) {
+            console.log('❌ 体重判定 - 運動文脈として除外:', text);
+            return { isWeightRecord: false, reason: '運動文脈' };
+          }
+          
           // 体重数値の抽出（優先度順）
           const patterns = [
             // 1. 明確な単位付き
