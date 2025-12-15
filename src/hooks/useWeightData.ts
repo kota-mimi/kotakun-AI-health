@@ -30,7 +30,7 @@ interface WeightSettings {
   reminderEnabled: boolean;
 }
 
-export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[], invalidateDashboardCache?: () => void) {
+export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[]) {
   const { liffUser } = useAuth();
   const latestProfile = sharedProfile?.latestProfile; // 🔄 統合プロフィールから取得
   
@@ -368,11 +368,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
           return updatedData;
         });
         
-        // 統合ダッシュボードキャッシュも無効化
-        if (invalidateDashboardCache) {
-          invalidateDashboardCache();
-          console.log('🔄 体重記録により統合ダッシュボードキャッシュを無効化');
-        }
         
         // ローディング状態をリセット（UI即座反映）
         setIsLoadingWeightData(false);
@@ -423,11 +418,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         return updatedData;
       });
       
-      // 統合ダッシュボードキャッシュも無効化
-      if (invalidateDashboardCache) {
-        invalidateDashboardCache();
-        console.log('🔄 体重更新により統合ダッシュボードキャッシュを無効化');
-      }
     }
   };
 
@@ -458,11 +448,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       return updatedData;
     });
     
-    // 統合ダッシュボードキャッシュも無効化
-    if (invalidateDashboardCache) {
-      invalidateDashboardCache();
-      console.log('🔄 体重削除により統合ダッシュボードキャッシュを無効化');
-    }
   };
 
   // 目標体重を設定（localStorage自動保存）

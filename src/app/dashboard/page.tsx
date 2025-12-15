@@ -188,10 +188,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
-    counselingResult,
-    sharedProfile,
-    dashboardData.weightData, // 🔧 統合ダッシュボードデータを渡す
-    dashboardData.invalidateCache // 🔧 キャッシュ無効化関数を渡す
+    counselingResult
   );
 
   const feedbackManager = useFeedbackData(
@@ -429,7 +426,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   counselingResult={counselingResult}
                   selectedDate={navigation.selectedDate}
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
-                  sharedProfile={sharedProfile} // 🚀 即座表示用フォールバックデータを追加
                 />
               )}
             </div>
