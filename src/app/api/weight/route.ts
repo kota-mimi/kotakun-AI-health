@@ -53,38 +53,23 @@ export async function POST(request: NextRequest) {
     
     await recordRef.set(mergedData, { merge: true });
 
-    // 体重記録はdailyRecordsのみに保存（プロフィールの自動更新は削除）
+    // ユーザープロファイルの体重も更新（データ整合性確保）
     if (recordData.weight) {
+      const userRef = adminDb.collection('users').doc(lineUserId);
+      await userRef.update({
+        'profile.weight': recordData.weight,
+        updatedAt: new Date(),
+      });
       
-      // 関連キャッシュを無効化（LINEからの記録でもダッシュボード即座更新）
-      const weightCacheKey = createCacheKey('weight', lineUserId, 'month');
-      const dashboardCacheKey = createCacheKey('dashboard', lineUserId, targetDate);
-      
-      console.log('🔑 無効化するキャッシュキー:');
-      console.log('  - 体重:', weightCacheKey);
-      console.log('  - ダッシュボード:', dashboardCacheKey);
-      console.log('  - 対象日付:', targetDate);
-      
-      apiCache.delete(weightCacheKey);
-      apiCache.delete(dashboardCacheKey);
+      // プロフィール履歴も同時更新（完全なデータ同期）
+      const profileHistoryRef = adminDb.collection('users').doc(lineUserId).collection('profileHistory').doc(targetDate);
+      await profileHistoryRef.set({
+        weight: recordData.weight,
+        changeDate: targetDate,
+        updatedAt: new Date(),
+      }, { merge: true });
       
       console.log('✅ プロフィール体重・履歴も同期更新:', recordData.weight);
-      console.log('🔄 体重・ダッシュボードキャッシュを無効化（LINE記録）');
-      
-      // 追加：全ての関連キャッシュも削除（より確実に）
-      const allCacheStats = apiCache.getStats();
-      console.log('📊 全キャッシュ削除前:', allCacheStats.keys.length, '個');
-      
-      // lineUserIdを含む全キャッシュを削除（より確実な更新のため）
-      for (const key of allCacheStats.keys) {
-        if (key.includes(lineUserId)) {
-          apiCache.delete(key);
-          console.log('🗑️ キャッシュ削除:', key);
-        }
-      }
-      
-      const afterStats = apiCache.getStats();
-      console.log('📊 全キャッシュ削除後:', afterStats.keys.length, '個');
     }
 
     return NextResponse.json({ 
@@ -129,58 +114,33 @@ export async function GET(request: NextRequest) {
     const days = periodDays[period as keyof typeof periodDays] || 30;
     const weightData = [];
 
-    try {
-      // 効率的なクエリで全ての日次記録を一括取得
-      const dailyRecordsRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords');
+    // 指定期間のデータを取得
+    for (let i = 0; i < days; i++) {
+      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
-      // 期間の開始日を計算（日本時間基準）
-      const startDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-      const startDateStr = startDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-      
-      // 一括取得クエリ（日付フィールドでフィルタ）
-      const snapshot = await dailyRecordsRef
-        .where('date', '>=', startDateStr)
-        .orderBy('date', 'desc')
-        .get();
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
+      try {
+        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+        const recordDoc = await recordRef.get();
         
-        // 体重データがあれば含める
-        if (data && data.weight && data.weight > 0) {
-          weightData.push({
-            date: data.date || doc.id,
-            weight: data.weight,
-            note: data.note
-          });
-        }
-      });
-    } catch (error) {
-      console.error('体重データ一括取得エラー:', error);
-      
-      // フォールバック：従来のループ処理
-      console.log('フォールバック処理を開始...');
-      for (let i = 0; i < Math.min(days, 30); i++) {
-        const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-        const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        
-        try {
-          const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
-          const recordDoc = await recordRef.get();
-          
-          if (recordDoc.exists) {
-            const dailyRecord = recordDoc.data();
-            if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+        if (recordDoc.exists) {
+          const dailyRecord = recordDoc.data();
+          // 体重データがあれば含める
+          if (dailyRecord && dailyRecord.weight) {
+            // 体重が0以下の場合は除外（無効なデータとして扱う）
+            const weightValue = dailyRecord.weight;
+            if (weightValue && weightValue > 0) {
               weightData.push({
                 date: dateStr,
-                weight: dailyRecord.weight,
+                weight: weightValue,
                 note: dailyRecord.note
               });
             }
           }
-        } catch (docError) {
-          continue;
         }
+      } catch (error) {
+        // エラーは無視して続行
+        continue;
       }
     }
 
