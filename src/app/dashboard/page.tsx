@@ -289,7 +289,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       // Vite共有アプリが期待するフラット形式に変換
       const shareData = {
         date: (navigation?.selectedDate || new Date()).toISOString(),
-        weight: recordData.weight || todayWeight || 0,
+        weight: recordData.weight?.current || todayWeight || 0,
         weightDiff: weightDiff,
         calories: recordData.calories,
         caloriesTarget: targetCalories,
