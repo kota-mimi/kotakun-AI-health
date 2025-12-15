@@ -19,6 +19,7 @@ interface WeightData {
   current: number;
   previous: number;
   target: number;
+  latest: number;
 }
 
 interface WeightSettings {
@@ -173,7 +174,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   // 現在選択されている日付のデータを取得
   const getCurrentDateData = () => {
     const dateKey = getDateKey(selectedDate);
-    return dateBasedData[dateKey] || { weightData: { current: 0, previous: 0, target: 0 } };
+    return dateBasedData[dateKey] || { weightData: { current: 0, previous: 0, target: 0, latest: 0 } };
   };
 
   // 日付のキーを生成（日本時間基準で統一）
@@ -283,10 +284,17 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     }
     // 現在体重が0の場合、previousWeightは0のまま（--表示）
     
+    // 全体での最新体重を取得（共有用）
+    const latestWeightRecord = realWeightData
+      .filter(item => item.weight > 0)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    const latestWeight = latestWeightRecord?.weight || 0;
+
     return {
       current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
       previous: previousWeight, // 前日記録がない場合は0（WeightCardで--表示）
-      target: targetWeight
+      target: targetWeight,
+      latest: latestWeight // 全体での最新体重（共有用）
     };
   };
 

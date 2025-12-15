@@ -275,10 +275,11 @@ export function useShareRecord() {
     });
     
     
-    // 体重データ（最新データを最優先、フォールバックは最新データがない場合のみ）
-    const hasRecentWeight = weightData?.current && weightData.current > 0;
-    const currentWeight = hasRecentWeight ? 
+    // 体重データ（最新体重を確実に取得）
+    const currentWeight = weightData?.current && weightData.current > 0 ? 
                          weightData.current : 
+                         weightData?.latest && weightData.latest > 0 ?
+                         weightData.latest :
                          (counselingResult?.answers?.weight || counselingResult?.userProfile?.weight || 0);
     const todayWeight = currentWeight > 0 ? { weight: currentWeight } : undefined;
     
