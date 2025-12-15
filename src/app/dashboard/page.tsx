@@ -188,7 +188,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
-    counselingResult
+    counselingResult,
+    sharedProfile // 🔧 プロフィール体重フォールバック有効化
   );
 
   const feedbackManager = useFeedbackData(
