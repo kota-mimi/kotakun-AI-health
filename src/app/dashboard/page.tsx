@@ -404,6 +404,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   data={weightManager.weightData}
                   counselingResult={counselingResult}
                   selectedDate={navigation.selectedDate}
+                  sharedProfile={sharedProfile}
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
                 />
               )}

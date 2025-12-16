@@ -22,6 +22,7 @@ interface WeightCardProps {
 	onNavigateToWeight?: () => void;
 	counselingResult?: CounselingResult | null;
 	selectedDate?: Date;
+	sharedProfile?: { latestProfile: any } | null;
 }
 
 export function WeightCard({
@@ -29,6 +30,7 @@ export function WeightCard({
 	onNavigateToWeight,
 	counselingResult,
 	selectedDate,
+	sharedProfile,
 }: WeightCardProps) {
 	// 未来日付かどうかの判定
 	const today = new Date().toLocaleDateString("sv-SE", {
@@ -49,9 +51,10 @@ export function WeightCard({
 		counselingResult?.answers?.primaryGoal === "maintenance";
 	const shouldShowTarget = hasTargetData && !isMaintenanceMode;
 
-	// 現在の体重表示（useWeightDataの結果 + カウンセリング体重フォールバック）
+	// 現在の体重表示（useWeightDataの結果 + プロフィール + カウンセリング体重フォールバック）
 	const currentWeight = data.current > 0 ? data.current : 
-	                      (counselingResult?.answers?.weight || 
+	                      (sharedProfile?.latestProfile?.weight ||
+	                       counselingResult?.answers?.weight || 
 	                       counselingResult?.userProfile?.weight || 0);
 	const shouldShowWeight = !isFutureDate && currentWeight > 0;
 
@@ -61,9 +64,10 @@ export function WeightCard({
 	const shouldShowDifference = hasCurrentData && hasPreviousData;
 	const isDecrease = difference < 0;
 
-	// 目標体重取得（useWeightDataの結果 + カウンセリング結果フォールバック）
+	// 目標体重取得（useWeightDataの結果 + プロフィール + カウンセリング結果フォールバック）
 	const targetWeight = data.target > 0 ? data.target : 
-	                     (counselingResult?.answers?.targetWeight || 0);
+	                     (sharedProfile?.latestProfile?.targetWeight ||
+	                      counselingResult?.answers?.targetWeight || 0);
 	
 	// 目標までの計算
 	const canCalculateRemaining =
