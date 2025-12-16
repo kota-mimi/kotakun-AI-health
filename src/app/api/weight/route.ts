@@ -91,6 +91,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const lineUserId = searchParams.get('lineUserId');
     const period = searchParams.get('period') || 'month';
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
     if (!lineUserId) {
       return NextResponse.json(
@@ -101,46 +103,82 @@ export async function GET(request: NextRequest) {
 
     const adminDb = admin.firestore();
     
-    // 期間に応じてデータを取得
-    const now = new Date();
-    const periodDays = {
-      week: 7,
-      month: 30,
-      '6months': 180,
-      year: 365,
-      all: 9999
-    };
+    let weightData = [];
 
-    const days = periodDays[period as keyof typeof periodDays] || 30;
-    const weightData = [];
-
-    // 指定期間のデータを取得
-    for (let i = 0; i < days; i++) {
-      const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-      const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    // 🚀 新しい範囲指定API: startDate/endDateが指定されている場合
+    if (startDate && endDate) {
+      console.log('📅 範囲指定で体重データを取得:', startDate, 'から', endDate);
       
-      try {
-        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
-        const recordDoc = await recordRef.get();
+      const start = new Date(startDate + 'T00:00:00.000Z');
+      const end = new Date(endDate + 'T23:59:59.999Z');
+      const current = new Date(start);
+      
+      // startDateからendDateまで1日ずつ取得
+      while (current <= end) {
+        const dateStr = current.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
         
-        if (recordDoc.exists) {
-          const dailyRecord = recordDoc.data();
-          // 体重データがあれば含める
-          if (dailyRecord && dailyRecord.weight) {
-            // 体重が0以下の場合は除外（無効なデータとして扱う）
-            const weightValue = dailyRecord.weight;
-            if (weightValue && weightValue > 0) {
+        try {
+          const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+          const recordDoc = await recordRef.get();
+          
+          if (recordDoc.exists) {
+            const dailyRecord = recordDoc.data();
+            if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
               weightData.push({
                 date: dateStr,
-                weight: weightValue,
+                weight: dailyRecord.weight,
                 note: dailyRecord.note
               });
             }
           }
+        } catch (error) {
+          // エラーは無視して続行
         }
-      } catch (error) {
-        // エラーは無視して続行
-        continue;
+        
+        // 次の日へ
+        current.setDate(current.getDate() + 1);
+      }
+    } else {
+      // 🔄 従来の期間指定API（後方互換性維持）
+      const now = new Date();
+      const periodDays = {
+        week: 7,
+        month: 30,
+        '6months': 180,
+        year: 365,
+        all: 9999
+      };
+
+      const days = periodDays[period as keyof typeof periodDays] || 30;
+      
+      // 指定期間のデータを取得
+      for (let i = 0; i < days; i++) {
+        const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+        const dateStr = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+        
+        try {
+          const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr);
+          const recordDoc = await recordRef.get();
+          
+          if (recordDoc.exists) {
+            const dailyRecord = recordDoc.data();
+            // 体重データがあれば含める
+            if (dailyRecord && dailyRecord.weight) {
+              // 体重が0以下の場合は除外（無効なデータとして扱う）
+              const weightValue = dailyRecord.weight;
+              if (weightValue && weightValue > 0) {
+                weightData.push({
+                  date: dateStr,
+                  weight: weightValue,
+                  note: dailyRecord.note
+                });
+              }
+            }
+          }
+        } catch (error) {
+          // エラーは無視して続行
+          continue;
+        }
       }
     }
 
