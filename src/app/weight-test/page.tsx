@@ -172,6 +172,8 @@ function WeightCardFast({
 
 export default function WeightTestPage() {
   const [isClient, setIsClient] = React.useState(false);
+  const [weightInput, setWeightInput] = React.useState('');
+  const [isRecording, setIsRecording] = React.useState(false);
   
   React.useEffect(() => {
     setIsClient(true);
@@ -187,12 +189,59 @@ export default function WeightTestPage() {
   const weightManager = useWeightData(
     navigation?.selectedDate || new Date(),
     dateBasedDataManager?.dateBasedData || {},
-    () => {},
+    dateBasedDataManager?.updateDateBasedData || (() => {}),
     counselingResult,
     sharedProfile
   );
 
-  const updateDateData = () => {};
+  // 体重記録機能
+  const handleWeightRecord = async () => {
+    if (!weightInput || isRecording) return;
+    
+    setIsRecording(true);
+    try {
+      const weight = parseFloat(weightInput);
+      if (isNaN(weight) || weight <= 0) {
+        alert('正しい体重を入力してください');
+        return;
+      }
+
+      const selectedDate = navigation?.selectedDate || new Date();
+      const dateKey = selectedDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      console.log('🎯 体重記録開始:', { weight, dateKey });
+      
+      const response = await fetch('/api/weight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weight, date: dateKey })
+      });
+
+      if (response.ok) {
+        console.log('✅ 体重記録完了');
+        setWeightInput('');
+        
+        // データ更新をトリガー
+        if (dateBasedDataManager?.updateDateBasedData) {
+          await dateBasedDataManager.updateDateBasedData();
+        }
+        
+        // カスタムイベント発火（プロフィール体重更新用）
+        window.dispatchEvent(new CustomEvent('weightUpdated', { 
+          detail: { weight, date: dateKey } 
+        }));
+        
+      } else {
+        console.error('❌ 体重記録失敗');
+        alert('体重記録に失敗しました');
+      }
+    } catch (error) {
+      console.error('❌ 体重記録エラー:', error);
+      alert('体重記録でエラーが発生しました');
+    } finally {
+      setIsRecording(false);
+    }
+  };
 
   // サーバーサイドでは何も表示しない
   if (!isClient) {
@@ -204,14 +253,44 @@ export default function WeightTestPage() {
       <div className="max-w-md mx-auto space-y-6">
         <h1 className="text-2xl font-bold text-center mb-8">体重表示比較テスト</h1>
         
+        {/* 体重記録セクション */}
+        <Card className="p-4">
+          <h2 className="font-bold mb-3">体重記録テスト</h2>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              step="0.1"
+              value={weightInput}
+              onChange={(e) => setWeightInput(e.target.value)}
+              placeholder="体重を入力 (kg)"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isRecording}
+            />
+            <button
+              onClick={handleWeightRecord}
+              disabled={!weightInput || isRecording}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {isRecording ? '記録中...' : '記録'}
+            </button>
+          </div>
+          <div className="text-xs text-gray-500 mt-2">
+            選択日: {(navigation?.selectedDate || new Date()).toLocaleDateString('ja-JP')}
+          </div>
+        </Card>
+
         {/* デバッグ情報 */}
         <Card className="p-4">
           <h2 className="font-bold mb-2">デバッグ情報</h2>
           <div className="text-sm space-y-1">
             <div>useWeightData.current: {weightManager?.weightData?.current || 'null'}</div>
+            <div>useWeightData.previous: {weightManager?.weightData?.previous || 'null'}</div>
+            <div>useWeightData.target: {weightManager?.weightData?.target || 'null'}</div>
             <div>sharedProfile.weight: {sharedProfile?.latestProfile?.weight || 'null'}</div>
             <div>counseling.weight: {counselingResult?.answers?.weight || 'null'}</div>
+            <div>counseling.targetWeight: {counselingResult?.answers?.targetWeight || 'null'}</div>
             <div>isLoading: {weightManager?.isLoadingWeightData ? 'true' : 'false'}</div>
+            <div>選択日: {(navigation?.selectedDate || new Date()).toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' })}</div>
           </div>
         </Card>
 
