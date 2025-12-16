@@ -356,20 +356,24 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
 
       function analyzeWeightPattern(text: string) {
         try {
-          // 疑問符チェック（質問・相談を除外）
+          // 🎯 体重文脈の事前チェック（優先判定）
+          const hasWeightContext = /(体重|weight|kg|ｋｇ|キロ|キログラム)/i.test(text);
+          
+          // 疑問符チェック（質問・相談を除外）- ただし体重記録依頼は許可
           const hasQuestionMark = /[？?]/.test(text);
           const hasQuestionWords = /(どう|何|なに|いくつ|どのくらい|どれくらい)/.test(text);
+          const isRecordRequest = /(記録|して|お願い|please)/i.test(text);
           
-          if (hasQuestionMark || hasQuestionWords) {
+          if ((hasQuestionMark || hasQuestionWords) && !(hasWeightContext && isRecordRequest)) {
             console.log('❌ 体重判定 - 質問・相談として除外:', text);
             return { isWeightRecord: false, reason: '質問・相談' };
           }
           
-          // 運動文脈チェック（運動記録を除外）
-          const exerciseKeywords = /(ベンチ|プレス|スクワット|デッド|リフト|腕立て|腹筋|背筋|ランニング|ジョギング|ウォーキング|走|歩|泳|筋トレ|ジム|トレーニング|セット|回|記録して|やった|した|行った|練習|カール|プル|プッシュ)/i;
+          // 運動文脈チェック（運動記録を除外）- ただし体重文脈は除外対象外
+          const exerciseKeywords = /(ベンチ|プレス|スクワット|デッド|リフト|腕立て|腹筋|背筋|ランニング|ジョギング|ウォーキング|走|歩|泳|筋トレ|ジム|トレーニング|セット|回|やった|した|行った|練習|カール|プル|プッシュ)/i;
           const hasExerciseContext = exerciseKeywords.test(text);
           
-          if (hasExerciseContext) {
+          if (hasExerciseContext && !hasWeightContext) {
             console.log('❌ 体重判定 - 運動文脈として除外:', text);
             return { isWeightRecord: false, reason: '運動文脈' };
           }
