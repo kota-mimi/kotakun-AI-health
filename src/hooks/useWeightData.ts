@@ -43,6 +43,15 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const [isClient, setIsClient] = useState(false);
   const [isLoadingWeightData, setIsLoadingWeightData] = useState(true);
   
+  // 🚀 体重データのMap化（高速検索用）
+  const weightDataMap = useMemo(() => {
+    const map = new Map<string, {date: string; weight: number}>();
+    realWeightData.forEach(item => {
+      map.set(item.date, item);
+    });
+    return map;
+  }, [realWeightData]);
+  
   // クライアントサイドでのマウントを確認
   useEffect(() => {
     setIsClient(true);
@@ -245,8 +254,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // 🎯 統一された体重表示ロジック：その日の記録のみ表示
-    const currentDayData = realWeightData.find(item => item.date === dateKey);
+    // 🎯 統一された体重表示ロジック：その日の記録のみ表示（Map化で高速化）
+    const currentDayData = weightDataMap.get(dateKey);
     let currentWeight = 0;
     
     if (currentDayData?.weight && currentDayData.weight > 0) {
@@ -268,7 +277,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       const previousDate = new Date(date);
       previousDate.setDate(previousDate.getDate() - 1);
       const previousKey = getDateKey(previousDate);
-      const previousDayData = realWeightData.find(item => item.date === previousKey);
+      const previousDayData = weightDataMap.get(previousKey);
       previousWeight = previousDayData?.weight || 0;
     }
     // 現在体重が0の場合、previousWeightは0のまま（--表示）
@@ -307,8 +316,8 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const getPreviousWeight = (date: Date): number => {
     const dateKey = getDateKey(date);
     
-    // 指定された日付の実際の記録を取得（realWeightDataから）
-    const realDataForDate = realWeightData.find(item => item.date === dateKey);
+    // 指定された日付の実際の記録を取得（Map化で高速化）
+    const realDataForDate = weightDataMap.get(dateKey);
     if (realDataForDate && realDataForDate.weight > 0) {
       return realDataForDate.weight;
     }
