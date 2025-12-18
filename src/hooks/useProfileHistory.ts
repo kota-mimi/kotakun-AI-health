@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { calculateCalorieTarget, calculateMacroTargets, calculateBMR, calculateTDEE } from '@/utils/calculations';
 import type { UserProfile, HealthGoal } from '@/types';
+import { apiCache, createCacheKey, CACHE_TTL } from '@/lib/cache';
 
 export interface ProfileHistoryEntry {
   changeDate: string;
@@ -45,6 +46,17 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       setError(null);
       
       const dateString = targetDate.toISOString().split('T')[0];
+      
+      // キャッシュチェック（1時間キャッシュ）
+      const cacheKey = createCacheKey('profileHistory', liffUser.userId, dateString);
+      const cachedData = apiCache.get(cacheKey);
+      
+      if (cachedData) {
+        setProfileData(cachedData);
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`/api/profile/history?lineUserId=${liffUser.userId}&targetDate=${dateString}`);
       
       if (!response.ok) {
@@ -55,6 +67,8 @@ export function useProfileHistory(targetDate: Date): UseProfileHistoryReturn {
       
       if (result.success) {
         setProfileData(result.data);
+        // キャッシュに保存（1時間）
+        apiCache.set(cacheKey, result.data, CACHE_TTL.PROFILE);
       } else {
         throw new Error(result.error || 'プロフィール履歴の取得に失敗しました');
       }
@@ -123,6 +137,16 @@ export function useLatestProfile(): UseProfileHistoryReturn {
       setLoading(true);
       setError(null);
       
+      // 最新プロフィール用キャッシュ
+      const cacheKey = createCacheKey('profileHistory', liffUser.userId, 'latest');
+      const cachedData = apiCache.get(cacheKey);
+      
+      if (cachedData) {
+        setProfileData(cachedData);
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(`/api/profile/history?lineUserId=${liffUser.userId}`);
       
       if (!response.ok) {
@@ -135,6 +159,8 @@ export function useLatestProfile(): UseProfileHistoryReturn {
         const profiles = result.data;
         const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
         setProfileData(profile);
+        // 最新プロフィールもキャッシュ（1時間）
+        apiCache.set(cacheKey, profile, CACHE_TTL.PROFILE);
       } else {
         throw new Error(result.error || '最新プロフィール履歴の取得に失敗しました');
       }

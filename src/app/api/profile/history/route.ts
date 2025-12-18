@@ -50,25 +50,25 @@ export async function GET(request: NextRequest) {
         });
       }
       
-      // 指定日付にない場合、その日付以前の最新プロフィールを取得
-      const allProfilesRef = adminDb
+      // 指定日付以前の最新プロフィールを直接クエリで取得（最適化）
+      const profileHistoryRef = adminDb
         .collection('users')
         .doc(lineUserId)
-        .collection('profileHistory');
+        .collection('profileHistory')
+        .where(adminDb.FieldPath.documentId(), '<=', targetDate)
+        .orderBy(adminDb.FieldPath.documentId(), 'desc')
+        .limit(1);
       
-      const querySnapshot = await allProfilesRef.get();
+      const querySnapshot = await profileHistoryRef.get();
       
-      const profiles = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        changeDate: doc.id, // docのIDが日付
-        ...doc.data(),
-      }));
-      
-      // 指定日付以前の履歴のみをフィルタして最新を取得
-      const validProfiles = profiles.filter(profile => profile.changeDate <= targetDate);
-      
-      if (validProfiles.length > 0) {
-        const latestValidProfile = validProfiles.sort((a, b) => b.changeDate.localeCompare(a.changeDate))[0];
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const latestValidProfile = {
+          id: doc.id,
+          changeDate: doc.id,
+          ...doc.data()
+        };
+        
         return NextResponse.json({
           success: true,
           data: latestValidProfile
