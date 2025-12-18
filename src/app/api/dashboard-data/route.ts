@@ -66,27 +66,21 @@ async function getCounselingData(adminDb: any, lineUserId: string) {
   }
 }
 
-// 食事データ取得（月単位）
+// 食事データ取得（最適化：指定日のみ）
 async function getMealData(adminDb: any, lineUserId: string, date?: string) {
   try {
     const targetDate = date ? new Date(date) : new Date();
-    const year = targetDate.getFullYear();
-    const month = targetDate.getMonth() + 1;
+    const targetDateStr = targetDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 月の開始日と終了日を計算
-    const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
-    const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
+    console.log('📅 食事データ最適取得:', { targetDate: targetDateStr });
     
-    console.log('📅 食事データ月単位取得:', { startDate, endDate });
-    
+    // 🚀 最適化：指定日の食事のみ取得
     const mealsRef = adminDb
       .collection('users')
       .doc(lineUserId)
       .collection('meals')
-      .where('date', '>=', startDate)
-      .where('date', '<=', endDate)
-      .orderBy('date', 'desc')
-      .limit(100); // 月最大100件
+      .where('date', '==', targetDateStr)
+      .orderBy('timestamp', 'desc');
     
     const snapshot = await mealsRef.get();
     const meals: any[] = [];
@@ -106,45 +100,52 @@ async function getMealData(adminDb: any, lineUserId: string, date?: string) {
   }
 }
 
-// 体重データ取得（月単位）- dailyRecordsから効率的に取得
+// 体重データ取得（最適化：必要最小限のみ）- dailyRecordsから効率的に取得
 async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
   try {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+    const targetDate = date ? new Date(date) : new Date();
+    const targetDateStr = targetDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 30日前と今日の日付を文字列で取得
-    const startDate = thirtyDaysAgo.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-    const endDate = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    // 前日の日付を計算
+    const previousDate = new Date(targetDate);
+    previousDate.setDate(previousDate.getDate() - 1);
+    const previousDateStr = previousDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    console.log('⚖️ 体重データ効率取得:', { startDate, endDate });
+    console.log('⚖️ 体重データ最適取得:', { targetDate: targetDateStr, previousDate: previousDateStr });
     
-    // 🔧 安全なクエリ: orderBy削除でインデックスエラー回避、コスト削減維持
-    const dailyRecordsRef = adminDb
-      .collection('users')
-      .doc(lineUserId)
-      .collection('dailyRecords')
-      .where(adminDb.FieldPath.documentId(), '>=', startDate)
-      .where(adminDb.FieldPath.documentId(), '<=', endDate)
-      .limit(31); // 31日分のみ
+    // 🚀 最適化：今日と前日の2件のみ取得
+    const [todayDoc, yesterdayDoc] = await Promise.all([
+      adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDateStr).get(),
+      adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(previousDateStr).get()
+    ]);
     
-    const snapshot = await dailyRecordsRef.get();
     const weights: any[] = [];
     
-    snapshot.forEach((doc: any) => {
-      const docId = doc.id;
-      const dailyRecord = doc.data();
-      
-      // 体重データがあれば含める
+    // 今日のデータ
+    if (todayDoc.exists) {
+      const dailyRecord = todayDoc.data();
       if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
         weights.push({
-          date: docId,
+          date: targetDateStr,
           weight: dailyRecord.weight,
           note: dailyRecord.note
         });
       }
-    });
+    }
     
-    // JavaScriptでソート（Firestoreのorder削除のため）
+    // 前日のデータ
+    if (yesterdayDoc.exists) {
+      const dailyRecord = yesterdayDoc.data();
+      if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+        weights.push({
+          date: previousDateStr,
+          weight: dailyRecord.weight,
+          note: dailyRecord.note
+        });
+      }
+    }
+    
+    // 日付順にソート（新しい順）
     weights.sort((a, b) => b.date.localeCompare(a.date));
     
     return weights;
@@ -155,27 +156,21 @@ async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
   }
 }
 
-// フィードバックデータ取得
+// フィードバックデータ取得（最適化：指定日のみ）
 async function getFeedbackData(adminDb: any, lineUserId: string, date?: string) {
   try {
     const targetDate = date ? new Date(date) : new Date();
+    const targetDateStr = targetDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 過去7日分のフィードバックを取得
-    const endDate = targetDate.toISOString().split('T')[0];
-    const startDate = new Date(targetDate);
-    startDate.setDate(startDate.getDate() - 7);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    console.log('💭 フィードバックデータ最適取得:', { targetDate: targetDateStr });
     
-    console.log('💭 フィードバックデータ週単位取得:', { startDateStr, endDate });
-    
+    // 🚀 最適化：指定日のフィードバックのみ取得
     const feedbackRef = adminDb
       .collection('users')
       .doc(lineUserId)
       .collection('feedback')
-      .where('date', '>=', startDateStr)
-      .where('date', '<=', endDate)
-      .orderBy('date', 'desc')
-      .limit(20);
+      .where('date', '==', targetDateStr)
+      .orderBy('createdAt', 'desc');
     
     const snapshot = await feedbackRef.get();
     const feedback: any[] = [];
