@@ -43,8 +43,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const [isClient, setIsClient] = useState(false);
   const [isLoadingWeightData, setIsLoadingWeightData] = useState(true);
   
-  // 🚀 オンデマンド拡張キャッシュ用のrange管理
-  const [dataRange, setDataRange] = useState<{startDate: string; endDate: string} | null>(null);
   
   // 🚀 体重データのMap化（高速検索用）
   const weightDataMap = useMemo(() => {
@@ -60,41 +58,20 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     setIsClient(true);
   }, []);
 
-  // 🚀 日付ユーティリティ関数
+  // 日付ユーティリティ関数
   const getDateKey = (date: Date) => {
     return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
   };
-  
-  const getDateXDaysAgo = (days: number, fromDate: Date = new Date()) => {
-    const date = new Date(fromDate.getTime() - (days * 24 * 60 * 60 * 1000));
-    return getDateKey(date);
-  };
-  
-  const getDateXDaysAfter = (days: number, fromDate: Date = new Date()) => {
-    const date = new Date(fromDate.getTime() + (days * 24 * 60 * 60 * 1000));
-    return getDateKey(date);
-  };
-  
-  // 🚀 データ範囲チェック
-  const needsDataExpansion = (targetDate: Date) => {
-    if (!dataRange) return true;
-    const targetKey = getDateKey(targetDate);
-    return targetKey < dataRange.startDate || targetKey > dataRange.endDate;
-  };
+
   
   // 🚀 統合データがある場合は使用、ない場合は従来のFirestore取得
   useEffect(() => {
     if (!isClient) return;
     
-    // 統合データがある場合は即座に使用（undefinedでない場合）
-    // ただし、realWeightDataが既にある場合（記録後など）は統合データで上書きしない
-    if (dashboardWeightData !== undefined && realWeightData.length === 0) {
+    // 統合データがある場合は即座に使用（ef9cde4版に復元）
+    if (dashboardWeightData !== undefined) {
       console.log('⚡ 統合データから体重データを取得:', dashboardWeightData.length, '件');
       setRealWeightData(dashboardWeightData);
-      // 初期レンジを設定（統合データは直近30日分と仮定）
-      const today = getDateKey(new Date());
-      const monthAgo = getDateXDaysAgo(30);
-      setDataRange({ startDate: monthAgo, endDate: today });
       setIsLoadingWeightData(false);
       return;
     }
@@ -131,61 +108,28 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         // キャッシュなし：API取得
       }
       
-      // 🚀 オンデマンド拡張: 選択日に必要なデータを取得
-      await fetchWeightDataForRange(selectedDate);
+      try {
+        console.log('🔄 体重データをAPIから取得');
+        const response = await fetch(`/api/weight?lineUserId=${lineUserId}&period=month`);
+        if (response.ok) {
+          const result = await response.json();
+          const weightData = result.data || [];
+          
+          // キャッシュに保存
+          apiCache.set(cacheKey, weightData, CACHE_TTL.MEDIUM);
+          
+          setRealWeightData(weightData);
+          console.log('✅ 体重データ取得完了:', weightData.length, '件');
+        }
+      } catch (error) {
+        console.error('体重データ取得エラー:', error);
+      } finally {
+        setIsLoadingWeightData(false);
+      }
     };
     
     fetchWeightData();
-  }, [liffUser?.userId, selectedDate, isClient, dashboardWeightData]); // selectedDateを依存に追加
-  
-  // 🚀 範囲指定で体重データを取得
-  const fetchWeightDataForRange = async (targetDate: Date) => {
-    const lineUserId = liffUser?.userId;
-    if (!lineUserId || !needsDataExpansion(targetDate)) {
-      // 既にデータがある場合は何もしない
-      setIsLoadingWeightData(false);
-      return;
-    }
-    
-    try {
-      // 選択日を中心に±30日の範囲で取得
-      const targetKey = getDateKey(targetDate);
-      const startDate = getDateXDaysAgo(30, targetDate);
-      const endDate = getDateXDaysAfter(30, targetDate);
-      
-      console.log('🔄 体重データを拡張取得:', startDate, 'から', endDate);
-      
-      const response = await fetch(`/api/weight?lineUserId=${lineUserId}&startDate=${startDate}&endDate=${endDate}`);
-      if (response.ok) {
-        const result = await response.json();
-        const newWeightData = result.data || [];
-        
-        // 既存データとマージ（重複除去）
-        const mergedData = [...realWeightData];
-        newWeightData.forEach(newItem => {
-          if (!mergedData.some(existing => existing.date === newItem.date)) {
-            mergedData.push(newItem);
-          }
-        });
-        
-        // 日付順にソート
-        mergedData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        setRealWeightData(mergedData);
-        setDataRange({ startDate, endDate });
-        
-        // キャッシュに保存
-        const cacheKey = createCacheKey('weight', lineUserId, 'expanded');
-        apiCache.set(cacheKey, mergedData, CACHE_TTL.WEIGHT);
-        
-        console.log('✅ 体重データ拡張完了:', mergedData.length, '件');
-      }
-    } catch (error) {
-      console.error('体重データ拡張取得エラー:', error);
-    } finally {
-      setIsLoadingWeightData(false);
-    }
-  };
+  }, [liffUser?.userId, isClient, dashboardWeightData]); // ef9cde4版に復元
 
   
   // 今日の日付が選択された場合のみ最新データチェック
