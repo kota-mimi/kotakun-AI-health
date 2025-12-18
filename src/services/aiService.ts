@@ -746,7 +746,7 @@ ${languageInstruction}
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
   "fat": 脂質のグラム数（小数点第1位まで）,
-  "nutritionAdvice": "キャラクターの口調で1-2行の短いアドバイス（改行含む）"
+  "nutritionAdvice": "ヘルシーくんの親しみやすい口調で1-2行の短いアドバイス（改行含む）。食事内容に具体的に言及し、栄養バランスの良い点・改善点を明確に指摘。"
 }
 
 **重要：材料列挙は一つの料理として認識**
@@ -850,21 +850,7 @@ ${languageInstruction}
 
       const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       
-      const prompt = `${languageInstruction}
-
-あなたは「${persona.name}」として振る舞ってください。
-
-【キャラクター設定】
-性格: ${persona.personality}
-口調: ${persona.tone}
-
-【重要なLINE応答ルール】
-- nutritionAdviceは1-2行の短いメッセージ
-- 改行を使って読みやすく
-- 句読点は最小限
-- **必ず食事内容に具体的に言及する**
-- **栄養バランス（良い点・改善点）を明確に指摘**
-- キャラクターの口調を反映
+      const prompt = `**CRITICAL: 必ず指定されたJSON形式のみで回答してください。挨拶や説明は一切不要です。**
 
 この画像を分析してください。まず、この画像が食事・料理・食べ物の写真かどうかを判定してください。
 
@@ -913,7 +899,7 @@ ${languageInstruction}
   "protein": タンパク質のグラム数（小数点第1位まで）,
   "carbs": 炭水化物のグラム数（小数点第1位まで）,
   "fat": 脂質のグラム数（小数点第1位まで）,
-  "nutritionAdvice": "キャラクターの口調で1-2行の短いアドバイス（改行含む）"
+  "nutritionAdvice": "ヘルシーくんの親しみやすい口調で1-2行の短いアドバイス（改行含む）。食事内容に具体的に言及し、栄養バランスの良い点・改善点を明確に指摘。"
 }
 
 注意：
