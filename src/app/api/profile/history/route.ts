@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       }
       
       // 指定日付以前の最新プロフィールを直接クエリで取得（最適化）
-      const profileHistoryRef = adminDb
+      const profileQuery = adminDb
         .collection('users')
         .doc(lineUserId)
         .collection('profileHistory')
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         .orderBy(adminDb.FieldPath.documentId(), 'desc')
         .limit(1);
       
-      const querySnapshot = await profileHistoryRef.get();
+      const querySnapshot = await profileQuery.get();
       
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
