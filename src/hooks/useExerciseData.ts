@@ -78,11 +78,11 @@ export function useExerciseData(selectedDate: Date, dateBasedData: any, updateDa
       // キャッシュキー生成
       const cacheKey = createCacheKey('exercises', lineUserId, currentDate);
       
-      // キャッシュチェック（ただし5秒以内のデータは強制的に再取得）
+      // キャッシュチェック（5秒より古いデータのみ再取得）
       const cachedData = apiCache.get(cacheKey);
       const lastFetch = localStorage.getItem(`lastExerciseFetch_${lineUserId}_${currentDate}`);
       const now = Date.now();
-      const shouldRefresh = !lastFetch || (now - parseInt(lastFetch)) < 5000; // 5秒以内は再取得
+      const shouldRefresh = !lastFetch || (now - parseInt(lastFetch)) > 5000; // 5秒より古い場合のみ再取得
       
       if (cachedData && !shouldRefresh) {
         setFirestoreExerciseData(cachedData);

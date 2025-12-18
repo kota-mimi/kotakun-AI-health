@@ -98,31 +98,19 @@ export async function GET(request: NextRequest) {
         data: exercises
       });
     } else {
-      // 最近30日分のデータを取得（Admin SDK）
-      const allExercises: any[] = [];
+      // 日付指定なしの場合は今日のデータのみ取得（最適化）
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(today);
+      const recordDoc = await recordRef.get();
       
-      for (let i = 0; i < 30; i++) {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
-        const recordRef = adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(date);
-        const recordDoc = await recordRef.get();
-        
-        if (recordDoc.exists) {
-          const record = recordDoc.data();
-          if (record && record.exercises && record.exercises.length > 0) {
-            record.exercises.forEach((exercise: any) => {
-              allExercises.push({
-                ...exercise,
-                date: record.date || date
-              });
-            });
-          }
-        }
-      }
-      
+      const exercises = recordDoc.exists ? (recordDoc.data()?.exercises || []) : [];
       
       return NextResponse.json({
         success: true,
-        data: allExercises
+        data: exercises.map((exercise: any) => ({
+          ...exercise,
+          date: today
+        }))
       });
     }
 
