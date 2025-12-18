@@ -13,7 +13,6 @@ import { useFeedbackData } from '@/hooks/useFeedbackData';
 // import { useGlobalLoading } from '@/hooks/useGlobalLoading';
 import { useSharedProfile } from '@/hooks/useSharedProfile';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { useShareRecord } from '@/hooks/useShareRecord';
 
 import { CompactHeader } from '@/components/CompactHeader';
 import { CalorieCard } from '@/components/CalorieCard';
@@ -96,7 +95,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
   const dateBasedDataManager = useDateBasedData();
   // const globalLoading = useGlobalLoading();
   const sharedProfile = useSharedProfile(); // 🔄 統合プロフィール管理
-  const shareRecord = useShareRecord(); // 📤 共有機能（テスト用に戻す）
   
   // 🚀 統合ダッシュボードデータ取得（コスト削減）
   const dashboardData = useDashboardData(navigation?.selectedDate || new Date());
@@ -245,20 +243,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
                            counselingResult?.answers?.weight || 
                            counselingResult?.userProfile?.weight || 0;
       
-      const recordData = shareRecord.formatRecordData(
-        navigation?.selectedDate || new Date(),
-        mealManager?.mealData || {},
-        exerciseManager?.exerciseData || [],
-        {},  // formatRecordDataでは体重使わない
-        counselingResult
-      );
       
       const targetCalories = mealManager?.calorieData?.targetCalories || 2000;
 
       const shareData = {
         date: (navigation?.selectedDate || new Date()).toISOString(),
         weight: currentWeight,  // シンプルに数値で送信
-        weightDiff: 0,  // 差分は後で計算
+        weightDiff: (weightManager?.weightData?.current || 0) - (weightManager?.weightData?.previous || 0),
         calories: recordData.calories,
         caloriesTarget: targetCalories,
         protein: recordData.protein,
