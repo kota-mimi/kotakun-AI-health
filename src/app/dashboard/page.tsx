@@ -285,7 +285,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       });
       // セキュアな共有データを構築
       const currentUserId = counselingResult?.answers?.lineUserId || 'anonymous';
-      const { encryptData, hashUserId, generateSessionId } = await import('@/lib/encryption');
+      const { encryptDataWithTimestamp, hashUserId, generateSessionId } = await import('@/lib/encryption');
       
       // ユーザーIDをハッシュ化（個人情報保護）
       const hashedUserId = await hashUserId(currentUserId);
@@ -304,11 +304,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
       console.log('🔒 Secure share data prepared:', {
         userId: hashedUserId,
         sessionId,
-        expiresAt: new Date(expiresAt).toISOString()
+        expiresAt: new Date(expiresAt).toISOString(),
+        timestamp: timestamp
       });
       
-      // データを暗号化
-      const encryptedData = await encryptData(secureShareData, hashedUserId);
+      // データを暗号化（timestampを明示的に指定）
+      const encryptedData = await encryptDataWithTimestamp(secureShareData, hashedUserId, timestamp);
       const shareUrl = `https://health-share-ten.vercel.app?secure=${encodeURIComponent(encryptedData)}&t=${timestamp}&u=${hashedUserId}`;
       
       console.log('🔗 Generated secure share URL length:', shareUrl.length);

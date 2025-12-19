@@ -33,6 +33,11 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
 
 // データを暗号化
 export async function encryptData(data: any, userId: string): Promise<string> {
+  return encryptDataWithTimestamp(data, userId, Date.now());
+}
+
+// タイムスタンプ指定可能な暗号化関数
+export async function encryptDataWithTimestamp(data: any, userId: string, timestamp: number): Promise<string> {
   try {
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
@@ -41,8 +46,8 @@ export async function encryptData(data: any, userId: string): Promise<string> {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
     
-    // ユーザーIDとタイムスタンプを組み合わせた暗号化キー
-    const password = `${userId}_${Date.now()}_health_share_secure`;
+    // ユーザーIDとタイムスタンプを組み合わせた暗号化キー（同期化）
+    const password = `${userId}_${timestamp}_health_share_secure`;
     const key = await deriveKey(password, salt);
     
     // データをJSON文字列に変換
