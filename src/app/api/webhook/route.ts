@@ -1707,7 +1707,7 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
       const calculationDuration = duration || 30;
-      const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+      const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
       totalCalories += caloriesBurned;
       
       // 同じ種目の既存記録をチェック
@@ -2399,7 +2399,7 @@ async function recordExerciseFromMatch(userId: string, match: any, replyToken: s
     // カロリー計算
     const userWeight = await getUserWeight(userId) || 70;
     const mets = EXERCISE_METS[exerciseName] || 5.0;
-    const caloriesBurned = Math.round((mets * userWeight * duration) / 60);
+    const caloriesBurned = Math.round((mets * (duration / 60) * userWeight * 1.05));
     
     // 運動データ作成
     const exerciseData = {
@@ -2495,7 +2495,7 @@ async function recordMultipleWeightExercise(userId: string, match: any, replyTok
     const avgWeight = sets.reduce((sum, set) => sum + set.weight, 0) / sets.length;
     const userWeight = await getUserWeight(userId) || 70;
     const baseMets = EXERCISE_METS[exerciseName] || 6.0;
-    const caloriesBurned = Math.round((baseMets * userWeight * estimatedDuration) / 60);
+    const caloriesBurned = Math.round((baseMets * (estimatedDuration / 60) * userWeight * 1.05));
     
     // 運動データ作成（アプリの型定義に合わせる）
     const exerciseData = {
@@ -2575,7 +2575,7 @@ async function recordDetailedExercise(userId: string, match: any, replyToken: st
     // カロリー計算（筋トレ用）
     const userWeight = await getUserWeight(userId) || 70;
     const baseMets = EXERCISE_METS[exerciseName] || 6.0;
-    const caloriesBurned = Math.round((baseMets * userWeight * estimatedDuration) / 60);
+    const caloriesBurned = Math.round((baseMets * (estimatedDuration / 60) * userWeight * 1.05));
     
     // 運動データ作成（アプリの型定義に合わせる）
     const exerciseData = {
@@ -2805,7 +2805,7 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
       const calculationDuration = duration || 30;
-      const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+      const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
       totalCalories += caloriesBurned;
       
       // 運動データ作成

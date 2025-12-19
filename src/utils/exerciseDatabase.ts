@@ -132,15 +132,15 @@ export function findExerciseByName(name: string): ExerciseData | null {
   return partialMatch || null;
 }
 
-// カロリー計算関数
+// カロリー計算関数（厚生労働省基準）
 export function calculateCalories(
   exerciseData: ExerciseData,
   durationMinutes: number,
   bodyWeightKg: number = 60 // デフォルト体重
 ): number {
-  // カロリー = METs × 体重(kg) × 時間(h)
+  // 厚生労働省基準：消費カロリー(kcal) = METs × 時間(h) × 体重(kg) × 1.05
   const durationHours = durationMinutes / 60;
-  const calories = exerciseData.mets * bodyWeightKg * durationHours;
+  const calories = exerciseData.mets * durationHours * bodyWeightKg * 1.05;
   return Math.round(calories);
 }
 
