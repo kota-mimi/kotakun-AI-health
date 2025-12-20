@@ -293,17 +293,16 @@ export async function POST(request: NextRequest) {
       try {
         await sendCounselingResultToLine(lineUserId, answers, results);
         
-        // 🎁 お試し期間開始のメッセージを送信
+        // お試し期間開始のメッセージを送信
         const trialMessage = {
           type: 'text',
-          text: '🎉 カウンセリング完了おめでとう！\n\n' +
-                '✨ 今から3日間、すべての機能が無制限で使い放題です！\n\n' +
-                '📱 この期間中は：\n' +
+          text: '今から3日間、すべての機能が無制限で使い放題です。\n\n' +
+                'この期間中は：\n' +
                 '・AI会話 無制限\n' +
                 '・記録機能 無制限\n' +
                 '・アプリのAI記録機能も利用可能\n' +
                 '・1日フィードバック機能も利用可能\n\n' +
-                '🚀 ぜひたくさん使って、ヘルシーくんの力を実感してみてね！'
+                'ぜひたくさん使って、ヘルシーくんの力を実感してみてください。'
         };
         
         await pushMessage(lineUserId, [trialMessage]);
