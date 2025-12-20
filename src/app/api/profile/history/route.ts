@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
         .collection('users')
         .doc(lineUserId)
         .collection('profileHistory')
-        .where(adminDb.FieldPath.documentId(), '<=', targetDate)
-        .orderBy(adminDb.FieldPath.documentId(), 'desc')
+        .where(admin.firestore.FieldPath.documentId(), '<=', targetDate)
+        .orderBy(admin.firestore.FieldPath.documentId(), 'desc')
         .limit(1);
       
       const querySnapshot = await profileQuery.get();
