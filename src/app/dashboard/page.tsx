@@ -258,7 +258,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
       const shareData = {
         date: (navigation?.selectedDate || new Date()).toISOString(),
         weight: currentWeight,  // シンプルに数値で送信
-        weightDiff: (weightManager?.weightData?.current || 0) - (weightManager?.weightData?.previous || 0),
+        weightDiff: (weightManager?.weightData?.current > 0 && weightManager?.weightData?.previous > 0) 
+          ? (weightManager?.weightData?.current - weightManager?.weightData?.previous) 
+          : null,
         calories: recordData.calories,
         caloriesTarget: targetCalories,
         protein: recordData.protein,
