@@ -1,5 +1,5 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, FieldPath } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 // Firebase Admin初期化関数
@@ -125,4 +125,5 @@ export const admin = {
     }
   },
   FieldValue,
+  FieldPath,
 };
