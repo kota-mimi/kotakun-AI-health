@@ -209,27 +209,28 @@ async function generateDailyFeedback(
   // キャラクターのペルソナを取得
   const persona = getCharacterPersona(null);
   
-  // プロンプトを作成
+  // プロンプトを作成（中間レベル：親しみやすく + タメになる）
   const prompt = `
-あなたは「${persona.name}」として、1日の食事と運動記録をフィードバックしてください。
+あなたは健康アドバイザー「${persona.name}」として、親しみやすく、でもちゃんとタメになるフィードバックをしてください。
 
 ## キャラクター設定
 - 性格: ${persona.personality}
 - 口調: ${persona.tone}
+- アドバイススタイル: 友達のように親しみやすく、でも健康に関する「へ〜」と思える豆知識も教える
 
 ## 記録データ（${date}）
-### 食事記録
-- カロリー: ${totalCalories}kcal (目標: ${targetCalories}kcal)
-- タンパク質: ${totalProtein}g
-- 脂質: ${totalFat}g  
-- 炭水化物: ${totalCarbs}g
+### 栄養バランス詳細
+- 摂取カロリー: ${totalCalories}kcal / 目標: ${targetCalories}kcal (達成率: ${calorieAchievement}%)
+- タンパク質: ${totalProtein}g (目標: ${targetProtein}g)
+- 脂質: ${totalFat}g (目標: ${targetFat}g)
+- 炭水化物: ${totalCarbs}g (目標: ${targetCarbs}g)
 - 食事内容: ${data.meals.map(meal => meal.foods.join(', ')).join('、') || '記録なし'}
 
 ### 運動記録
 - 運動時間: ${exerciseTime}分
 - 運動内容: ${data.exercises.map(ex => ex.displayName || ex.type).join('、') || '記録なし'}
 
-### 体重
+### 体重変化
 - 体重: ${data.weight?.value || '未記録'}kg
 - 変化: ${weightTrend}
 
@@ -237,17 +238,20 @@ async function generateDailyFeedback(
 以下の形式で回答してください：
 
 ■ 食事評価
-良かった点: [食事・栄養面で良かったことを褒める]
-改善点: [食事・栄養面の改善提案があれば簡潔に]
+良かった点: [具体的に褒めて、なぜ良いかの理由も簡単に説明する。例：「タンパク質がしっかり摂れてるね！筋肉作るのに大切だから〜」]
+改善点: [具体的な数値目標や、なぜ必要かの理由も含めて提案する。例：「あと野菜を100g増やそう。ビタミンCで疲労回復効果があるよ」]
 
 ■ 運動評価  
-良かった点: [運動面で良かったことを褒める]
+良かった点: [運動の効果や続けることの大切さを、具体的な健康効果と一緒に褒める]
 
 ## 指示
-- ${persona.name}の口調を維持
-- 記録があれば積極的に褒める
-- 具体的で分かりやすく
-- プレーンテキストで返答
+- ${persona.name}らしい親しみやすい口調を保つ
+- でも健康に関する「へ〜」と思える豆知識も入れる
+- 数値は具体的に（例：「タンパク質があと20g必要」「週150分の運動目標まであと30分」など）
+- 理由も教える（例：「筋肉作るために必要」「代謝アップのため」「疲労回復効果」など）
+- 記録があったらしっかり褒める
+- わかりやすく、実行しやすいアドバイス
+- 専門用語は使わず、日常的な言葉で説明
 `;
 
   try {
@@ -265,7 +269,7 @@ async function generateDailyFeedback(
   }
 }
 
-// AIが使えない場合のフォールバック
+// AIが使えない場合のフォールバック（中間レベル）
 function generateFallbackFeedback(
   data: DailyRecord, 
   calories: number, 
@@ -277,18 +281,22 @@ function generateFallbackFeedback(
   const hasMeals = data.meals.length > 0;
   const hasExercise = exerciseTime > 0;
   
+  // 簡単な数値分析
+  const proteinRatio = calories > 0 ? Math.round((protein * 4 / calories) * 100) : 0;
+  const targetProtein = Math.max(60, protein + 20); // 最低60g、または現在より20g多く
+  
   return `■ 食事評価
 
 良かった点:
-・${hasMeals ? `タンパク質もしっかり摂れてるね！筋肉を作るのに大切な栄養だから、この調子でバランス良く食べていこう。食事記録をつけることで栄養バランスが見えるようになって、健康的な食生活の第一歩になってるよ。` : '記録なし'}
+・${hasMeals ? `食事記録をつけてるのがすごくいいね！栄養バランスが見える化できて、これが健康管理の第一歩だよ。タンパク質${protein}g摂れてるのも筋肉維持に役立ってる！` : 'まずは記録をつける習慣から始めよう'}
 
 改善点:
-・${hasMeals ? `野菜をもう少し増やせるともっといいかも。ビタミンとか食物繊維が体の調子を整えてくれるからね。` : '記録なし'}
+・${hasMeals ? `タンパク質をあと${targetProtein - protein}gぐらい増やせるといいかも。体重1kgあたり1g以上摂ると筋肉が落ちにくくなるよ。卵や鶏肉、豆腐なんかがおすすめ！` : '栄養記録を始めて食事バランスを見てみよう'}
 
 ■ 運動評価
 
 良かった点:
-・${hasExercise ? `体を動かしたんだね！継続することで体力もついてくるし、すごくいい感じだよ。運動を習慣にすることで、代謝も良くなって体の調子も整ってくるから、今のペースを大切にしていこう。` : '記録なし'}
+・${hasExercise ? `${exerciseTime}分も体を動かしたんだね！WHO推奨の週150分に向けて良いペース。運動は血流改善で疲労回復も早くなるし、続けることで基礎代謝もアップするよ。` : '今度は少しでも体を動かしてみよう！階段使うだけでも効果的'}
 
 `;
 }
