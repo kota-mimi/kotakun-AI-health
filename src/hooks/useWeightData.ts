@@ -249,15 +249,21 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       currentWeight = latestRecord?.weight || 0;
     }
     
-    // 前日比計算：選択日に記録がある場合のみ前日と比較
+    // 最新記録比計算：選択日に記録がある場合、過去7日間で最新記録と比較
     let previousWeight = 0;
     if (currentDayData?.weight) {
-      // 選択日に記録がある場合のみ前日比を計算
-      const previousDate = new Date(date);
-      previousDate.setDate(previousDate.getDate() - 1);
-      const previousKey = getDateKey(previousDate);
-      const previousDayData = weightDataMap.get(previousKey);
-      previousWeight = previousDayData?.weight || 0;
+      // 選択日に記録がある場合、過去7日間で最新記録を探す
+      for (let i = 1; i <= 7; i++) {
+        const pastDate = new Date(date);
+        pastDate.setDate(pastDate.getDate() - i);
+        const pastKey = getDateKey(pastDate);
+        const pastDayData = weightDataMap.get(pastKey);
+        
+        if (pastDayData?.weight && pastDayData.weight > 0) {
+          previousWeight = pastDayData.weight;
+          break; // 最新の記録が見つかったら終了
+        }
+      }
     }
     // 現在体重が0の場合、previousWeightは0のまま（--表示）
     

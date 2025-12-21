@@ -108,7 +108,7 @@ export function WeightCard({
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
-							前日比
+							前回比
 						</div>
 						<div
 							className={`text-lg font-bold ${
