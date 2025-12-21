@@ -252,6 +252,8 @@ async function generateDailyFeedback(
 - 記録があったらしっかり褒める
 - わかりやすく、実行しやすいアドバイス
 - 専門用語は使わず、日常的な言葉で説明
+- 絵文字、マークダウン記号（**、***、---など）は一切使わない
+- プレーンテキストで回答する
 `;
 
   try {
@@ -260,7 +262,10 @@ async function generateDailyFeedback(
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const rawText = response.text();
+    
+    // 絵文字とマークダウン記号を除去
+    return cleanFeedbackText(rawText);
     
   } catch (error) {
     console.error('❌❌❌ AI生成エラー:', error);
@@ -285,7 +290,7 @@ function generateFallbackFeedback(
   const proteinRatio = calories > 0 ? Math.round((protein * 4 / calories) * 100) : 0;
   const targetProtein = Math.max(60, protein + 20); // 最低60g、または現在より20g多く
   
-  return `■ 食事評価
+  const fallbackText = `■ 食事評価
 
 良かった点:
 ・${hasMeals ? `食事記録をつけてるのがすごくいいね！栄養バランスが見える化できて、これが健康管理の第一歩だよ。タンパク質${protein}g摂れてるのも筋肉維持に役立ってる！` : 'まずは記録をつける習慣から始めよう'}
@@ -299,6 +304,28 @@ function generateFallbackFeedback(
 ・${hasExercise ? `${exerciseTime}分も体を動かしたんだね！WHO推奨の週150分に向けて良いペース。運動は血流改善で疲労回復も早くなるし、続けることで基礎代謝もアップするよ。` : '今度は少しでも体を動かしてみよう！階段使うだけでも効果的'}
 
 `;
+
+  // フォールバックテキストもクリーンアップ
+  return cleanFeedbackText(fallbackText);
+}
+
+// 絵文字とマークダウン記号を除去する関数
+function cleanFeedbackText(text: string): string {
+  return text
+    // 絵文字を除去（Unicode絵文字範囲）
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    // マークダウン記号を除去
+    .replace(/\*{1,3}/g, '') // *, **, ***
+    .replace(/_{1,3}/g, '') // _, __, ___
+    .replace(/`{1,3}/g, '') // `, ```, `
+    .replace(/#{1,6}\s*/g, '') // # から ######
+    .replace(/[-=]{3,}/g, '') // ---, ===, ━━━
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](link) → text
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1') // ![alt](image) → alt
+    // 余分な空白や改行をクリーンアップ
+    .replace(/\n{3,}/g, '\n\n') // 3つ以上の改行を2つに
+    .replace(/[ \t]{2,}/g, ' ') // 連続するスペースやタブを1つに
+    .trim();
 }
 
 // ユーザー名を取得
