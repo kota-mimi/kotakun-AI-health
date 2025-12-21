@@ -298,37 +298,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             </p>
           </div>
 
-          {/* 統合モードについて */}
-          <div className="mb-20">
-            <div className="section">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                簡単記録機能
-              </h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                「記録」という言葉をメッセージに含めて送ると、自動で記録モードになり、体重・運動・食事の記録ができます
-              </p>
-              <div className="space-y-3 text-gray-800 mb-4">
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「朝食記録したい」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「体重記録」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「運動記録お願いします」</span>
-                </div>
-              </div>
-              <div className="bg-blue-50 p-4 rounded-lg mb-16">
-                <p className="font-semibold text-gray-800 mb-2">ポイント</p>
-                <p className="text-gray-700 text-sm">
-                  「記録」という言葉があれば、どんな文章でも記録モードになります。普通にヘルシーくんと会話したい場合は「記録」という言葉を入れずにメッセージを送ってください
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* 食事記録（カメラ） */}
           <div className="mb-20">
@@ -566,8 +535,14 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 フィードバックとは
               </h2>
               <p className="text-gray-700 leading-relaxed mb-16">
-                リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面・運動面についての良かった点や改善点などの素晴らしいフィードバックが返ってきます
+                リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面・運動面についての詳細なアドバイスが返ってきます
               </p>
+              <div className="bg-yellow-50 p-4 rounded-lg mb-16">
+                <p className="font-semibold text-gray-800 mb-2">利用条件</p>
+                <p className="text-gray-700 text-sm">
+                  フィードバック機能は有料プランの機能です。無料プランの場合はプラン変更が必要になります
+                </p>
+              </div>
             </div>
           </div>
 
@@ -607,15 +582,19 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <div className="space-y-3 text-gray-800 mb-16">
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>食事面の良かった点・改善点</span>
+                  <span>食事評価：良かった点と改善点</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>運動面の良かった点・改善点</span>
+                  <span>運動評価：良かった点と継続のコツ</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>目標達成に向けたアドバイス</span>
+                  <span>具体的な数値目標と健康豆知識</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>親しみやすい口調でのアドバイス</span>
                 </div>
               </div>
             </div>
@@ -633,13 +612,18 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             </div>
           </div>
 
-          {/* 注意 */}
+          {/* 注意事項 */}
           <div className="mb-32">
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <p className="font-semibold text-gray-800 mb-2">注意</p>
-              <p className="text-gray-700 text-sm">
-                記録が少ない場合、アドバイスがない場合があります。できるだけ記録をした状態でこの機能を使うことをおすすめします
-              </p>
+            <div className="space-y-4">
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="font-semibold text-gray-800 mb-2">注意事項</p>
+                <p className="text-gray-700 text-sm mb-2">
+                  記録が少ない場合、十分なアドバイスが生成されない場合があります。食事・運動・体重をできるだけ記録した状態で利用することをおすすめします
+                </p>
+                <p className="text-gray-700 text-sm">
+                  フィードバック生成にはAIを使用するため、少し時間がかかる場合があります
+                </p>
+              </div>
             </div>
           </div>
 
