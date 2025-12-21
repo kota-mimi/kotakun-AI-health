@@ -337,25 +337,32 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 食事記録（カメラで記録）
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                食事の写真を送るだけで、AIがカロリーを分析してくれます
+                食事の写真を送るだけで、自動でAIがカロリーを分析してくれます
               </p>
               <div className="space-y-3 text-gray-800 mb-4">
                 <div className="flex items-start">
                   <span className="mr-3">1.</span>
-                  <span>食事の写真を撮って送る</span>
+                  <span>食事の写真を撮ってLINEで送信する</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">2.</span>
-                  <span>朝食・昼食・夕食・間食から選ぶ</span>
+                  <span>AIが自動で食事を分析開始</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">3.</span>
-                  <span>計算された結果が表示される</span>
+                  <span>朝食・昼食・夕食・間食から食事の種類を選択</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="mr-3">4.</span>
+                  <span>カロリーとPFCが計算されて記録完了</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-16">
-                ※写真は1枚ずつ記録できます
-              </p>
+              <div className="bg-blue-50 p-4 rounded-lg mb-16">
+                <p className="font-semibold text-gray-800 mb-2">重要</p>
+                <p className="text-gray-700 text-sm">
+                  写真を送ると自動で記録モードになります。「記録」という言葉は不要です。1枚ずつ送信してください。
+                </p>
+              </div>
             </div>
           </div>
 
@@ -366,27 +373,31 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 食事記録（テキストで記録）
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                自由にテキストで記録できます。1食ずつでも、まとめてでもOK
+                「記録」という言葉を含めてメッセージを送ると、食事記録モードになります。1食ずつでも、まとめてでもOK
               </p>
               <div className="space-y-3 text-gray-700 mb-4">
                 <p className="font-semibold">記録例</p>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>朝にヨーグルト</span>
+                  <span>「朝にヨーグルト記録したい」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>昼に唐揚げとご飯100g食べた！</span>
+                  <span>「昼に唐揚げとご飯100g食べた！記録お願いします」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>朝にヨーグルト 昼にカツ丼と味噌汁 夜に餃子5個とご飯 おやつにクッキー2枚！</span>
+                  <span>「記録：朝にヨーグルト 昼にカツ丼と味噌汁 夜に餃子5個とご飯 おやつにクッキー2枚」</span>
                 </div>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg mb-16">
+                <p className="font-semibold text-gray-800 mb-2">重要</p>
+                <p className="text-gray-700 text-sm mb-2">
+                  必ず「記録」という言葉を含めてください。含めないと普通の会話として扱われます。
+                </p>
                 <p className="font-semibold text-gray-800 mb-2">記録のコツ</p>
                 <p className="text-gray-700 text-sm">
-                  料理の中身も記録したい場合は、例：お鍋（豚肉 白菜 えのき）のように記録すると、うまく分析されます
+                  料理の中身も記録したい場合は、例：「お鍋（豚肉 白菜 えのき）記録して」のように記録すると、うまく分析されます
                 </p>
               </div>
             </div>
@@ -429,18 +440,28 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 体重記録
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                記録モードで体重を記録できます
+                「記録」という言葉を含めて体重を記録できます
               </p>
               <div className="space-y-3 text-gray-700 mb-4">
                 <p className="font-semibold">記録例</p>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>体重 78kg</span>
+                  <span>「体重 78kg 記録」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>78（体重の文字があれば数字だけでもOK）</span>
+                  <span>「記録：体重78kg」</span>
                 </div>
+                <div className="flex items-start">
+                  <span className="mr-3">⚫︎</span>
+                  <span>「体重78キロ記録したい」</span>
+                </div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                <p className="font-semibold text-gray-800 mb-2">重要</p>
+                <p className="text-gray-700 text-sm">
+                  必ず「記録」という言葉と「体重」という言葉、そして数値（kg、キロ）を含めてください
+                </p>
               </div>
               <p className="text-gray-700 leading-relaxed mb-16">
                 アプリの体重フレームからも記録・編集できます
@@ -455,30 +476,36 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 運動記録
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                自然な言葉で運動を記録できます。有酸素運動・筋トレ・スポーツなど、すべての運動が記録できます
+                「記録」という言葉を含めて自然な言葉で運動を記録できます。有酸素運動・筋トレ・スポーツなど、すべての運動が記録できます
               </p>
               <div className="space-y-3 text-gray-700 mb-4">
                 <p className="font-semibold">記録例</p>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>ランニング 3km 20分</span>
+                  <span>「ランニング 3km 20分 記録」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>ベンチプレス 80kg 10回 90kg 10回</span>
+                  <span>「ベンチプレス 80kg 10回 90kg 10回 記録して」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>腹筋100回 3セット</span>
+                  <span>「腹筋100回 3セット 記録お願いします」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>今日は、ヨガ20分したよ！</span>
+                  <span>「今日は、ヨガ20分したよ！記録」</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>野球したー！</span>
+                  <span>「野球したー！記録したい」</span>
                 </div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                <p className="font-semibold text-gray-800 mb-2">重要</p>
+                <p className="text-gray-700 text-sm">
+                  必ず「記録」という言葉を含めてください。含めないと普通の会話として扱われます
+                </p>
               </div>
               <p className="text-gray-700 leading-relaxed mb-16">
                 アプリの運動フレームからも記録・編集できます
