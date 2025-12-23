@@ -266,6 +266,10 @@ function DashboardContent({ onError }: { onError: () => void }) {
         protein: recordData.protein,
         fat: recordData.fat,
         carbs: recordData.carbs,
+        // PFC目標値も送信（共有ページで正しい目標値を表示するため）
+        proteinTarget: mealManager?.calorieData?.pfc?.proteinTarget || 100,
+        fatTarget: mealManager?.calorieData?.pfc?.fatTarget || 55,
+        carbsTarget: mealManager?.calorieData?.pfc?.carbsTarget || 250,
         exerciseTime: recordData.exerciseTime,
         exerciseBurned: recordData.exerciseBurned,
         achievementRate: Math.round((recordData.calories / targetCalories) * 100)
