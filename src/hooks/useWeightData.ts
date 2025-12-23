@@ -194,8 +194,10 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return checkDateKey < counselingDateKey;
   };
 
-  // 特定の日付の体重データを取得（高速化済み）
+  // 🔍 デバッグ：特定の日付の体重データを取得（パフォーマンス測定付き）
   const getWeightDataForDate = (date: Date): WeightData => {
+    const startTime = performance.now();
+    const dateKey = getDateKey(date);
     // クライアントサイドでない場合はデフォルト値を返す
     if (!isClient) {
       return {
@@ -273,12 +275,28 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
     const latestWeight = latestWeightRecord?.weight || 0;
 
-    return {
+    const result = {
       current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
       previous: previousWeight, // 前日記録がない場合は0（WeightCardで--表示）
       target: targetWeight,
       latest: latestWeight // 全体での最新体重（共有用）
     };
+    
+    const totalTime = performance.now() - startTime;
+    
+    // 遅い処理のログ出力（2ms以上）
+    if (totalTime > 2) {
+      console.log(`🐌 getWeightDataForDate slow (${dateKey}):`, {
+        totalTime: `${totalTime.toFixed(2)}ms`,
+        realWeightDataLength: realWeightData.length,
+        currentWeight,
+        previousWeight,
+        hasCurrentData: !!currentDayData?.weight,
+        result
+      });
+    }
+    
+    return result;
   };
 
   // 最新の体重を取得（高速化済み）

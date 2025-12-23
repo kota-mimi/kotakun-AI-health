@@ -143,24 +143,49 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  // 記録があるかどうかをチェック
+  // 🔍 デバッグ：記録があるかどうかをチェック（パフォーマンス測定付き）
   const hasRecordsForDate = (date: Date): boolean => {
+    const startTime = performance.now();
     const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
     // 体重記録チェック
+    const weightStartTime = performance.now();
     const hasWeightRecord = weightManager?.realWeightData?.some(
       (record: any) => record.date === dateKey && record.weight > 0
     );
+    const weightCheckTime = performance.now() - weightStartTime;
     
     // 食事記録チェック
+    const mealStartTime = performance.now();
     const hasMealRecord = mealManager?.mealData?.[dateKey] && 
                           Array.isArray(mealManager.mealData[dateKey]) && 
                           mealManager.mealData[dateKey].length > 0;
+    const mealCheckTime = performance.now() - mealStartTime;
     
     // 運動記録チェック
+    const exerciseStartTime = performance.now();
     const hasExerciseRecord = exerciseManager?.exerciseData?.some(
       (exercise: any) => exercise.date === dateKey
     );
+    const exerciseCheckTime = performance.now() - exerciseStartTime;
+    
+    const totalTime = performance.now() - startTime;
+    
+    // 遅い処理のログ出力（0.5ms以上）
+    if (totalTime > 0.5) {
+      console.log(`🐌 hasRecordsForDate slow (${dateKey}):`, {
+        totalTime: `${totalTime.toFixed(2)}ms`,
+        weightCheckTime: `${weightCheckTime.toFixed(2)}ms`,
+        mealCheckTime: `${mealCheckTime.toFixed(2)}ms`,
+        exerciseCheckTime: `${exerciseCheckTime.toFixed(2)}ms`,
+        weightDataLength: weightManager?.realWeightData?.length || 0,
+        exerciseDataLength: exerciseManager?.exerciseData?.length || 0,
+        hasWeightRecord,
+        hasMealRecord,
+        hasExerciseRecord,
+        result: hasWeightRecord || hasMealRecord || hasExerciseRecord
+      });
+    }
     
     return hasWeightRecord || hasMealRecord || hasExerciseRecord;
   };
