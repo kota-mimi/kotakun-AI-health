@@ -194,7 +194,42 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     return checkDateKey < counselingDateKey;
   };
 
-  // 🔍 デバッグ：特定の日付の体重データを取得（パフォーマンス測定付き）
+  // 🚀 最適化：ソート済みデータとキャッシュを使用
+  const optimizedWeightData = useMemo(() => {
+    // 1回だけソートして保持
+    const sortedData = realWeightData
+      .filter(item => item.weight > 0)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    // 前日比キャッシュを事前計算
+    const previousWeightCache = new Map<string, number>();
+    
+    realWeightData.forEach(item => {
+      if (item.weight > 0) {
+        const itemDate = new Date(item.date);
+        // 過去7日分の前日比を事前計算
+        for (let i = 1; i <= 7; i++) {
+          const pastDate = new Date(itemDate);
+          pastDate.setDate(pastDate.getDate() - i);
+          const pastKey = getDateKey(pastDate);
+          const pastData = weightDataMap.get(pastKey);
+          
+          if (pastData?.weight > 0) {
+            previousWeightCache.set(item.date, pastData.weight);
+            break;
+          }
+        }
+      }
+    });
+    
+    return {
+      sortedData,
+      previousWeightCache,
+      latestWeight: sortedData[0]?.weight || 0
+    };
+  }, [realWeightData]);
+
+  // 🚀 最適化：特定の日付の体重データを取得（キャッシュ使用）
   const getWeightDataForDate = (date: Date): WeightData => {
     const startTime = performance.now();
     const dateKey = getDateKey(date);
@@ -234,45 +269,27 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
                          counselingResult?.answers?.targetWeight) || 
                         weightSettingsStorage.value.targetWeight || 0;
     
-    // 🎯 統一された体重表示ロジック：その日の記録のみ表示（Map化で高速化）
+    // 🚀 最適化：Map検索で現在体重取得
     const currentDayData = weightDataMap.get(dateKey);
     let currentWeight = 0;
     
     if (currentDayData?.weight && currentDayData.weight > 0) {
-      // 選択日に記録がある場合のみその日の体重を使用
       currentWeight = currentDayData.weight;
     } else {
-      // 選択日に記録がない場合は最新の記録体重を表示
-      const latestRecord = realWeightData
-        .filter(item => item.date <= dateKey && item.weight > 0)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-      
+      // 🚀 最適化：事前ソートされたデータから検索
+      const latestRecord = optimizedWeightData.sortedData.find(
+        item => item.date <= dateKey
+      );
       currentWeight = latestRecord?.weight || 0;
     }
     
-    // 最新記録比計算：選択日に記録がある場合、過去7日間で最新記録と比較
-    let previousWeight = 0;
-    if (currentDayData?.weight) {
-      // 選択日に記録がある場合、過去7日間で最新記録を探す
-      for (let i = 1; i <= 7; i++) {
-        const pastDate = new Date(date);
-        pastDate.setDate(pastDate.getDate() - i);
-        const pastKey = getDateKey(pastDate);
-        const pastDayData = weightDataMap.get(pastKey);
-        
-        if (pastDayData?.weight && pastDayData.weight > 0) {
-          previousWeight = pastDayData.weight;
-          break; // 最新の記録が見つかったら終了
-        }
-      }
-    }
-    // 現在体重が0の場合、previousWeightは0のまま（--表示）
+    // 🚀 最適化：キャッシュから前日比取得
+    const previousWeight = currentDayData?.weight 
+      ? (optimizedWeightData.previousWeightCache.get(dateKey) || 0)
+      : 0;
     
-    // 全体での最新体重を取得（共有用）
-    const latestWeightRecord = realWeightData
-      .filter(item => item.weight > 0)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-    const latestWeight = latestWeightRecord?.weight || 0;
+    // 🚀 最適化：事前計算された最新体重
+    const latestWeight = optimizedWeightData.latestWeight;
 
     const result = {
       current: currentWeight, // 記録がない場合は0（WeightCardで--表示）
@@ -283,15 +300,23 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     
     const totalTime = performance.now() - startTime;
     
-    // 遅い処理のログ出力（2ms以上）
-    if (totalTime > 2) {
+    // パフォーマンスログ（最適化効果測定）
+    if (totalTime > 0.5) {
       console.log(`🐌 getWeightDataForDate slow (${dateKey}):`, {
         totalTime: `${totalTime.toFixed(2)}ms`,
         realWeightDataLength: realWeightData.length,
         currentWeight,
         previousWeight,
         hasCurrentData: !!currentDayData?.weight,
-        result
+        result,
+        stage: 'optimized'
+      });
+    } else {
+      console.log(`🚀 getWeightDataForDate optimized (${dateKey}):`, {
+        totalTime: `${totalTime.toFixed(3)}ms`,
+        currentWeight,
+        previousWeight,
+        stage: 'optimized'
       });
     }
     
