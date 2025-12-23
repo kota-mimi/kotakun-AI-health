@@ -198,6 +198,7 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
   const getWeightDataForDate = (date: Date): WeightData => {
     const startTime = performance.now();
     const dateKey = getDateKey(date);
+    
     // クライアントサイドでない場合はデフォルト値を返す
     if (!isClient) {
       return {
@@ -206,8 +207,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
         target: weightSettingsStorage.value.targetWeight || 0
       };
     }
-    
-    const dateKey = getDateKey(date);
     const today = getDateKey(new Date());
     
     // 未来の日付の場合は体重を表示しない
