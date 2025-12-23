@@ -143,73 +143,113 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  // 🚀 最適化：記録があるかどうかをチェック（早期リターン + パフォーマンス測定）
-  const hasRecordsForDate = (date: Date): boolean => {
-    const startTime = performance.now();
+  // getWeekDates関数の定義
+  const getWeekDates = (weekOffset: number = 0) => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() + weekOffset * 7 - today.getDay());
     
-    // 🚀 早期リターン：全データが空の場合は即座にfalse
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  // 🚀 第2段階最適化：週間記録チェッカー（useMemo + Map）
+  const weeklyRecordsChecker = useMemo(() => {
+    const optimizationStart = performance.now();
+    
+    // 🚀 早期リターン：全データが空の場合は高速関数を返す
     const hasWeightData = weightManager?.realWeightData?.length > 0;
     const hasExerciseData = exerciseManager?.exerciseData?.length > 0;
     const hasMealData = mealManager?.mealData && Object.keys(mealManager.mealData).length > 0;
     
     if (!hasWeightData && !hasExerciseData && !hasMealData) {
-      const totalTime = performance.now() - startTime;
-      console.log(`⚡ hasRecordsForDate early return (fast):`, {
+      const totalTime = performance.now() - optimizationStart;
+      console.log(`🚀 weeklyRecordsChecker: empty data optimization`, {
         totalTime: `${totalTime.toFixed(3)}ms`,
-        result: false,
-        reason: 'no data available'
+        result: 'fast function returned'
       });
-      return false;
+      return () => false; // 超高速関数を返す
     }
     
-    // データがある場合のみ実際の検索を実行
-    const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    // selectedWeekの計算（CompactHeaderと同じロジック）
+    const currentWeekOffset = (() => {
+      const today = new Date();
+      const selectedKey = navigation?.selectedDate?.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }) || '';
+      const todayKey = today.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      if (selectedKey === todayKey) return 0; // 今日の週
+      
+      // 週の差を計算
+      const todayWeekStart = new Date(today);
+      todayWeekStart.setDate(today.getDate() - today.getDay());
+      
+      const selectedWeekStart = new Date(navigation?.selectedDate || today);
+      selectedWeekStart.setDate(selectedWeekStart.getDate() - selectedWeekStart.getDay());
+      
+      const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      return Math.round((selectedWeekStart.getTime() - todayWeekStart.getTime()) / msPerWeek);
+    })();
     
-    // 体重記録チェック
-    const weightStartTime = performance.now();
-    const hasWeightRecord = hasWeightData && weightManager.realWeightData.some(
-      (record: any) => record.date === dateKey && record.weight > 0
-    );
-    const weightCheckTime = performance.now() - weightStartTime;
+    // データがある場合：週間分をまとめて計算
+    const weekDates = getWeekDates(currentWeekOffset);
+    const recordsMap = new Map<string, boolean>();
     
-    // 食事記録チェック
-    const mealStartTime = performance.now();
-    const hasMealRecord = hasMealData && 
-                          mealManager.mealData[dateKey] && 
-                          Array.isArray(mealManager.mealData[dateKey]) && 
-                          mealManager.mealData[dateKey].length > 0;
-    const mealCheckTime = performance.now() - mealStartTime;
+    weekDates.forEach(date => {
+      const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      
+      // 各データタイプをチェック
+      const hasWeightRecord = hasWeightData && weightManager.realWeightData.some(
+        (record: any) => record.date === dateKey && record.weight > 0
+      );
+      
+      const hasMealRecord = hasMealData && 
+                            mealManager.mealData[dateKey] && 
+                            Array.isArray(mealManager.mealData[dateKey]) && 
+                            mealManager.mealData[dateKey].length > 0;
+      
+      const hasExerciseRecord = hasExerciseData && exerciseManager.exerciseData.some(
+        (exercise: any) => exercise.date === dateKey
+      );
+      
+      recordsMap.set(dateKey, hasWeightRecord || hasMealRecord || hasExerciseRecord);
+    });
     
-    // 運動記録チェック
-    const exerciseStartTime = performance.now();
-    const hasExerciseRecord = hasExerciseData && exerciseManager.exerciseData.some(
-      (exercise: any) => exercise.date === dateKey
-    );
-    const exerciseCheckTime = performance.now() - exerciseStartTime;
+    const totalTime = performance.now() - optimizationStart;
+    console.log(`🚀 weeklyRecordsChecker: batch calculation completed`, {
+      totalTime: `${totalTime.toFixed(3)}ms`,
+      weekDatesProcessed: weekDates.length,
+      recordsFound: Array.from(recordsMap.values()).filter(Boolean).length
+    });
     
+    // 高速検索関数を返す
+    return (date: Date): boolean => {
+      const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      return recordsMap.get(dateKey) || false;
+    };
+    
+  }, [
+    navigation?.selectedDate,
+    weightManager?.realWeightData,
+    exerciseManager?.exerciseData,
+    mealManager?.mealData
+  ]);
+
+  // 🚀 第2段階：超高速Map取得（useMemoチェッカー使用）
+  const hasRecordsForDate = (date: Date): boolean => {
+    const startTime = performance.now();
+    const result = weeklyRecordsChecker(date);
     const totalTime = performance.now() - startTime;
-    const result = hasWeightRecord || hasMealRecord || hasExerciseRecord;
     
-    // パフォーマンスログ
-    if (totalTime > 0.5) {
-      console.log(`🐌 hasRecordsForDate slow (${dateKey}):`, {
-        totalTime: `${totalTime.toFixed(2)}ms`,
-        weightCheckTime: `${weightCheckTime.toFixed(2)}ms`,
-        mealCheckTime: `${mealCheckTime.toFixed(2)}ms`,
-        exerciseCheckTime: `${exerciseCheckTime.toFixed(2)}ms`,
-        weightDataLength: weightManager?.realWeightData?.length || 0,
-        exerciseDataLength: exerciseManager?.exerciseData?.length || 0,
-        hasWeightRecord,
-        hasMealRecord,
-        hasExerciseRecord,
-        result
-      });
-    } else {
-      console.log(`⚡ hasRecordsForDate optimized (${dateKey}):`, {
-        totalTime: `${totalTime.toFixed(3)}ms`,
-        result
-      });
-    }
+    console.log(`🚀 hasRecordsForDate Map lookup:`, {
+      totalTime: `${totalTime.toFixed(4)}ms`,
+      result,
+      stage: 'phase2'
+    });
     
     return result;
   };
