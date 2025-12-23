@@ -60,9 +60,9 @@ export function MyProfilePage({
   // プロフィール管理フック
   const sharedProfile = useSharedProfile();
   
-  // ホームと同じカロリーデータを取得
+  // ホームと同じカロリーデータを取得（ホームと同じ日付を使用）
   const mealManager = useMealData(
-    new Date(), 
+    navigation?.selectedDate || new Date(), 
     dateBasedDataManager?.dateBasedData || {}, 
     () => {},
     counselingResult
