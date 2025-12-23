@@ -143,7 +143,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
   };
 
-  // getWeekDates関数の定義
+  // getWeekDates関数の定義（後でuseMemoで使用）
   const getWeekDates = (weekOffset: number = 0) => {
     const today = new Date();
     const startOfWeek = new Date(today);
@@ -157,6 +157,39 @@ function DashboardContent({ onError }: { onError: () => void }) {
     }
     return dates;
   };
+
+  // 🔄 統合データから各データを取得（コスト削減済み）
+  const counselingResult = dashboardData.counselingData;
+  const isCounselingLoading = dashboardData.isLoading;
+
+  const mealManager = useMealData(
+    navigation?.selectedDate || new Date(), 
+    dateBasedDataManager?.dateBasedData || {}, 
+    updateDateData,
+    counselingResult,
+    sharedProfile, // 🔄 統合プロフィール渡し
+    dashboardData.mealsData // 🚀 統合データから取得
+  );
+
+  const exerciseManager = useExerciseData(
+    navigation?.selectedDate || new Date(), 
+    dateBasedDataManager?.dateBasedData || {}, 
+    updateDateData
+  );
+
+  const weightManager = useWeightData(
+    navigation?.selectedDate || new Date(),
+    dateBasedDataManager?.dateBasedData || {},
+    updateDateData,
+    counselingResult,
+    sharedProfile // 🔧 プロフィール体重フォールバック有効化
+  );
+
+  const feedbackManager = useFeedbackData(
+    navigation?.selectedDate || new Date(),
+    dateBasedDataManager?.dateBasedData || {},
+    updateDateData
+  );
 
   // 🚀 第2段階最適化：週間記録チェッカー（useMemo + Map）
   const weeklyRecordsChecker = useMemo(() => {
@@ -253,39 +286,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
     
     return result;
   };
-
-  // 🔄 統合データから各データを取得（コスト削減済み）
-  const counselingResult = dashboardData.counselingData;
-  const isCounselingLoading = dashboardData.isLoading;
-
-  const mealManager = useMealData(
-    navigation?.selectedDate || new Date(), 
-    dateBasedDataManager?.dateBasedData || {}, 
-    updateDateData,
-    counselingResult,
-    sharedProfile, // 🔄 統合プロフィール渡し
-    dashboardData.mealsData // 🚀 統合データから取得
-  );
-
-  const exerciseManager = useExerciseData(
-    navigation?.selectedDate || new Date(), 
-    dateBasedDataManager?.dateBasedData || {}, 
-    updateDateData
-  );
-
-  const weightManager = useWeightData(
-    navigation?.selectedDate || new Date(),
-    dateBasedDataManager?.dateBasedData || {},
-    updateDateData,
-    counselingResult,
-    sharedProfile // 🔧 プロフィール体重フォールバック有効化
-  );
-
-  const feedbackManager = useFeedbackData(
-    navigation?.selectedDate || new Date(),
-    dateBasedDataManager?.dateBasedData || {},
-    updateDateData
-  );
 
   // ローディング機能完全削除
 
