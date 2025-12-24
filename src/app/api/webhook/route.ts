@@ -4066,8 +4066,79 @@ async function handleCalorieAnalysis(userId: string, replyToken: string) {
       }
     }
 
-    // カロリー分析専用のFlexメッセージを作成（画像も含む）
-    const flexMessage = createCalorieOnlyFlexMessage(analysis, originalText || '食事', imageUrl);
+    // 🧠 AIアドバイス生成（カロリー分析用）
+    console.log('🧠 カロリー分析 - パーソナル食事アドバイス生成開始');
+    const aiService = new AIHealthService();
+    const characterSettings = null;
+    
+    // ユーザープロフィール取得（アドバイスの個別化のため）
+    let userProfile = null;
+    try {
+      const db = admin.firestore();
+      const profileSnapshot = await db
+        .collection('users')
+        .doc(userId)
+        .collection('profileHistory')
+        .orderBy('changeDate', 'desc')
+        .limit(1)
+        .get();
+      
+      if (!profileSnapshot.empty) {
+        userProfile = profileSnapshot.docs[0].data();
+        console.log('📊 ユーザープロフィール取得成功');
+      }
+    } catch (profileError) {
+      console.log('⚠️ ユーザープロフィール取得失敗（アドバイス生成は継続）:', profileError);
+    }
+    
+    // 今日の栄養進捗取得（アドバイスの精度向上のため）
+    let dailyProgress = null;
+    try {
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+      const recordRef = admin.firestore().collection('users').doc(userId).collection('dailyRecords').doc(today);
+      const recordDoc = await recordRef.get();
+      
+      if (recordDoc.exists) {
+        const dayData = recordDoc.data();
+        
+        // 今日の合計栄養計算（カロリー分析なので記録はしない）
+        dailyProgress = {
+          currentCalories: dayData.totalCalories || 0,
+          currentProtein: dayData.totalProtein || 0,
+          currentFat: dayData.totalFat || 0,
+          currentCarbs: dayData.totalCarbs || 0,
+          targetCalories: dayData.targetCalories || 2000,
+          targetProtein: dayData.targetProtein || 100,
+          targetFat: dayData.targetFat || 65,
+          targetCarbs: dayData.targetCarbs || 250
+        };
+        
+        console.log('📈 今日の栄養進捗計算成功');
+      }
+    } catch (progressError) {
+      console.log('⚠️ 今日の栄養進捗取得失敗（アドバイス生成は継続）:', progressError);
+    }
+    
+    // パーソナルアドバイス生成
+    let aiAdvice = null;
+    try {
+      aiAdvice = await aiService.generateMealAdvice(
+        analysis,
+        'calorie_analysis', // カロリー分析専用のmealType
+        userId,
+        userProfile,
+        dailyProgress,
+        characterSettings
+      );
+      console.log('✅ カロリー分析 - パーソナル食事アドバイス生成完了:', aiAdvice);
+    } catch (adviceError) {
+      console.error('❌ カロリー分析 - パーソナル食事アドバイス生成エラー:', adviceError);
+      // エラーでもFlexメッセージは送信
+      aiAdvice = null;
+    }
+
+    // カロリー分析専用のFlexメッセージを作成（画像 + AIアドバイス含む）
+    const flexMessage = createCalorieOnlyFlexMessage(analysis, originalText || '食事', imageUrl, aiAdvice);
 
     // レスポンス送信
     await replyMessage(replyToken, [flexMessage]);

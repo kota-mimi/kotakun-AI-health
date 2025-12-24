@@ -1647,10 +1647,10 @@ function createMultipleExercisesFlexMessage(exerciseData: any, originalText?: st
 }
 
 // カロリー表示専用のFlexメッセージ（記録しない）
-export function createCalorieOnlyFlexMessage(analysis: any, originalMealName: string, imageUrl?: string) {
+export function createCalorieOnlyFlexMessage(analysis: any, originalMealName: string, imageUrl?: string, aiAdvice?: string) {
   // 複数食事の場合
   if (analysis.isMultipleMeals) {
-    return createMultipleCalorieOnlyFlexMessage(analysis, originalMealName, imageUrl);
+    return createMultipleCalorieOnlyFlexMessage(analysis, originalMealName, imageUrl, aiAdvice);
   }
   
   // 単一食事の場合
@@ -1771,7 +1771,52 @@ export function createCalorieOnlyFlexMessage(analysis: any, originalMealName: st
             color: '#4a90e2',
             align: 'end',
             margin: 'md'
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 0
+                    },
+                    {
+                      type: 'text',
+                      text: '🤖',
+                      size: 'sm',
+                      flex: 0,
+                      margin: 'xs'
+                    }
+                  ]
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#666666',
+                  margin: 'sm',
+                  wrap: true,
+                  lineSpacing: '15px'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }
@@ -1779,7 +1824,7 @@ export function createCalorieOnlyFlexMessage(analysis: any, originalMealName: st
 }
 
 // 複数食事用のカロリー表示専用Flexメッセージ
-function createMultipleCalorieOnlyFlexMessage(analysis: any, originalMealName: string, imageUrl?: string) {
+function createMultipleCalorieOnlyFlexMessage(analysis: any, originalMealName: string, imageUrl?: string, aiAdvice?: string) {
   // 各食事のアイテムを生成
   const mealItems = analysis.meals.map((meal: any) => [
     {
@@ -1970,7 +2015,52 @@ function createMultipleCalorieOnlyFlexMessage(analysis: any, originalMealName: s
                 ]
               }
             ]
-          }
+          },
+          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
+            {
+              type: 'box',
+              layout: 'vertical',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 0
+                    },
+                    {
+                      type: 'text',
+                      text: '🤖',
+                      size: 'sm',
+                      flex: 0,
+                      margin: 'xs'
+                    }
+                  ]
+                },
+                {
+                  type: 'text',
+                  text: aiAdvice,
+                  size: 'xs',
+                  color: '#666666',
+                  margin: 'sm',
+                  wrap: true,
+                  lineSpacing: '15px'
+                }
+              ]
+            }
+          ] : [])
         ]
       }
     }
