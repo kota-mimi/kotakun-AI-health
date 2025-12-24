@@ -1005,7 +1005,7 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
 async function showMealTypeSelection(replyToken: string) {
   const responseMessage = {
     type: 'text',
-    text: 'どの食事を記録する？',
+    text: '食事を記録？カロリーだけ確認？',
     quickReply: {
       items: [
         {
