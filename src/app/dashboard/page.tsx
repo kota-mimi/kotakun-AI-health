@@ -606,7 +606,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
           selectedDate={navigation.selectedDate}
           onDateSelect={navigation.handleDateSelect}
           counselingResult={counselingResult}
-          hasRecordsForDate={hasRecordsForDate}
         />
       )}
 
