@@ -182,7 +182,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dateBasedDataManager?.dateBasedData || {},
     updateDateData,
     counselingResult,
-    sharedProfile // 🔧 プロフィール体重フォールバック有効化
+    sharedProfile, // 🔧 プロフィール体重フォールバック有効化
+    dashboardData.weightData // 🚀 統合ダッシュボードデータから体重データを直接渡す
   );
 
   const feedbackManager = useFeedbackData(
@@ -196,7 +197,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     const optimizationStart = performance.now();
     
     // 🚀 早期リターン：全データが空の場合は高速関数を返す
-    const hasWeightData = weightManager?.realWeightData?.length > 0;
+    const hasWeightData = dashboardData.weightData?.length > 0; // 統合データを直接使用
     const hasExerciseData = exerciseManager?.exerciseData?.length > 0;
     const hasMealData = mealManager?.mealData && Object.keys(mealManager.mealData).length > 0;
     
@@ -236,7 +237,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       const dateKey = date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
       
       // 各データタイプをチェック
-      const hasWeightRecord = hasWeightData && weightManager.realWeightData.some(
+      const hasWeightRecord = hasWeightData && dashboardData.weightData.some(
         (record: any) => record.date === dateKey && record.weight > 0
       );
       
@@ -267,7 +268,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
     
   }, [
     navigation?.selectedDate,
-    weightManager?.realWeightData,
+    dashboardData.weightData, // 統合データを直接参照
     exerciseManager?.exerciseData,
     mealManager?.mealData
   ]);
