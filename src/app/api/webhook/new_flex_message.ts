@@ -1794,25 +1794,18 @@ export function createCalorieOnlyFlexMessage(analysis: any, originalMealName: st
                       size: 'sm',
                       weight: 'bold',
                       color: '#4a90e2',
-                      flex: 0
-                    },
-                    {
-                      type: 'text',
-                      text: '🤖',
-                      size: 'sm',
-                      flex: 0,
-                      margin: 'xs'
+                      flex: 1
                     }
-                  ]
+                  ],
+                  margin: 'none'
                 },
                 {
                   type: 'text',
                   text: aiAdvice,
                   size: 'xs',
-                  color: '#666666',
-                  margin: 'sm',
+                  color: '#333333',
                   wrap: true,
-                  lineSpacing: '15px'
+                  margin: 'sm',
                 }
               ]
             }
@@ -2038,25 +2031,18 @@ function createMultipleCalorieOnlyFlexMessage(analysis: any, originalMealName: s
                       size: 'sm',
                       weight: 'bold',
                       color: '#4a90e2',
-                      flex: 0
-                    },
-                    {
-                      type: 'text',
-                      text: '🤖',
-                      size: 'sm',
-                      flex: 0,
-                      margin: 'xs'
+                      flex: 1
                     }
-                  ]
+                  ],
+                  margin: 'none'
                 },
                 {
                   type: 'text',
                   text: aiAdvice,
                   size: 'xs',
-                  color: '#666666',
-                  margin: 'sm',
+                  color: '#333333',
                   wrap: true,
-                  lineSpacing: '15px'
+                  margin: 'sm',
                 }
               ]
             }
