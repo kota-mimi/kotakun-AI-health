@@ -8,7 +8,7 @@ import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getCharacterPersona, getCharacterLanguage } from '@/utils/aiCharacterUtils';
 import { calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
-import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage } from './new_flex_message';
+import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createExerciseFlexMessage, createCalorieOnlyFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
 import { apiCache, createCacheKey } from '@/lib/cache';
@@ -804,6 +804,9 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
     case 'no_record':
       await handleNoRecordSelection(userId, replyToken);
       break;
+    case 'calorie_analysis':
+      await handleCalorieAnalysis(userId, replyToken);
+      break;
     // 記録ボタン削除済み - 統一モードに移行
     case 'daily_feedback':
       // 利用制限チェック（フィードバック機能）
@@ -1041,8 +1044,8 @@ async function showMealTypeSelection(replyToken: string) {
           type: 'action',
           action: {
             type: 'postback',
-            label: 'しない',
-            data: 'action=no_record'
+            label: 'カロリー',
+            data: 'action=calorie_analysis'
           }
         }
       ]
@@ -4027,5 +4030,56 @@ async function sendRecordConfirmation(replyToken: string) {
   };
 
   await replyMessage(replyToken, [message]);
+}
+
+// カロリー分析処理（記録はしない、表示のみ）
+async function handleCalorieAnalysis(userId: string, replyToken: string) {
+  try {
+    console.log('🔍 カロリー分析開始:', { userId, timestamp: new Date().toISOString() });
+    
+    // 一時保存された画像分析データを取得
+    const tempData = await getTempMealAnalysis(userId);
+    if (!tempData || !tempData.analysis) {
+      console.error('❌ 一時保存データが見つかりません:', userId);
+      await replyMessage(replyToken, [{
+        type: 'text',
+        text: '分析データが見つかりませんでした。もう一度画像を送信してください。'
+      }]);
+      return;
+    }
+
+    const { analysis, imageContent, originalText } = tempData;
+    console.log('📊 カロリー分析データ:', JSON.stringify(analysis, null, 2));
+
+    // 画像URLを取得（画像がある場合）
+    let imageUrl = null;
+    if (imageContent) {
+      try {
+        // Firebase Storageにアップロード
+        const uploadRef = ref(storage, `temp-analysis-images/${userId}/${Date.now()}.jpg`);
+        const snapshot = await uploadBytes(uploadRef, imageContent);
+        imageUrl = await getDownloadURL(snapshot.ref);
+        console.log('🖼️ 画像アップロード成功:', imageUrl);
+      } catch (uploadError) {
+        console.error('❌ 画像アップロードエラー:', uploadError);
+        // 画像がなくてもカロリー分析は継続
+      }
+    }
+
+    // カロリー分析専用のFlexメッセージを作成（画像も含む）
+    const flexMessage = createCalorieOnlyFlexMessage(analysis, originalText || '食事', imageUrl);
+
+    // レスポンス送信
+    await replyMessage(replyToken, [flexMessage]);
+
+    console.log('✅ カロリー分析完了:', { userId });
+
+  } catch (error) {
+    console.error('❌ カロリー分析エラー:', error);
+    await replyMessage(replyToken, [{
+      type: 'text',
+      text: 'カロリー分析中にエラーが発生しました。もう一度お試しください。'
+    }]);
+  }
 }
 
