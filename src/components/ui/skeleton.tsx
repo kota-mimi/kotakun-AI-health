@@ -106,4 +106,26 @@ function WorkoutCardSkeleton() {
   );
 }
 
-export { Skeleton, CardSkeleton, WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton };
+// ヘッダー週間カレンダー用スケルトン
+function HeaderCalendarSkeleton() {
+  return (
+    <div className="px-4 pb-3">
+      <div className="flex items-center justify-between">
+        <Skeleton className="w-8 h-8 rounded-lg" />
+        
+        <div className="grid grid-cols-7 gap-1 flex-1 mx-3">
+          {[1, 2, 3, 4, 5, 6, 7].map((index) => (
+            <div key={index} className="h-12 flex flex-col p-1 rounded-xl animate-pulse">
+              <Skeleton className="w-4 h-3 mx-auto mb-1" />
+              <Skeleton className="w-5 h-4 mx-auto" />
+            </div>
+          ))}
+        </div>
+        
+        <Skeleton className="w-8 h-8 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+export { Skeleton, CardSkeleton, WeightCardSkeleton, CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton, HeaderCalendarSkeleton };

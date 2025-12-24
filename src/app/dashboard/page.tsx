@@ -495,7 +495,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
             {/* 体重カード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {weightManager && (
+              {dashboardData.isLoading ? (
+                <CalorieCardSkeleton />
+              ) : weightManager ? (
                 <WeightCard
                   data={weightManager.weightData}
                   counselingResult={counselingResult}
@@ -503,12 +505,14 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   sharedProfile={sharedProfile}
                   onNavigateToWeight={() => weightManager.setIsWeightEntryModalOpen(true)}
                 />
-              )}
+              ) : null}
             </div>
 
             {/* カロリーカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {mealManager ? (
+              {dashboardData.isLoading ? (
+                <CalorieCardSkeleton />
+              ) : mealManager ? (
                 <CalorieCard 
                   totalCalories={mealManager.calorieData?.totalCalories || 0}
                   targetCalories={mealManager.calorieData?.targetCalories || 2000}
@@ -522,7 +526,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
             </div>
 
             {/* 食事カード */}
-            {mealManager?.mealData ? (
+            {dashboardData.isLoading ? (
+              <MealCardSkeleton />
+            ) : mealManager?.mealData ? (
               <MealSummaryCard
                 meals={mealManager.mealData}
                 onAddMeal={mealManager.handleAddMeal || (() => {})}
@@ -540,7 +546,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
             {/* 運動カード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {exerciseManager?.exerciseData && navigation?.selectedDate ? (
+              {dashboardData.isLoading ? (
+                <WorkoutCardSkeleton />
+              ) : exerciseManager?.exerciseData && navigation?.selectedDate ? (
                 <WorkoutSummaryCard 
                   exerciseData={exerciseManager.exerciseData}
                   selectedDate={navigation.selectedDate}
