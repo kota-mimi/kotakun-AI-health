@@ -100,50 +100,53 @@ async function getMealData(adminDb: any, lineUserId: string, date?: string) {
   }
 }
 
-// 体重データ取得（最適化：必要最小限のみ）- dailyRecordsから効率的に取得
+// 体重データ取得（週間対応）- 青いドット表示のため週間分取得
 async function getWeightData(adminDb: any, lineUserId: string, date?: string) {
   try {
     const targetDate = date ? new Date(date) : new Date();
     const targetDateStr = targetDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
     
-    // 前日の日付を計算
-    const previousDate = new Date(targetDate);
-    previousDate.setDate(previousDate.getDate() - 1);
-    const previousDateStr = previousDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' });
+    // 🚀 週間データ取得：選択された日を含む週の全7日分
+    const getWeekDates = (centerDate: Date) => {
+      const dates = [];
+      const dayOfWeek = centerDate.getDay(); // 0=日曜日, 6=土曜日
+      
+      // 週の開始日（日曜日）を計算
+      const startOfWeek = new Date(centerDate);
+      startOfWeek.setDate(centerDate.getDate() - dayOfWeek);
+      
+      // 7日分の日付を生成
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        dates.push(date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }));
+      }
+      return dates;
+    };
     
-    console.log('⚖️ 体重データ最適取得:', { targetDate: targetDateStr, previousDate: previousDateStr });
+    const weekDates = getWeekDates(targetDate);
+    console.log('⚖️ 体重データ週間取得:', { targetDate: targetDateStr, weekDates });
     
-    // 🚀 最適化：今日と前日の2件のみ取得
-    const [todayDoc, yesterdayDoc] = await Promise.all([
-      adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(targetDateStr).get(),
-      adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(previousDateStr).get()
-    ]);
+    // 🚀 週間分を並列取得
+    const weekPromises = weekDates.map(dateStr => 
+      adminDb.collection('users').doc(lineUserId).collection('dailyRecords').doc(dateStr).get()
+    );
     
+    const weekDocs = await Promise.all(weekPromises);
     const weights: any[] = [];
     
-    // 今日のデータ
-    if (todayDoc.exists) {
-      const dailyRecord = todayDoc.data();
-      if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
-        weights.push({
-          date: targetDateStr,
-          weight: dailyRecord.weight,
-          note: dailyRecord.note
-        });
+    weekDocs.forEach((doc, index) => {
+      if (doc.exists) {
+        const dailyRecord = doc.data();
+        if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
+          weights.push({
+            date: weekDates[index],
+            weight: dailyRecord.weight,
+            note: dailyRecord.note
+          });
+        }
       }
-    }
-    
-    // 前日のデータ
-    if (yesterdayDoc.exists) {
-      const dailyRecord = yesterdayDoc.data();
-      if (dailyRecord && dailyRecord.weight && dailyRecord.weight > 0) {
-        weights.push({
-          date: previousDateStr,
-          weight: dailyRecord.weight,
-          note: dailyRecord.note
-        });
-      }
-    }
+    });
     
     // 日付順にソート（新しい順）
     weights.sort((a, b) => b.date.localeCompare(a.date));
