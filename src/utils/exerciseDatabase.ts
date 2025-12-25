@@ -53,6 +53,13 @@ export const EXERCISE_DATABASE: ExerciseData[] = [
   { id: 'squats', name: 'スクワット', category: 'strength', mets: 5.0, keywords: ['スクワット', 'すくわっと'] },
   { id: 'pull_ups', name: '懸垂', category: 'strength', mets: 4.3, keywords: ['懸垂', 'けんすい', 'プルアップ'] },
   
+  // 胸筋トレーニング（詳細）
+  { id: 'bench_press', name: 'ベンチプレス', category: 'strength', mets: 6.0, keywords: ['ベンチプレス', 'べんちぷれす'] },
+  { id: 'dumbbell_press', name: 'ダンベルプレス', category: 'strength', mets: 6.0, keywords: ['ダンベルプレス', 'だんべるぷれす'] },
+  { id: 'incline_bench_press', name: 'インクラインベンチプレス', category: 'strength', mets: 6.5, keywords: ['インクライン', 'いんくらいん'] },
+  { id: 'chest_fly', name: 'チェストフライ', category: 'strength', mets: 5.0, keywords: ['フライ', 'ふらい', 'チェストフライ'] },
+  { id: 'cable_crossover', name: 'ケーブルクロスオーバー', category: 'strength', mets: 5.0, keywords: ['ケーブルクロス', 'クロスオーバー', 'けーぶるくろす'] },
+  
   // 柔軟性・ストレッチ
   { id: 'yoga_hatha', name: 'ヨガ（ハタヨガ）', category: 'flexibility', mets: 2.5, keywords: ['ヨガ', 'よが', 'ハタヨガ'] },
   { id: 'yoga_power', name: 'ヨガ（パワーヨガ）', category: 'flexibility', mets: 4.0, keywords: ['ヨガ', 'パワーヨガ'] },

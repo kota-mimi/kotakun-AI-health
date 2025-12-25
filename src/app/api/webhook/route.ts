@@ -1709,7 +1709,13 @@ async function handleMultipleAIExerciseRecord(userId: string, exerciseData: any,
       
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
-      const calculationDuration = duration || 30;
+      // セット数・重量・回数を考慮した推定時間計算
+      const calculationDuration = duration || calculateEstimatedDuration(
+        exerciseType, 
+        sets || 0, 
+        reps || 0, 
+        weight || 0
+      );
       const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
       totalCalories += caloriesBurned;
       
@@ -1858,11 +1864,17 @@ async function handleAIExerciseRecord(userId: string, exerciseData: any, replyTo
     
     const { exerciseName, exerciseType, duration, intensity } = exerciseData;
     
-    // カロリー計算（時間がない場合は30分でカロリー計算、表示は「時間なし」）
+    // カロリー計算（時間がない場合は推定時間でカロリー計算）
     const userWeight = await getUserWeight(userId) || 70;
     const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
-    const calculationDuration = duration || 30; // カロリー計算用
-    const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+    // セット数・重量・回数を考慮した推定時間計算
+    const calculationDuration = duration || calculateEstimatedDuration(
+      exerciseType, 
+      exerciseData.sets || 0, 
+      exerciseData.reps || 0, 
+      exerciseData.weight || 0
+    );
+    const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
     
     // 運動データ作成
     const exerciseRecord = {
@@ -2013,6 +2025,34 @@ function getDefaultDuration(exerciseType: string, exerciseName: string): number 
   return durationMap[exerciseType] || 30;
 }
 
+// セット数・重量・回数を考慮した時間計算（筋トレ専用）
+function calculateEstimatedDuration(exerciseType: string, sets: number = 0, reps: number = 0, weight: number = 0): number {
+  if (exerciseType !== 'strength') {
+    return 30; // 筋トレ以外はデフォルト30分
+  }
+  
+  // セット数がある場合の推定時間計算
+  if (sets > 0) {
+    // 1セット当たりの時間: 重量とレップ数による推定
+    let timePerSet = 2; // 基本2分/セット
+    
+    // 重量による調整（高重量ほど休憩時間が長い）
+    if (weight > 80) timePerSet += 1.5; // 重量級: +1.5分
+    else if (weight > 60) timePerSet += 1; // 中重量: +1分
+    else if (weight > 40) timePerSet += 0.5; // 軽重量: +0.5分
+    
+    // レップ数による調整（高レップほど疲労が大きい）
+    if (reps > 15) timePerSet += 0.5; // 高レップ: +0.5分
+    else if (reps > 10) timePerSet += 0.3; // 中レップ: +0.3分
+    
+    const totalTime = Math.round(sets * timePerSet);
+    return Math.max(5, Math.min(60, totalTime)); // 5分〜60分の範囲
+  }
+  
+  // セット数なしの場合はデフォルト
+  return 20;
+}
+
 // デフォルトMETsを取得
 function getDefaultMETs(exerciseType: string): number {
   const metsMap: { [key: string]: number } = {
@@ -2139,6 +2179,16 @@ const EXERCISE_METS = {
   'マウンテンクライマー': 8.0, 'バーピー': 8.0, 'ジャンピングジャック': 7.0,
   '筋トレ': 6.0, 'ウェイトトレーニング': 6.0, 'マシントレーニング': 5.0,
   'フリーウェイト': 6.0, 'ダンベル': 5.0, 'バーベル': 6.0, 'ケトルベル': 8.0,
+  
+  // 胸筋トレーニング（詳細）
+  'ダンベルプレス': 6.0, 'ダンベルベンチプレス': 6.0, 'インクラインベンチプレス': 6.5, 
+  'デクラインベンチプレス': 5.5, 'インクラインダンベルプレス': 6.5, 'デクラインダンベルプレス': 5.5,
+  'チェストフライ': 5.0, 'ダンベルフライ': 5.0, 'ペクトラルフライ': 5.0, 
+  'ケーブルフライ': 5.0, 'ケーブルクロスオーバー': 5.0, 'ケーブルクロス': 5.0,
+  
+  // 背筋トレーニング（詳細）
+  'ベントオーバーロウ': 6.0, 'ワンハンドロウ': 5.5, 'シーテッドロウ': 5.0,
+  'Tバーロウ': 6.0, 'ケーブルロウ': 5.0, 'フェイスプル': 4.0,
   
   // 体幹・コア
   '体幹': 4.0, 'コア': 4.0, 'インナーマッスル': 3.5,
@@ -2647,8 +2697,14 @@ async function handleRecordModeSingleExercise(userId: string, exerciseData: any,
     // カロリー計算
     const userWeight = await getUserWeight(userId) || 70;
     const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
-    const calculationDuration = duration || 30;
-    const caloriesBurned = Math.round((mets * userWeight * calculationDuration) / 60);
+    // セット数・重量・回数を考慮した推定時間計算
+    const calculationDuration = duration || calculateEstimatedDuration(
+      exerciseType, 
+      sets || 0, 
+      reps || 0, 
+      weight || 0
+    );
+    const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
     
     // 運動データ作成
     const exerciseRecord = {
@@ -2807,7 +2863,13 @@ async function handleRecordModeMultipleExercise(userId: string, exerciseData: an
       
       // カロリー計算
       const mets = EXERCISE_METS[exerciseName] || getDefaultMETs(exerciseType);
-      const calculationDuration = duration || 30;
+      // セット数・重量・回数を考慮した推定時間計算
+      const calculationDuration = duration || calculateEstimatedDuration(
+        exerciseType, 
+        sets || 0, 
+        reps || 0, 
+        weight || 0
+      );
       const caloriesBurned = Math.round((mets * (calculationDuration / 60) * userWeight * 1.05));
       totalCalories += caloriesBurned;
       
