@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     // 2. 新しいリッチメニューを作成
     const richMenuId = await createRichMenu(accessToken);
 
-    // 3. リッチメニュー画像をアップロード
-    await uploadRichMenuImage(accessToken, richMenuId);
+    // 3. リッチメニュー画像をアップロード（スキップ）
+    console.log('画像アップロードをスキップ');
 
     // 4. デフォルトリッチメニューとして設定
     await setDefaultRichMenu(accessToken, richMenuId);
