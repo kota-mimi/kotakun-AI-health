@@ -1,203 +1,203 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-const LINE_BASE_URL = 'https://api.line.me/v2/bot';
-
-// 3ボタン用のリッチメニュー設定 (2500x632)
-const richMenuData = {
-  size: {
-    width: 2500,
-    height: 632
-  },
-  selected: false,
-  name: "3ボタンリッチメニュー",
-  chatBarText: "メニュー",
-  areas: [
-    {
-      bounds: {
-        x: 0,
-        y: 0,
-        width: 833,
-        height: 632
-      },
-      action: {
-        type: "postback",
-        data: "action=my_page"
-      }
-    },
-    {
-      bounds: {
-        x: 833,
-        y: 0,
-        width: 834,
-        height: 632
-      },
-      action: {
-        type: "postback",
-        data: "action=daily_feedback"
-      }
-    },
-    {
-      bounds: {
-        x: 1667,
-        y: 0,
-        width: 833,
-        height: 632
-      },
-      action: {
-        type: "postback",
-        data: "action=usage_guide"
-      }
-    }
-  ]
-};
 
 export async function POST(request: NextRequest) {
+  const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  
+  if (!accessToken) {
+    return NextResponse.json({ error: 'LINE_CHANNEL_ACCESS_TOKEN is not set' }, { status: 500 });
+  }
+
   try {
-    console.log('🎨 リッチメニュー作成開始');
-
-    if (!LINE_CHANNEL_ACCESS_TOKEN) {
-      console.error('❌ LINE_CHANNEL_ACCESS_TOKEN が設定されていません');
-      return NextResponse.json({ error: 'LINE_CHANNEL_ACCESS_TOKEN が設定されていません' }, { status: 500 });
-    }
-
     // 1. 既存のリッチメニューを削除
-    try {
-      const existingMenusResponse = await fetch(`${LINE_BASE_URL}/richmenu/list`, {
-        headers: {
-          'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-        }
-      });
-      
-      if (existingMenusResponse.ok) {
-        const existingMenus = await existingMenusResponse.json();
-        console.log('📋 既存リッチメニュー数:', existingMenus.richmenus?.length || 0);
-        
-        for (const menu of existingMenus.richmenus || []) {
-          console.log('🗑️ 既存メニュー削除中:', menu.richMenuId);
-          await fetch(`${LINE_BASE_URL}/richmenu/${menu.richMenuId}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-            }
-          });
-        }
-      }
-    } catch (error) {
-      console.log('⚠️ 既存メニュー削除でエラー（続行）:', error);
-    }
+    await deleteExistingRichMenus(accessToken);
 
     // 2. 新しいリッチメニューを作成
-    const createResponse = await fetch(`${LINE_BASE_URL}/richmenu`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-      },
-      body: JSON.stringify(richMenuData)
-    });
+    const richMenuId = await createRichMenu(accessToken);
 
-    if (!createResponse.ok) {
-      const error = await createResponse.text();
-      console.error('❌ リッチメニュー作成エラー:', error);
-      return NextResponse.json({ error: 'リッチメニュー作成に失敗しました', details: error }, { status: 500 });
-    }
-
-    const createResult = await createResponse.json();
-    const richMenuId = createResult.richMenuId;
-    console.log('✅ リッチメニュー作成成功:', richMenuId);
-
-    // 3. 画像をアップロード
-    const imagePath = path.join(process.cwd(), 'rich-menu-final.png');
-    
-    if (!fs.existsSync(imagePath)) {
-      console.error('❌ 画像ファイルが見つかりません:', imagePath);
-      // フォールバック: public フォルダから探す
-      const publicImagePath = path.join(process.cwd(), 'public', 'rich_menu_3buttons.png');
-      if (fs.existsSync(publicImagePath)) {
-        console.log('📁 public フォルダの画像を使用:', publicImagePath);
-        const imageBuffer = fs.readFileSync(publicImagePath);
-        
-        const uploadResponse = await fetch(`${LINE_BASE_URL}/richmenu/${richMenuId}/content`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'image/png',
-            'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-          },
-          body: imageBuffer
-        });
-
-        if (!uploadResponse.ok) {
-          const error = await uploadResponse.text();
-          console.error('❌ 画像アップロードエラー:', error);
-          return NextResponse.json({ error: '画像アップロードに失敗しました', details: error }, { status: 500 });
-        }
-      } else {
-        return NextResponse.json({ error: '画像ファイルが見つかりません' }, { status: 404 });
-      }
-    } else {
-      const imageBuffer = fs.readFileSync(imagePath);
-      
-      const uploadResponse = await fetch(`${LINE_BASE_URL}/richmenu/${richMenuId}/content`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'image/png',
-          'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-        },
-        body: imageBuffer
-      });
-
-      if (!uploadResponse.ok) {
-        const error = await uploadResponse.text();
-        console.error('❌ 画像アップロードエラー:', error);
-        return NextResponse.json({ error: '画像アップロードに失敗しました', details: error }, { status: 500 });
-      }
-    }
-
-    console.log('✅ 画像アップロード成功');
+    // 3. リッチメニュー画像をアップロード
+    await uploadRichMenuImage(accessToken, richMenuId);
 
     // 4. デフォルトリッチメニューとして設定
-    const setDefaultResponse = await fetch(`${LINE_BASE_URL}/user/all/richmenu/${richMenuId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-      }
-    });
+    await setDefaultRichMenu(accessToken, richMenuId);
 
-    if (!setDefaultResponse.ok) {
-      const error = await setDefaultResponse.text();
-      console.error('❌ デフォルト設定エラー:', error);
-      return NextResponse.json({ error: 'デフォルト設定に失敗しました', details: error }, { status: 500 });
-    }
-
-    console.log('✅ デフォルトリッチメニュー設定成功');
-
-    return NextResponse.json({
-      success: true,
-      richMenuId,
-      message: '3ボタンリッチメニューが正常に設定されました',
-      buttons: [
-        { name: 'マイページ', action: 'my_page' },
-        { name: 'フィードバック', action: 'daily_feedback' },
-        { name: '使い方', action: 'usage_guide' }
-      ]
-    });
-
-  } catch (error) {
-    console.error('❌ リッチメニュー設定エラー:', error);
     return NextResponse.json({ 
-      error: 'リッチメニュー設定に失敗しました', 
-      details: error instanceof Error ? error.message : String(error) 
+      success: true, 
+      richMenuId,
+      message: 'リッチメニューが正常に設定されました！' 
+    });
+
+  } catch (error: any) {
+    console.error('リッチメニュー設定エラー:', error);
+    return NextResponse.json({ 
+      error: 'リッチメニューの設定に失敗しました', 
+      details: error.message 
     }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
-  return NextResponse.json({
-    message: 'リッチメニューセットアップAPI',
-    endpoint: 'POST /api/setup-richmenu',
-    description: '3ボタンリッチメニューを作成・設定します'
+// 既存のリッチメニューを削除
+async function deleteExistingRichMenus(accessToken: string) {
+  try {
+    const response = await fetch('https://api.line.me/v2/bot/richmenu/list', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+    
+    if (data.richmenus && data.richmenus.length > 0) {
+      for (const menu of data.richmenus) {
+        await fetch(`https://api.line.me/v2/bot/richmenu/${menu.richMenuId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        console.log(`既存のリッチメニュー ${menu.richMenuId} を削除しました`);
+      }
+    }
+  } catch (error) {
+    console.log('既存のリッチメニュー削除でエラー（続行）:', error);
+  }
+}
+
+// 新しいリッチメニューを作成
+async function createRichMenu(accessToken: string) {
+  const richMenuData = {
+    size: {
+      width: 2500,
+      height: 632
+    },
+    selected: true,
+    name: "健康管理メニュー",
+    chatBarText: "ヘルシーくんメニュー",
+    areas: [
+      {
+        bounds: {
+          x: 0,
+          y: 0,
+          width: 625,
+          height: 632
+        },
+        action: {
+          type: "uri",
+          uri: "https://liff.line.me/2007945061-DEEaglg8/dashboard"
+        }
+      },
+      {
+        bounds: {
+          x: 625,
+          y: 0,
+          width: 625,
+          height: 632
+        },
+        action: {
+          type: "postback",
+          data: "action=record_menu"
+        }
+      },
+      {
+        bounds: {
+          x: 1250,
+          y: 0,
+          width: 625,
+          height: 632
+        },
+        action: {
+          type: "postback",
+          data: "action=daily_feedback"
+        }
+      },
+      {
+        bounds: {
+          x: 1875,
+          y: 0,
+          width: 625,
+          height: 632
+        },
+        action: {
+          type: "uri",
+          uri: "https://liff.line.me/2007945061-DEEaglg8/dashboard?showUserGuide=true"
+        }
+      }
+    ]
+  };
+
+  const response = await fetch('https://api.line.me/v2/bot/richmenu', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(richMenuData),
   });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`リッチメニュー作成失敗: ${error}`);
+  }
+
+  const result = await response.json();
+  console.log(`リッチメニュー作成成功: ${result.richMenuId}`);
+  return result.richMenuId;
+}
+
+// リッチメニュー画像をアップロード
+async function uploadRichMenuImage(accessToken: string, richMenuId: string) {
+  try {
+    // 生成されたPNG画像を読み込み
+    const fs = require('fs');
+    const path = require('path');
+    const imagePath = path.join(process.cwd(), 'rich-menu-new.png');
+    
+    let imageBuffer;
+    
+    if (fs.existsSync(imagePath)) {
+      console.log('📸 生成された画像を使用:', imagePath);
+      imageBuffer = fs.readFileSync(imagePath);
+    } else {
+      console.log('⚠️ 画像ファイルが見つかりません、スキップします');
+      return;
+    }
+    
+    const canvas = imageBuffer;
+
+  const response = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'image/png',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: canvas,
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.log(`画像アップロード失敗（続行）: ${error}`);
+    // 画像アップロードが失敗しても続行
+  } else {
+    console.log('リッチメニュー画像アップロード成功');
+  }
+  } catch (error) {
+    console.error('画像アップロードエラー:', error);
+    throw error;
+  }
+}
+
+// デフォルトリッチメニューとして設定
+async function setDefaultRichMenu(accessToken: string, richMenuId: string) {
+  const response = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`デフォルト設定失敗: ${error}`);
+  }
+
+  console.log('デフォルトリッチメニュー設定成功');
 }
