@@ -77,7 +77,7 @@ async function createRichMenu(accessToken: string) {
         bounds: {
           x: 0,
           y: 0,
-          width: 625,
+          width: 833,
           height: 632
         },
         action: {
@@ -87,21 +87,9 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
-          x: 625,
+          x: 833,
           y: 0,
-          width: 625,
-          height: 632
-        },
-        action: {
-          type: "postback",
-          data: "action=record_menu"
-        }
-      },
-      {
-        bounds: {
-          x: 1250,
-          y: 0,
-          width: 625,
+          width: 834,
           height: 632
         },
         action: {
@@ -111,9 +99,9 @@ async function createRichMenu(accessToken: string) {
       },
       {
         bounds: {
-          x: 1875,
+          x: 1667,
           y: 0,
-          width: 625,
+          width: 833,
           height: 632
         },
         action: {
