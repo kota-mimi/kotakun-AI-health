@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     // 2. 新しいリッチメニューを作成
     const richMenuId = await createRichMenu(accessToken);
 
-    // 3. リッチメニュー画像をアップロード（スキップ）
-    console.log('画像アップロードをスキップ');
+    // 3. リッチメニュー画像をアップロード
+    await uploadRichMenuImage(accessToken, richMenuId);
 
     // 4. デフォルトリッチメニューとして設定
     await setDefaultRichMenu(accessToken, richMenuId);
@@ -67,7 +67,7 @@ async function createRichMenu(accessToken: string) {
   const richMenuData = {
     size: {
       width: 2500,
-      height: 632
+      height: 843
     },
     selected: true,
     name: "健康管理メニュー",
@@ -78,7 +78,7 @@ async function createRichMenu(accessToken: string) {
           x: 0,
           y: 0,
           width: 833,
-          height: 632
+          height: 843
         },
         action: {
           type: "uri",
@@ -90,7 +90,7 @@ async function createRichMenu(accessToken: string) {
           x: 833,
           y: 0,
           width: 834,
-          height: 632
+          height: 843
         },
         action: {
           type: "postback",
@@ -102,7 +102,7 @@ async function createRichMenu(accessToken: string) {
           x: 1667,
           y: 0,
           width: 833,
-          height: 632
+          height: 843
         },
         action: {
           type: "uri",
