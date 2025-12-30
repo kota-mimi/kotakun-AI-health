@@ -556,7 +556,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           await stopLoadingAnimation(userId);
           await replyMessage(replyToken, [{
             type: 'text',
-            text: `${mealJudgment.foodText || text}の記録をする？`,
+            text: `どの食事を記録しますか？`,
             quickReply: {
               items: [
                 { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
@@ -1005,7 +1005,7 @@ async function handleWeightRecord(userId: string, weightData: any, replyToken: s
 async function showMealTypeSelection(replyToken: string) {
   const responseMessage = {
     type: 'text',
-    text: '食事を記録？カロリーだけ確認？',
+    text: 'どの食事を記録しますか？',
     quickReply: {
       items: [
         {
