@@ -16,17 +16,17 @@ async function createNewRichMenuWithCharacters() {
     console.log('📏 各ボタン幅:', { button1Width, button2Width, button3Width });
 
     // 新しいキャラクター画像を適切なサイズでリサイズ
-    const button1Buffer = await sharp('/Users/toshimitsukotarou/Downloads/マイページ (6)/1.png')
+    const button1Buffer = await sharp('./button1.png')
       .resize(button1Width, totalHeight, { fit: 'cover', position: 'center' })
       .png()
       .toBuffer();
 
-    const button2Buffer = await sharp('/Users/toshimitsukotarou/Downloads/マイページ (6)/2.png')
+    const button2Buffer = await sharp('./button2.png')
       .resize(button2Width, totalHeight, { fit: 'cover', position: 'center' })
       .png()
       .toBuffer();
 
-    const button3Buffer = await sharp('/Users/toshimitsukotarou/Downloads/マイページ (6)/3.png')
+    const button3Buffer = await sharp('./button3.png')
       .resize(button3Width, totalHeight, { fit: 'cover', position: 'center' })
       .png()
       .toBuffer();
