@@ -138,9 +138,17 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 1. 友だち追加
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-16">
+              <p className="text-gray-700 leading-relaxed mb-6">
                 LINEで「ヘルシーくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
               </p>
+              <div className="flex justify-center mb-16">
+                <img 
+                  src="/guide-welcome-message.jpg" 
+                  alt="ウェルカムメッセージ画面" 
+                  className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
+                  style={{ maxHeight: '400px' }}
+                />
+              </div>
             </div>
           </div>
 
@@ -150,9 +158,17 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 2. 基本情報を入力
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-16">
+              <p className="text-gray-700 leading-relaxed mb-6">
                 年齢、身長、体重、目標体重、活動量などの基本情報を入力します。この情報をもとに、あなた専用の目安カロリーとPFCバランスが計算されます
               </p>
+              <div className="flex justify-center mb-16">
+                <img 
+                  src="/guide-basic-info-form.jpg" 
+                  alt="基本情報入力画面" 
+                  className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
+                  style={{ maxHeight: '400px' }}
+                />
+              </div>
             </div>
           </div>
 
@@ -162,9 +178,17 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 3. カウンセリング結果が届く
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-16">
+              <p className="text-gray-700 leading-relaxed mb-6">
                 LINEにあなたの目標に向けての1日の目安カロリーとPFCバランス（タンパク質・脂質・炭水化物）が表示されます。これがあなたの健康管理の基準になります
               </p>
+              <div className="flex justify-center mb-16">
+                <img 
+                  src="/guide-counseling-result.jpg" 
+                  alt="カウンセリング結果画面" 
+                  className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
+                  style={{ maxHeight: '400px' }}
+                />
+              </div>
             </div>
           </div>
 
