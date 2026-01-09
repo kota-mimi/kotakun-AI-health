@@ -141,7 +141,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-6">
                 LINEで「ヘルシーくん」を友だち追加すると、自動的にウェルカムメッセージが届きます。ここから健康管理がスタートします
               </p>
-              <div className="flex justify-center mb-16">
+              <div className="flex justify-center mb-24">
                 <img 
                   src="/guide-welcome-message.jpg" 
                   alt="ウェルカムメッセージ画面" 
@@ -161,7 +161,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-6">
                 年齢、身長、体重、目標体重、活動量などの基本情報を入力します。この情報をもとに、あなた専用の目安カロリーとPFCバランスが計算されます
               </p>
-              <div className="flex justify-center mb-16">
+              <div className="flex justify-center mb-24">
                 <img 
                   src="/guide-basic-info-form.jpg" 
                   alt="基本情報入力画面" 
@@ -181,7 +181,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <p className="text-gray-700 leading-relaxed mb-6">
                 LINEにあなたの目標に向けての1日の目安カロリーとPFCバランス（タンパク質・脂質・炭水化物）が表示されます。これがあなたの健康管理の基準になります
               </p>
-              <div className="flex justify-center mb-16">
+              <div className="flex justify-center mb-24">
                 <img 
                   src="/guide-counseling-result.jpg" 
                   alt="カウンセリング結果画面" 
