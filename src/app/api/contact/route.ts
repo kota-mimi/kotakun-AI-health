@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to: process.env.GMAIL_USER, // 自分宛に送信
+      to: 'healthy.contact.line@gmail.com', // お問い合わせ受信用メール
       replyTo: email, // お客様のメールアドレスを返信先に設定
       subject: `【お問い合わせ】${subject}`,
       html: `
