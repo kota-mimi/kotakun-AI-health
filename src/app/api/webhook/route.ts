@@ -190,8 +190,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    const parsedBody = JSON.parse(body);
-    const events = parsedBody.events;
+    const data = JSON.parse(body);
+    const events = data.events || [];
+
+    // メンテナンスモードチェック
+    if (process.env.MAINTENANCE_MODE === 'true') {
+      console.log('🔧 メンテナンスモード: ユーザーリクエストをブロック');
+      
+      for (const event of events) {
+        if (event.replyToken && (event.type === 'message' || event.type === 'postback')) {
+          const client = new (require('@line/bot-sdk')).Client({
+            channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
+          });
+          
+          const maintenanceMessage = {
+            type: 'text',
+            text: '🔧 メンテナンス中 🔧\n\n大変申し訳ございません。\nただいまシステムメンテナンス中です。\n\nしばらくお待ちください。🙏'
+          };
+          
+          try {
+            await client.replyMessage(event.replyToken, maintenanceMessage);
+            console.log('✅ メンテナンスメッセージ送信完了');
+          } catch (error) {
+            console.error('❌ メンテナンスメッセージ送信失敗:', error);
+          }
+        }
+      }
+      
+      return NextResponse.json({ status: 'maintenance_mode' });
+    }
     
     // 各イベントを処理
     for (const event of events) {
