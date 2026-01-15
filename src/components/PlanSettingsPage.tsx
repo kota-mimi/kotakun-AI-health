@@ -209,8 +209,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       price: 0,
       period: '無料',
       features: [
-        'AI会話：1日5通まで',
-        'LINE記録：1日2通まで',
+        'AI会話：1日3通まで',
+        'LINE記録：1日1通まで',
         '基本的な記録機能'
       ],
       limitations: [

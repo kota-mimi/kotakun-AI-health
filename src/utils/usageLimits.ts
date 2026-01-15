@@ -5,8 +5,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 // プラン別の制限設定
 export const USAGE_LIMITS = {
   free: {
-    aiMessagesPerDay: 5,     // AI会話：1日5通まで
-    recordsPerDay: 2,        // LINE記録：1日2通まで
+    aiMessagesPerDay: 3,     // AI会話：1日3通まで
+    recordsPerDay: 1,        // LINE記録：1日1通まで
     webAppAiAccess: false    // アプリからAI記録は使用不可
   },
   monthly: {

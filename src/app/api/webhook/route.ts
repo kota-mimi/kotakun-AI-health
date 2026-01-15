@@ -4031,11 +4031,11 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
   switch (limitType) {
     case 'ai':
       title = 'AI会話の制限';
-      description = '無料プランでは1日5回までAI会話をご利用いただけます。';
+      description = '無料プランでは1日3回までAI会話をご利用いただけます。';
       break;
     case 'record':
       title = '記録の制限';
-      description = '無料プランでは1日2回まで記録をご利用いただけます。';
+      description = '無料プランでは1日1回まで記録をご利用いただけます。';
       break;
     case 'feedback':
       title = 'フィードバック機能の制限';
