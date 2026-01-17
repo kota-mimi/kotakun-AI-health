@@ -36,31 +36,36 @@ export async function POST(request: NextRequest) {
 
     // トライアル期間中の場合の特別処理
     if (subscriptionStatus === 'trial') {
-      console.log('🎁 トライアル期間中の解約処理');
+      const trialEndDate = userData?.trialEndDate?.toDate?.() || userData?.trialEndDate;
+      console.log('🎁 トライアル期間中の解約処理 - 期限:', trialEndDate);
       
-      if (stripeSubscriptionId) {
+      if (stripeSubscriptionId && stripeSubscriptionId.startsWith('sub_')) {
         try {
-          // Stripeでトライアルを即座キャンセル
-          await stripe.subscriptions.cancel(stripeSubscriptionId);
-          console.log('✅ Stripeトライアルキャンセル完了');
+          // 実際のStripeサブスクリプションの場合は期間終了時キャンセルに設定
+          const subscription = await stripe.subscriptions.update(stripeSubscriptionId, {
+            cancel_at_period_end: true,
+          });
+          console.log('✅ Stripeトライアル期間終了時キャンセル設定完了');
         } catch (stripeError) {
           console.error('❌ Stripeトライアルキャンセルエラー:', stripeError);
         }
       }
       
-      // 無料プランに戻す
+      // トライアル期間終了までは使用継続、ステータスだけ変更
       await userRef.update({
-        subscriptionStatus: 'inactive',
-        currentPlan: null,
-        trialEndDate: null,
-        stripeSubscriptionId: null,
+        subscriptionStatus: 'cancel_at_period_end',
         cancelledAt: new Date(),
         updatedAt: new Date()
       });
 
+      const endDateText = trialEndDate 
+        ? trialEndDate.toLocaleDateString('ja-JP')
+        : '期間終了';
+
       return NextResponse.json({
         success: true,
-        message: 'お試し期間を終了しました。無料プランに戻りました。'
+        message: `お試し期間を解約しました。\n\n${endDateText}まで全機能をご利用いただけます。`,
+        currentPeriodEnd: trialEndDate
       });
     }
 

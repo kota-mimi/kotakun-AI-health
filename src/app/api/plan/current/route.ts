@@ -50,18 +50,20 @@ export async function GET(request: NextRequest) {
         let planName = '無料プラン';
         
         // お試し期間中の場合（3日間無制限）
-        if (subscriptionStatus === 'trial') {
+        if (subscriptionStatus === 'trial' || subscriptionStatus === 'cancel_at_period_end') {
           const trialEnd = userData?.trialEndDate?.toDate();
           if (trialEnd && new Date() < trialEnd) {
-            console.log('🎁 お試し期間中: 月額プラン扱い', { userId, trialEnd });
+            console.log('🎁 お試し期間中/解約予定: 月額プラン扱い', { userId, trialEnd, status: subscriptionStatus });
             plan = 'monthly';
-            planName = '月額プラン（お試し期間中）';
+            planName = subscriptionStatus === 'cancel_at_period_end' 
+              ? '月額プラン（お試し期間中・解約予定）'
+              : '月額プラン（お試し期間中）';
             
             return NextResponse.json({
               success: true,
               plan,
               planName,
-              status: 'trial',
+              status: subscriptionStatus,
               currentPeriodEnd: trialEnd,
               stripeSubscriptionId
             });
