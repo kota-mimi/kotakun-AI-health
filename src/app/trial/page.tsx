@@ -372,7 +372,26 @@ export default function TrialPage() {
               color: '#2C3E50'
             }}>実際の画面をチェック</h3>
             
-            <div style={{ position: 'relative', padding: '20px 0', overflow: 'hidden' }}>
+            <div 
+              style={{ position: 'relative', padding: '20px 0', overflow: 'hidden', cursor: 'grab' }}
+              onTouchStart={(e) => {
+                const startX = e.touches[0].clientX;
+                e.currentTarget.setAttribute('data-start-x', startX.toString());
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.getAttribute('data-start-x') || '0');
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+                
+                if (Math.abs(diff) > 50) {
+                  if (diff > 0 && currentSlide < 3) {
+                    updateCarousel(currentSlide + 1);
+                  } else if (diff < 0 && currentSlide > 0) {
+                    updateCarousel(currentSlide - 1);
+                  }
+                }
+              }}
+            >
               <div style={{
                 display: 'flex',
                 transition: 'transform 0.4s ease',
@@ -383,14 +402,13 @@ export default function TrialPage() {
                   return (
                     <div 
                       key={index}
-                      onClick={() => updateCarousel(index)}
                       style={{
                         flexShrink: 0,
                         width: '25%',
                         display: 'flex',
+                        flexDirection: 'column',
                         justifyContent: 'center',
-                        alignItems: 'center',
-                        cursor: 'pointer'
+                        alignItems: 'center'
                       }}
                     >
                       <div style={{
@@ -463,12 +481,10 @@ export default function TrialPage() {
                       </div>
                       <div style={{
                         textAlign: 'center',
-                        marginTop: '12px',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: '#2C3E50',
-                        opacity: index === currentSlide ? 1 : 0,
-                        transition: 'opacity 0.3s ease'
+                        marginTop: '16px',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#2C3E50'
                       }}>
                         {['AIとの会話', 'カロリー分析', '一目で記録が見れる', 'フィードバック'][index]}
                       </div>
