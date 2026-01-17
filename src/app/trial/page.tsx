@@ -372,39 +372,34 @@ export default function TrialPage() {
               color: '#2C3E50'
             }}>実際の画面をチェック</h3>
             
-            <div style={{ position: 'relative', padding: '20px 0' }}>
+            <div style={{ position: 'relative', padding: '20px 0', overflow: 'hidden' }}>
               <div style={{
                 display: 'flex',
-                gap: '0',
                 transition: 'transform 0.4s ease',
-                alignItems: 'center',
-                justifyContent: 'center'
+                transform: `translateX(-${currentSlide * 100}%)`,
+                width: '400%'
               }}>
                 {[0, 1, 2, 3].map((index) => {
-                  const isActive = index === currentSlide;
-                  const isAdjacent = index === currentSlide - 1 || index === currentSlide + 1;
-                  
                   return (
                     <div 
                       key={index}
-                      onClick={() => updateCarousel(index)}
                       style={{
                         flexShrink: 0,
-                        width: '200px',
-                        transition: 'all 0.4s ease',
-                        opacity: isActive ? 1 : isAdjacent ? 0.6 : 0.4,
-                        transform: isActive ? 'scale(1)' : isAdjacent ? 'scale(0.9)' : 'scale(0.85)',
-                        cursor: 'pointer',
-                        zIndex: isActive ? 10 : 1
+                        width: '25%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
                       }}
                     >
                       <div style={{
                         width: '100%',
-                        height: '380px',
+                        maxWidth: '250px',
+                        height: '450px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        margin: '0 auto'
                       }}>
                         {index === 0 ? (
                           <img 
@@ -412,7 +407,8 @@ export default function TrialPage() {
                             alt="AIとの会話" 
                             style={{ 
                               width: '100%', 
-                              height: '100%', 
+                              height: 'auto', 
+                              maxHeight: '100%',
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -424,7 +420,8 @@ export default function TrialPage() {
                             alt="カロリー分析" 
                             style={{ 
                               width: '100%', 
-                              height: '100%', 
+                              height: 'auto', 
+                              maxHeight: '100%',
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -436,7 +433,8 @@ export default function TrialPage() {
                             alt="一目で記録が見れる" 
                             style={{ 
                               width: '100%', 
-                              height: '100%', 
+                              height: 'auto', 
+                              maxHeight: '100%',
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -448,7 +446,8 @@ export default function TrialPage() {
                             alt="フィードバック" 
                             style={{ 
                               width: '100%', 
-                              height: '100%', 
+                              height: 'auto', 
+                              maxHeight: '100%',
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -464,19 +463,17 @@ export default function TrialPage() {
                           </div>
                         )}
                       </div>
-                      {isActive && (
-                        <div style={{
-                          textAlign: 'center',
-                          marginTop: '12px',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#2C3E50',
-                          opacity: 1,
-                          transition: 'opacity 0.3s ease'
-                        }}>
-                          {['AIとの会話', 'カロリー分析', '一目で記録が見れる', 'フィードバック'][index]}
-                        </div>
-                      )}
+                      <div style={{
+                        textAlign: 'center',
+                        marginTop: '12px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#2C3E50',
+                        opacity: index === currentSlide ? 1 : 0,
+                        transition: 'opacity 0.3s ease'
+                      }}>
+                        {['AIとの会話', 'カロリー分析', '一目で記録が見れる', 'フィードバック'][index]}
+                      </div>
                     </div>
                   );
                 })}
