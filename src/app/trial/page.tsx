@@ -436,6 +436,17 @@ export default function TrialPage() {
                                 background: 'transparent'
                               }}
                             />
+                          ) : index === 2 ? (
+                            <img 
+                              src="/images/dashboard-mockup.png" 
+                              alt="一目で記録が見れる" 
+                              style={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain',
+                                background: 'transparent'
+                              }}
+                            />
                           ) : (
                             <div style={{
                               color: '#95A5B5',
@@ -443,7 +454,6 @@ export default function TrialPage() {
                               textAlign: 'center'
                             }}>
                               {index === 0 ? 'チャット画面' : 
-                               index === 2 ? '体重記録' : 
                                '栄養分析'}
                             </div>
                           )}
