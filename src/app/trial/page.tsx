@@ -22,7 +22,7 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
-    window.location.href = "https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00";
+    window.location.href = "https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01";
   };
 
   if (!isLiffReady) {
