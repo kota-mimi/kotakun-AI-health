@@ -403,7 +403,19 @@ export default function TrialPage() {
                         justifyContent: 'center',
                         overflow: 'hidden'
                       }}>
-                        {index === 1 ? (
+                        {index === 0 ? (
+                          <img 
+                            src="/images/chat-mockup.png" 
+                            alt="AIとの会話" 
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'contain',
+                              background: 'transparent',
+                              filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
+                            }}
+                          />
+                        ) : index === 1 ? (
                           <img 
                             src="/images/calorie-analysis-mockup.png" 
                             alt="カロリー分析" 
@@ -433,8 +445,7 @@ export default function TrialPage() {
                             fontSize: '12px',
                             textAlign: 'center'
                           }}>
-                            {index === 0 ? 'チャット画面' : 
-                             '栄養分析'}
+                            栄養分析
                           </div>
                         )}
                       </div>
