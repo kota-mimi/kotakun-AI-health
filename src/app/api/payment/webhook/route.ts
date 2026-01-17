@@ -33,11 +33,15 @@ export async function POST(request: NextRequest) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
+      // ユーザーIDを取得（metadata、client_reference_id、customerの順で試行）
+      let userId = session.metadata?.userId || session.client_reference_id || 'unknown';
+      
       console.log('💰 Processing payment completion:', {
         sessionId: session.id,
         customerId: session.customer,
         amount: session.amount_total,
-        currency: session.currency
+        currency: session.currency,
+        userId: userId
       });
 
       // セッションの詳細情報を取得
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
       const paymentRecord = {
         stripeSessionId: session.id,
         stripeCustomerId: session.customer,
-        userId: session.metadata?.userId || 'unknown', // チェックアウト時にmetadataで渡す必要
+        userId: userId,
         planName,
         priceId,
         amount: session.amount_total! / 100, // セントから円に変換
@@ -89,8 +93,8 @@ export async function POST(request: NextRequest) {
       console.log('✅ Payment record saved to Firestore:', paymentRecord);
 
       // ユーザーのサブスクリプション状態を更新
-      if (paymentRecord.userId !== 'unknown') {
-        const userRef = admin.firestore().collection('users').doc(paymentRecord.userId);
+      if (userId && userId !== 'unknown') {
+        const userRef = admin.firestore().collection('users').doc(userId);
         
         try {
           // ユーザードキュメントの存在確認
@@ -130,7 +134,7 @@ export async function POST(request: NextRequest) {
             
             await userRef.update(updateData);
             console.log('✅ User subscription status updated (existing user):', {
-              userId: paymentRecord.userId,
+              userId: userId,
               planName,
               subscriptionId: subscriptionInfo?.id,
               updateData
@@ -138,7 +142,7 @@ export async function POST(request: NextRequest) {
           } else {
             // ユーザードキュメントが存在しない場合は新規作成
             const createData: any = {
-              userId: paymentRecord.userId,
+              userId: userId,
               subscriptionStatus: 'active',
               currentPlan: planName,
               subscriptionStartDate: new Date(),

@@ -22,12 +22,28 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
+    // ユーザー情報が必要な場合の処理を追加
+    let userIdToPass = '';
+    
+    // LINEのユーザーIDを取得（LIFFコンテキストから）
+    if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
+      userIdToPass = (window as any).liff.getContext().userId;
+    }
+    
     const paymentLinks = {
       'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 3000円（半年プラン）
       'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00'    // 790円（月間プラン）
     };
+
+    let selectedPaymentLink = paymentLinks[selectedPlan] || paymentLinks['half-year'];
     
-    const selectedPaymentLink = paymentLinks[selectedPlan] || paymentLinks['half-year'];
+    // Payment LinksにclientReferenceIdとしてuserIdを追加
+    if (userIdToPass) {
+      const separator = selectedPaymentLink.includes('?') ? '&' : '?';
+      selectedPaymentLink += `${separator}client_reference_id=${encodeURIComponent(userIdToPass)}`;
+    }
+    
+    console.log('🔗 Redirecting to payment link:', selectedPaymentLink);
     window.location.href = selectedPaymentLink;
   };
 
