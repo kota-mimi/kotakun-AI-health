@@ -22,7 +22,7 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
-    console.log('トライアル開始:', selectedPlan);
+    window.location.href = "https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00";
   };
 
   if (!isLiffReady) {
