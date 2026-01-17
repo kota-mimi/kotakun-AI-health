@@ -20,14 +20,34 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
         paddingAll: '16px',
         spacing: 'md',
         contents: [
-          // 食事タイプヘッダー
+          // 食事タイプヘッダー（右上に詳細ボタン付き）
           {
-            type: 'text',
-            text: mealTypeJa,
-            size: 'md',
-            weight: 'bold',
-            color: '#333333',
-            margin: 'none'
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'sm',
+            margin: 'none',
+            contents: [
+              {
+                type: 'text',
+                text: mealTypeJa,
+                size: 'md',
+                weight: 'bold',
+                color: '#333333',
+                flex: 3
+              },
+              {
+                type: 'button',
+                action: {
+                  type: 'uri',
+                  label: '詳細',
+                  uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+                },
+                flex: 1,
+                style: 'link',
+                height: 'sm',
+                color: '#0066CC'
+              }
+            ]
           },
           // 区切り線
           {
@@ -271,14 +291,34 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
         paddingAll: '16px',
         spacing: 'md',
         contents: [
-          // 食事タイプヘッダー
+          // 食事タイプヘッダー（右上に詳細ボタン付き）
           {
-            type: 'text',
-            text: mealTypeJa,
-            size: 'md',
-            weight: 'bold',
-            color: '#333333',
-            margin: 'none'
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'sm',
+            margin: 'none',
+            contents: [
+              {
+                type: 'text',
+                text: mealTypeJa,
+                size: 'md',
+                weight: 'bold',
+                color: '#333333',
+                flex: 3
+              },
+              {
+                type: 'button',
+                action: {
+                  type: 'uri',
+                  label: '詳細',
+                  uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+                },
+                flex: 1,
+                style: 'link',
+                height: 'sm',
+                color: '#0066CC'
+              }
+            ]
           },
           // 区切り線
           {
