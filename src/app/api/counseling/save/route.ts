@@ -257,25 +257,14 @@ export async function POST(request: NextRequest) {
       await userRef.set(profileData, { merge: true });
       console.log('✅ ユーザープロファイル保存完了');
 
-      // 🎁 3日間お試し期間を設定（新規カウンセリング完了時）
-      const trialStartDate = new Date();
-      const trialEndDate = new Date();
-      trialEndDate.setDate(trialEndDate.getDate() + 3); // 3日後
-      
-      const trialData = {
-        subscriptionStatus: 'trial',
-        trialStartDate: trialStartDate,
-        trialEndDate: trialEndDate,
+      // カウンセリング完了フラグのみ設定
+      const completionData = {
         hasCompletedCounseling: true,
         updatedAt: new Date(),
       };
       
-      await userRef.set(trialData, { merge: true });
-      console.log('🎁 3日間お試し期間設定完了:', { 
-        userId: lineUserId, 
-        trialStart: trialStartDate.toISOString(),
-        trialEnd: trialEndDate.toISOString()
-      });
+      await userRef.set(completionData, { merge: true });
+      console.log('✅ カウンセリング完了フラグ設定完了:', lineUserId);
 
       // プロフィール履歴更新を通知
       console.log('🔄 プロフィール履歴更新通知発行');
@@ -293,20 +282,8 @@ export async function POST(request: NextRequest) {
       try {
         await sendCounselingResultToLine(lineUserId, answers, results);
         
-        // お試し期間開始のメッセージを送信
-        const trialMessage = {
-          type: 'text',
-          text: '今から3日間、すべての機能が無制限で使い放題です。\n\n' +
-                'この期間中は：\n' +
-                '・AI会話 無制限\n' +
-                '・記録機能 無制限\n' +
-                '・アプリのAI記録機能も利用可能\n' +
-                '・1日フィードバック機能も利用可能\n\n' +
-                'ぜひたくさん使って、ヘルシーくんの力を実感してみてください。'
-        };
-        
-        await pushMessage(lineUserId, [trialMessage]);
-        console.log('🎁 お試し期間開始メッセージ送信完了:', lineUserId);
+        // カウンセリング完了メッセージ
+        console.log('✅ カウンセリング結果送信完了:', lineUserId);
         
       } catch (error) {
         console.error('LINE送信エラー:', error);

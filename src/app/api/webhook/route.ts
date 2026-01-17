@@ -193,31 +193,62 @@ export async function POST(request: NextRequest) {
     const data = JSON.parse(body);
     const events = data.events || [];
 
-    // メンテナンスモードチェック
+    // メンテナンスモードチェック（開発者ID除外）
     if (process.env.MAINTENANCE_MODE === 'true') {
-      console.log('🔧 メンテナンスモード: ユーザーリクエストをブロック');
+      // 開発者ID一覧
+      const DEVELOPER_IDS = [
+        process.env.DEVELOPER_LINE_ID,
+        'U7fd12476d6263912e0d9c99fc3a6bef9', // 半年プランテスト用ID（永続無料）
+      ].filter(Boolean);
       
-      for (const event of events) {
-        if (event.replyToken && (event.type === 'message' || event.type === 'postback')) {
-          const client = new (require('@line/bot-sdk')).Client({
-            channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
-          });
-          
-          const maintenanceMessage = {
-            type: 'text',
-            text: '🔧 メンテナンス中 🔧\n\n大変申し訳ございません。\nただいまシステムメンテナンス中です。\n\nしばらくお待ちください。🙏'
-          };
-          
-          try {
-            await client.replyMessage(event.replyToken, maintenanceMessage);
-            console.log('✅ メンテナンスメッセージ送信完了');
-          } catch (error) {
-            console.error('❌ メンテナンスメッセージ送信失敗:', error);
+      // 開発者以外をブロック
+      const nonDeveloperEvents = events.filter(event => {
+        const userId = event.source?.userId;
+        if (!userId) return true; // userIdがない場合はブロック
+        
+        if (DEVELOPER_IDS.includes(userId)) {
+          console.log('🔧 開発者ID検出: メンテナンス中でもアクセス許可', userId);
+          return false; // 開発者は通す
+        }
+        return true; // その他はブロック対象
+      });
+      
+      if (nonDeveloperEvents.length > 0) {
+        console.log('🔧 メンテナンスモード: 一般ユーザーリクエストをブロック');
+        
+        for (const event of nonDeveloperEvents) {
+          if (event.replyToken && (event.type === 'message' || event.type === 'postback')) {
+            const client = new (require('@line/bot-sdk')).Client({
+              channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
+            });
+            
+            const maintenanceMessage = {
+              type: 'text',
+              text: '🔧 メンテナンス中 🔧\n\n大変申し訳ございません。\nただいまシステムメンテナンス中です。\n\nしばらくお待ちください。🙏'
+            };
+            
+            try {
+              await client.replyMessage(event.replyToken, maintenanceMessage);
+              console.log('✅ メンテナンスメッセージ送信完了');
+            } catch (error) {
+              console.error('❌ メンテナンスメッセージ送信失敗:', error);
+            }
           }
         }
       }
       
-      return NextResponse.json({ status: 'maintenance_mode' });
+      // 開発者のイベントのみを処理対象として残す
+      events = events.filter(event => {
+        const userId = event.source?.userId;
+        return userId && DEVELOPER_IDS.includes(userId);
+      });
+      
+      // 開発者イベントが無い場合はここで終了
+      if (events.length === 0) {
+        return NextResponse.json({ status: 'maintenance_mode' });
+      }
+      
+      console.log('🔧 開発者イベント継続処理:', events.length, '件');
     }
     
     // 各イベントを処理
