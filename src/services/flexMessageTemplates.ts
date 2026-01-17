@@ -438,7 +438,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                 type: 'button',
                 action: {
                   type: 'uri',
-                  label: '🎯 3日間無料トライアル',
+                  label: '3日間無料トライアル',
                   uri: 'https://kotakun-ai-health.vercel.app/trial'
                 },
                 style: 'primary',
@@ -449,7 +449,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                 type: 'button',
                 action: {
                   type: 'uri',
-                  label: '📊 詳細データを見る',
+                  label: '詳細データを見る',
                   uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
                 },
                 style: 'secondary',
