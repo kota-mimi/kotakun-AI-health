@@ -4159,7 +4159,7 @@ async function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', use
             color: '#1E90FF'
           }
         ] : [
-          // トライアル未使用の場合：トライアル + アップグレードボタン
+          // トライアル未使用の場合：トライアルボタンのみ
           {
             type: 'button',
             action: {
@@ -4168,21 +4168,9 @@ async function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', use
               uri: 'https://kotakun-ai-health.vercel.app/trial'
             },
             style: 'primary',
-            color: '#5BAFCE',
-            margin: 'sm'
-          },
-          {
-            type: 'button',
-            action: {
-              type: 'uri',
-              label: 'プランをアップグレード',
-              uri: liffUrl
-            },
-            style: 'secondary',
-            margin: 'sm'
+            color: '#5BAFCE'
           }
         ],
-        spacing: 'sm',
         paddingAll: 'lg'
       }
     }
