@@ -80,7 +80,7 @@ export default function TrialPage() {
         {/* Hero Section */}
         <section style={{ width: '100%', background: '#FFFFFF', padding: 0, textAlign: 'center' }}>
           <img 
-            src="/hero-image.png" 
+            src="/images/hero-line-health.png" 
             alt="LINEだから続く健康管理" 
             style={{ width: '100%', height: 'auto', display: 'block' }}
           />
