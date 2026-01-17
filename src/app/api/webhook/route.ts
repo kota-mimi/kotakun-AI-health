@@ -367,18 +367,8 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
     //   text.toLowerCase().includes(keyword.toLowerCase())
     // );
     
-    // 利用制限チェック
-    if (isRecordIntent) {
-      // 記録意図の場合は記録制限をチェック
-      const recordLimit = await checkUsageLimit(userId, 'record');
-      if (!recordLimit.allowed) {
-        console.log('⚠️ 記録制限達成', { userId, reason: recordLimit.reason });
-        await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
-        return;
-      }
-    } else {
-      // 通常会話の場合はAI会話制限をチェック
+    // AI会話の利用制限チェック（記録意図ではない場合のみ）
+    if (!isRecordIntent) {
       const aiLimit = await checkUsageLimit(userId, 'ai');
       if (!aiLimit.allowed) {
         console.log('⚠️ AI会話制限達成', { userId, reason: aiLimit.reason });
@@ -491,6 +481,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       console.log('📊 統一モード - 体重パターン判定結果:', JSON.stringify(weightJudgment, null, 2));
 
       if (weightJudgment.isWeightRecord) {
+        // 記録実行前に制限チェック
+        const recordLimit = await checkUsageLimit(userId, 'record');
+        if (!recordLimit.allowed) {
+          console.log('⚠️ 記録制限達成（体重記録時）', { userId, reason: recordLimit.reason });
+          await stopLoadingAnimation(userId);
+          await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
+          return;
+        }
+        
         await handleWeightRecord(userId, weightJudgment, replyToken);
         // 記録成功時に使用回数を記録
         await recordUsage(userId, 'record');
@@ -508,6 +507,16 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         console.log('🏃‍♂️ 統一モード - AI運動判定結果:', JSON.stringify(exerciseJudgment, null, 2));
         if (exerciseJudgment.isExerciseRecord) {
           console.log('✅ 統一モード - 運動として認識、記録開始');
+          
+          // 記録実行前に制限チェック
+          const recordLimit = await checkUsageLimit(userId, 'record');
+          if (!recordLimit.allowed) {
+            console.log('⚠️ 記録制限達成（運動記録時）', { userId, reason: recordLimit.reason });
+            await stopLoadingAnimation(userId);
+            await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
+            return;
+          }
+          
           if (exerciseJudgment.isMultipleExercises) {
             console.log('🔄 統一モード - 複数運動記録処理');
             await handleRecordModeMultipleExercise(userId, exerciseJudgment, replyToken, text);
@@ -597,6 +606,15 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         
         console.log('🍽️ 記録モード - 最終分析結果:', JSON.stringify(mealAnalysis, null, 2));
         await storeTempMealAnalysis(userId, mealAnalysis, null, text);
+        
+        // 記録実行前に制限チェック
+        const recordLimit = await checkUsageLimit(userId, 'record');
+        if (!recordLimit.allowed) {
+          console.log('⚠️ 記録制限達成（食事記録時）', { userId, reason: recordLimit.reason });
+          await stopLoadingAnimation(userId);
+          await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
+          return;
+        }
         
         if (mealJudgment.isMultipleMealTimes) {
           // 複数食事時間の処理
