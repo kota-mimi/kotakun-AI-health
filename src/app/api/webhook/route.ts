@@ -4077,19 +4077,44 @@ async function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', use
     `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard?luid=${hashedUserId}&tab=plan` :
     `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?luid=${hashedUserId}&tab=plan`;
   
-  // トライアル履歴をチェック
+  // トライアル履歴をチェック（ユーザーのサブスクリプション状態から判定）
   let hasUsedTrial = false;
   try {
     const db = admin.firestore();
-    const paymentsRef = db.collection('payments');
-    const trialSnapshot = await paymentsRef
-      .where('userId', '==', userId)
-      .get();
+    const userRef = db.collection('users').doc(userId);
+    const userDoc = await userRef.get();
     
-    // 支払い履歴があるかどうかをチェック（トライアル含む）
-    hasUsedTrial = !trialSnapshot.empty;
-    
-    console.log('🔍 トライアル履歴チェック:', { userId, hasUsedTrial, paymentCount: trialSnapshot.size });
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const subscriptionStatus = userData?.subscriptionStatus;
+      const trialEndDate = userData?.trialEndDate;
+      const cancelledAt = userData?.cancelledAt;
+      
+      // トライアル履歴がある場合の条件:
+      // 1. 現在トライアル中 (trial状態)
+      // 2. トライアル期間終了済み (inactive状態でtrialEndDateがある)
+      // 3. トライアル解約済み (cancel_at_period_end状態でtrialEndDateがある)
+      // 4. 有料プランに移行済み (active状態)
+      hasUsedTrial = (
+        subscriptionStatus === 'trial' ||
+        subscriptionStatus === 'cancel_at_period_end' ||
+        subscriptionStatus === 'active' ||
+        subscriptionStatus === 'lifetime' ||
+        (subscriptionStatus === 'inactive' && trialEndDate) ||
+        cancelledAt // 解約履歴がある場合
+      );
+      
+      console.log('🔍 トライアル履歴チェック:', { 
+        userId, 
+        hasUsedTrial, 
+        subscriptionStatus, 
+        hasTrialEndDate: !!trialEndDate,
+        hasCancelledAt: !!cancelledAt
+      });
+    } else {
+      console.log('🔍 ユーザードキュメントなし - トライアル未使用として扱う:', userId);
+      hasUsedTrial = false;
+    }
   } catch (error) {
     console.error('❌ トライアル履歴チェックエラー:', error);
     // エラー時はトライアル未使用として扱う
