@@ -49,8 +49,26 @@ export async function GET(request: NextRequest) {
         let plan = 'free';
         let planName = '無料プラン';
         
+        // お試し期間中の場合（3日間無制限）
+        if (subscriptionStatus === 'trial') {
+          const trialEnd = userData?.trialEndDate?.toDate();
+          if (trialEnd && new Date() < trialEnd) {
+            console.log('🎁 お試し期間中: 月額プラン扱い', { userId, trialEnd });
+            plan = 'monthly';
+            planName = '月額プラン（お試し期間中）';
+            
+            return NextResponse.json({
+              success: true,
+              plan,
+              planName,
+              status: 'trial',
+              currentPeriodEnd: trialEnd,
+              stripeSubscriptionId
+            });
+          }
+        }
         // 永続プランの場合
-        if (subscriptionStatus === 'lifetime') {
+        else if (subscriptionStatus === 'lifetime') {
           plan = 'lifetime';
           planName = currentPlan || '永久利用プラン';
         }

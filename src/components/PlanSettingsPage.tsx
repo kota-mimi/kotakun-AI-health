@@ -286,14 +286,14 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           )}
           
           {/* 現在のプランバッジ */}
-          {isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') && (
+          {isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'trial') && (
             <div className="text-center">
               <Badge variant="outline" className={
-                currentPlan.status === 'active' 
+                currentPlan.status === 'active' || currentPlan.status === 'trial'
                   ? "bg-emerald-100 text-emerald-700 border-emerald-300 font-medium"
                   : "bg-orange-100 text-orange-700 border-orange-300 font-medium"
               }>
-                {currentPlan.status === 'active' || currentPlan.plan === 'free' ? '現在のプラン' : '解約予定'}
+                {(currentPlan.status === 'active' || currentPlan.status === 'trial') || currentPlan.plan === 'free' ? '現在のプラン' : '解約予定'}
               </Badge>
             </div>
           )}
@@ -351,7 +351,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               <Button variant="outline" className="w-full h-8 text-xs" disabled>
                 無料プラン
               </Button>
-            ) : isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end') ? (
+            ) : isCurrentPlan && (currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'trial') ? (
               <Button variant="outline" className="w-full h-8 text-xs" disabled>
                 現在のプラン
               </Button>
@@ -422,7 +422,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className={
-                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime'
+                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime' || currentPlan.status === 'trial'
                   ? 'bg-green-100 text-green-700 border-green-300' 
                   : 'bg-gray-100 text-gray-700'
               }>
@@ -431,6 +431,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               {currentPlan.plan !== 'free' && (
                 <span className="text-sm text-blue-700">
                   {currentPlan.status === 'active' && '有効'}
+                  {currentPlan.status === 'trial' && 'お試し期間中'}
                   {currentPlan.status === 'lifetime' && '永続'}
                   {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
                   {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
@@ -456,8 +457,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
               </div>
             )}
             
-            {/* 解約ボタン（有料プランかつアクティブの場合のみ、永続プランは除外） */}
-            {currentPlan.status === 'active' && currentPlan.plan !== 'free' && currentPlan.status !== 'lifetime' && !currentPlan.plan.startsWith('crowdfund') && (
+            {/* 解約ボタン（有料プランかつアクティブまたはトライアルの場合、永続プランは除外） */}
+            {(currentPlan.status === 'active' || currentPlan.status === 'trial') && currentPlan.plan !== 'free' && currentPlan.status !== 'lifetime' && !currentPlan.plan.startsWith('crowdfund') && (
               <div className="mt-3">
                 <Button 
                   onClick={handleCancel}

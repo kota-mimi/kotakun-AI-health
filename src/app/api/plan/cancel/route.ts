@@ -31,7 +31,38 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = userDoc.data();
+    const subscriptionStatus = userData?.subscriptionStatus;
     const stripeSubscriptionId = userData?.stripeSubscriptionId;
+
+    // トライアル期間中の場合の特別処理
+    if (subscriptionStatus === 'trial') {
+      console.log('🎁 トライアル期間中の解約処理');
+      
+      if (stripeSubscriptionId) {
+        try {
+          // Stripeでトライアルを即座キャンセル
+          await stripe.subscriptions.cancel(stripeSubscriptionId);
+          console.log('✅ Stripeトライアルキャンセル完了');
+        } catch (stripeError) {
+          console.error('❌ Stripeトライアルキャンセルエラー:', stripeError);
+        }
+      }
+      
+      // 無料プランに戻す
+      await userRef.update({
+        subscriptionStatus: 'inactive',
+        currentPlan: null,
+        trialEndDate: null,
+        stripeSubscriptionId: null,
+        cancelledAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'お試し期間を終了しました。無料プランに戻りました。'
+      });
+    }
 
     if (stripeSubscriptionId) {
       try {
