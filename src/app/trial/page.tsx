@@ -22,7 +22,13 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
-    window.location.href = "https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01";
+    const paymentLinks = {
+      'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 3000円（半年プラン）
+      'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00'    // 790円（月間プラン）
+    };
+    
+    const selectedPaymentLink = paymentLinks[selectedPlan] || paymentLinks['half-year'];
+    window.location.href = selectedPaymentLink;
   };
 
   if (!isLiffReady) {
