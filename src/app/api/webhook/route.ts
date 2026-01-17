@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = JSON.parse(body);
-    const events = data.events || [];
+    let events = data.events || [];
 
     // メンテナンスモードチェック（開発者ID除外）
     if (process.env.MAINTENANCE_MODE === 'true') {
@@ -237,16 +237,19 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // 開発者のイベントのみを処理対象として残す
-      events = events.filter(event => {
+      // 開発者のイベントのみを処理対象として残す（メンテナンスモード時）
+      const developerEvents = events.filter(event => {
         const userId = event.source?.userId;
         return userId && DEVELOPER_IDS.includes(userId);
       });
       
       // 開発者イベントが無い場合はここで終了
-      if (events.length === 0) {
+      if (developerEvents.length === 0) {
         return NextResponse.json({ status: 'maintenance_mode' });
       }
+      
+      // 処理対象を開発者イベントのみに変更
+      events = developerEvents;
       
       console.log('🔧 開発者イベント継続処理:', events.length, '件');
     }
@@ -371,7 +374,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       if (!recordLimit.allowed) {
         console.log('⚠️ 記録制限達成', { userId, reason: recordLimit.reason });
         await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
+        await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
         return;
       }
     } else {
@@ -380,7 +383,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       if (!aiLimit.allowed) {
         console.log('⚠️ AI会話制限達成', { userId, reason: aiLimit.reason });
         await stopLoadingAnimation(userId);
-        await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
+        await replyMessage(replyToken, [await createUsageLimitFlex('ai', userId)]);
         return;
       }
     }
@@ -747,7 +750,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
         const recordLimit = await checkUsageLimit(userId, 'record');
         if (!recordLimit.allowed) {
           console.log('🔄 記録制限に達しました:', userId);
-          await replyMessage(replyToken, [createUsageLimitFlex('record', userId)]);
+          await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
           return;
         }
         
@@ -773,7 +776,7 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       const aiLimit = await checkUsageLimit(userId, 'ai');
       if (!aiLimit.allowed) {
         console.log('🔄 AI制限に達しました:', userId);
-        await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
+        await replyMessage(replyToken, [await createUsageLimitFlex('ai', userId)]);
         return;
       }
       
@@ -873,7 +876,7 @@ async function handlePostback(replyToken: string, source: any, postback: any) {
         if (!feedbackLimit.allowed) {
           // 利用制限に達した場合
           console.log('🚫 フィードバック制限:', userId);
-          await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
+          await replyMessage(replyToken, [await createUsageLimitFlex('feedback', userId)]);
           return;
         }
       } catch (limitError) {
@@ -1122,7 +1125,7 @@ async function handleNoRecordSelection(userId: string, replyToken: string) {
     const aiLimit = await checkUsageLimit(userId, 'ai');
     if (!aiLimit.allowed) {
       console.log('🔄 AI制限に達しました:', userId);
-      await replyMessage(replyToken, [createUsageLimitFlex('ai', userId)]);
+      await replyMessage(replyToken, [await createUsageLimitFlex('ai', userId)]);
       return;
     }
     
@@ -3627,7 +3630,7 @@ async function handleDailyFeedback(replyToken: string, userId: string) {
     } else if (response.status === 403) {
       // 利用制限エラーの場合
       console.log('🚫 フィードバック制限:', userId);
-      await replyMessage(replyToken, [createUsageLimitFlex('feedback', userId)]);
+      await replyMessage(replyToken, [await createUsageLimitFlex('feedback', userId)]);
       console.log('🚫 フィードバック利用制限:', userId);
     } else {
       throw new Error(`API呼び出し失敗: ${response.status}`);
@@ -4049,12 +4052,31 @@ async function getRecentRecordsForComment(userId: string, recordModeStartTime: n
 
 
 // 利用制限時のFlexメッセージを作成
-function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
+async function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: string) {
   const hashedUserId = hashUserId(userId);
   // LIFFを使って普段のアプリと同じ開き方にする
   const liffUrl = process.env.NEXT_PUBLIC_LIFF_ID ? 
     `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard?luid=${hashedUserId}&tab=plan` :
     `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?luid=${hashedUserId}&tab=plan`;
+  
+  // トライアル履歴をチェック
+  let hasUsedTrial = false;
+  try {
+    const db = admin.firestore();
+    const paymentsRef = db.collection('payments');
+    const trialSnapshot = await paymentsRef
+      .where('userId', '==', userId)
+      .get();
+    
+    // 支払い履歴があるかどうかをチェック（トライアル含む）
+    hasUsedTrial = !trialSnapshot.empty;
+    
+    console.log('🔍 トライアル履歴チェック:', { userId, hasUsedTrial, paymentCount: trialSnapshot.size });
+  } catch (error) {
+    console.error('❌ トライアル履歴チェックエラー:', error);
+    // エラー時はトライアル未使用として扱う
+    hasUsedTrial = false;
+  }
   
   let title = '';
   let description = '';
@@ -4124,7 +4146,20 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
       footer: {
         type: 'box',
         layout: 'vertical',
-        contents: [
+        contents: hasUsedTrial ? [
+          // トライアル利用済みの場合：アップグレードボタンのみ
+          {
+            type: 'button',
+            action: {
+              type: 'uri',
+              label: 'プランをアップグレード',
+              uri: liffUrl
+            },
+            style: 'primary',
+            color: '#1E90FF'
+          }
+        ] : [
+          // トライアル未使用の場合：トライアル + アップグレードボタン
           {
             type: 'button',
             action: {
