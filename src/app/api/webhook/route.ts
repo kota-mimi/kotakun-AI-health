@@ -4129,13 +4129,25 @@ function createUsageLimitFlex(limitType: 'ai' | 'record' | 'feedback', userId: s
             type: 'button',
             action: {
               type: 'uri',
+              label: '3日間無料トライアル',
+              uri: 'https://kotakun-ai-health.vercel.app/trial'
+            },
+            style: 'primary',
+            color: '#5BAFCE',
+            margin: 'sm'
+          },
+          {
+            type: 'button',
+            action: {
+              type: 'uri',
               label: 'プランをアップグレード',
               uri: liffUrl
             },
-            style: 'primary',
-            color: '#1E90FF'
+            style: 'secondary',
+            margin: 'sm'
           }
         ],
+        spacing: 'sm',
         paddingAll: 'lg'
       }
     }
