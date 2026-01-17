@@ -238,15 +238,18 @@ export default function TrialPage() {
           <p style={{
             textAlign: 'center',
             margin: '24px 0 16px',
-            fontSize: '15px',
+            fontSize: '14px',
+            lineHeight: 1.3,
             color: '#5A6C7D'
           }}>
-            3日間無料トライアル実施中！<span style={{
+            3日間無料実施中！<span style={{
               background: '#D6EEF5',
-              padding: '2px 8px',
+              padding: '2px 6px',
               borderRadius: '4px',
-              fontWeight: 700
-            }}>いつでもキャンセル可能です</span>
+              fontWeight: 700,
+              fontSize: '13px',
+              marginLeft: '4px'
+            }}>いつでもキャンセル可能</span>
           </p>
 
           <button 
@@ -509,15 +512,18 @@ export default function TrialPage() {
           <p style={{
             textAlign: 'center',
             margin: '24px 0 16px',
-            fontSize: '15px',
+            fontSize: '14px',
+            lineHeight: 1.3,
             color: '#5A6C7D'
           }}>
-            3日間無料トライアル実施中！<span style={{
+            3日間無料実施中！<span style={{
               background: '#D6EEF5',
-              padding: '2px 8px',
+              padding: '2px 6px',
               borderRadius: '4px',
-              fontWeight: 700
-            }}>いつでもキャンセル可能です</span>
+              fontWeight: 700,
+              fontSize: '13px',
+              marginLeft: '4px'
+            }}>いつでもキャンセル可能</span>
           </p>
           <button 
             onClick={handleStartTrial}
@@ -596,7 +602,8 @@ export default function TrialPage() {
                 onClick={() => toggleFaq(index)}
                 style={{
                   padding: '20px',
-                  fontSize: '15px',
+                  fontSize: '14px',
+            lineHeight: 1.3,
                   fontWeight: 700,
                   color: '#2C3E50',
                   display: 'flex',
@@ -638,7 +645,8 @@ export default function TrialPage() {
                   <div style={{
                     color: '#5BAFCE',
                     fontWeight: 700,
-                    fontSize: '15px',
+                    fontSize: '14px',
+            lineHeight: 1.3,
                     marginBottom: '8px',
                     display: 'flex',
                     alignItems: 'center',
@@ -719,16 +727,19 @@ export default function TrialPage() {
         }}>
           <p style={{
             textAlign: 'center',
-            fontSize: '13px',
+            fontSize: '11px',
             color: '#5A6C7D',
-            marginBottom: '8px'
+            marginBottom: '8px',
+            lineHeight: 1.2
           }}>
-            3日間無料トライアル実施中！<span style={{
+            3日間無料実施中！<span style={{
               background: '#D6EEF5',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              fontWeight: 700
-            }}>いつでもキャンセル可能です</span>
+              padding: '1px 6px',
+              borderRadius: '3px',
+              fontWeight: 700,
+              fontSize: '10px',
+              marginLeft: '4px'
+            }}>いつでもキャンセル可能</span>
           </p>
           <button 
             onClick={handleStartTrial}
