@@ -396,68 +396,47 @@ export default function TrialPage() {
                       }}
                     >
                       <div style={{
-                        background: '#1a1a1a',
-                        borderRadius: '36px',
-                        padding: '12px',
-                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
-                        position: 'relative'
+                        width: '100%',
+                        height: '380px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden'
                       }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '12px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: '80px',
-                          height: '24px',
-                          background: '#1a1a1a',
-                          borderRadius: '0 0 16px 16px',
-                          zIndex: 10
-                        }}></div>
-                        <div style={{
-                          background: '#FFFFFF',
-                          borderRadius: '28px',
-                          width: '100%',
-                          height: '380px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#95A5B5',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}>
-                          {index === 1 ? (
-                            <img 
-                              src="/images/calorie-analysis-mockup.png" 
-                              alt="カロリー分析" 
-                              style={{ 
-                                width: '100%', 
-                                height: '100%', 
-                                objectFit: 'contain',
-                                background: 'transparent'
-                              }}
-                            />
-                          ) : index === 2 ? (
-                            <img 
-                              src="/images/dashboard-mockup.png" 
-                              alt="一目で記録が見れる" 
-                              style={{ 
-                                width: '100%', 
-                                height: '100%', 
-                                objectFit: 'contain',
-                                background: 'transparent'
-                              }}
-                            />
-                          ) : (
-                            <div style={{
-                              color: '#95A5B5',
-                              fontSize: '12px',
-                              textAlign: 'center'
-                            }}>
-                              {index === 0 ? 'チャット画面' : 
-                               '栄養分析'}
-                            </div>
-                          )}
-                        </div>
+                        {index === 1 ? (
+                          <img 
+                            src="/images/calorie-analysis-mockup.png" 
+                            alt="カロリー分析" 
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'contain',
+                              background: 'transparent',
+                              filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
+                            }}
+                          />
+                        ) : index === 2 ? (
+                          <img 
+                            src="/images/dashboard-mockup.png" 
+                            alt="一目で記録が見れる" 
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'contain',
+                              background: 'transparent',
+                              filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            color: '#95A5B5',
+                            fontSize: '12px',
+                            textAlign: 'center'
+                          }}>
+                            {index === 0 ? 'チャット画面' : 
+                             '栄養分析'}
+                          </div>
+                        )}
                       </div>
                       {isActive && (
                         <div style={{
