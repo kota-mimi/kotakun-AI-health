@@ -376,25 +376,27 @@ export default function TrialPage() {
               <div style={{
                 display: 'flex',
                 transition: 'transform 0.4s ease',
-                transform: `translateX(-${currentSlide * 100}%)`,
+                transform: `translateX(-${currentSlide * 25}%)`,
                 width: '400%'
               }}>
                 {[0, 1, 2, 3].map((index) => {
                   return (
                     <div 
                       key={index}
+                      onClick={() => updateCarousel(index)}
                       style={{
                         flexShrink: 0,
                         width: '25%',
                         display: 'flex',
                         justifyContent: 'center',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        cursor: 'pointer'
                       }}
                     >
                       <div style={{
                         width: '100%',
-                        maxWidth: '250px',
-                        height: '450px',
+                        maxWidth: '200px',
+                        height: '380px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -407,8 +409,7 @@ export default function TrialPage() {
                             alt="AIとの会話" 
                             style={{ 
                               width: '100%', 
-                              height: 'auto', 
-                              maxHeight: '100%',
+                              height: '100%', 
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -420,8 +421,7 @@ export default function TrialPage() {
                             alt="カロリー分析" 
                             style={{ 
                               width: '100%', 
-                              height: 'auto', 
-                              maxHeight: '100%',
+                              height: '100%', 
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -433,8 +433,7 @@ export default function TrialPage() {
                             alt="一目で記録が見れる" 
                             style={{ 
                               width: '100%', 
-                              height: 'auto', 
-                              maxHeight: '100%',
+                              height: '100%', 
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
@@ -446,8 +445,7 @@ export default function TrialPage() {
                             alt="フィードバック" 
                             style={{ 
                               width: '100%', 
-                              height: 'auto', 
-                              maxHeight: '100%',
+                              height: '100%', 
                               objectFit: 'contain',
                               background: 'transparent',
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
