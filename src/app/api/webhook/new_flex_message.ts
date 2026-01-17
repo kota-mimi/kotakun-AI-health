@@ -36,16 +36,12 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 flex: 3
               },
               {
-                type: 'button',
-                action: {
-                  type: 'uri',
-                  label: '詳細',
-                  uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-                },
-                flex: 1,
-                style: 'link',
-                height: 'sm',
-                color: '#0066CC'
+                type: 'text',
+                text: '詳細',
+                size: 'xs',
+                color: '#999999',
+                align: 'end',
+                flex: 0
               }
             ]
           },
@@ -307,16 +303,12 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
                 flex: 3
               },
               {
-                type: 'button',
-                action: {
-                  type: 'uri',
-                  label: '詳細',
-                  uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-                },
-                flex: 1,
-                style: 'link',
-                height: 'sm',
-                color: '#0066CC'
+                type: 'text',
+                text: '詳細',
+                size: 'xs',
+                color: '#999999',
+                align: 'end',
+                flex: 0
               }
             ]
           },
