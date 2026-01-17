@@ -439,13 +439,25 @@ export default function TrialPage() {
                               filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
                             }}
                           />
+                        ) : index === 3 ? (
+                          <img 
+                            src="/images/feedback-mockup.png" 
+                            alt="フィードバック" 
+                            style={{ 
+                              width: '100%', 
+                              height: '100%', 
+                              objectFit: 'contain',
+                              background: 'transparent',
+                              filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))'
+                            }}
+                          />
                         ) : (
                           <div style={{
                             color: '#95A5B5',
                             fontSize: '12px',
                             textAlign: 'center'
                           }}>
-                            栄養分析
+                            その他
                           </div>
                         )}
                       </div>
