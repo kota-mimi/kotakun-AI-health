@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       apiVersion: '2024-11-20.acacia',
     });
     
-    const { planId, userId, successUrl, cancelUrl, priceId, amount } = await request.json();
+    const { planId, userId, successUrl, cancelUrl, priceId, amount, includeTrial = false } = await request.json();
 
     // バリデーション
     if (!planId || !userId || !priceId || !amount) {
@@ -36,9 +36,11 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      subscription_data: {
-        trial_period_days: 3,
-      },
+      ...(includeTrial && {
+        subscription_data: {
+          trial_period_days: 3,
+        },
+      }),
       metadata: {
         userId,
         planId,

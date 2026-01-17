@@ -81,7 +81,8 @@ export async function createPaymentSession(
   planId: string,
   userId: string,
   successUrl: string,
-  cancelUrl: string
+  cancelUrl: string,
+  includeTrial: boolean = false
 ): Promise<PaymentSession> {
   const plan = PLANS.find(p => p.id === planId);
   if (!plan || plan.price === 0) {
@@ -100,7 +101,8 @@ export async function createPaymentSession(
       successUrl,
       cancelUrl,
       priceId: plan.stripePriceId,
-      amount: plan.price
+      amount: plan.price,
+      includeTrial
     }),
   });
 
@@ -109,6 +111,16 @@ export async function createPaymentSession(
   }
 
   return response.json();
+}
+
+// トライアル付き決済セッション作成（LP新規登録用）
+export async function createTrialPaymentSession(
+  planId: string,
+  userId: string,
+  successUrl: string,
+  cancelUrl: string
+): Promise<PaymentSession> {
+  return createPaymentSession(planId, userId, successUrl, cancelUrl, true);
 }
 
 // 決済状況確認

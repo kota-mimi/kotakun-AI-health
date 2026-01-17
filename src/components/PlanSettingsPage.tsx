@@ -163,7 +163,15 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
 
   // プラン解約処理
   const handleCancel = async () => {
-    if (!confirm('プランを解約しますか？\n\n解約後も期間終了（次回更新日）まで全機能をご利用いただけます。\n期間終了後は自動的に無料プランに切り替わります。')) {
+    const periodEndText = currentPlan.currentPeriodEnd 
+      ? `期限: ${currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}まで`
+      : '期限終了まで';
+    
+    const confirmMessage = currentPlan.status === 'trial' 
+      ? `お試し期間を終了しますか？\n\n終了後は即座に無料プランに切り替わります。`
+      : `プランを解約しますか？\n\n解約後も${periodEndText}全機能をご利用いただけます。\n期間終了後は自動的に無料プランに切り替わります。`;
+    
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -188,7 +196,11 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       const data = await response.json();
       
       if (data.success) {
-        alert('プランを解約しました');
+        const successMessage = data.currentPeriodEnd 
+          ? `プランを解約しました\n\n${new Date(data.currentPeriodEnd).toLocaleDateString('ja-JP')}まで全機能をご利用いただけます。`
+          : data.message || 'プランを解約しました';
+        
+        alert(successMessage);
         // プラン情報を再取得
         window.location.reload();
       } else {
