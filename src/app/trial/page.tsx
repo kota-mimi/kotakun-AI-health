@@ -425,7 +425,28 @@ export default function TrialPage() {
                           fontSize: '12px',
                           overflow: 'hidden'
                         }}>
-                          画像{index + 1}
+                          {index === 1 ? (
+                            <img 
+                              src="/images/calorie-analysis-mockup.png" 
+                              alt="カロリー分析" 
+                              style={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain',
+                                background: 'transparent'
+                              }}
+                            />
+                          ) : (
+                            <div style={{
+                              color: '#95A5B5',
+                              fontSize: '12px',
+                              textAlign: 'center'
+                            }}>
+                              {index === 0 ? 'チャット画面' : 
+                               index === 2 ? '体重記録' : 
+                               '栄養分析'}
+                            </div>
+                          )}
                         </div>
                       </div>
                       {isActive && (
