@@ -336,6 +336,15 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
 
     console.log('LINEメッセージ送信完了:', userName);
 
+    // トライアル誘導メッセージを送信
+    const trialMessage = {
+      type: 'text',
+      text: `${userName}さん、カウンセリングお疲れさまでした！🎉\n\n📊 より詳細な健康管理と栄養分析を体験してみませんか？\n\n🎯 今だけ3日間無料でお試しいただけます！\n\nhttps://kotakun-ai-health.vercel.app/trial`
+    };
+    
+    await pushMessage(lineUserId, [trialMessage]);
+    console.log('✅ トライアル誘導メッセージ送信完了');
+
     // カウンセリング完了後、通常モードに設定
     try {
       const adminDb = admin.firestore();
