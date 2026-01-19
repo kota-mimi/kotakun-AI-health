@@ -234,7 +234,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                             mealManager.mealData[dateKey].length > 0;
       
       
-      recordsMap.set(dateKey, hasWeightRecord || hasMealRecord || hasExerciseRecord);
+      recordsMap.set(dateKey, hasWeightRecord || hasMealRecord);
     });
     
     const totalTime = performance.now() - optimizationStart;
