@@ -4,7 +4,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
     return createMultipleMealFlexMessage(mealTypeJa, analysis, imageUrl, originalMealName, aiAdvice);
   }
   
-  // 単一食事の場合（新しいデザイン）
+  // 単一食事の場合（既存の色・スタイルを保持、配置のみ変更）
   return {
     type: 'flex',
     altText: `${mealTypeJa}記録完了`,
@@ -20,7 +20,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
         paddingAll: '16px',
         spacing: 'md',
         contents: [
-          // ヘッダー：食事タイプと詳細を見るボタン
+          // 食事タイプヘッダー（右上に詳細ボタン付き）
           {
             type: 'box',
             layout: 'horizontal',
@@ -30,16 +30,16 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               {
                 type: 'text',
                 text: mealTypeJa,
-                size: 'lg',
+                size: 'md',
                 weight: 'bold',
                 color: '#333333',
-                flex: 1
+                flex: 3
               },
               {
                 type: 'text',
                 text: '詳細を見る',
-                size: 'sm',
-                color: '#666666',
+                size: 'xs',
+                color: '#999999',
                 align: 'end',
                 flex: 0
               }
@@ -49,7 +49,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
           {
             type: 'separator',
             margin: 'md',
-            color: '#333333'
+            color: '#e0e0e0'
           },
           // メインコンテンツ：画像と食事情報を横並び
           {
@@ -67,23 +67,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 aspectMode: 'cover',
                 backgroundColor: '#f0f0f0',
                 flex: 0
-              }] : [{
-                type: 'box',
-                layout: 'vertical',
-                backgroundColor: '#f0f0f0',
-                cornerRadius: '8px',
-                paddingAll: '24px',
-                flex: 0,
-                contents: [
-                  {
-                    type: 'text',
-                    text: '画像なし',
-                    size: 'xs',
-                    color: '#999999',
-                    align: 'center'
-                  }
-                ]
-              }]),
+              }] : []),
               // 右側：食事情報
               {
                 type: 'box',
@@ -91,40 +75,34 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 spacing: 'sm',
                 flex: 1,
                 contents: [
-                  // 食事名
+                  // 食事名（元の時刻は削除）
                   {
                     type: 'text',
-                    text: '食事名',
-                    size: 'sm',
-                    color: '#666666',
+                    text: 'food',
+                    size: 'xs',
+                    color: '#999999',
                     margin: 'none'
                   },
                   {
                     type: 'text',
                     text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
-                    size: 'md',
+                    size: 'xl',
                     weight: 'bold',
                     color: '#333333',
                     wrap: true,
                     margin: 'xs'
                   },
-                  // カロリー
-                  {
-                    type: 'text',
-                    text: 'カロリー',
-                    size: 'sm',
-                    color: '#666666',
-                    margin: 'sm'
-                  },
+                  // カロリー表示（右上に配置）
                   {
                     type: 'text',
                     text: `${analysis.calories || 0}kcal`,
                     size: 'xl',
                     weight: 'bold',
-                    color: '#333333',
-                    margin: 'xs'
+                    color: '#4a90e2',
+                    align: 'end',
+                    margin: 'md'
                   },
-                  // PFC（横3列）
+                  // PFC表示（横3列、元の色と背景を保持）
                   {
                     type: 'box',
                     layout: 'horizontal',
@@ -134,69 +112,54 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                       {
                         type: 'box',
                         layout: 'vertical',
+                        backgroundColor: '#ffe6e6',
+                        cornerRadius: '8px',
+                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: 'P',
-                            size: 'sm',
-                            color: '#666666',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.protein || 0}g`,
-                            size: 'sm',
+                            text: `P: ${analysis.protein || 0}g`,
+                            size: 'xs',
                             weight: 'bold',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
+                            color: '#cc0000',
+                            align: 'center'
                           }
                         ]
                       },
                       {
                         type: 'box',
                         layout: 'vertical',
+                        backgroundColor: '#fff2e6',
+                        cornerRadius: '8px',
+                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: 'f',
-                            size: 'sm',
-                            color: '#666666',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.fat || 0}g`,
-                            size: 'sm',
+                            text: `F: ${analysis.fat || 0}g`,
+                            size: 'xs',
                             weight: 'bold',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
+                            color: '#ff8800',
+                            align: 'center'
                           }
                         ]
                       },
                       {
                         type: 'box',
                         layout: 'vertical',
+                        backgroundColor: '#e6f7e6',
+                        cornerRadius: '8px',
+                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: 'c',
-                            size: 'sm',
-                            color: '#666666',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.carbs || 0}g`,
-                            size: 'sm',
+                            text: `C: ${analysis.carbs || 0}g`,
+                            size: 'xs',
                             weight: 'bold',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
+                            color: '#00aa00',
+                            align: 'center'
                           }
                         ]
                       }
@@ -206,31 +169,37 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
-          // 区切り線（AIアドバイスがある場合のみ）
-          ...(aiAdvice ? [{
-            type: 'separator',
-            margin: 'lg',
-            color: '#333333'
-          }] : []),
-          // AIアドバイスセクション（aiAdviceがある場合のみ）
+          // AIアドバイスセクション（aiAdviceがある場合のみ、元のスタイル保持）
           ...(aiAdvice ? [
+            {
+              type: 'separator',
+              margin: 'lg',
+              color: '#e0e0e0'
+            },
             {
               type: 'box',
               layout: 'vertical',
               margin: 'md',
               contents: [
                 {
-                  type: 'text',
-                  text: 'AIアドバイス',
-                  size: 'md',
-                  weight: 'bold',
-                  color: '#333333',
+                  type: 'box',
+                  layout: 'horizontal',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: 'AIアドバイス',
+                      size: 'sm',
+                      weight: 'bold',
+                      color: '#4a90e2',
+                      flex: 1
+                    }
+                  ],
                   margin: 'none'
                 },
                 {
                   type: 'text',
                   text: aiAdvice,
-                  size: 'sm',
+                  size: 'xs',
                   color: '#333333',
                   wrap: true,
                   margin: 'sm',
