@@ -11,8 +11,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 開発者IDの確認
-    if (userId !== process.env.DEVELOPER_LINE_ID) {
+    // 開発者IDまたは指定ユーザーIDの確認
+    const allowedUserIds = [
+      process.env.DEVELOPER_LINE_ID,
+      'U7fd12476d6263912e0d9c99fc3a6bef9' // 一時的に追加
+    ].filter(Boolean);
+    
+    if (!allowedUserIds.includes(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 403 });
     }
 
