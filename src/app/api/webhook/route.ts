@@ -141,6 +141,21 @@ async function sendCounselingPrompt(replyToken: string, actionName: string) {
 
 // 統一モード：記録後のクイックリプライは削除済み
 
+// 🔄 処理中フラグ管理（メモリベース）
+const processingUsers = new Map<string, boolean>();
+
+function isProcessing(userId: string): boolean {
+  return processingUsers.get(userId) || false;
+}
+
+function setProcessing(userId: string, processing: boolean): void {
+  if (processing) {
+    processingUsers.set(userId, true);
+  } else {
+    processingUsers.delete(userId);
+  }
+}
+
 // 🔒 UserIDをハッシュ化する関数
 function hashUserId(userId: string): string {
   return crypto.createHash('sha256').update(userId + process.env.LINE_CHANNEL_SECRET).digest('hex').substring(0, 16);
