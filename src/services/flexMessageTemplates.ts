@@ -321,7 +321,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
               },
               {
                 type: 'text',
-                text: `${nutritionPlan.dailyCalories || 2000}kcal`,
+                text: `${targetValues?.targetCalories || 2000}kcal`,
                 size: 'sm',
                 color: '#2563EB',
                 align: 'center',

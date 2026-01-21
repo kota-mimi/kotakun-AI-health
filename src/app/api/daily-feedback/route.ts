@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     
     // プロファイル履歴から目標値を取得（アプリと統一）
     const targetValues = await getTargetValuesForDate(userId, date);
+    console.log('🎯 取得した目標値:', { userId, date, targetValues });
     
     
     // フィードバックを生成（目標値情報も含める）
