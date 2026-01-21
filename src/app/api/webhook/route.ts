@@ -505,8 +505,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       
       // 食事記録の判定
       console.log('🍽️ 統一モード - 食事記録判定開始:', text);
-      const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
-      console.log('🍽️ 統一モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
+      try {
+        const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
+        console.log('🍽️ 統一モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
       
       if (mealJudgment.isFoodRecord) {
         console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
@@ -617,6 +618,13 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           }]);
           return;
         }
+      } catch (mealAnalysisError) {
+        console.error('🔥 食事記録判定エラー:', {
+          error: mealAnalysisError.message,
+          stack: mealAnalysisError.stack,
+          text: text
+        });
+        // エラー時は通常のAI会話に移行
       }
     }
     
