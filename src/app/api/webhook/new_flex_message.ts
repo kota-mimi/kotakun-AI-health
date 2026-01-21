@@ -543,3 +543,87 @@ export function createWeightFlexMessage(weight: number) {
     }
   };
 }
+
+
+export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: string) {
+  const mealTypeNames = {
+    breakfast: '朝食',
+    lunch: '昼食', 
+    dinner: '夕食',
+    snack: '間食'
+  };
+
+  const contents = [
+    {
+      type: 'text',
+      text: '食事記録完了',
+      size: 'xl',
+      weight: 'bold',
+      color: '#333333',
+      align: 'center',
+      margin: 'none'
+    }
+  ];
+
+  let totalCalories = 0;
+
+  Object.keys(mealData).forEach(mealTime => {
+    const meals = mealData[mealTime];
+    const mealTypeJa = mealTypeNames[mealTime] || mealTime;
+    
+    contents.push({
+      type: 'separator',
+      margin: 'md'
+    });
+    
+    contents.push({
+      type: 'text',
+      text: mealTypeJa,
+      size: 'lg',
+      weight: 'bold',
+      color: '#333333',
+      margin: 'md'
+    });
+
+    meals.forEach(meal => {
+      totalCalories += meal.calories || 0;
+      contents.push({
+        type: 'text',
+        text: `${meal.displayName || meal.name}: ${meal.calories || 0}kcal`,
+        size: 'md',
+        color: '#333333',
+        margin: 'sm'
+      });
+    });
+  });
+
+  contents.push({
+    type: 'separator',
+    margin: 'md'
+  });
+  
+  contents.push({
+    type: 'text',
+    text: `合計: ${Math.round(totalCalories)}kcal`,
+    size: 'xl',
+    weight: 'bold',
+    color: '#4a90e2',
+    align: 'center',
+    margin: 'md'
+  });
+
+  return {
+    type: 'flex',
+    altText: '複数食事記録完了',
+    contents: {
+      type: 'bubble',
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        paddingAll: '16px',
+        spacing: 'md',
+        contents: contents
+      }
+    }
+  };
+}
