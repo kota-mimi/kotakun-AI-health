@@ -312,7 +312,7 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
               },
               {
                 type: 'text',
-                text: '詳細',
+                text: '詳細を見る',
                 size: 'xs',
                 color: '#999999',
                 align: 'end',
@@ -326,115 +326,107 @@ function createMultipleMealFlexMessage(mealTypeJa: string, analysis: any, imageU
             margin: 'md',
             color: '#e0e0e0'
           },
-          // 画像エリア（画像がある場合のみ）
-          ...(imageUrl ? [{
-            type: 'image',
-            url: imageUrl,
-            size: 'full',
-            aspectRatio: '16:9',
-            aspectMode: 'cover',
-            backgroundColor: '#f0f0f0',
-            margin: 'md'
-          }] : []),
-          // 時刻表示
-          {
-            type: 'text',
-            text: currentTime,
-            size: 'xs',
-            color: '#999999',
-            align: 'end',
-            margin: 'md'
-          },
-          // 各食事の詳細
-          ...mealItems,
-          // 区切り線
-          {
-            type: 'separator',
-            margin: 'md',
-            color: '#e0e0e0'
-          },
-          // 合計表示
-          {
-            type: 'box',
-            layout: 'horizontal',
-            margin: 'md',
-            contents: [
-              {
-                type: 'text',
-                text: '合計',
-                size: 'lg',
-                weight: 'bold',
-                color: '#333333',
-                flex: 1
-              },
-              {
-                type: 'text',
-                text: `${analysis.totalCalories || analysis.calories || 0}kcal`,
-                size: 'xl',
-                weight: 'bold',
-                color: '#4a90e2',
-                flex: 0
-              }
-            ]
-          },
-          // 合計PFC表示
+          // 上部：画像と食事リストを横並び
           {
             type: 'box',
             layout: 'horizontal',
             spacing: 'md',
-            margin: 'sm',
+            margin: 'md',
             contents: [
+              // 左側：画像
+              ...(imageUrl ? [{
+                type: 'image',
+                url: imageUrl,
+                size: 'sm',
+                aspectRatio: '1:1',
+                aspectMode: 'cover',
+                backgroundColor: '#f0f0f0',
+                flex: 0
+              }] : []),
+              // 右側：各食事の詳細リスト
               {
                 type: 'box',
                 layout: 'vertical',
-                backgroundColor: '#ffe6e6',
-                cornerRadius: '8px',
-                paddingAll: '6px',
+                spacing: 'sm',
                 flex: 1,
-                contents: [
-                  {
-                    type: 'text',
-                    text: `P: ${analysis.totalProtein || analysis.protein || 0}g`,
-                    size: 'xs',
-                    weight: 'bold',
-                    color: '#cc0000',
-                    align: 'center'
-                  }
-                ]
+                contents: mealItems
+              }
+            ]
+          },
+          // 下部：合計カロリーとPFCを横並び
+          {
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'md',
+            margin: 'md',
+            contents: [
+              // 左側：合計カロリー
+              {
+                type: 'text',
+                text: `${analysis.totalCalories || analysis.calories || 0}kcal`,
+                size: 'lg',
+                weight: 'bold',
+                color: '#4a90e2',
+                flex: 0
               },
+              // 右側：合計PFC（元の色付きボックス）
               {
                 type: 'box',
-                layout: 'vertical',
-                backgroundColor: '#fff2e6',
-                cornerRadius: '8px',
-                paddingAll: '6px',
+                layout: 'horizontal',
+                spacing: 'md',
                 flex: 1,
+                justifyContent: 'flex-end',
                 contents: [
                   {
-                    type: 'text',
-                    text: `F: ${analysis.totalFat || analysis.fat || 0}g`,
-                    size: 'xs',
-                    weight: 'bold',
-                    color: '#ff8800',
-                    align: 'center'
-                  }
-                ]
-              },
-              {
-                type: 'box',
-                layout: 'vertical',
-                backgroundColor: '#e6f7e6',
-                cornerRadius: '8px',
-                paddingAll: '6px',
-                flex: 1,
-                contents: [
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: '#ffe6e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `P ${analysis.totalProtein || analysis.protein || 0}`,
+                        size: 'xxs',
+                        weight: 'bold',
+                        color: '#cc0000',
+                        align: 'center'
+                      }
+                    ]
+                  },
                   {
-                    type: 'text',
-                    text: `C: ${analysis.totalCarbs || analysis.carbs || 0}g`,
-                    size: 'xs',
-                    weight: 'bold',
-                    color: '#00aa00',
-                    align: 'center'
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: '#fff2e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `f ${analysis.totalFat || analysis.fat || 0}`,
+                        size: 'xxs',
+                        weight: 'bold',
+                        color: '#ff8800',
+                        align: 'center'
+                      }
+                    ]
+                  },
+                  {
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: '#e6f7e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `c ${analysis.totalCarbs || analysis.carbs || 0}`,
+                        size: 'xxs',
+                        weight: 'bold',
+                        color: '#00aa00',
+                        align: 'center'
+                      }
+                    ]
                   }
                 ]
               }
