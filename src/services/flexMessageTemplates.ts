@@ -308,6 +308,33 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
               }
             ]
           },
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: 'カロリー',
+                size: 'xs',
+                color: '#6B7280',
+                align: 'center'
+              },
+              {
+                type: 'text',
+                text: `${nutritionPlan.dailyCalories || 2000}kcal`,
+                size: 'sm',
+                color: '#2563EB',
+                align: 'center',
+                margin: 'xs'
+              }
+            ],
+            backgroundColor: '#EFF6FF',
+            borderColor: '#DBEAFE',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'sm'
+          },
 
           // DailyTargets: PFCバランス
           {
@@ -620,6 +647,14 @@ export function createDailyFeedbackFlexMessage(
                     align: 'end',
                     flex: 0
                   },
+                  {
+                    type: 'text',
+                    text: `/${targetCal}kcal`,
+                    size: 'sm',
+                    color: '#6B7280',
+                    align: 'end',
+                    flex: 0
+                  }
                 ],
                 flex: 3,
                 justifyContent: 'flex-end'
@@ -674,6 +709,14 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end',
                         flex: 0
                       },
+                      {
+                        type: 'text',
+                        text: `/${targetProtein}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
                     ],
                     flex: 3,
                     justifyContent: 'flex-end'
@@ -715,6 +758,14 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end',
                         flex: 0
                       },
+                      {
+                        type: 'text',
+                        text: `/${targetFat}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
                     ],
                     flex: 3,
                     justifyContent: 'flex-end'
@@ -756,6 +807,14 @@ export function createDailyFeedbackFlexMessage(
                         align: 'end',
                         flex: 0
                       },
+                      {
+                        type: 'text',
+                        text: `/${targetCarbs}g`,
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        flex: 0
+                      }
                     ],
                     flex: 3,
                     justifyContent: 'flex-end'
@@ -775,6 +834,80 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
           
+          // 運動記録（縦並び）
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '運動記録',
+                weight: 'bold',
+                size: 'sm',
+                color: '#374151',
+              },
+              // 運動リスト
+              ...(feedbackData.exercises.length > 0 ? 
+                feedbackData.exercises.map(exercise => {
+                  // 運動の詳細情報を構築（柔軟に対応）
+                  let detailText = '';
+                  
+                  // 運動の詳細情報を構築（シンプルに）
+                  const details = [];
+                  
+                  if (exercise.weight && exercise.weight > 0) {
+                    details.push(`${exercise.weight}kg`);
+                  }
+                  if (exercise.reps && exercise.reps > 0) {
+                    details.push(`${exercise.reps}回`);
+                  }
+                  if (exercise.setsCount && exercise.setsCount > 0) {
+                    details.push(`${exercise.setsCount}セット`);
+                  }
+                  if (exercise.duration && exercise.duration > 0) {
+                    details.push(`${exercise.duration}分`);
+                  }
+                  if (exercise.distance && exercise.distance > 0) {
+                    details.push(`${exercise.distance}km`);
+                  }
+                  
+                  detailText = details.length > 0 ? details.join(' ') : '';
+                  
+                  // 常に横並び：左に運動名、右に詳細情報
+                  return {
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: `・${exercise.type}`,
+                        size: 'sm',
+                        color: '#374151',
+                        flex: 2
+                      },
+                      {
+                        type: 'text',
+                        text: detailText || ' ',
+                        size: 'sm',
+                        color: '#6B7280',
+                        align: 'end',
+                        wrap: true,
+                        flex: 3
+                      }
+                    ],
+                    margin: 'sm'
+                  };
+                }) : 
+                [{
+                  type: 'text',
+                  text: '運動記録なし',
+                  size: 'sm',
+                  color: '#9CA3AF',
+                  margin: 'sm'
+                }]
+              )
+            ]
+          },
 
           // 食事評価セクション
           {
@@ -808,7 +941,7 @@ export function createDailyFeedbackFlexMessage(
                   },
                   {
                     type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 総合評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
                     size: 'sm',
                     color: '#333333',
                     wrap: true
@@ -829,7 +962,7 @@ export function createDailyFeedbackFlexMessage(
                   },
                   {
                     type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 総合評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
                     size: 'sm',
                     color: '#333333',
                     wrap: true
@@ -839,6 +972,47 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
 
+          // 運動評価セクション（褒めるだけ）
+          {
+            type: 'separator',
+            color: '#E0E0E0',
+            margin: 'lg'
+          },
+          {
+            type: 'box',
+            layout: 'vertical',
+            spacing: 'md',
+            contents: [
+              {
+                type: 'text',
+                text: '運動評価',
+                weight: 'bold',
+                size: 'lg',
+                color: '#1E90FF'
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'none',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '良かった点',
+                    weight: 'bold',
+                    size: 'md',
+                    color: '#4CAF50'
+                  },
+                  {
+                    type: 'text',
+                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです',
+                    size: 'sm',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
+              }
+            ]
+          },
 
 
         ],
@@ -1121,4 +1295,141 @@ export function createRecipeFlexMessage(
       }
     }
   };
+}
+
+// 利用制限時のFlexメッセージを作成
+export async function createUsageLimitFlex(limitType: "ai" | "record" | "feedback", userId: string) {
+  const hashedUserId = hashUserId(userId);
+  const liffUrl = process.env.NEXT_PUBLIC_LIFF_ID ? 
+    `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard?luid=${hashedUserId}&tab=plan` :
+    `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?luid=${hashedUserId}&tab=plan`;
+  
+  let hasUsedTrial = false;
+  try {
+    const { admin } = await import("@/lib/firebase-admin");
+    const db = admin.firestore();
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const subscriptionStatus = userData?.subscriptionStatus;
+      const trialEndDate = userData?.trialEndDate;
+      const cancelledAt = userData?.cancelledAt;
+      
+      hasUsedTrial = (
+        subscriptionStatus === "trial" ||
+        subscriptionStatus === "cancel_at_period_end" ||
+        subscriptionStatus === "active" ||
+        subscriptionStatus === "lifetime" ||
+        (subscriptionStatus === "inactive" && trialEndDate) ||
+        cancelledAt
+      );
+    } else {
+      hasUsedTrial = false;
+    }
+  } catch (error) {
+    hasUsedTrial = false;
+  }
+  
+  let title = "";
+  let description = "";
+  
+  switch (limitType) {
+    case "ai":
+      title = "AI会話の制限";
+      description = "無料プランでは1日3回までAI会話をご利用いただけます。";
+      break;
+    case "record":
+      title = "記録の制限";
+      description = "無料プランでは1日1回まで記録をご利用いただけます。";
+      break;
+    case "feedback":
+      title = "フィードバック機能の制限";
+      description = "フィードバック機能は有料プランの機能です。";
+      break;
+  }
+  
+  return {
+    type: "flex",
+    altText: `${title}に達しました`,
+    contents: {
+      type: "bubble",
+      header: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "lg",
+            align: "center"
+          }
+        ],
+        backgroundColor: "#FFF4E6",
+        paddingAll: "lg"
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: description,
+            wrap: true,
+            size: "md",
+            color: "#666666"
+          },
+          {
+            type: "separator",
+            margin: "lg"
+          },
+          {
+            type: "text",
+            text: "有料プランにアップグレードすると無制限でご利用いただけます！",
+            wrap: true,
+            size: "sm",
+            color: "#1E90FF",
+            weight: "bold",
+            margin: "lg"
+          }
+        ],
+        paddingAll: "lg"
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        contents: hasUsedTrial ? [
+          {
+            type: "button",
+            action: {
+              type: "uri",
+              label: "プランをアップグレード",
+              uri: liffUrl
+            },
+            style: "primary",
+            color: "#1E90FF"
+          }
+        ] : [
+          {
+            type: "button",
+            action: {
+              type: "uri",
+              label: "3日間無料トライアル",
+              uri: "https://kotakun-ai-health.vercel.app/trial"
+            },
+            style: "primary",
+            color: "#5BAFCE"
+          }
+        ],
+        paddingAll: "lg"
+      }
+    }
+  };
+}
+
+function hashUserId(userId: string): string {
+  const crypto = require("crypto");
+  return crypto.createHash("sha256").update(userId + process.env.LINE_CHANNEL_SECRET).digest("hex").substring(0, 16);
 }
