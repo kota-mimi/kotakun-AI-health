@@ -794,8 +794,41 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
       console.log(`🍽️ ${mealTime} 保存完了`);
     }
     
+    // AIアドバイスを生成
+    let aiAdvice = null;
+    try {
+      console.log('🧠 複数食事時間向けAIアドバイス生成開始');
+      const userProfile = await getUserProfile(userId);
+      
+      // 全体の栄養データを計算
+      let totalCalories = 0;
+      let totalProtein = 0;
+      let totalFat = 0;
+      let totalCarbs = 0;
+      
+      Object.values(mealData).flat().forEach(meal => {
+        totalCalories += meal.calories || 0;
+        totalProtein += meal.protein || 0;
+        totalFat += meal.fat || 0;
+        totalCarbs += meal.carbs || 0;
+      });
+      
+      const nutritionData = {
+        calories: Math.round(totalCalories),
+        protein: Math.round(totalProtein),
+        fat: Math.round(totalFat),
+        carbs: Math.round(totalCarbs),
+        mealCount: Object.keys(mealData).length
+      };
+      
+      aiAdvice = await generatePersonalMealAdvice(userId, 'dinner', nutritionData, userProfile, null);
+      console.log('✅ 複数食事時間向けAIアドバイス生成完了');
+    } catch (adviceError) {
+      console.warn('⚠️ 複数食事時間向けAIアドバイス生成失敗:', adviceError);
+    }
+    
     // 複数食事時間用のFlexメッセージを作成・送信
-    const flexMessage = createMultipleMealTimesFlexMessage(mealData, null);
+    const flexMessage = createMultipleMealTimesFlexMessage(mealData, aiAdvice);
     
     await stopLoadingAnimation(userId);
     await pushMessage(userId, [flexMessage]);
