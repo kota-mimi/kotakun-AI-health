@@ -78,8 +78,8 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                   {
                     type: 'text',
                     text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
-                    size: 'xl',
-                    weight: 'bold',
+                    size: 'lg',
+                    weight: 'regular',
                     color: '#333333',
                     wrap: true
                   }
