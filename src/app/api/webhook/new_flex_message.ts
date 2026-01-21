@@ -51,18 +51,18 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             margin: 'md',
             color: '#e0e0e0'
           },
-          // メインコンテンツ：画像と食事情報を横並び
+          // メインコンテンツ：画像と食事情報を横並び（スクリーンショット通り）
           {
             type: 'box',
             layout: 'horizontal',
             spacing: 'md',
             margin: 'md',
             contents: [
-              // 左側：画像（正方形）
+              // 左側：画像（小さく表示）
               ...(imageUrl ? [{
                 type: 'image',
                 url: imageUrl,
-                size: 'full',
+                size: 'sm',
                 aspectRatio: '1:1',
                 aspectMode: 'cover',
                 backgroundColor: '#f0f0f0',
@@ -75,91 +75,131 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 spacing: 'sm',
                 flex: 1,
                 contents: [
-                  // 食事名（元の時刻は削除）
-                  {
-                    type: 'text',
-                    text: 'food',
-                    size: 'xs',
-                    color: '#999999',
-                    margin: 'none'
-                  },
-                  {
-                    type: 'text',
-                    text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
-                    size: 'xl',
-                    weight: 'bold',
-                    color: '#333333',
-                    wrap: true,
-                    margin: 'xs'
-                  },
-                  // カロリー表示（右上に配置）
-                  {
-                    type: 'text',
-                    text: `${analysis.calories || 0}kcal`,
-                    size: 'xl',
-                    weight: 'bold',
-                    color: '#4a90e2',
-                    align: 'end',
-                    margin: 'md'
-                  },
-                  // PFC表示（横3列、元の色と背景を保持）
+                  // 上段：食事名とカロリーを横並び
                   {
                     type: 'box',
                     layout: 'horizontal',
-                    spacing: 'md',
-                    margin: 'sm',
                     contents: [
                       {
                         type: 'box',
                         layout: 'vertical',
-                        backgroundColor: '#ffe6e6',
-                        cornerRadius: '8px',
-                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: `P: ${analysis.protein || 0}g`,
-                            size: 'xs',
+                            text: '食事名',
+                            size: 'md',
                             weight: 'bold',
-                            color: '#cc0000',
-                            align: 'center'
+                            color: '#333333'
+                          },
+                          {
+                            type: 'text',
+                            text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
+                            size: 'sm',
+                            color: '#333333',
+                            wrap: true,
+                            margin: 'xs'
                           }
                         ]
                       },
                       {
                         type: 'box',
                         layout: 'vertical',
-                        backgroundColor: '#fff2e6',
-                        cornerRadius: '8px',
-                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: `F: ${analysis.fat || 0}g`,
-                            size: 'xs',
+                            text: 'カロリー',
+                            size: 'md',
                             weight: 'bold',
-                            color: '#ff8800',
+                            color: '#333333',
+                            align: 'end'
+                          },
+                          {
+                            type: 'text',
+                            text: `${analysis.calories || 0}kcal`,
+                            size: 'sm',
+                            color: '#333333',
+                            align: 'end',
+                            margin: 'xs'
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  // 下段：P、f、c を横並び（値も表示）
+                  {
+                    type: 'box',
+                    layout: 'horizontal',
+                    spacing: 'xl',
+                    margin: 'md',
+                    contents: [
+                      {
+                        type: 'box',
+                        layout: 'vertical',
+                        flex: 1,
+                        contents: [
+                          {
+                            type: 'text',
+                            text: 'P',
+                            size: 'lg',
+                            weight: 'bold',
+                            color: '#333333',
                             align: 'center'
+                          },
+                          {
+                            type: 'text',
+                            text: `${analysis.protein || 0}g`,
+                            size: 'sm',
+                            color: '#333333',
+                            align: 'center',
+                            margin: 'xs'
                           }
                         ]
                       },
                       {
                         type: 'box',
                         layout: 'vertical',
-                        backgroundColor: '#e6f7e6',
-                        cornerRadius: '8px',
-                        paddingAll: '6px',
                         flex: 1,
                         contents: [
                           {
                             type: 'text',
-                            text: `C: ${analysis.carbs || 0}g`,
-                            size: 'xs',
+                            text: 'f',
+                            size: 'lg',
                             weight: 'bold',
-                            color: '#00aa00',
+                            color: '#333333',
                             align: 'center'
+                          },
+                          {
+                            type: 'text',
+                            text: `${analysis.fat || 0}g`,
+                            size: 'sm',
+                            color: '#333333',
+                            align: 'center',
+                            margin: 'xs'
+                          }
+                        ]
+                      },
+                      {
+                        type: 'box',
+                        layout: 'vertical',
+                        flex: 1,
+                        contents: [
+                          {
+                            type: 'text',
+                            text: 'c',
+                            size: 'lg',
+                            weight: 'bold',
+                            color: '#333333',
+                            align: 'center'
+                          },
+                          {
+                            type: 'text',
+                            text: `${analysis.carbs || 0}g`,
+                            size: 'sm',
+                            color: '#333333',
+                            align: 'center',
+                            margin: 'xs'
                           }
                         ]
                       }
@@ -168,6 +208,12 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 ]
               }
             ]
+          },
+          // 区切り線（太い黒線）
+          {
+            type: 'separator',
+            margin: 'md',
+            color: '#000000'
           },
           // AIアドバイスセクション（aiAdviceがある場合のみ、元のスタイル保持）
           ...(aiAdvice ? [
