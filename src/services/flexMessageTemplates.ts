@@ -309,6 +309,115 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
             ]
           },
 
+          // 目安の数値表示
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              // カロリー
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'カロリー',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${nutritionPlan.dailyCalories || 1800}kcal`,
+                    size: 'sm',
+                    color: '#2563EB',
+                    weight: 'bold',
+                    align: 'end',
+                    flex: 2
+                  }
+                ],
+                margin: 'md'
+              },
+              // タンパク質
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'タンパク質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${nutritionPlan.macros?.protein || Math.round(((nutritionPlan.dailyCalories || 1800) * 0.25) / 4)}g`,
+                    size: 'sm',
+                    color: '#DC2626',
+                    weight: 'bold',
+                    align: 'end',
+                    flex: 2
+                  }
+                ],
+                margin: 'sm'
+              },
+              // 脂質
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '脂質',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${nutritionPlan.macros?.fat || Math.round(((nutritionPlan.dailyCalories || 1800) * 0.30) / 9)}g`,
+                    size: 'sm',
+                    color: '#F59E0B',
+                    weight: 'bold',
+                    align: 'end',
+                    flex: 2
+                  }
+                ],
+                margin: 'xs'
+              },
+              // 炭水化物
+              {
+                type: 'box',
+                layout: 'horizontal',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '炭水化物',
+                    size: 'sm',
+                    color: '#374151',
+                    flex: 3
+                  },
+                  {
+                    type: 'text',
+                    text: `${nutritionPlan.macros?.carbs || Math.round(((nutritionPlan.dailyCalories || 1800) * 0.45) / 4)}g`,
+                    size: 'sm',
+                    color: '#059669',
+                    weight: 'bold',
+                    align: 'end',
+                    flex: 2
+                  }
+                ],
+                margin: 'xs'
+              }
+            ],
+            backgroundColor: '#F9FAFB',
+            borderColor: '#F3F4F6',
+            borderWidth: '1px',
+            cornerRadius: '4px',
+            paddingAll: '12px',
+            margin: 'sm'
+          },
 
           {
             type: 'box',

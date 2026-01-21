@@ -103,6 +103,31 @@ export async function POST(request: NextRequest) {
       batch.delete(doc.ref);
     });
 
+    // 10. ユーザーサブコレクション削除 (dailyRecords, counseling, profileHistory)
+    const userDoc = db.collection('users').doc(userId);
+    
+    // dailyRecords サブコレクション
+    const dailyRecordsSnapshot = await userDoc.collection('dailyRecords').get();
+    dailyRecordsSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // counseling サブコレクション
+    const userCounselingSnapshot = await userDoc.collection('counseling').get();
+    userCounselingSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // profileHistory サブコレクション
+    const userProfileHistorySnapshot = await userDoc.collection('profileHistory').get();
+    userProfileHistorySnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    // 11. ユーザーステート削除
+    const userStateRef = db.collection('userStates').doc(userId);
+    batch.delete(userStateRef);
+
     // バッチ実行
     await batch.commit();
 
@@ -113,7 +138,9 @@ export async function POST(request: NextRequest) {
       message: 'ユーザーデータが完全に削除されました',
       deletedCollections: [
         'users', 'payments', 'usage_tracking', 'meals', 
-        'weight', 'exercises', 'feedback', 'counseling', 'profile_history'
+        'weight', 'exercises', 'feedback', 'counseling', 'profile_history',
+        'users/[userId]/dailyRecords', 'users/[userId]/counseling', 
+        'users/[userId]/profileHistory', 'userStates'
       ]
     });
 
