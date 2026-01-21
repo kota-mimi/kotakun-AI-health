@@ -26,7 +26,6 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
       case 'weight_gain': return '体重を増やしたい';
       case 'muscle_gain': return '筋肉をつけたい';
       case 'lean_muscle': return '筋肉をつけながら痩せたい';
-      case 'fitness_improve': return '運動不足解消・体力を向上したい';
       default: return '健康になりたい';
     }
   };
@@ -475,8 +474,6 @@ export function createDailyFeedbackFlexMessage(
     protein: number;
     fat: number;
     carbs: number;
-    exerciseTime: number;
-    exercises: Array<{ type: string; displayName?: string; duration: number; reps?: number; weight?: number; setsCount?: number; distance?: number }>;
     mealCount: number;
   },
   feedbackText: string,
@@ -837,80 +834,6 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
           
-          // 運動記録（縦並び）
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: '運動記録',
-                weight: 'bold',
-                size: 'sm',
-                color: '#374151',
-              },
-              // 運動リスト
-              ...(feedbackData.exercises.length > 0 ? 
-                feedbackData.exercises.map(exercise => {
-                  // 運動の詳細情報を構築（柔軟に対応）
-                  let detailText = '';
-                  
-                  // 運動の詳細情報を構築（シンプルに）
-                  const details = [];
-                  
-                  if (exercise.weight && exercise.weight > 0) {
-                    details.push(`${exercise.weight}kg`);
-                  }
-                  if (exercise.reps && exercise.reps > 0) {
-                    details.push(`${exercise.reps}回`);
-                  }
-                  if (exercise.setsCount && exercise.setsCount > 0) {
-                    details.push(`${exercise.setsCount}セット`);
-                  }
-                  if (exercise.duration && exercise.duration > 0) {
-                    details.push(`${exercise.duration}分`);
-                  }
-                  if (exercise.distance && exercise.distance > 0) {
-                    details.push(`${exercise.distance}km`);
-                  }
-                  
-                  detailText = details.length > 0 ? details.join(' ') : '';
-                  
-                  // 常に横並び：左に運動名、右に詳細情報
-                  return {
-                    type: 'box',
-                    layout: 'horizontal',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: `・${exercise.type}`,
-                        size: 'sm',
-                        color: '#374151',
-                        flex: 2
-                      },
-                      {
-                        type: 'text',
-                        text: detailText || ' ',
-                        size: 'sm',
-                        color: '#6B7280',
-                        align: 'end',
-                        wrap: true,
-                        flex: 3
-                      }
-                    ],
-                    margin: 'sm'
-                  };
-                }) : 
-                [{
-                  type: 'text',
-                  text: '運動記録なし',
-                  size: 'sm',
-                  color: '#9CA3AF',
-                  margin: 'sm'
-                }]
-              )
-            ]
-          },
 
           // 食事評価セクション
           {
@@ -944,7 +867,7 @@ export function createDailyFeedbackFlexMessage(
                   },
                   {
                     type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 総合評価').split('改善点:')[0].replace('良かった点:', '') || '・栄養バランスを意識した食事選択ができています\n・3食しっかりと食事を摂られているのが素晴らしいです',
                     size: 'sm',
                     color: '#333333',
                     wrap: true
@@ -965,7 +888,7 @@ export function createDailyFeedbackFlexMessage(
                   },
                   {
                     type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 運動評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
+                    text: extractSectionFromText(feedbackText, '■ 食事評価', '■ 総合評価').split('改善点:')[1] || '・野菜不足が気になります\n・水分補給を意識してください',
                     size: 'sm',
                     color: '#333333',
                     wrap: true
@@ -975,47 +898,6 @@ export function createDailyFeedbackFlexMessage(
             ]
           },
 
-          // 運動評価セクション（褒めるだけ）
-          {
-            type: 'separator',
-            color: '#E0E0E0',
-            margin: 'lg'
-          },
-          {
-            type: 'box',
-            layout: 'vertical',
-            spacing: 'md',
-            contents: [
-              {
-                type: 'text',
-                text: '運動評価',
-                weight: 'bold',
-                size: 'lg',
-                color: '#1E90FF'
-              },
-              {
-                type: 'box',
-                layout: 'vertical',
-                spacing: 'none',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '良かった点',
-                    weight: 'bold',
-                    size: 'md',
-                    color: '#4CAF50'
-                  },
-                  {
-                    type: 'text',
-                    text: extractSectionFromText(feedbackText, '■ 運動評価', '').replace('良かった点:', '').trim() || '・継続的な運動習慣が素晴らしいです',
-                    size: 'sm',
-                    color: '#333333',
-                    wrap: true
-                  }
-                ]
-              }
-            ]
-          },
 
 
         ],
