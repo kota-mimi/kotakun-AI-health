@@ -554,6 +554,7 @@ export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: str
   };
 
   const contents = [
+    // タイトル
     {
       type: 'text',
       text: '食事記録完了',
@@ -566,11 +567,16 @@ export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: str
   ];
 
   let totalCalories = 0;
+  let totalProtein = 0;
+  let totalFat = 0;
+  let totalCarbs = 0;
 
+  // 各食事時間のセクションを追加
   Object.keys(mealData).forEach(mealTime => {
     const meals = mealData[mealTime];
     const mealTypeJa = mealTypeNames[mealTime] || mealTime;
     
+    // 食事時間のヘッダー
     contents.push({
       type: 'separator',
       margin: 'md'
@@ -585,38 +591,226 @@ export function createMultipleMealTimesFlexMessage(mealData: any, aiAdvice?: str
       margin: 'md'
     });
 
+    // 各食事の表示（既存のスタイルに合わせて枠線付きボックス）
     meals.forEach(meal => {
       totalCalories += meal.calories || 0;
+      totalProtein += meal.protein || 0;
+      totalFat += meal.fat || 0;
+      totalCarbs += meal.carbs || 0;
+
       contents.push({
-        type: 'text',
-        text: `${meal.displayName || meal.name}: ${meal.calories || 0}kcal`,
-        size: 'md',
-        color: '#333333',
-        margin: 'sm'
+        type: 'box',
+        layout: 'vertical',
+        margin: 'xs',
+        paddingAll: '6px',
+        borderWidth: '1px',
+        borderColor: '#e0e0e0',
+        cornerRadius: '8px',
+        spacing: 'xs',
+        contents: [
+          {
+            type: 'text',
+            text: meal.displayName || meal.name,
+            size: 'md',
+            weight: 'bold',
+            color: '#333333',
+            wrap: true
+          },
+          {
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'sm',
+            margin: 'xs',
+            contents: [
+              {
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'sm',
+                flex: 1,
+                contents: [
+                  {
+                    type: 'text',
+                    text: `P: ${meal.protein || 0}g`,
+                    size: 'xs',
+                    color: '#cc0000',
+                    flex: 0
+                  },
+                  {
+                    type: 'text',
+                    text: `F: ${meal.fat || 0}g`,
+                    size: 'xs',
+                    color: '#ff8800',
+                    flex: 0
+                  },
+                  {
+                    type: 'text',
+                    text: `C: ${meal.carbs || 0}g`,
+                    size: 'xs',
+                    color: '#00aa00',
+                    flex: 0
+                  }
+                ]
+              },
+              {
+                type: 'text',
+                text: `${meal.calories || 0}kcal`,
+                size: 'md',
+                color: '#4a90e2',
+                flex: 0
+              }
+            ]
+          }
+        ]
       });
     });
   });
 
+  // 合計セクション（複数食事アイテムと同じ形式に統一）
   contents.push({
     type: 'separator',
-    margin: 'md'
+    margin: 'md',
+    color: '#e0e0e0'
   });
   
+  // 合計ラベル + カロリー（横並び）
   contents.push({
-    type: 'text',
-    text: `合計: ${Math.round(totalCalories)}kcal`,
-    size: 'xl',
-    weight: 'bold',
-    color: '#4a90e2',
-    align: 'center',
-    margin: 'md'
+    type: 'box',
+    layout: 'horizontal',
+    margin: 'md',
+    contents: [
+      {
+        type: 'text',
+        text: '合計',
+        size: 'lg',
+        weight: 'bold',
+        color: '#333333',
+        flex: 1
+      },
+      {
+        type: 'text',
+        text: `${Math.round(totalCalories)}kcal`,
+        size: 'xl',
+        weight: 'bold',
+        color: '#4a90e2',
+        flex: 0
+      }
+    ]
   });
+
+  // 合計PFC表示（下の行）
+  contents.push({
+    type: 'box',
+    layout: 'horizontal',
+    spacing: 'md',
+    margin: 'sm',
+    contents: [
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#ffe6e6',
+        cornerRadius: '8px',
+        paddingAll: '6px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `P: ${Math.round(totalProtein)}g`,
+            size: 'xs',
+            weight: 'bold',
+            color: '#cc0000',
+            align: 'center'
+          }
+        ]
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#fff2e6',
+        cornerRadius: '8px',
+        paddingAll: '6px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `F: ${Math.round(totalFat)}g`,
+            size: 'xs',
+            weight: 'bold',
+            color: '#ff8800',
+            align: 'center'
+          }
+        ]
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        backgroundColor: '#e6f7e6',
+        cornerRadius: '8px',
+        paddingAll: '6px',
+        flex: 1,
+        contents: [
+          {
+            type: 'text',
+            text: `C: ${Math.round(totalCarbs)}g`,
+            size: 'xs',
+            weight: 'bold',
+            color: '#00aa00',
+            align: 'center'
+          }
+        ]
+      }
+    ]
+  });
+
+  // AIアドバイスセクション（提供されている場合のみ表示）
+  if (aiAdvice) {
+    contents.push(
+      {
+        type: 'separator',
+        margin: 'lg',
+        color: '#e0e0e0'
+      },
+      {
+        type: 'box',
+        layout: 'vertical',
+        margin: 'md',
+        contents: [
+          {
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'text',
+                text: 'AIアドバイス',
+                size: 'sm',
+                weight: 'bold',
+                color: '#4a90e2',
+                flex: 1
+              }
+            ],
+            margin: 'none'
+          },
+          {
+            type: 'text',
+            text: aiAdvice,
+            size: 'xs',
+            color: '#333333',
+            wrap: true,
+            margin: 'sm',
+          }
+        ]
+      }
+    );
+  }
 
   return {
     type: 'flex',
     altText: '複数食事記録完了',
     contents: {
       type: 'bubble',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
       body: {
         type: 'box',
         layout: 'vertical',
