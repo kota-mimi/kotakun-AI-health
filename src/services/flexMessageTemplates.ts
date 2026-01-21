@@ -719,7 +719,6 @@ export function createDailyFeedbackFlexMessage(
               }
             ]
           },
-          },
 
           // 食事評価セクション
           {
