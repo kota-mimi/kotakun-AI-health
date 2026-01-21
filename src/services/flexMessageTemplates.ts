@@ -308,33 +308,6 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
               }
             ]
           },
-          {
-            type: 'box',
-            layout: 'vertical',
-            contents: [
-              {
-                type: 'text',
-                text: 'カロリー',
-                size: 'xs',
-                color: '#6B7280',
-                align: 'center'
-              },
-              {
-                type: 'text',
-                text: `${targetValues?.targetCalories || 2000}kcal`,
-                size: 'sm',
-                color: '#2563EB',
-                align: 'center',
-                margin: 'xs'
-              }
-            ],
-            backgroundColor: '#EFF6FF',
-            borderColor: '#DBEAFE',
-            borderWidth: '1px',
-            cornerRadius: '4px',
-            paddingAll: '12px',
-            margin: 'sm'
-          },
 
           // DailyTargets: PFCバランス
           {
