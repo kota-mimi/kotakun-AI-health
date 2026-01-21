@@ -18,13 +18,16 @@ export async function POST(request: NextRequest) {
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 3);
     
-    // トライアルユーザーのデータを作成
+    // 月額プランユーザーのデータを作成（テスト用）
+    const currentPeriodEnd = new Date();
+    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1); // 1ヶ月後
+    
     const trialUserData = {
       lineUserId: userId,
-      subscriptionStatus: 'trial',
-      currentPlan: '月額プラン（お試し期間中）',
-      trialEndDate: trialEndDate,
-      stripeSubscriptionId: `trial_${Date.now()}`, // 仮のsubscription ID
+      subscriptionStatus: 'active', // trialから activeに変更
+      currentPlan: '月額プラン', // お試し期間削除
+      currentPeriodEnd: currentPeriodEnd, // トライアル終了日から期間終了日に変更
+      stripeSubscriptionId: 'sub_test_monthly_dev', // テスト用subscription ID
       hasCompletedCounseling: true, // 診断機能を使用可能に
       profile: {
         name: 'トライアルユーザー',
@@ -47,12 +50,12 @@ export async function POST(request: NextRequest) {
     const userRef = db.collection('users').doc(userId);
     await userRef.set(trialUserData, { merge: true });
 
-    console.log(`✅ Test trial user created for ${userId}, expires: ${trialEndDate.toISOString()}`);
+    console.log(`✅ Test monthly plan user created for ${userId}, expires: ${currentPeriodEnd.toISOString()}`);
 
     return NextResponse.json({
       success: true,
-      message: `Trial user created for ${userId}`,
-      trialEndDate: trialEndDate.toISOString(),
+      message: `Monthly plan user created for ${userId}`,
+      currentPeriodEnd: currentPeriodEnd.toISOString(),
       data: trialUserData
     });
 
