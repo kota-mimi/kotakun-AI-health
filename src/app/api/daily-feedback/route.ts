@@ -361,8 +361,11 @@ async function getTargetValuesForDate(userId: string, date: string) {
       .limit(1)
       .get();
     
+    console.log('📊 プロファイル履歴検索:', { userId, date, found: !snapshot.empty });
+    
     if (!snapshot.empty) {
       const profileData = snapshot.docs[0].data();
+      console.log('📋 プロファイルデータ:', profileData);
       
       return {
         targetCalories: profileData.targetCalories || 2000,
