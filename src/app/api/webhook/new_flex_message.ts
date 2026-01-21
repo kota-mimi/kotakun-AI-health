@@ -94,7 +94,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             size: 'xl',
             weight: 'bold',
             color: '#4a90e2',
-            align: 'center',
+            align: 'end',
             margin: 'md'
           },
           // 3行目：PFC（元の色付きボックス）
