@@ -233,7 +233,6 @@ export async function POST(request: NextRequest) {
       // 開発者ID一覧
       const DEVELOPER_IDS = [
         process.env.DEVELOPER_LINE_ID,
-        'U7fd12476d6263912e0d9c99fc3a6bef9', // 半年プランテスト用ID（永続無料）
       ].filter(Boolean);
       
       // 開発者以外をブロック

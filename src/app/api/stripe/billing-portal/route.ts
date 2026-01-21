@@ -19,19 +19,6 @@ export async function POST(request: NextRequest) {
 
     console.log(`🔍 Billing Portal作成開始 - ユーザーID: ${userId}`);
 
-    // 特定ユーザー（決済済み）の対応 - 一時的にエラー回避
-    if (userId === 'U7fd12476d6263912e0d9c99fc3a6bef9') {
-      console.log('⚠️ Billing Portal未設定のため一時的にエラーを返す');
-      
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Stripe Billing Portalの設定が必要です。Stripeダッシュボードで Customer Portal を有効化してください。',
-          needsSetup: true
-        },
-        { status: 400 }
-      );
-    }
 
     // Firestoreからユーザー情報とStripe Customer IDを取得
     const userRef = admin.firestore().collection('users').doc(userId);
