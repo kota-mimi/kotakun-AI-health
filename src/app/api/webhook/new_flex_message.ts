@@ -66,8 +66,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 aspectRatio: '1:1',
                 aspectMode: 'cover',
                 backgroundColor: '#f0f0f0',
-                flex: 0,
-                cornerRadius: '8px'
+                flex: 0
               }] : [{
                 type: 'box',
                 layout: 'vertical',
