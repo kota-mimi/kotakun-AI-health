@@ -776,11 +776,16 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
       return;
       
     } catch (error) {
-      console.error('🔥 統一モード画像処理エラー:', error);
+      console.error('🔥 統一モード画像処理エラー:', {
+        error: error.message,
+        stack: error.stack,
+        userId,
+        messageId
+      });
       await stopLoadingAnimation(userId);
       await replyMessage(replyToken, [{
         type: 'text',
-        text: 'すみません、画像の処理中にエラーが発生しました。もう一度試してみてください。'
+        text: `すみません、画像の処理中にエラーが発生しました。エラー詳細: ${error.message} もう一度試してみてください。`
       }]);
     } finally {
       // 処理完了フラグをクリア
@@ -788,10 +793,15 @@ async function handleImageMessage(replyToken: string, userId: string, messageId:
     }
   } catch (outerError) {
     // 外側のtryブロックでのエラー（処理フラグ設定前のエラー）
-    console.error('🔥 統一モード画像処理外側エラー:', outerError);
+    console.error('🔥 統一モード画像処理外側エラー:', {
+      error: outerError.message,
+      stack: outerError.stack,
+      userId,
+      messageId
+    });
     await replyMessage(replyToken, [{
       type: 'text',
-      text: 'すみません、画像の処理中にエラーが発生しました。もう一度試してみてください。'
+      text: `すみません、画像の処理中にエラーが発生しました。外側エラー: ${outerError.message} もう一度試してみてください。`
     }]);
   }
 }
