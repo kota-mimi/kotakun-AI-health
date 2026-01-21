@@ -8,6 +8,7 @@ import { admin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getCharacterPersona, getCharacterLanguage } from '@/utils/aiCharacterUtils';
 import { calculateCalorieTarget, calculateMacroTargets } from '@/utils/calculations';
+import { createUsageLimitFlex } from '@/services/flexMessageTemplates';
 import { createMealFlexMessage, createMultipleMealTimesFlexMessage, createWeightFlexMessage, createCalorieOnlyFlexMessage } from './new_flex_message';
 import { findFoodMatch, FOOD_DATABASE } from '@/utils/foodDatabase';
 import { generateId } from '@/lib/utils';
