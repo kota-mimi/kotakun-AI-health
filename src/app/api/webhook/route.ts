@@ -508,9 +508,9 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
       try {
         const mealJudgment = await aiService.analyzeFoodRecordIntent(text);
         console.log('🍽️ 統一モード - 食事判定結果:', JSON.stringify(mealJudgment, null, 2));
-      
-      if (mealJudgment.isFoodRecord) {
-        console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
+        
+        if (mealJudgment.isFoodRecord) {
+          console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
         
         // Step 1: 学習済み食事を検索
         const learnedFood = await findLearnedFood(userId, mealJudgment.foodText || text);
@@ -618,7 +618,7 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
           }]);
           return;
         }
-      } catch (mealAnalysisError) {
+        } catch (mealAnalysisError) {
         console.error('🔥 食事記録判定エラー:', {
           error: mealAnalysisError.message,
           stack: mealAnalysisError.stack,
