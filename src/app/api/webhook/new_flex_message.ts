@@ -98,7 +98,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               {
                 type: 'text',
                 text: `${analysis.calories || 0}kcal`,
-                size: 'lg',
+                size: 'md',
                 weight: 'bold',
                 color: '#4a90e2',
                 flex: 0
@@ -116,7 +116,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                     layout: 'vertical',
                     backgroundColor: '#ffe6e6',
                     cornerRadius: '8px',
-                    paddingAll: '6px',
+                    paddingAll: '4px',
                     contents: [
                       {
                         type: 'text',
@@ -133,7 +133,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                     layout: 'vertical',
                     backgroundColor: '#fff2e6',
                     cornerRadius: '8px',
-                    paddingAll: '6px',
+                    paddingAll: '4px',
                     contents: [
                       {
                         type: 'text',
@@ -150,7 +150,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                     layout: 'vertical',
                     backgroundColor: '#e6f7e6',
                     cornerRadius: '8px',
-                    paddingAll: '6px',
+                    paddingAll: '4px',
                     contents: [
                       {
                         type: 'text',
