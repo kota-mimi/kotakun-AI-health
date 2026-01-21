@@ -87,12 +87,6 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
-          // 区切り線（画像・食事名とカロリー・PFCの間）
-          {
-            type: 'separator',
-            margin: 'md',
-            color: '#e0e0e0'
-          },
           // 下部：カロリーとPFCを横並び
           {
             type: 'box',
@@ -104,7 +98,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               {
                 type: 'text',
                 text: `${analysis.calories || 0}kcal`,
-                size: 'xl',
+                size: 'lg',
                 weight: 'bold',
                 color: '#4a90e2',
                 flex: 0
@@ -127,7 +121,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                       {
                         type: 'text',
                         text: `P ${analysis.protein || 0}`,
-                        size: 'xs',
+                        size: 'xxs',
                         weight: 'bold',
                         color: '#cc0000',
                         align: 'center'
@@ -144,7 +138,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                       {
                         type: 'text',
                         text: `f ${analysis.fat || 0}`,
-                        size: 'xs',
+                        size: 'xxs',
                         weight: 'bold',
                         color: '#ff8800',
                         align: 'center'
@@ -161,7 +155,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                       {
                         type: 'text',
                         text: `c ${analysis.carbs || 0}`,
-                        size: 'xs',
+                        size: 'xxs',
                         weight: 'bold',
                         color: '#00aa00',
                         align: 'center'
