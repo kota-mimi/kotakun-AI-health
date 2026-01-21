@@ -6,7 +6,6 @@ import { useSwipeable } from 'react-swipeable';
 import { useDateBasedData } from '@/hooks/useDateBasedData';
 import { useNavigationState } from '@/hooks/useNavigationState';
 import { useMealData } from '@/hooks/useMealData';
-import { useExerciseData } from '@/hooks/useExerciseData';
 import { useWeightData } from '@/hooks/useWeightData';
 import { useCounselingData } from '@/hooks/useCounselingData';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
@@ -18,7 +17,6 @@ import { useShareRecord } from '@/hooks/useShareRecord';
 import { CompactHeader } from '@/components/CompactHeader';
 import { CalorieCard } from '@/components/CalorieCard';
 import { MealSummaryCard } from '@/components/MealSummaryCard';
-import { WorkoutSummaryCard } from '@/components/WorkoutSummaryCard';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { AddMealModal } from '@/components/AddMealModal';
@@ -34,11 +32,9 @@ import { ContactPage } from '@/components/ContactPage';
 import { ReminderSettingsPage } from '@/components/ReminderSettingsPage';
 import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightCard } from '@/components/WeightCard';
-import { ExerciseEntryModal } from '@/components/ExerciseEntryModal';
-import { ExerciseEditModal } from '@/components/ExerciseEditModal';
 import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
-import { CalorieCardSkeleton, MealCardSkeleton, WorkoutCardSkeleton } from '@/components/ui/skeleton';
+import { CalorieCardSkeleton, MealCardSkeleton } from '@/components/ui/skeleton';
 // import { AppLoadingScreen } from '@/components/LoadingScreen';
 
 export default function DashboardPage() {
@@ -122,9 +118,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
   
   const [isDataManagementModalOpen, setIsDataManagementModalOpen] = React.useState(false);
   const [isMealMenuOpen, setIsMealMenuOpen] = React.useState(false);
-  const [isExerciseEntryModalOpen, setIsExerciseEntryModalOpen] = React.useState(false);
-  const [isExerciseEditModalOpen, setIsExerciseEditModalOpen] = React.useState(false);
-  const [selectedExerciseForEdit, setSelectedExerciseForEdit] = React.useState(null);
   
   const currentDateData = dateBasedDataManager?.getCurrentDateData?.(navigation?.selectedDate) || { mealData: { breakfast: [], lunch: [], dinner: [], snack: [] } };
   
@@ -171,11 +164,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
     dashboardData.mealsData // 🚀 統合データから取得
   );
 
-  const exerciseManager = useExerciseData(
-    navigation?.selectedDate || new Date(), 
-    dateBasedDataManager?.dateBasedData || {}, 
-    updateDateData
-  );
 
   const weightManager = useWeightData(
     navigation?.selectedDate || new Date(),
@@ -198,10 +186,9 @@ function DashboardContent({ onError }: { onError: () => void }) {
     
     // 🚀 早期リターン：全データが空の場合は高速関数を返す
     const hasWeightData = dashboardData.weightData?.length > 0; // 統合データを直接使用
-    const hasExerciseData = exerciseManager?.exerciseData?.length > 0;
     const hasMealData = mealManager?.mealData && Object.keys(mealManager.mealData).length > 0;
     
-    if (!hasWeightData && !hasExerciseData && !hasMealData) {
+    if (!hasWeightData && !hasMealData) {
       const totalTime = performance.now() - optimizationStart;
       console.log(`🚀 weeklyRecordsChecker: empty data optimization`, {
         totalTime: `${totalTime.toFixed(3)}ms`,
@@ -246,11 +233,8 @@ function DashboardContent({ onError }: { onError: () => void }) {
                             Array.isArray(mealManager.mealData[dateKey]) && 
                             mealManager.mealData[dateKey].length > 0;
       
-      const hasExerciseRecord = hasExerciseData && exerciseManager.exerciseData.some(
-        (exercise: any) => exercise.date === dateKey
-      );
       
-      recordsMap.set(dateKey, hasWeightRecord || hasMealRecord || hasExerciseRecord);
+      recordsMap.set(dateKey, hasWeightRecord || hasMealRecord);
     });
     
     const totalTime = performance.now() - optimizationStart;
@@ -269,7 +253,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
   }, [
     navigation?.selectedDate,
     dashboardData.weightData, // 統合データを直接参照
-    exerciseManager?.exerciseData,
     mealManager?.mealData
   ]);
 
@@ -338,7 +321,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       const recordData = shareRecord.formatRecordData(
         navigation?.selectedDate || new Date(),
         mealManager?.mealData || {},
-        exerciseManager?.exerciseData || [],
+        [],
         {},  // formatRecordDataでは体重使わない
         counselingResult
       );
@@ -519,7 +502,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
                   targetCalories={mealManager.calorieData?.targetCalories || 2000}
                   pfc={mealManager.calorieData?.pfc || { protein: 0, fat: 0, carbs: 0, proteinTarget: 120, fatTarget: 60, carbsTarget: 250 }}
                   counselingResult={counselingResult}
-                  exerciseData={exerciseManager?.exerciseData || []}
                   selectedDate={navigation.selectedDate}
                   profileData={sharedProfile.latestProfile} // 🔄 統合プロフィール渡し
                 />
@@ -545,28 +527,6 @@ function DashboardContent({ onError }: { onError: () => void }) {
               />
             ) : null}
 
-            {/* 運動カード */}
-            <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
-              {dashboardData.isLoading ? (
-                <WorkoutCardSkeleton />
-              ) : exerciseManager?.exerciseData && navigation?.selectedDate ? (
-                <WorkoutSummaryCard 
-                  exerciseData={exerciseManager.exerciseData}
-                  selectedDate={navigation.selectedDate}
-                  onNavigateToWorkout={() => {}} // 削除：専用ページなし
-                  onAddExercise={() => setIsExerciseEntryModalOpen(true)}
-                  onEditExercise={(exerciseId) => {
-                    const exercise = exerciseManager.exerciseData?.find?.(ex => ex.id === exerciseId);
-                    if (exercise) {
-                      setSelectedExerciseForEdit(exercise);
-                      setIsExerciseEditModalOpen(true);
-                    }
-                  }}
-                  onDeleteExercise={(exerciseId) => exerciseManager.handleDeleteExercise?.(exerciseId)}
-                  onUpdateExercise={(exerciseId, updates) => exerciseManager.handleUpdateExercise?.(exerciseId, updates)}
-                />
-              ) : null}
-            </div>
 
             {/* フィードバックカード */}
             <div className={`transition-all duration-300 ${isMealMenuOpen ? 'blur-xl' : ''}`}>
@@ -657,30 +617,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
         allMealsOfType={mealManager.mealData[mealManager.currentMealType] || []}
       />
 
-      {/* 運動記録モーダル */}
-      <ExerciseEntryModal
-        isOpen={isExerciseEntryModalOpen}
-        onClose={() => setIsExerciseEntryModalOpen(false)}
-        onSubmit={exerciseManager.handleAddSimpleExercise}
-        userWeight={counselingResult?.answers?.weight || 70}
-      />
 
-      {/* 運動編集モーダル */}
-      <ExerciseEditModal
-        isOpen={isExerciseEditModalOpen}
-        onClose={() => {
-          setIsExerciseEditModalOpen(false);
-          setSelectedExerciseForEdit(null);
-        }}
-        onUpdate={(exerciseId, updates) => {
-          exerciseManager.handleUpdateExercise(exerciseId, updates);
-        }}
-        onDelete={(exerciseId) => {
-          exerciseManager.handleDeleteExercise(exerciseId);
-        }}
-        exercise={selectedExerciseForEdit}
-        userWeight={counselingResult?.answers?.weight || 70}
-      />
 
       {/* 体重記録モーダル */}
       <WeightEntryModal

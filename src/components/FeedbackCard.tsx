@@ -11,10 +11,6 @@ interface FeedbackData {
     goodPoints: string;
     improvements: string;
   };
-  exerciseEvaluation: {
-    goodPoints: string;
-    improvements: string;
-  };
 }
 
 interface FeedbackCardProps {
@@ -36,8 +32,7 @@ export function FeedbackCard({
 }: FeedbackCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
-    food: false,
-    exercise: false
+    food: false
   });
   
   // カウンセリング状態を取得
@@ -156,32 +151,6 @@ export function FeedbackCard({
                   )}
                 </div>
 
-                {/* 運動評価セクション */}
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                  <div 
-                    className="bg-blue-50 px-4 py-3 cursor-pointer flex items-center justify-between"
-                    onClick={() => toggleSection('exercise')}
-                  >
-                    <h3 className="font-semibold text-blue-900">運動評価</h3>
-                    {expandedSections.exercise ? (
-                      <ChevronUp className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-blue-600" />
-                    )}
-                  </div>
-                  {expandedSections.exercise && (
-                    <div className="p-4 space-y-3">
-                      <div>
-                        <h4 className="font-medium text-green-700">良かった点</h4>
-                        <div className="text-sm text-slate-700">
-                          {feedbackData.exerciseEvaluation.goodPoints.split('\n').map((line, index) => (
-                            <div key={index} className="leading-none">{line}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
               </div>
             )}
