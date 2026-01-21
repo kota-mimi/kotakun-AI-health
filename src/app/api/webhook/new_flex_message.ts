@@ -166,12 +166,6 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
-          // 区切り線（元の色に戻す）
-          {
-            type: 'separator',
-            margin: 'md',
-            color: '#e0e0e0'
-          },
           // AIアドバイスセクション（aiAdviceがある場合のみ、元のスタイル保持）
           ...(aiAdvice ? [
             {
