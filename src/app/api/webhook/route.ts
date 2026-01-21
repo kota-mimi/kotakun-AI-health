@@ -821,7 +821,7 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
         mealCount: Object.keys(mealData).length
       };
       
-      aiAdvice = await generatePersonalMealAdvice(userId, 'dinner', nutritionData, userProfile, null);
+      aiAdvice = await aiService.generateMealAdvice(nutritionData, 'dinner', userId, userProfile, null);
       console.log('✅ 複数食事時間向けAIアドバイス生成完了');
     } catch (adviceError) {
       console.warn('⚠️ 複数食事時間向けAIアドバイス生成失敗:', adviceError);
