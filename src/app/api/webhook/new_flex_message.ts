@@ -51,14 +51,14 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             margin: 'md',
             color: '#e0e0e0'
           },
-          // メインコンテンツ：画像と食事情報を横並び（スクリーンショット通り）
+          // 上部：画像と食事名を横並び
           {
             type: 'box',
             layout: 'horizontal',
             spacing: 'md',
             margin: 'md',
             contents: [
-              // 左側：画像（小さく表示）
+              // 左側：画像
               ...(imageUrl ? [{
                 type: 'image',
                 url: imageUrl,
@@ -68,140 +68,97 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                 backgroundColor: '#f0f0f0',
                 flex: 0
               }] : []),
-              // 右側：食事情報
+              // 右側：食事名
               {
                 type: 'box',
                 layout: 'vertical',
-                spacing: 'sm',
                 flex: 1,
+                justifyContent: 'center',
                 contents: [
-                  // 上段：食事名とカロリーを横並び
+                  {
+                    type: 'text',
+                    text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
+                    size: 'xl',
+                    weight: 'bold',
+                    color: '#333333',
+                    wrap: true
+                  }
+                ]
+              }
+            ]
+          },
+          // 下部：カロリーとPFCを横並び
+          {
+            type: 'box',
+            layout: 'horizontal',
+            spacing: 'md',
+            margin: 'md',
+            contents: [
+              // 左側：カロリー
+              {
+                type: 'text',
+                text: `${analysis.calories || 0}kcal`,
+                size: 'xl',
+                weight: 'bold',
+                color: '#4a90e2',
+                flex: 0
+              },
+              // 右側：PFC（元の色付きボックス）
+              {
+                type: 'box',
+                layout: 'horizontal',
+                spacing: 'md',
+                flex: 1,
+                justifyContent: 'flex-end',
+                contents: [
                   {
                     type: 'box',
-                    layout: 'horizontal',
+                    layout: 'vertical',
+                    backgroundColor: '#ffe6e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
                     contents: [
                       {
-                        type: 'box',
-                        layout: 'vertical',
-                        flex: 1,
-                        contents: [
-                          {
-                            type: 'text',
-                            text: '食事名',
-                            size: 'md',
-                            weight: 'bold',
-                            color: '#333333'
-                          },
-                          {
-                            type: 'text',
-                            text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
-                            size: 'sm',
-                            color: '#333333',
-                            wrap: true,
-                            margin: 'xs'
-                          }
-                        ]
-                      },
-                      {
-                        type: 'box',
-                        layout: 'vertical',
-                        flex: 1,
-                        contents: [
-                          {
-                            type: 'text',
-                            text: 'カロリー',
-                            size: 'md',
-                            weight: 'bold',
-                            color: '#333333',
-                            align: 'end'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.calories || 0}kcal`,
-                            size: 'sm',
-                            color: '#333333',
-                            align: 'end',
-                            margin: 'xs'
-                          }
-                        ]
+                        type: 'text',
+                        text: `P ${analysis.protein || 0}`,
+                        size: 'xs',
+                        weight: 'bold',
+                        color: '#cc0000',
+                        align: 'center'
                       }
                     ]
                   },
-                  // 下段：P、f、c を横並び（値も表示）
                   {
                     type: 'box',
-                    layout: 'horizontal',
-                    spacing: 'xl',
-                    margin: 'md',
+                    layout: 'vertical',
+                    backgroundColor: '#fff2e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
                     contents: [
                       {
-                        type: 'box',
-                        layout: 'vertical',
-                        flex: 1,
-                        contents: [
-                          {
-                            type: 'text',
-                            text: 'P',
-                            size: 'lg',
-                            weight: 'bold',
-                            color: '#333333',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.protein || 0}g`,
-                            size: 'sm',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
-                          }
-                        ]
-                      },
+                        type: 'text',
+                        text: `f ${analysis.fat || 0}`,
+                        size: 'xs',
+                        weight: 'bold',
+                        color: '#ff8800',
+                        align: 'center'
+                      }
+                    ]
+                  },
+                  {
+                    type: 'box',
+                    layout: 'vertical',
+                    backgroundColor: '#e6f7e6',
+                    cornerRadius: '8px',
+                    paddingAll: '6px',
+                    contents: [
                       {
-                        type: 'box',
-                        layout: 'vertical',
-                        flex: 1,
-                        contents: [
-                          {
-                            type: 'text',
-                            text: 'f',
-                            size: 'lg',
-                            weight: 'bold',
-                            color: '#333333',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.fat || 0}g`,
-                            size: 'sm',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
-                          }
-                        ]
-                      },
-                      {
-                        type: 'box',
-                        layout: 'vertical',
-                        flex: 1,
-                        contents: [
-                          {
-                            type: 'text',
-                            text: 'c',
-                            size: 'lg',
-                            weight: 'bold',
-                            color: '#333333',
-                            align: 'center'
-                          },
-                          {
-                            type: 'text',
-                            text: `${analysis.carbs || 0}g`,
-                            size: 'sm',
-                            color: '#333333',
-                            align: 'center',
-                            margin: 'xs'
-                          }
-                        ]
+                        type: 'text',
+                        text: `c ${analysis.carbs || 0}`,
+                        size: 'xs',
+                        weight: 'bold',
+                        color: '#00aa00',
+                        align: 'center'
                       }
                     ]
                   }
@@ -209,11 +166,11 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
-          // 区切り線（太い黒線）
+          // 区切り線（元の色に戻す）
           {
             type: 'separator',
             margin: 'md',
-            color: '#000000'
+            color: '#e0e0e0'
           },
           // AIアドバイスセクション（aiAdviceがある場合のみ、元のスタイル保持）
           ...(aiAdvice ? [
