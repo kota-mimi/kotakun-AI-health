@@ -798,7 +798,7 @@ async function handleMultipleMealTimesRecord(userId: string, mealTimes: any[], r
     let aiAdvice = null;
     try {
       console.log('🧠 複数食事時間向けAIアドバイス生成開始');
-      const userProfile = await getUserProfile(userId);
+      const userProfile = await getUserData(userId);
       
       // 全体の栄養データを計算
       let totalCalories = 0;
