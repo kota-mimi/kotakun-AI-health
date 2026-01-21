@@ -51,7 +51,7 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
             margin: 'md',
             color: '#e0e0e0'
           },
-          // 上部：画像と食事名を横並び
+          // 1行目：画像と食事名を横並び
           {
             type: 'box',
             layout: 'horizontal',
@@ -78,8 +78,8 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
                   {
                     type: 'text',
                     text: analysis.displayName || analysis.foodItems?.[0] || originalMealName || '食事',
-                    size: 'lg',
-                    weight: 'regular',
+                    size: 'md',
+                    weight: 'bold',
                     color: '#333333',
                     wrap: true
                   }
@@ -87,80 +87,74 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
-          // 下部：カロリーとPFCを横並び
+          // 2行目：カロリー
+          {
+            type: 'text',
+            text: `${analysis.calories || 0}kcal`,
+            size: 'xl',
+            weight: 'bold',
+            color: '#4a90e2',
+            align: 'center',
+            margin: 'md'
+          },
+          // 3行目：PFC（元の色付きボックス）
           {
             type: 'box',
             layout: 'horizontal',
             spacing: 'md',
             margin: 'md',
             contents: [
-              // 左側：カロリー
-              {
-                type: 'text',
-                text: `${analysis.calories || 0}kcal`,
-                size: 'md',
-                weight: 'bold',
-                color: '#4a90e2',
-                flex: 0
-              },
-              // 右側：PFC（元の色付きボックス）
               {
                 type: 'box',
-                layout: 'horizontal',
-                spacing: 'md',
+                layout: 'vertical',
+                backgroundColor: '#ffe6e6',
+                cornerRadius: '8px',
+                paddingAll: '6px',
                 flex: 1,
-                justifyContent: 'flex-end',
                 contents: [
                   {
-                    type: 'box',
-                    layout: 'vertical',
-                    backgroundColor: '#ffe6e6',
-                    cornerRadius: '8px',
-                    paddingAll: '4px',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: `P ${analysis.protein || 0}`,
-                        size: 'xxs',
-                        weight: 'bold',
-                        color: '#cc0000',
-                        align: 'center'
-                      }
-                    ]
-                  },
+                    type: 'text',
+                    text: `P: ${analysis.protein || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#cc0000',
+                    align: 'center'
+                  }
+                ]
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: '#fff2e6',
+                cornerRadius: '8px',
+                paddingAll: '6px',
+                flex: 1,
+                contents: [
                   {
-                    type: 'box',
-                    layout: 'vertical',
-                    backgroundColor: '#fff2e6',
-                    cornerRadius: '8px',
-                    paddingAll: '4px',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: `f ${analysis.fat || 0}`,
-                        size: 'xxs',
-                        weight: 'bold',
-                        color: '#ff8800',
-                        align: 'center'
-                      }
-                    ]
-                  },
+                    type: 'text',
+                    text: `F: ${analysis.fat || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#ff8800',
+                    align: 'center'
+                  }
+                ]
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                backgroundColor: '#e6f7e6',
+                cornerRadius: '8px',
+                paddingAll: '6px',
+                flex: 1,
+                contents: [
                   {
-                    type: 'box',
-                    layout: 'vertical',
-                    backgroundColor: '#e6f7e6',
-                    cornerRadius: '8px',
-                    paddingAll: '4px',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: `c ${analysis.carbs || 0}`,
-                        size: 'xxs',
-                        weight: 'bold',
-                        color: '#00aa00',
-                        align: 'center'
-                      }
-                    ]
+                    type: 'text',
+                    text: `C: ${analysis.carbs || 0}g`,
+                    size: 'xs',
+                    weight: 'bold',
+                    color: '#00aa00',
+                    align: 'center'
                   }
                 ]
               }
