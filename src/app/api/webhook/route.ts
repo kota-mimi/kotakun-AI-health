@@ -156,6 +156,21 @@ function setProcessing(userId: string, processing: boolean): void {
   }
 }
 
+// 🔄 連続入力防止（メモリベース）
+const lastTapTime = new Map<string, number>();
+
+function canProcessTap(userId: string): boolean {
+  const now = Date.now();
+  const lastTime = lastTapTime.get(userId) || 0;
+  
+  if (now - lastTime < 1000) { // 1秒以内の連続タップを防止
+    return false;
+  }
+  
+  lastTapTime.set(userId, now);
+  return true;
+}
+
 // 🔒 UserIDをハッシュ化する関数
 function hashUserId(userId: string): string {
   return crypto.createHash('sha256').update(userId + process.env.LINE_CHANNEL_SECRET).digest('hex').substring(0, 16);
@@ -511,114 +526,115 @@ async function handleTextMessage(replyToken: string, userId: string, text: strin
         
         if (mealJudgment.isFoodRecord) {
           console.log('🍽️ 記録モード - 食事として認識、パターンマッチング開始');
-        
-        // Step 1: 学習済み食事を検索
-        const learnedFood = await findLearnedFood(userId, mealJudgment.foodText || text);
-        let mealAnalysis;
-        
-        if (false) { // 学習済み食事マッチを無効化してAI分析を強制
-          console.log('🎯 学習済み食事マッチ:', learnedFood.food, '信頼度:', learnedFood.confidence);
-          mealAnalysis = {
-            calories: learnedFood.data.calories,
-            protein: learnedFood.data.protein,
-            fat: learnedFood.data.fat,
-            carbs: learnedFood.data.carbs,
-            foodItems: [learnedFood.food],
-            displayName: learnedFood.food,
-            baseFood: learnedFood.food,
-            isPatternMatched: true,
-            matchConfidence: 'learned_food',
-            source: 'learned'
-          };
           
-          // 使用回数を増やす
-          await addToLearnedFoods(userId, learnedFood.food, mealAnalysis);
+          // Step 1: 学習済み食事を検索
+          const learnedFood = await findLearnedFood(userId, mealJudgment.foodText || text);
+          let mealAnalysis;
           
-        } else {
-          // Step 2: 基本データベースでパターンマッチング
-          const foodMatch = findFoodMatch(mealJudgment.foodText || text);
-          
-          if (foodMatch && foodMatch.confidence === 'high') {
-            console.log('✅ パターンマッチング成功:', foodMatch.food.name, '信頼度:', foodMatch.confidence);
-            // パターンマッチングで栄養価を計算
-            const food = foodMatch.food;
-            const servingSize = food.commonServing || 100; // デフォルト100g
-            
+          if (false) { // 学習済み食事マッチを無効化してAI分析を強制
+            console.log('🎯 学習済み食事マッチ:', learnedFood.food, '信頼度:', learnedFood.confidence);
             mealAnalysis = {
-              calories: Math.round((food.calories * servingSize) / 100),
-              protein: Number(((food.protein * servingSize) / 100).toFixed(1)),
-              fat: Number(((food.fat * servingSize) / 100).toFixed(1)),
-              carbs: Number(((food.carbs * servingSize) / 100).toFixed(1)),
-              foodItems: [food.name],
-              displayName: food.name,
-              baseFood: food.name,
-              portion: `${servingSize}g`,
+              calories: learnedFood.data.calories,
+              protein: learnedFood.data.protein,
+              fat: learnedFood.data.fat,
+              carbs: learnedFood.data.carbs,
+              foodItems: [learnedFood.food],
+              displayName: learnedFood.food,
+              baseFood: learnedFood.food,
               isPatternMatched: true,
-              matchConfidence: foodMatch.confidence,
-              source: 'database'
+              matchConfidence: 'learned_food',
+              source: 'learned'
             };
             
-            // 学習済み食事としてFirestoreに保存
-            await addToLearnedFoods(userId, food.name, mealAnalysis);
+            // 使用回数を増やす
+            await addToLearnedFoods(userId, learnedFood.food, mealAnalysis);
             
           } else {
-            console.log('❌ パターンマッチング失敗、AI分析開始');
-            // Step 3: パターンマッチングできない場合はAI分析
-            mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+            // Step 2: 基本データベースでパターンマッチング
+            const foodMatch = findFoodMatch(mealJudgment.foodText || text);
             
-            // AI分析成功時も学習済み食事として保存
-            if (mealAnalysis && mealAnalysis.foodItems && mealAnalysis.foodItems.length > 0) {
-              mealAnalysis.source = 'ai_analyzed';
-              await addToLearnedFoods(userId, mealAnalysis.foodItems[0], mealAnalysis);
+            if (foodMatch && foodMatch.confidence === 'high') {
+              console.log('✅ パターンマッチング成功:', foodMatch.food.name, '信頼度:', foodMatch.confidence);
+              // パターンマッチングで栄養価を計算
+              const food = foodMatch.food;
+              const servingSize = food.commonServing || 100; // デフォルト100g
+              
+              mealAnalysis = {
+                calories: Math.round((food.calories * servingSize) / 100),
+                protein: Number(((food.protein * servingSize) / 100).toFixed(1)),
+                fat: Number(((food.fat * servingSize) / 100).toFixed(1)),
+                carbs: Number(((food.carbs * servingSize) / 100).toFixed(1)),
+                foodItems: [food.name],
+                displayName: food.name,
+                baseFood: food.name,
+                portion: `${servingSize}g`,
+                isPatternMatched: true,
+                matchConfidence: foodMatch.confidence,
+                source: 'database'
+              };
+              
+              // 学習済み食事としてFirestoreに保存
+              await addToLearnedFoods(userId, food.name, mealAnalysis);
+              
+            } else {
+              console.log('❌ パターンマッチング失敗、AI分析開始');
+              // Step 3: パターンマッチングできない場合はAI分析
+              mealAnalysis = await aiService.analyzeMealFromText(mealJudgment.foodText || text);
+              
+              // AI分析成功時も学習済み食事として保存
+              if (mealAnalysis && mealAnalysis.foodItems && mealAnalysis.foodItems.length > 0) {
+                mealAnalysis.source = 'ai_analyzed';
+                await addToLearnedFoods(userId, mealAnalysis.foodItems[0], mealAnalysis);
+              }
             }
           }
+          
+          console.log('🍽️ 記録モード - 最終分析結果:', JSON.stringify(mealAnalysis, null, 2));
+          await storeTempMealAnalysis(userId, mealAnalysis, null, text);
+          
+          // 記録実行前に制限チェック
+          const recordLimit = await checkUsageLimit(userId, 'record');
+          if (!recordLimit.allowed) {
+            console.log('⚠️ 記録制限達成（食事記録時）', { userId, reason: recordLimit.reason });
+            await stopLoadingAnimation(userId);
+            await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
+            return;
+          }
+          
+          if (mealJudgment.isMultipleMealTimes) {
+            // 複数食事時間の処理
+            await handleMultipleMealTimesRecord(userId, mealJudgment.mealTimes, replyToken);
+            // 記録成功時に使用回数を記録
+            await recordUsage(userId, 'record');
+            // 記録後もクイックリプライで記録モード継続
+            return;
+          } else if (mealJudgment.hasSpecificMealTime) {
+            const mealType = mealJudgment.mealTime;
+            await saveMealRecord(userId, mealType, replyToken);
+            // 記録成功時に使用回数を記録
+            await recordUsage(userId, 'record');
+            // 記録後もクイックリプライで記録モード継続
+            return;
+          } else {
+            // 食事タイプ選択のクイックリプライ表示（日本語固定）
+            await stopLoadingAnimation(userId);
+            await replyMessage(replyToken, [{
+              type: 'text',
+              text: `どの食事を記録しますか？`,
+              quickReply: {
+                items: [
+                  { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
+                  { type: 'action', action: { type: 'postback', label: '昼食', data: 'action=meal_lunch' }},
+                  { type: 'action', action: { type: 'postback', label: '夕食', data: 'action=meal_dinner' }},
+                  { type: 'action', action: { type: 'postback', label: '間食', data: 'action=meal_snack' }},
+                  { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
+                ]
+              }
+            }]);
+            return;
+          }
         }
-        
-        console.log('🍽️ 記録モード - 最終分析結果:', JSON.stringify(mealAnalysis, null, 2));
-        await storeTempMealAnalysis(userId, mealAnalysis, null, text);
-        
-        // 記録実行前に制限チェック
-        const recordLimit = await checkUsageLimit(userId, 'record');
-        if (!recordLimit.allowed) {
-          console.log('⚠️ 記録制限達成（食事記録時）', { userId, reason: recordLimit.reason });
-          await stopLoadingAnimation(userId);
-          await replyMessage(replyToken, [await createUsageLimitFlex('record', userId)]);
-          return;
-        }
-        
-        if (mealJudgment.isMultipleMealTimes) {
-          // 複数食事時間の処理
-          await handleMultipleMealTimesRecord(userId, mealJudgment.mealTimes, replyToken);
-          // 記録成功時に使用回数を記録
-          await recordUsage(userId, 'record');
-          // 記録後もクイックリプライで記録モード継続
-          return;
-        } else if (mealJudgment.hasSpecificMealTime) {
-          const mealType = mealJudgment.mealTime;
-          await saveMealRecord(userId, mealType, replyToken);
-          // 記録成功時に使用回数を記録
-          await recordUsage(userId, 'record');
-          // 記録後もクイックリプライで記録モード継続
-          return;
-        } else {
-          // 食事タイプ選択のクイックリプライ表示（日本語固定）
-          await stopLoadingAnimation(userId);
-          await replyMessage(replyToken, [{
-            type: 'text',
-            text: `どの食事を記録しますか？`,
-            quickReply: {
-              items: [
-                { type: 'action', action: { type: 'postback', label: '朝食', data: 'action=meal_breakfast' }},
-                { type: 'action', action: { type: 'postback', label: '昼食', data: 'action=meal_lunch' }},
-                { type: 'action', action: { type: 'postback', label: '夕食', data: 'action=meal_dinner' }},
-                { type: 'action', action: { type: 'postback', label: '間食', data: 'action=meal_snack' }},
-                { type: 'action', action: { type: 'postback', label: '記録しない', data: 'action=cancel_record' }}
-              ]
-            }
-          }]);
-          return;
-        }
-        } catch (mealAnalysisError) {
+      } catch (mealAnalysisError) {
         console.error('🔥 食事記録判定エラー:', {
           error: mealAnalysisError.message,
           stack: mealAnalysisError.stack,
