@@ -89,7 +89,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
   const tabs = [
     { id: 'getting-started', title: 'はじめに', subtitle: 'カウンセリング・初期設定' },
     { id: 'ai-chat', title: 'ヘルシーくんと会話', subtitle: 'LINE基本操作・AI分析' },
-    { id: 'recording', title: '記録方法', subtitle: '食事・運動・体重記録' },
+    { id: 'recording', title: '記録方法', subtitle: '食事・体重記録' },
     { id: 'feedback', title: 'フィードバック', subtitle: '1日の振り返り・データ活用' },
     { id: 'web-app', title: 'アプリ活用', subtitle: 'Webアプリ・詳細機能' },
     { id: 'troubleshooting', title: 'よくある質問', subtitle: 'よくある質問・問題解決' }
@@ -199,7 +199,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 4. あなた専用のページへ
               </h2>
               <p className="text-gray-700 leading-relaxed mb-16">
-                カウンセリング結果をタップすると、あなた専用のページに移動します。ここでは目安カロリーやPFCバランスがグラフで表示され、毎日の食事・運動・体重を記録できます。記録したデータは自動で集計され、目標達成をサポートします
+                カウンセリング結果をタップすると、あなた専用のページに移動します。ここでは目安カロリーやPFCバランスがグラフで表示され、毎日の食事・体重を記録できます。記録したデータは自動で集計され、目標達成をサポートします
               </p>
             </div>
           </div>
@@ -269,10 +269,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               </h2>
               
               <div className="space-y-3 text-gray-700 mb-16">
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>運動のやり方やメニュー</span>
-                </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>食材の栄養素や効果</span>
@@ -462,49 +458,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             </div>
           </div>
 
-          {/* 運動記録 */}
-          <div className="mb-20">
-            <div className="section">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                運動記録
-              </h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                「記録」という言葉を含めて自然な言葉で運動を記録できます。有酸素運動・筋トレ・スポーツなど、すべての運動が記録できます
-              </p>
-              <div className="space-y-3 text-gray-700 mb-4">
-                <p className="font-semibold">記録例</p>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「ランニング 3km 20分 記録」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「ベンチプレス 80kg 10回 90kg 10回 記録して」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「腹筋100回 3セット 記録お願いします」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「今日は、ヨガ20分したよ！記録」</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>「野球したー！記録したい」</span>
-                </div>
-              </div>
-              <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                <p className="font-semibold text-gray-800 mb-2">重要</p>
-                <p className="text-gray-700 text-sm">
-                  必ず「記録」という言葉を含めてください。含めないと普通の会話として扱われます
-                </p>
-              </div>
-              <p className="text-gray-700 leading-relaxed mb-16">
-                アプリの運動フレームからも記録・編集できます
-              </p>
-            </div>
-          </div>
 
           {/* 記録の確認・編集 */}
           <div className="mb-32">
@@ -559,7 +512,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 フィードバックとは
               </h2>
               <p className="text-gray-700 leading-relaxed mb-16">
-                リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面・運動面についての詳細なアドバイスが返ってきます
+                リッチメニューの「フィードバック」ボタンを押すと、その日に記録された内容を見て、食事面についての詳細なアドバイスが返ってきます
               </p>
               <div className="bg-yellow-50 p-4 rounded-lg mb-16">
                 <p className="font-semibold text-gray-800 mb-2">利用条件</p>
@@ -610,10 +563,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
-                  <span>運動評価：良かった点と継続のコツ</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
                   <span>具体的な数値目標と健康豆知識</span>
                 </div>
                 <div className="flex items-start">
@@ -642,7 +591,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               <div className="bg-yellow-50 p-4 rounded-lg">
                 <p className="font-semibold text-gray-800 mb-2">注意事項</p>
                 <p className="text-gray-700 text-sm mb-2">
-                  記録が少ない場合、十分なアドバイスが生成されない場合があります。食事・運動・体重をできるだけ記録した状態で利用することをおすすめします
+                  記録が少ない場合、十分なアドバイスが生成されない場合があります。食事・体重をできるだけ記録した状態で利用することをおすすめします
                 </p>
                 <p className="text-gray-700 text-sm">
                   フィードバック生成にはAIを使用するため、少し時間がかかる場合があります
@@ -686,10 +635,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <span className="mr-3">⚫︎</span>
                   <span>食事フレーム（朝食・昼食・夕食・間食）→ 食事を記録</span>
                 </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>運動フレーム → 運動を記録</span>
-                </div>
               </div>
             </div>
           </div>
@@ -711,10 +656,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>今日の食事記録 → 記録された食事が表示される</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>今日の運動 → 記録された運動が表示される</span>
                 </div>
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
@@ -744,10 +685,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 <div className="flex items-start">
                   <span className="mr-3">⚫︎</span>
                   <span>体重フレームをタップ → 体重の追加・編集</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>運動フレームをタップ → 運動の追加・編集</span>
                 </div>
               </div>
             </div>
@@ -927,11 +864,11 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
             </div>
           </div>
 
-          {/* 体重・運動記録について */}
+          {/* 体重記録について */}
           <div className="mb-20">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-6">
-                体重・運動記録について
+                体重記録について
               </h2>
 
               <div className="mb-6">
@@ -943,14 +880,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 </p>
               </div>
 
-              <div className="mb-6">
-                <div className="bg-orange-50 p-4 rounded-lg mb-3">
-                  <h3 className="font-bold text-gray-800">Q. 運動の記録方法がわかりません</h3>
-                </div>
-                <p className="text-gray-700 pl-3 mb-16">
-                  A. 自然な言葉で記録できます。「ランニング 3km」「腹筋100回」「ヨガ20分」など、自由に記録してください。
-                </p>
-              </div>
 
               <div className="mb-6">
                 <div className="bg-orange-50 p-4 rounded-lg mb-3">
@@ -975,7 +904,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                   <h3 className="font-bold text-gray-800">Q. フィードバックが返ってきません</h3>
                 </div>
                 <p className="text-gray-700 pl-3 mb-16">
-                  A. その日の記録が少ない場合、フィードバックが生成されないことがあります。食事や運動を記録してから、もう一度試してください。
+                  A. その日の記録が少ない場合、フィードバックが生成されないことがあります。食事を記録してから、もう一度試してください。
                 </p>
               </div>
 
