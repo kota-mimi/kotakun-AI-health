@@ -226,9 +226,6 @@ async function generateDailyFeedback(
 - 炭水化物: ${totalCarbs}g (目標: ${targetCarbs}g)
 - 食事内容: ${data.meals.map(meal => meal.foods.join(', ')).join('、') || '記録なし'}
 
-### 運動記録
-- 運動時間: ${exerciseTime}分
-- 運動内容: ${data.exercises.map(ex => ex.displayName || ex.type).join('、') || '記録なし'}
 
 ### 体重変化
 - 体重: ${data.weight?.value || '未記録'}kg
@@ -238,7 +235,7 @@ async function generateDailyFeedback(
 以下の形式で回答してください：
 
 ■ 食事評価
-良かった点: [具体的に褒めて、なぜ良いかの理由も簡単に説明する。例：「タンパク質がしっかり摂れてるね！筋肉作るのに大切だから〜」]
+良かった点: [具体的に2-3点褒めて、なぜ良いかの理由も説明する。例：「今日は3食きちんと摂れてるね！規則正しい食事リズムが作れてる。タンパク質もしっかり摂れてるから筋肉にも良いよ。カロリーバランスも意識できててすごい！」]
 改善点: [具体的な数値目標や、なぜ必要かの理由も含めて提案する。例：「あと野菜を100g増やそう。ビタミンCで疲労回復効果があるよ」]
 
 ## 指示
