@@ -87,6 +87,12 @@ export function createMealFlexMessage(mealTypeJa: string, analysis: any, imageUr
               }
             ]
           },
+          // 区切り線（画像・食事名とカロリー・PFCの間）
+          {
+            type: 'separator',
+            margin: 'md',
+            color: '#e0e0e0'
+          },
           // 下部：カロリーとPFCを横並び
           {
             type: 'box',
