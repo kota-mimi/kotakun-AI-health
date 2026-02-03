@@ -75,7 +75,9 @@ export async function GET(request: NextRequest) {
           planName = currentPlan || '永久利用プラン';
         }
         // 通常のアクティブプランの場合
-        else if (subscriptionStatus === 'active' || subscriptionStatus === 'cancel_at_period_end') {
+        else if (subscriptionStatus === 'active' || 
+                 subscriptionStatus === 'cancel_at_period_end' ||
+                 (subscriptionStatus === 'cancelled' && currentPeriodEnd && new Date() < currentPeriodEnd)) {
           if (currentPlan === '月額プラン') {
             plan = 'monthly';
             planName = '月額プラン';
