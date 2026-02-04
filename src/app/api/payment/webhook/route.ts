@@ -59,6 +59,12 @@ export async function POST(request: NextRequest) {
     // サブスクリプション更新（期間更新など）
     if (event.type === 'invoice.payment_succeeded') {
       const invoice = event.data.object as Stripe.Invoice;
+      
+      if (!invoice.subscription) {
+        console.log('⚠️ subscription ID not found in invoice');
+        return NextResponse.json({ received: true });
+      }
+      
       const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
       
       // subscription.metadataからuserIdを取得（決済時に設定）
