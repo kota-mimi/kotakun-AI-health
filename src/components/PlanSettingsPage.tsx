@@ -434,7 +434,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className={
-                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime' || currentPlan.status === 'trial'
+                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime' || currentPlan.status === 'trial' || (currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd)
                   ? 'bg-green-100 text-green-700 border-green-300' 
                   : 'bg-gray-100 text-gray-700'
               }>
@@ -446,7 +446,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   {currentPlan.status === 'trial' && 'お試し期間中'}
                   {currentPlan.status === 'lifetime' && '永続'}
                   {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
-                  {(currentPlan.status === 'inactive' || currentPlan.status === 'cancelled') && '無効'}
+                  {currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd && '解約済み（期限内）'}
+                  {currentPlan.status === 'cancelled' && (!currentPlan.currentPeriodEnd || new Date() >= currentPlan.currentPeriodEnd) && '無効'}
+                  {currentPlan.status === 'inactive' && '無効'}
                 </span>
               )}
             </div>
