@@ -65,13 +65,27 @@ export async function POST(request: NextRequest) {
       const userId = subscription.metadata?.userId;
       
       if (userId) {
+        // 価格IDから正しいプラン名を判定
+        const priceId = subscription.items.data[0]?.price?.id;
+        let currentPlan = '月額プラン'; // デフォルト
+        
+        if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID || priceId === 'price_1SxAFxHAuO7vhfyIs3ZQfnfi') {
+          currentPlan = '半年プラン';
+        } else if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID || priceId === 'price_1SxAFZHAuO7vhfyIhLShYjMX') {
+          currentPlan = '月額プラン';
+        }
+        
+        console.log(`💰 決済成功 - プラン: ${currentPlan}, priceId: ${priceId}`);
+        
         await admin.firestore().collection('users').doc(userId).update({
           subscriptionStatus: 'active',
+          currentPlan: currentPlan,
           currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          stripeSubscriptionId: subscription.id,
           updatedAt: new Date(),
         });
         
-        console.log('✅ Subscription renewed:', userId);
+        console.log('✅ Subscription renewed:', userId, currentPlan);
       }
     }
 
