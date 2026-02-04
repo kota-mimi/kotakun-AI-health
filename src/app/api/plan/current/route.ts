@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
           }
         }
         
-        console.log(`✅ Firestore取得成功 - プラン: ${plan}, ステータス: ${subscriptionStatus}`);
+        console.log(`✅ Firestore取得成功 - プラン: ${plan}, ステータス: ${subscriptionStatus}, currentPlan値: "${currentPlan}"`);
         return NextResponse.json({
           success: true,
           plan,
