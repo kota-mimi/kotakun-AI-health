@@ -79,6 +79,8 @@ export async function GET(request: NextRequest) {
                  subscriptionStatus === 'cancel_at_period_end' ||
                  (subscriptionStatus === 'cancelled' && currentPeriodEnd && new Date() < currentPeriodEnd)) {
           
+          console.log(`🔍 デバッグ - currentPlan: "${currentPlan}", stripeSubscriptionId: "${stripeSubscriptionId}"`);
+          
           // stripeSubscriptionIdから期間を判定（currentPlanがnullの場合のフォールバック）
           if (currentPlan === '月額プラン' || (!currentPlan && stripeSubscriptionId)) {
             plan = 'monthly';
