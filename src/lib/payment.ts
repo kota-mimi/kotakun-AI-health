@@ -80,8 +80,8 @@ export const PLANS: PlanConfig[] = [
 export async function createPaymentSession(
   planId: string,
   userId: string,
-  successUrl: string,
-  cancelUrl: string,
+  successUrl?: string,
+  cancelUrl?: string,
   includeTrial: boolean = false
 ): Promise<PaymentSession> {
   const plan = PLANS.find(p => p.id === planId);
@@ -89,7 +89,6 @@ export async function createPaymentSession(
     throw new Error('Invalid plan or free plan');
   }
 
-  // TODO: Stripe Checkout Session作成API呼び出し
   const response = await fetch('/api/payment/create-session', {
     method: 'POST',
     headers: {
@@ -98,10 +97,7 @@ export async function createPaymentSession(
     body: JSON.stringify({
       planId,
       userId,
-      successUrl,
-      cancelUrl,
       priceId: plan.stripePriceId,
-      amount: plan.price,
       includeTrial
     }),
   });
