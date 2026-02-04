@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
         let plan = 'free';
         let planName = '無料プラン';
         
-        // お試し期間中の場合（3日間無制限）
-        if (subscriptionStatus === 'trial' || subscriptionStatus === 'cancel_at_period_end') {
+        // お試し期間中の場合（3日間無制限） - cancel_at_period_endを除外
+        if (subscriptionStatus === 'trial') {
           const trialEnd = userData?.trialEndDate?.toDate();
           if (trialEnd && new Date() < trialEnd) {
             console.log('🎁 お試し期間中/解約予定: 月額プラン扱い', { userId, trialEnd, status: subscriptionStatus });
