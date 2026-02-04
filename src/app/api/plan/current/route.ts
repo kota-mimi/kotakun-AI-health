@@ -78,7 +78,9 @@ export async function GET(request: NextRequest) {
         else if (subscriptionStatus === 'active' || 
                  subscriptionStatus === 'cancel_at_period_end' ||
                  (subscriptionStatus === 'cancelled' && currentPeriodEnd && new Date() < currentPeriodEnd)) {
-          if (currentPlan === '月額プラン') {
+          
+          // stripeSubscriptionIdから期間を判定（currentPlanがnullの場合のフォールバック）
+          if (currentPlan === '月額プラン' || (!currentPlan && stripeSubscriptionId)) {
             plan = 'monthly';
             planName = '月額プラン';
           } else if (currentPlan === '3ヶ月プラン') {
