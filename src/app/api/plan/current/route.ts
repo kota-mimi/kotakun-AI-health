@@ -82,13 +82,17 @@ export async function GET(request: NextRequest) {
           // stripeSubscriptionIdから期間を判定（currentPlanがnullの場合のフォールバック）
           if (currentPlan === '月額プラン' || (!currentPlan && stripeSubscriptionId)) {
             plan = 'monthly';
-            planName = '月額プラン';
+            planName = subscriptionStatus === 'cancel_at_period_end' ? '月額プラン（解約予定）' 
+                     : subscriptionStatus === 'cancelled' ? '月額プラン（解約済み）'
+                     : '月額プラン';
           } else if (currentPlan === '3ヶ月プラン') {
             plan = 'quarterly';  
             planName = '3ヶ月プラン';
           } else if (currentPlan === '半年プラン') {
             plan = 'biannual';
-            planName = '半年プラン';
+            planName = subscriptionStatus === 'cancel_at_period_end' ? '半年プラン（解約予定）' 
+                     : subscriptionStatus === 'cancelled' ? '半年プラン（解約済み）'
+                     : '半年プラン';
           } else if (currentPlan?.includes('1ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
             // クーポン適用の1ヶ月プランの場合
             plan = 'crowdfund_1m';
