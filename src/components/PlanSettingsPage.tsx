@@ -463,6 +463,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                 {currentPlan.currentPeriodEnd && currentPlan.status === 'cancel_at_period_end' && (
                   <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
+                {currentPlan.currentPeriodEnd && currentPlan.status === 'cancelled' && new Date() < currentPlan.currentPeriodEnd && (
+                  <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                )}
                 {currentPlan.currentPeriodEnd && currentPlan.plan.startsWith('crowdfund') && currentPlan.status === 'active' && (
                   <>📅 有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                 )}
