@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
-import { pushMessage } from '@/app/api/webhook/route';
+import { pushMessage } from '@/lib/line';
 import { createCounselingResultFlexMessage } from '@/services/flexMessageTemplates';
 
 // プロフィール編集用のカウンセリング結果保存関数

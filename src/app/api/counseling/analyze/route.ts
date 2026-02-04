@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import AIHealthService from '@/services/aiService';
 import { FirestoreService } from '@/services/firestoreService';
-import { pushMessage } from '@/app/api/webhook/route';
+import { pushMessage } from '@/lib/line';
 import { createCounselingResultFlexMessage } from '@/services/flexMessageTemplates';
 
 export async function POST(request: NextRequest) {
