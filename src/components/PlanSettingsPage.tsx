@@ -37,8 +37,8 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState('');
   
-  // 開発者ID以外は非表示
-  const allowedUserId = 'U7fd12476d6263912e0d9c99fc3a6bef9';
+  // 全ユーザーに修正中メッセージを表示（テスト用）
+  const allowedUserId = 'NOBODY'; // 一時的に無効なIDを設定
   const isAllowedUser = liffUser?.userId === allowedUserId;
   const [isCouponProcessing, setIsCouponProcessing] = useState(false);
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
