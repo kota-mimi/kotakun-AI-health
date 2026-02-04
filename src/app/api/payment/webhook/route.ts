@@ -47,9 +47,21 @@ export async function POST(request: NextRequest) {
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       const isTrialActive = subscription.trial_end && subscription.trial_end > Date.now() / 1000;
 
+      // metadataからplanIdを取得してプラン名を決定
+      const planId = session.metadata?.planId;
+      let currentPlan = '月額プラン'; // デフォルト
+      
+      if (planId === 'biannual') {
+        currentPlan = '半年プラン';
+      } else if (planId === 'monthly') {
+        currentPlan = '月額プラン';
+      }
+      
+      console.log(`💰 checkout完了 - planId: ${planId}, プラン: ${currentPlan}`);
+
       await admin.firestore().collection('users').doc(userId).update({
         subscriptionStatus: isTrialActive ? 'trial' : 'active',
-        currentPlan: '月額プラン',
+        currentPlan: currentPlan,
         stripeSubscriptionId: subscription.id,
         stripeCustomerId: session.customer,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
