@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
         userId,
         planId,
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/cancel`,
+      success_url: `https://healthy-kun.com/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://healthy-kun.com/payment/cancel`,
       locale: 'ja',
     };
 
