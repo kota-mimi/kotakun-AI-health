@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Stripe webhook:', event.type);
+    
+    if (event.type === 'invoice.payment_succeeded') {
+      console.log('💰 invoice.payment_succeeded イベント開始');
+    }
 
     // トライアル開始 or 課金開始
     if (event.type === 'checkout.session.completed') {
