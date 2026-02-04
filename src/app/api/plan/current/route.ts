@@ -79,13 +79,8 @@ export async function GET(request: NextRequest) {
                  subscriptionStatus === 'cancel_at_period_end' ||
                  (subscriptionStatus === 'cancelled' && currentPeriodEnd && new Date() < currentPeriodEnd)) {
           
-          console.log(`🔍 デバッグ - currentPlan: "${currentPlan}", stripeSubscriptionId: "${stripeSubscriptionId}"`);
-          console.log(`🔍 条件チェック - (currentPlan === '月額プラン'): ${currentPlan === '月額プラン'}`);
-          console.log(`🔍 条件チェック - (!currentPlan && stripeSubscriptionId): ${!currentPlan && stripeSubscriptionId}`);
-          
           // stripeSubscriptionIdから期間を判定（currentPlanがnullの場合のフォールバック）
           if (currentPlan === '月額プラン' || (!currentPlan && stripeSubscriptionId)) {
-            console.log(`✅ 月額プラン条件にマッチ！`);
             plan = 'monthly';
             planName = subscriptionStatus === 'cancel_at_period_end' ? '月額プラン（解約予定）' 
                      : subscriptionStatus === 'cancelled' ? '月額プラン（解約済み）'
@@ -117,7 +112,7 @@ export async function GET(request: NextRequest) {
           }
         }
         
-        console.log(`✅ Firestore取得成功 - プラン: ${plan}, ステータス: ${subscriptionStatus}, currentPlan値: "${currentPlan}"`);
+        console.log(`✅ Firestore取得成功 - プラン: ${plan}, ステータス: ${subscriptionStatus}`);
         return NextResponse.json({
           success: true,
           plan,
