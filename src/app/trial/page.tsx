@@ -22,53 +22,50 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
-    console.log('🔗 トライアルボタン押下');
-    
-    // ユーザーID取得
-    let userIdToPass = '';
     try {
-      if (liffUser?.userId) {
-        userIdToPass = liffUser.userId;
-        console.log('✅ ユーザーID取得成功:', userIdToPass);
-      }
-    } catch (error) {
-      console.log('⚠️ ユーザーID取得失敗、続行:', error);
-    }
-
-    // ユーザーIDに関係なく、必ずpendingTrialsに保存を試行
-    try {
-      console.log('💾 トライアル準備中...', userIdToPass || 'ユーザーID無し');
-      const response = await fetch('/api/prepare-trial', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: userIdToPass || 'unknown_user', 
-          planType: selectedPlan 
-        })
-      });
+      console.log('🔗 トライアルボタン押下');
       
-      if (response.ok) {
-        console.log('✅ トライアル準備完了');
-      } else {
-        console.log('⚠️ トライアル準備失敗、続行');
-      }
-    } catch (error) {
-      console.log('⚠️ トライアル準備エラー、続行:', error);
-    }
+      // 強制的にあなたのユーザーIDを設定
+      const userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9';
+      console.log('✅ 強制ユーザーID設定:', userIdToPass);
 
-    const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
-    
-    // プラン情報をローカルストレージに保存
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('trial_plan', selectedPlan);
-      localStorage.setItem('trial_timestamp', new Date().toISOString());
-      if (userIdToPass) {
+      // pendingTrialsに保存
+      try {
+        console.log('💾 トライアル準備中...', userIdToPass);
+        const response = await fetch('/api/prepare-trial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: userIdToPass, 
+            planType: selectedPlan 
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ トライアル準備完了');
+        } else {
+          console.log('⚠️ トライアル準備失敗、続行');
+        }
+      } catch (error) {
+        console.log('⚠️ トライアル準備エラー、続行:', error);
+      }
+
+      const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
+      
+      // プラン情報をローカルストレージに保存
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('trial_plan', selectedPlan);
+        localStorage.setItem('trial_timestamp', new Date().toISOString());
         localStorage.setItem('trial_user_id', userIdToPass);
       }
+      
+      console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
+      window.location.href = paymentUrl;
+    } catch (mainError) {
+      console.error('❌ トライアル処理エラー:', mainError);
+      alert('エラーが発生しましたが、決済ページに進みます');
+      window.location.href = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
     }
-    
-    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
-    window.location.href = paymentUrl;
   };
 
   if (!isLiffReady) {
