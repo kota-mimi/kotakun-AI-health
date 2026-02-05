@@ -31,7 +31,7 @@ export default function TrialPage() {
     }
     
     const paymentLinks = {
-      'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 3000円（半年プラン）
+      'half-year': 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00', // 3000円（半年プラン）- トライアル付き
       'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00'    // 790円（月間プラン）
     };
 
