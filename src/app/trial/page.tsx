@@ -67,7 +67,7 @@ export default function TrialPage() {
         console.log('⚠️ トライアル準備エラー、続行:', error);
       }
 
-      const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
+      const paymentUrl = 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01';
       
       // プラン情報をローカルストレージに保存
       if (typeof window !== 'undefined') {
@@ -81,7 +81,7 @@ export default function TrialPage() {
     } catch (mainError) {
       console.error('❌ トライアル処理エラー:', mainError);
       alert('エラーが発生しましたが、決済ページに進みます');
-      window.location.href = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
+      window.location.href = 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01';
     }
   };
 
