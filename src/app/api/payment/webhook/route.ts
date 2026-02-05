@@ -44,9 +44,12 @@ export async function POST(request: NextRequest) {
       if (!userId && session.customer) {
         try {
           const customer = await stripe.customers.retrieve(session.customer as string);
+          console.log('🔍 Customer metadata:', customer.metadata);
           if (customer && !customer.deleted && customer.metadata?.userId) {
             userId = customer.metadata.userId;
             console.log(`💰 userId found in customer metadata: ${userId}`);
+          } else {
+            console.log('❌ No userId in customer metadata');
           }
         } catch (err) {
           console.error('Failed to retrieve customer:', err);
@@ -57,6 +60,8 @@ export async function POST(request: NextRequest) {
         console.error('❌ No userId found in session, customer, or metadata');
         console.error('Session customer:', session.customer);
         console.error('Session client_reference_id:', session.client_reference_id);
+        console.error('Session metadata:', session.metadata);
+        console.error('Full session object keys:', Object.keys(session));
         return NextResponse.json({ error: 'No userId' }, { status: 400 });
       }
 
