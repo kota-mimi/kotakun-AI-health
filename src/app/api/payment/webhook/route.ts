@@ -61,12 +61,37 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // DBから pending trials を検索（PaymentLinks用の代替手段）
       if (!userId) {
-        console.error('❌ No userId found in session, customer, or metadata');
+        try {
+          console.log('🔍 Searching for pending trials in DB...');
+          const pendingTrialsSnapshot = await admin.firestore()
+            .collection('pendingTrials')
+            .where('status', '==', 'pending')
+            .orderBy('createdAt', 'desc')
+            .limit(10)
+            .get();
+          
+          if (!pendingTrialsSnapshot.empty) {
+            // 最新のpending trialを使用（簡単な実装）
+            const latestTrial = pendingTrialsSnapshot.docs[0];
+            const trialData = latestTrial.data();
+            userId = trialData.userId;
+            
+            // pending trial を completed に更新
+            await latestTrial.ref.update({ status: 'completed' });
+            console.log(`💰 userId found from pending trial: ${userId}`);
+          }
+        } catch (err) {
+          console.error('Failed to retrieve pending trials:', err);
+        }
+      }
+
+      if (!userId) {
+        console.error('❌ No userId found in session, customer, metadata, or pending trials');
         console.error('Session customer:', session.customer);
         console.error('Session client_reference_id:', session.client_reference_id);
         console.error('Session metadata:', session.metadata);
-        console.error('Full session object keys:', Object.keys(session));
         return NextResponse.json({ error: 'No userId' }, { status: 400 });
       }
 

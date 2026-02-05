@@ -22,25 +22,11 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
-    console.log('🔥 handleStartTrial called!');
-    
-    // LIFFの初期化確認
-    if (!isLiffReady) {
-      alert('LINEアプリの初期化中です。しばらくお待ちください。');
-      return;
-    }
-
     // LINEのユーザーIDを取得
     let userIdToPass = '';
     if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
       userIdToPass = (window as any).liff.getContext().userId;
     }
-
-    console.log('🔍 Debug info:');
-    console.log('  isLiffReady:', isLiffReady);
-    console.log('  liff object exists:', !!(window as any).liff);
-    console.log('  getContext exists:', !!(window as any).liff?.getContext);
-    console.log('  userId:', userIdToPass);
 
     if (!userIdToPass) {
       alert('ユーザーIDが取得できませんでした');
@@ -48,44 +34,32 @@ export default function TrialPage() {
     }
 
     try {
-      console.log(`🔗 Creating checkout session for user: ${userIdToPass}, plan: ${selectedPlan}`);
+      console.log(`🔗 Preparing trial for user: ${userIdToPass}, plan: ${selectedPlan}`);
       
-      // Checkout Sessionを作成
-      const response = await fetch('/api/create-customer', {
+      // トライアル準備API呼び出し
+      const response = await fetch('/api/prepare-trial', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          planType: selectedPlan,
           userId: userIdToPass,
+          planType: selectedPlan,
         }),
       });
 
-      console.log(`🔍 Response status: ${response.status}`);
-      console.log(`🔍 Response ok: ${response.ok}`);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error:', errorText);
-        alert(`API Error: ${errorText}`);
-        return;
-      }
-
       const data = await response.json();
-      console.log('🔍 API Response:', data);
 
-      if (data.url) {
-        console.log('✅ Redirecting to Stripe checkout:', data.url);
-        window.location.href = data.url;
+      if (data.success && data.paymentUrl) {
+        console.log('✅ Redirecting to payment link:', data.paymentUrl);
+        window.location.href = data.paymentUrl;
       } else {
-        console.error('❌ No checkout URL received:', data);
-        alert(`決済ページの作成に失敗しました: ${JSON.stringify(data)}`);
+        console.error('❌ Trial preparation failed:', data);
+        alert('トライアルの準備に失敗しました');
       }
     } catch (error) {
-      console.error('❌ Checkout creation failed:', error);
-      console.error('❌ Error details:', error);
-      alert(`エラーが発生しました: ${error.message || error}`);
+      console.error('❌ Trial preparation error:', error);
+      alert('エラーが発生しました');
     }
   };
 
