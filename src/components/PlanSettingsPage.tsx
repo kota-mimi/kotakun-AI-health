@@ -43,33 +43,33 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
   const [isCouponProcessing, setIsCouponProcessing] = useState(false);
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
-  // 開発者以外は修正中メッセージを表示
-  if (liffUser && !isAllowedUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="text-center max-w-md">
-          <div className="mb-6">
-            <div className="bg-yellow-100 rounded-full p-4 w-20 h-20 mx-auto flex items-center justify-center">
-              <span className="text-yellow-600 text-2xl">🔧</span>
-            </div>
-          </div>
-          <h1 className="text-xl font-bold mb-4 text-gray-900">
-            ただいま修正中です
-          </h1>
-          <p className="text-gray-600 mb-6">
-            プラン管理機能の改善作業を行っております。<br/>
-            しばらくお待ちください。
-          </p>
-          <button 
-            onClick={() => window.location.href = '/dashboard'}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
-          >
-            ホームに戻る
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // アクセス制限を一時的に解除（全ユーザーがプラン管理ページを見れるように）
+  // if (liffUser && !isAllowedUser) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+  //       <div className="text-center max-w-md">
+  //         <div className="mb-6">
+  //           <div className="bg-yellow-100 rounded-full p-4 w-20 h-20 mx-auto flex items-center justify-center">
+  //             <span className="text-yellow-600 text-2xl">🔧</span>
+  //           </div>
+  //         </div>
+  //         <h1 className="text-xl font-bold mb-4 text-gray-900">
+  //           ただいま修正中です
+  //         </h1>
+  //         <p className="text-gray-600 mb-6">
+  //           プラン管理機能の改善作業を行っております。<br/>
+  //           しばらくお待ちください。
+  //         </p>
+  //         <button 
+  //           onClick={() => window.location.href = '/dashboard'}
+  //           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+  //         >
+  //           ホームに戻る
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // 現在のプラン情報を取得
   useEffect(() => {
