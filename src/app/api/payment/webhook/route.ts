@@ -122,15 +122,49 @@ export async function POST(request: NextRequest) {
     if (event.type === 'invoice.payment_succeeded') {
       const invoice = event.data.object as Stripe.Invoice;
       
-      if (!invoice.subscription) {
+      console.log('🔍 Invoice subscription check:', invoice.subscription);
+      console.log('🔍 Invoice parent:', invoice.parent);
+      
+      let subscriptionId = invoice.subscription;
+      
+      // parentからsubscriptionを取得する場合
+      if (!subscriptionId && invoice.parent?.type === 'subscription_details') {
+        subscriptionId = invoice.parent.subscription_details.subscription;
+        console.log('📋 Subscription from parent:', subscriptionId);
+      }
+      
+      if (!subscriptionId) {
         console.log('⚠️ subscription ID not found in invoice');
         return NextResponse.json({ received: true });
       }
       
-      const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
       
       // subscription.metadataからuserIdを取得（決済時に設定）
-      const userId = subscription.metadata?.userId;
+      let userId = subscription.metadata?.userId;
+      
+      // PaymentLinksの場合はmetadataがないので、pendingTrialsから取得
+      if (!userId) {
+        try {
+          console.log('🔍 PaymentLinks用: pendingTrialsからuserID検索...');
+          const pendingTrialsSnapshot = await admin.firestore()
+            .collection('pendingTrials')
+            .orderBy('createdAt', 'desc')
+            .limit(5)
+            .get();
+          
+          if (!pendingTrialsSnapshot.empty) {
+            const latestTrial = pendingTrialsSnapshot.docs[0];
+            const trialData = latestTrial.data();
+            userId = trialData.userId;
+            
+            await latestTrial.ref.update({ status: 'completed' });
+            console.log(`💰 userId found from pending trial: ${userId}`);
+          }
+        } catch (err) {
+          console.error('Failed to retrieve pending trials:', err);
+        }
+      }
       
       if (userId) {
         // 価格IDから正しいプラン名を判定
