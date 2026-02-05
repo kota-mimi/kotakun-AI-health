@@ -37,18 +37,26 @@ export async function POST(request: NextRequest) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      console.log('🔍 Session debug info:');
-      console.log('  metadata:', session.metadata);
-      console.log('  client_reference_id:', session.client_reference_id);
-      console.log('  customer:', session.customer);
-      console.log('  subscription:', session.subscription);
+      // ユーザーIDを取得（複数の方法で試行）
+      let userId = session.metadata?.userId || session.client_reference_id;
       
-      // ユーザーIDを取得（メタデータまたはclient_reference_idから）
-      const userId = session.metadata?.userId || session.client_reference_id;
+      // CustomerからuserIdを取得（事前作成したCustomerの場合）
+      if (!userId && session.customer) {
+        try {
+          const customer = await stripe.customers.retrieve(session.customer as string);
+          if (customer && !customer.deleted && customer.metadata?.userId) {
+            userId = customer.metadata.userId;
+            console.log(`💰 userId found in customer metadata: ${userId}`);
+          }
+        } catch (err) {
+          console.error('Failed to retrieve customer:', err);
+        }
+      }
 
       if (!userId) {
-        console.error('❌ No userId in metadata or client_reference_id');
-        console.error('❌ Session object:', JSON.stringify(session, null, 2));
+        console.error('❌ No userId found in session, customer, or metadata');
+        console.error('Session customer:', session.customer);
+        console.error('Session client_reference_id:', session.client_reference_id);
         return NextResponse.json({ error: 'No userId' }, { status: 400 });
       }
 

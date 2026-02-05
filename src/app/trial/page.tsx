@@ -22,23 +22,22 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
-    // LINEのユーザーIDを取得（LIFFコンテキストから）
+    // LINEのユーザーIDを取得
     let userIdToPass = '';
     if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
       userIdToPass = (window as any).liff.getContext().userId;
     }
 
     if (!userIdToPass) {
-      console.error('❌ User ID not found');
       alert('ユーザーIDが取得できませんでした');
       return;
     }
 
     try {
-      console.log(`🔗 Creating checkout session for user: ${userIdToPass}, plan: ${selectedPlan}`);
+      console.log(`🔗 Creating customer for user: ${userIdToPass}`);
       
-      // Checkout Sessionを作成するAPIを呼び出し
-      const response = await fetch('/api/checkout', {
+      // Checkout Sessionを作成
+      const response = await fetch('/api/create-customer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +58,7 @@ export default function TrialPage() {
         alert('決済ページの作成に失敗しました');
       }
     } catch (error) {
-      console.error('❌ Checkout creation failed:', error);
+      console.error('❌ Customer creation failed:', error);
       alert('エラーが発生しました');
     }
   };
