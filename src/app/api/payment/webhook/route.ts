@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Stripe webhook:', event.type);
+    console.log('📊 Full event data:', JSON.stringify(event, null, 2));
     
     if (event.type === 'invoice.payment_succeeded') {
       console.log('💰 invoice.payment_succeeded イベント開始');
