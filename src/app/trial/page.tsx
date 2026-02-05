@@ -359,7 +359,15 @@ export default function TrialPage() {
           </p>
 
           <button 
-            onClick={handleStartTrial}
+            onClick={(e) => {
+              console.log('🔘 トライアルボタンクリック検出');
+              e.preventDefault();
+              e.stopPropagation();
+              handleStartTrial();
+            }}
+            onTouchStart={() => {
+              console.log('👆 トライアルボタンタッチ検出');
+            }}
             style={{
               width: '100%',
               background: '#5BAFCE',
@@ -372,9 +380,12 @@ export default function TrialPage() {
               cursor: 'pointer',
               boxShadow: '0 8px 24px rgba(91, 175, 206, 0.3)',
               transition: 'all 0.3s ease',
-              fontFamily: "'Noto Sans JP', sans-serif"
+              fontFamily: "'Noto Sans JP', sans-serif",
+              pointerEvents: 'auto',
+              touchAction: 'manipulation'
             }}
             onMouseEnter={(e) => {
+              console.log('🖱️ ボタンホバー');
               e.currentTarget.style.transform = 'translateY(-2px)';
               e.currentTarget.style.boxShadow = '0 12px 32px rgba(91, 175, 206, 0.4)';
             }}
@@ -643,7 +654,12 @@ export default function TrialPage() {
             }}>いつでもキャンセル可能</span>
           </p>
           <button 
-            onClick={handleStartTrial}
+            onClick={(e) => {
+              console.log('🔘 2つ目のトライアルボタンクリック検出');
+              e.preventDefault();
+              e.stopPropagation();
+              handleStartTrial();
+            }}
             style={{
               width: '100%',
               background: '#5BAFCE',
@@ -656,7 +672,9 @@ export default function TrialPage() {
               cursor: 'pointer',
               boxShadow: '0 8px 24px rgba(91, 175, 206, 0.3)',
               transition: 'all 0.3s ease',
-              fontFamily: "'Noto Sans JP', sans-serif"
+              fontFamily: "'Noto Sans JP', sans-serif",
+              pointerEvents: 'auto',
+              touchAction: 'manipulation'
             }}
           >
             無料で3日間試してみる
@@ -859,7 +877,12 @@ export default function TrialPage() {
             }}>いつでもキャンセル可能</span>
           </p>
           <button 
-            onClick={handleStartTrial}
+            onClick={(e) => {
+              console.log('🔘 3つ目の固定ボタンクリック検出');
+              e.preventDefault();
+              e.stopPropagation();
+              handleStartTrial();
+            }}
             style={{
               width: '100%',
               background: '#5BAFCE',
@@ -871,7 +894,9 @@ export default function TrialPage() {
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: '0 4px 16px rgba(91, 175, 206, 0.3)',
-              fontFamily: "'Noto Sans JP', sans-serif"
+              fontFamily: "'Noto Sans JP', sans-serif",
+              pointerEvents: 'auto',
+              touchAction: 'manipulation'
             }}
           >
             無料で3日間試してみる
