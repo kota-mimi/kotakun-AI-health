@@ -67,7 +67,12 @@ export default function TrialPage() {
         console.log('⚠️ トライアル準備エラー、続行:', error);
       }
 
-      const paymentUrl = 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01';
+      // プランに応じたPayment URLを設定
+      const paymentUrls = {
+        'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00',  // 月額プラン
+        'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01' // 半年プラン
+      };
+      const paymentUrl = paymentUrls[selectedPlan as keyof typeof paymentUrls] || paymentUrls['half-year'];
       
       // プラン情報をローカルストレージに保存
       if (typeof window !== 'undefined') {
