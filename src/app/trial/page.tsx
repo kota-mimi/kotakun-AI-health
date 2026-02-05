@@ -22,16 +22,31 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
-    // 超シンプル：PaymentLinkに直接リダイレクト（ログイン判定なし）
+    console.log('🔗 トライアルボタン押下 - シンプルバージョン');
+    
+    // 最低限のユーザーID取得を試行（エラーでも止まらない）
+    let userIdToPass = '';
+    try {
+      if (liffUser?.userId) {
+        userIdToPass = liffUser.userId;
+        console.log('✅ ユーザーID取得成功:', userIdToPass);
+      }
+    } catch (error) {
+      console.log('⚠️ ユーザーID取得失敗、続行:', error);
+    }
+
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
-    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     
     // プラン情報をローカルストレージに保存
     if (typeof window !== 'undefined') {
       localStorage.setItem('trial_plan', selectedPlan);
       localStorage.setItem('trial_timestamp', new Date().toISOString());
+      if (userIdToPass) {
+        localStorage.setItem('trial_user_id', userIdToPass);
+      }
     }
     
+    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     window.location.href = paymentUrl;
   };
 
