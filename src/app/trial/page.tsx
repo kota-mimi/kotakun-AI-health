@@ -23,7 +23,6 @@ export default function TrialPage() {
 
   const handleStartTrial = async () => {
     console.log('🔥 handleStartTrial called!');
-    alert('ボタンが押されました！');
     
     // LIFFの初期化確認
     if (!isLiffReady) {
@@ -73,8 +72,9 @@ export default function TrialPage() {
         alert('決済ページの作成に失敗しました');
       }
     } catch (error) {
-      console.error('❌ Customer creation failed:', error);
-      alert('エラーが発生しました');
+      console.error('❌ Checkout creation failed:', error);
+      console.error('❌ Error details:', error);
+      alert(`エラーが発生しました: ${error.message || error}`);
     }
   };
 
