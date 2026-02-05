@@ -22,28 +22,14 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = () => {
-    // ログイン状態確認
-    if (!isLoggedIn || !liffUser) {
-      alert('LINEログインが必要です');
-      return;
-    }
-
-    const userIdToPass = liffUser.userId;
-    console.log('🔍 取得したユーザーID:', userIdToPass);
-
-    if (!userIdToPass) {
-      alert('ユーザーIDが取得できませんでした');
-      return;
-    }
-
-    // 超シンプル：PaymentLinkに直接リダイレクト
+    // 超シンプル：PaymentLinkに直接リダイレクト（ログイン判定なし）
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
-    console.log(`🔗 Redirecting to payment link for user: ${userIdToPass}`);
+    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     
-    // ユーザーIDはwebhookで後から関連付け（一時的にローカルストレージに保存）
+    // プラン情報をローカルストレージに保存
     if (typeof window !== 'undefined') {
-      localStorage.setItem('trial_user_id', userIdToPass);
       localStorage.setItem('trial_plan', selectedPlan);
+      localStorage.setItem('trial_timestamp', new Date().toISOString());
     }
     
     window.location.href = paymentUrl;
