@@ -21,17 +21,46 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = () => {
-    // 超シンプル：PaymentLinkに直接リダイレクト（ログイン判定なし）
+  const handleStartTrial = async () => {
+    // LIFFユーザーIDを取得を試行（失敗しても続行）
+    let userIdToPass = '';
+    if (liffUser?.userId) {
+      userIdToPass = liffUser.userId;
+      console.log('🔍 取得したユーザーID:', userIdToPass);
+    } else {
+      console.log('⚠️ LIFFユーザーIDが未取得、webhookで後から関連付け');
+    }
+
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
-    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     
-    // プラン情報をローカルストレージに保存
+    // ユーザーIDとプラン情報を簡易DB（API経由）で保存
+    if (userIdToPass) {
+      try {
+        await fetch('/api/save-trial-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userIdToPass,
+            planType: selectedPlan,
+            timestamp: new Date().toISOString()
+          }),
+        });
+        console.log('✅ Trial intent saved for user:', userIdToPass);
+      } catch (error) {
+        console.log('⚠️ Trial intent save failed, continuing:', error);
+      }
+    }
+    
+    // プラン情報をローカルストレージにバックアップ保存
     if (typeof window !== 'undefined') {
       localStorage.setItem('trial_plan', selectedPlan);
       localStorage.setItem('trial_timestamp', new Date().toISOString());
+      if (userIdToPass) {
+        localStorage.setItem('trial_user_id', userIdToPass);
+      }
     }
     
+    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     window.location.href = paymentUrl;
   };
 
