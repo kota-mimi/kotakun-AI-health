@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TrialPage() {
-  const { isLiffReady } = useAuth();
+  const { isLiffReady, liffUser, isLoggedIn } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState('half-year');
   const [currentSlide, setCurrentSlide] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -22,11 +22,14 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
-    // LINEのユーザーIDを取得
-    let userIdToPass = '';
-    if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
-      userIdToPass = (window as any).liff.getContext().userId;
+    // ログイン状態確認
+    if (!isLoggedIn || !liffUser) {
+      alert('LINEログインが必要です');
+      return;
     }
+
+    const userIdToPass = liffUser.userId;
+    console.log('🔍 取得したユーザーID:', userIdToPass);
 
     if (!userIdToPass) {
       alert('ユーザーIDが取得できませんでした');
