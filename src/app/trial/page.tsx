@@ -21,7 +21,7 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = async () => {
+  const handleStartTrial = () => {
     // ログイン状態確認
     if (!isLoggedIn || !liffUser) {
       alert('LINEログインが必要です');
@@ -36,34 +36,17 @@ export default function TrialPage() {
       return;
     }
 
-    try {
-      console.log(`🔗 Preparing trial for user: ${userIdToPass}, plan: ${selectedPlan}`);
-      
-      // トライアル準備API呼び出し
-      const response = await fetch('/api/prepare-trial', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userIdToPass,
-          planType: selectedPlan,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.paymentUrl) {
-        console.log('✅ Redirecting to payment link:', data.paymentUrl);
-        window.location.href = data.paymentUrl;
-      } else {
-        console.error('❌ Trial preparation failed:', data);
-        alert('トライアルの準備に失敗しました');
-      }
-    } catch (error) {
-      console.error('❌ Trial preparation error:', error);
-      alert('エラーが発生しました');
+    // 超シンプル：PaymentLinkに直接リダイレクト
+    const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
+    console.log(`🔗 Redirecting to payment link for user: ${userIdToPass}`);
+    
+    // ユーザーIDはwebhookで後から関連付け（一時的にローカルストレージに保存）
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('trial_user_id', userIdToPass);
+      localStorage.setItem('trial_plan', selectedPlan);
     }
+    
+    window.location.href = paymentUrl;
   };
 
   if (!isLiffReady) {
