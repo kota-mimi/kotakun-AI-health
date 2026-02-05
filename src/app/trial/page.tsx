@@ -25,9 +25,26 @@ export default function TrialPage() {
     try {
       console.log('🔗 トライアルボタン押下');
       
-      // 強制的にあなたのユーザーIDを設定
-      const userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9';
-      console.log('✅ 強制ユーザーID設定:', userIdToPass);
+      // ユーザーID取得（修正版）
+      let userIdToPass = '';
+      try {
+        if (liffUser?.userId) {
+          userIdToPass = liffUser.userId;
+          console.log('✅ ユーザーID取得成功:', userIdToPass);
+        } else {
+          console.log('⚠️ liffUser.userIdが取得できません');
+          console.log('liffUser:', liffUser);
+          console.log('isLoggedIn:', isLoggedIn);
+          console.log('isLiffReady:', isLiffReady);
+        }
+      } catch (error) {
+        console.log('⚠️ ユーザーID取得失敗:', error);
+      }
+      
+      if (!userIdToPass) {
+        userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック
+        console.log('🔧 テスト用ID使用:', userIdToPass);
+      }
 
       // pendingTrialsに保存
       try {
