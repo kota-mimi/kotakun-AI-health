@@ -21,10 +21,10 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = () => {
-    console.log('🔗 トライアルボタン押下 - シンプルバージョン');
+  const handleStartTrial = async () => {
+    console.log('🔗 トライアルボタン押下');
     
-    // 最低限のユーザーID取得を試行（エラーでも止まらない）
+    // ユーザーID取得
     let userIdToPass = '';
     try {
       if (liffUser?.userId) {
@@ -33,6 +33,29 @@ export default function TrialPage() {
       }
     } catch (error) {
       console.log('⚠️ ユーザーID取得失敗、続行:', error);
+    }
+
+    // ユーザーIDがある場合のみpendingTrialsに保存
+    if (userIdToPass) {
+      try {
+        console.log('💾 トライアル準備中...');
+        const response = await fetch('/api/prepare-trial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: userIdToPass, 
+            planType: selectedPlan 
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ トライアル準備完了');
+        } else {
+          console.log('⚠️ トライアル準備失敗、続行');
+        }
+      } catch (error) {
+        console.log('⚠️ トライアル準備エラー、続行:', error);
+      }
     }
 
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
