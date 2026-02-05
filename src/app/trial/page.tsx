@@ -22,13 +22,25 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
+    console.log('🚀 トライアルボタン押下開始');
+    console.log('🔍 LIFF状態確認:', {
+      isLiffReady,
+      isLoggedIn,
+      liffUser: liffUser ? {
+        userId: liffUser.userId,
+        displayName: liffUser.displayName
+      } : null
+    });
+
     // LIFFユーザーIDを取得を試行（失敗しても続行）
     let userIdToPass = '';
     if (liffUser?.userId) {
       userIdToPass = liffUser.userId;
-      console.log('🔍 取得したユーザーID:', userIdToPass);
+      console.log('✅ 取得したユーザーID:', userIdToPass);
+      alert(`ユーザーID確認: ${userIdToPass}`); // 確認用アラート
     } else {
-      console.log('⚠️ LIFFユーザーIDが未取得、webhookで後から関連付け');
+      console.log('❌ LIFFユーザーIDが未取得');
+      alert('ユーザーIDが取得できませんでした'); // 確認用アラート
     }
 
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
@@ -36,7 +48,8 @@ export default function TrialPage() {
     // ユーザーIDとプラン情報を簡易DB（API経由）で保存
     if (userIdToPass) {
       try {
-        await fetch('/api/save-trial-intent', {
+        console.log('📡 save-trial-intent API呼び出し開始...');
+        const response = await fetch('/api/save-trial-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -45,9 +58,12 @@ export default function TrialPage() {
             timestamp: new Date().toISOString()
           }),
         });
+        const responseData = await response.json();
+        console.log('📡 save-trial-intent APIレスポンス:', responseData);
         console.log('✅ Trial intent saved for user:', userIdToPass);
       } catch (error) {
-        console.log('⚠️ Trial intent save failed, continuing:', error);
+        console.error('❌ Trial intent save failed:', error);
+        alert(`API保存失敗: ${error.message}`);
       }
     }
     
@@ -57,11 +73,19 @@ export default function TrialPage() {
       localStorage.setItem('trial_timestamp', new Date().toISOString());
       if (userIdToPass) {
         localStorage.setItem('trial_user_id', userIdToPass);
+        console.log('💾 ローカルストレージに保存:', {
+          trial_plan: selectedPlan,
+          trial_user_id: userIdToPass
+        });
       }
     }
     
-    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
-    window.location.href = paymentUrl;
+    console.log(`🔗 ${paymentUrl} にリダイレクト予定`);
+    
+    // デバッグのため一旦リダイレクトを停止
+    if (confirm(`ユーザーID: ${userIdToPass}\nプラン: ${selectedPlan}\n\nStripeに進みますか？`)) {
+      window.location.href = paymentUrl;
+    }
   };
 
   if (!isLiffReady) {
