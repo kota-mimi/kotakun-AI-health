@@ -51,6 +51,43 @@ export async function POST(request: NextRequest) {
   try {
     const { action, data } = await request.json();
     
+    if (action === 'reset_user') {
+      console.log('🔄 ユーザーリセット:', data);
+      
+      if (data?.userId) {
+        try {
+          const { admin } = await import('@/lib/firebase-admin');
+          
+          // ユーザーを完全リセット（新規ユーザー状態に）
+          const resetData = {
+            userId: data.userId,
+            subscriptionStatus: 'inactive',
+            currentPlan: 'free',
+            hasUsedTrial: false, // トライアル利用履歴をリセット
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          await admin.firestore().collection('users').doc(data.userId).set(resetData);
+          
+          console.log('✅ ユーザー完全リセット完了:', resetData);
+          
+          return NextResponse.json({
+            success: true,
+            message: 'ユーザーを新規状態にリセットしました',
+            resetData
+          });
+          
+        } catch (error) {
+          console.error('❌ リセットエラー:', error);
+          return NextResponse.json({
+            success: false,
+            error: error.message
+          });
+        }
+      }
+    }
+    
     if (action === 'check_user') {
       console.log('🔍 Checking user data:', data);
       
