@@ -48,7 +48,7 @@ export default function TrialPage() {
     }
 
     try {
-      console.log(`🔗 Creating customer for user: ${userIdToPass}`);
+      console.log(`🔗 Creating checkout session for user: ${userIdToPass}, plan: ${selectedPlan}`);
       
       // Checkout Sessionを作成
       const response = await fetch('/api/create-customer', {
@@ -62,14 +62,25 @@ export default function TrialPage() {
         }),
       });
 
+      console.log(`🔍 Response status: ${response.status}`);
+      console.log(`🔍 Response ok: ${response.ok}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', errorText);
+        alert(`API Error: ${errorText}`);
+        return;
+      }
+
       const data = await response.json();
+      console.log('🔍 API Response:', data);
 
       if (data.url) {
         console.log('✅ Redirecting to Stripe checkout:', data.url);
         window.location.href = data.url;
       } else {
         console.error('❌ No checkout URL received:', data);
-        alert('決済ページの作成に失敗しました');
+        alert(`決済ページの作成に失敗しました: ${JSON.stringify(data)}`);
       }
     } catch (error) {
       console.error('❌ Checkout creation failed:', error);
