@@ -60,9 +60,8 @@ export async function POST(request: NextRequest) {
           console.log('🔍 Searching for pending trials in DB...');
           const pendingTrialsSnapshot = await admin.firestore()
             .collection('pendingTrials')
-            .where('status', '==', 'pending')
             .orderBy('createdAt', 'desc')
-            .limit(10)
+            .limit(5)
             .get();
           
           if (!pendingTrialsSnapshot.empty) {
