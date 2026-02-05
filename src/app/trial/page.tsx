@@ -32,44 +32,27 @@ export default function TrialPage() {
       } : null
     });
 
-    // LIFF初期化完了を待つ
-    if (!isLiffReady) {
-      alert('LIFF初期化中です。少し待ってから再度お試しください。');
-      return;
-    }
-
-    // ログイン状態確認
-    if (!isLoggedIn) {
-      alert('LINEログインが必要です。ページを再読み込みしてください。');
-      return;
-    }
-
-    // LIFFユーザーIDを取得を試行
+    // カウンセリングページと同じ方法でユーザーID取得
     let userIdToPass = '';
-    if (liffUser?.userId) {
-      userIdToPass = liffUser.userId;
-      console.log('✅ 取得したユーザーID:', userIdToPass);
-      alert(`ユーザーID確認: ${userIdToPass}`); // 確認用アラート
-    } else {
-      console.log('❌ LIFFユーザーIDが未取得');
-      
-      // 直接LIFFから取得を試行
+    
+    if (typeof window !== 'undefined' && (window as any).liff && (window as any).liff.isLoggedIn()) {
       try {
-        if (typeof window !== 'undefined' && (window as any).liff) {
-          const profile = await (window as any).liff.getProfile();
-          userIdToPass = profile.userId;
-          console.log('✅ 直接取得したユーザーID:', userIdToPass);
-          alert(`直接取得したユーザーID: ${userIdToPass}`);
-        }
+        const profile = await (window as any).liff.getProfile();
+        userIdToPass = profile.userId;
+        console.log('✅ LIFF Profile経由でユーザーID取得:', userIdToPass);
+        alert(`ユーザーID確認: ${userIdToPass}`);
       } catch (error) {
-        console.error('直接取得も失敗:', error);
-        alert(`ユーザーIDが取得できませんでした: ${error.message}`);
+        console.error('❌ LIFF Profile取得エラー:', error);
+        alert(`ユーザーID取得エラー: ${error.message}`);
         return;
       }
+    } else {
+      alert('LIFFが初期化されていないか、ログインしていません。LINEアプリから再度アクセスしてください。');
+      return;
     }
 
     if (!userIdToPass) {
-      alert('ユーザーIDの取得に失敗しました。LINEアプリから再度アクセスしてください。');
+      alert('ユーザーIDの取得に失敗しました。');
       return;
     }
 
