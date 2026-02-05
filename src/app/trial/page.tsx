@@ -32,7 +32,19 @@ export default function TrialPage() {
       } : null
     });
 
-    // LIFFユーザーIDを取得を試行（失敗しても続行）
+    // LIFF初期化完了を待つ
+    if (!isLiffReady) {
+      alert('LIFF初期化中です。少し待ってから再度お試しください。');
+      return;
+    }
+
+    // ログイン状態確認
+    if (!isLoggedIn) {
+      alert('LINEログインが必要です。ページを再読み込みしてください。');
+      return;
+    }
+
+    // LIFFユーザーIDを取得を試行
     let userIdToPass = '';
     if (liffUser?.userId) {
       userIdToPass = liffUser.userId;
@@ -40,7 +52,25 @@ export default function TrialPage() {
       alert(`ユーザーID確認: ${userIdToPass}`); // 確認用アラート
     } else {
       console.log('❌ LIFFユーザーIDが未取得');
-      alert('ユーザーIDが取得できませんでした'); // 確認用アラート
+      
+      // 直接LIFFから取得を試行
+      try {
+        if (typeof window !== 'undefined' && (window as any).liff) {
+          const profile = await (window as any).liff.getProfile();
+          userIdToPass = profile.userId;
+          console.log('✅ 直接取得したユーザーID:', userIdToPass);
+          alert(`直接取得したユーザーID: ${userIdToPass}`);
+        }
+      } catch (error) {
+        console.error('直接取得も失敗:', error);
+        alert(`ユーザーIDが取得できませんでした: ${error.message}`);
+        return;
+      }
+    }
+
+    if (!userIdToPass) {
+      alert('ユーザーIDの取得に失敗しました。LINEアプリから再度アクセスしてください。');
+      return;
     }
 
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
