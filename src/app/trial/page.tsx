@@ -21,114 +21,18 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = async () => {
-    console.log('🚀 トライアルボタン押下開始');
-    console.log('🔍 LIFF状態確認:', {
-      isLiffReady,
-      isLoggedIn,
-      liffUser: liffUser ? {
-        userId: liffUser.userId,
-        displayName: liffUser.displayName
-      } : null
-    });
-
-    // LIFF初期化を待ってからユーザーID取得
-    let userIdToPass = '';
-    
-    console.log('🔍 LIFF初期化状況:', {
-      windowLiff: typeof window !== 'undefined' ? !!(window as any).liff : false,
-      isLoggedIn: typeof window !== 'undefined' && (window as any).liff ? (window as any).liff.isLoggedIn() : false,
-      isReady: typeof window !== 'undefined' && (window as any).liff ? (window as any).liff.isReady : false
-    });
-
-    // LIFF初期化を確実に待つ
-    if (typeof window !== 'undefined' && (window as any).liff) {
-      try {
-        // LIFF初期化を待つ
-        if (!(window as any).liff.isReady) {
-          console.log('⏳ LIFF初期化待ち...');
-          await new Promise((resolve) => {
-            const checkReady = () => {
-              if ((window as any).liff.isReady) {
-                resolve(true);
-              } else {
-                setTimeout(checkReady, 100);
-              }
-            };
-            checkReady();
-          });
-        }
-
-        console.log('✅ LIFF初期化完了');
-        
-        // ログイン状態確認
-        if ((window as any).liff.isLoggedIn()) {
-          const profile = await (window as any).liff.getProfile();
-          userIdToPass = profile.userId;
-          console.log('✅ LIFF Profile経由でユーザーID取得:', userIdToPass);
-          alert(`ユーザーID確認: ${userIdToPass}`);
-        } else {
-          alert('LINEでログインしていません。LINEアプリから再度アクセスしてください。');
-          return;
-        }
-      } catch (error) {
-        console.error('❌ LIFF処理エラー:', error);
-        alert(`LIFF処理エラー: ${error.message}`);
-        return;
-      }
-    } else {
-      alert('LIFFが利用できません。LINEアプリから再度アクセスしてください。');
-      return;
-    }
-
-    if (!userIdToPass) {
-      alert('ユーザーIDの取得に失敗しました。');
-      return;
-    }
-
+  const handleStartTrial = () => {
+    // 超シンプル：PaymentLinkに直接リダイレクト（ログイン判定なし）
     const paymentUrl = 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00';
+    console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
     
-    // ユーザーIDとプラン情報を簡易DB（API経由）で保存
-    if (userIdToPass) {
-      try {
-        console.log('📡 save-trial-intent API呼び出し開始...');
-        const response = await fetch('/api/save-trial-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: userIdToPass,
-            planType: selectedPlan,
-            timestamp: new Date().toISOString()
-          }),
-        });
-        const responseData = await response.json();
-        console.log('📡 save-trial-intent APIレスポンス:', responseData);
-        console.log('✅ Trial intent saved for user:', userIdToPass);
-      } catch (error) {
-        console.error('❌ Trial intent save failed:', error);
-        alert(`API保存失敗: ${error.message}`);
-      }
-    }
-    
-    // プラン情報をローカルストレージにバックアップ保存
+    // プラン情報をローカルストレージに保存
     if (typeof window !== 'undefined') {
       localStorage.setItem('trial_plan', selectedPlan);
       localStorage.setItem('trial_timestamp', new Date().toISOString());
-      if (userIdToPass) {
-        localStorage.setItem('trial_user_id', userIdToPass);
-        console.log('💾 ローカルストレージに保存:', {
-          trial_plan: selectedPlan,
-          trial_user_id: userIdToPass
-        });
-      }
     }
     
-    console.log(`🔗 ${paymentUrl} にリダイレクト予定`);
-    
-    // デバッグのため一旦リダイレクトを停止
-    if (confirm(`ユーザーID: ${userIdToPass}\nプラン: ${selectedPlan}\n\nStripeに進みますか？`)) {
-      window.location.href = paymentUrl;
-    }
+    window.location.href = paymentUrl;
   };
 
   if (!isLiffReady) {
@@ -214,9 +118,15 @@ export default function TrialPage() {
               テスト用ボタン
             </button>
             <button 
-              onClick={() => {
-                console.log('🧪 シンプルテスト開始');
-                handleStartTrial();
+              onClick={async () => {
+                try {
+                  console.log('🧪 シンプルテスト開始');
+                  await handleStartTrial();
+                  console.log('🧪 シンプルテスト完了');
+                } catch (error) {
+                  console.error('🧪 シンプルテストエラー:', error);
+                  alert(`シンプルテストエラー: ${error.message}`);
+                }
               }}
               style={{
                 background: '#4ecdc4',
@@ -228,6 +138,34 @@ export default function TrialPage() {
               }}
             >
               シンプルトライアルテスト
+            </button>
+            <button 
+              onClick={() => {
+                try {
+                  console.log('🧪 超シンプルテスト - LIFF確認');
+                  if (typeof window !== 'undefined' && (window as any).liff) {
+                    console.log('✅ window.liff存在');
+                    alert('window.liff存在確認OK');
+                  } else {
+                    console.log('❌ window.liff存在しない');
+                    alert('window.liff存在しない');
+                  }
+                } catch (error) {
+                  console.error('🧪 超シンプルテストエラー:', error);
+                  alert(`超シンプルテストエラー: ${error.message}`);
+                }
+              }}
+              style={{
+                background: '#9b59b6',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginLeft: '10px'
+              }}
+            >
+              LIFF確認テスト
             </button>
           </div>
           
