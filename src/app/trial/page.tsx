@@ -194,6 +194,43 @@ export default function TrialPage() {
 
         {/* Plan Selection */}
         <section style={{ padding: '32px 20px', background: '#FFFFFF' }}>
+          {/* デバッグ用テストボタン */}
+          <div style={{ marginBottom: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '8px' }}>
+            <button 
+              onClick={() => {
+                alert('テストボタンが動作しています！');
+                console.log('🧪 テストボタンクリック');
+              }}
+              style={{
+                background: '#ff6b6b',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginRight: '10px'
+              }}
+            >
+              テスト用ボタン
+            </button>
+            <button 
+              onClick={() => {
+                console.log('🧪 シンプルテスト開始');
+                handleStartTrial();
+              }}
+              style={{
+                background: '#4ecdc4',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              シンプルトライアルテスト
+            </button>
+          </div>
+          
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <h2 style={{
               fontSize: '24px',
