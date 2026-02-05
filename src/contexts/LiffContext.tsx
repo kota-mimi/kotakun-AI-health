@@ -60,13 +60,19 @@ export function LiffProvider({ children }: LiffProviderProps) {
         // Dynamic import to avoid SSR issues
         const liff = (await import('@line/liff')).default;
         
-        // 開発環境でLIFF IDがないか、LIFF環境外の場合はスキップ
+        // 開発環境でLIFF IDがないか、LIFF環境外の場合はテストユーザーを設定
         if (process.env.NODE_ENV === 'development' && !window.location.href.includes('liff')) {
           setState(prev => ({
             ...prev,
             error: null,
             isReady: true,
-            isLoggedIn: false,
+            isLoggedIn: true, // テスト用にログイン状態にする
+            user: {
+              userId: 'U7fd12476d6263912e0d9c99fc3a6bef9', // あなたのテスト用ID
+              displayName: 'テストユーザー',
+              pictureUrl: '',
+              statusMessage: '',
+            },
             isInClient: true,
           }));
           return;
