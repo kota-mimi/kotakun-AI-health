@@ -22,6 +22,9 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
+    console.log('🔥 handleStartTrial called!');
+    alert('ボタンが押されました！');
+    
     // LIFFの初期化確認
     if (!isLiffReady) {
       alert('LINEアプリの初期化中です。しばらくお待ちください。');
