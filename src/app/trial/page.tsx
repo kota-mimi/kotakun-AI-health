@@ -32,22 +32,52 @@ export default function TrialPage() {
       } : null
     });
 
-    // カウンセリングページと同じ方法でユーザーID取得
+    // LIFF初期化を待ってからユーザーID取得
     let userIdToPass = '';
     
-    if (typeof window !== 'undefined' && (window as any).liff && (window as any).liff.isLoggedIn()) {
+    console.log('🔍 LIFF初期化状況:', {
+      windowLiff: typeof window !== 'undefined' ? !!(window as any).liff : false,
+      isLoggedIn: typeof window !== 'undefined' && (window as any).liff ? (window as any).liff.isLoggedIn() : false,
+      isReady: typeof window !== 'undefined' && (window as any).liff ? (window as any).liff.isReady : false
+    });
+
+    // LIFF初期化を確実に待つ
+    if (typeof window !== 'undefined' && (window as any).liff) {
       try {
-        const profile = await (window as any).liff.getProfile();
-        userIdToPass = profile.userId;
-        console.log('✅ LIFF Profile経由でユーザーID取得:', userIdToPass);
-        alert(`ユーザーID確認: ${userIdToPass}`);
+        // LIFF初期化を待つ
+        if (!(window as any).liff.isReady) {
+          console.log('⏳ LIFF初期化待ち...');
+          await new Promise((resolve) => {
+            const checkReady = () => {
+              if ((window as any).liff.isReady) {
+                resolve(true);
+              } else {
+                setTimeout(checkReady, 100);
+              }
+            };
+            checkReady();
+          });
+        }
+
+        console.log('✅ LIFF初期化完了');
+        
+        // ログイン状態確認
+        if ((window as any).liff.isLoggedIn()) {
+          const profile = await (window as any).liff.getProfile();
+          userIdToPass = profile.userId;
+          console.log('✅ LIFF Profile経由でユーザーID取得:', userIdToPass);
+          alert(`ユーザーID確認: ${userIdToPass}`);
+        } else {
+          alert('LINEでログインしていません。LINEアプリから再度アクセスしてください。');
+          return;
+        }
       } catch (error) {
-        console.error('❌ LIFF Profile取得エラー:', error);
-        alert(`ユーザーID取得エラー: ${error.message}`);
+        console.error('❌ LIFF処理エラー:', error);
+        alert(`LIFF処理エラー: ${error.message}`);
         return;
       }
     } else {
-      alert('LIFFが初期化されていないか、ログインしていません。LINEアプリから再度アクセスしてください。');
+      alert('LIFFが利用できません。LINEアプリから再度アクセスしてください。');
       return;
     }
 
