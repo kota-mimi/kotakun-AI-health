@@ -36,11 +36,19 @@ export async function POST(request: NextRequest) {
     // トライアル開始 or 課金開始
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
+      
+      console.log('🔍 Session debug info:');
+      console.log('  metadata:', session.metadata);
+      console.log('  client_reference_id:', session.client_reference_id);
+      console.log('  customer:', session.customer);
+      console.log('  subscription:', session.subscription);
+      
       // ユーザーIDを取得（メタデータまたはclient_reference_idから）
       const userId = session.metadata?.userId || session.client_reference_id;
 
       if (!userId) {
         console.error('❌ No userId in metadata or client_reference_id');
+        console.error('❌ Session object:', JSON.stringify(session, null, 2));
         return NextResponse.json({ error: 'No userId' }, { status: 400 });
       }
 

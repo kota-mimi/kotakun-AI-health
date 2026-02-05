@@ -21,30 +21,47 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = () => {
-    // ユーザー情報が必要な場合の処理を追加
-    let userIdToPass = '';
-    
+  const handleStartTrial = async () => {
     // LINEのユーザーIDを取得（LIFFコンテキストから）
+    let userIdToPass = '';
     if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
       userIdToPass = (window as any).liff.getContext().userId;
     }
-    
-    const paymentLinks = {
-      'half-year': 'https://buy.stripe.com/test_aFaaEX8lHaw25e3a40bsc00', // 3000円（半年プラン）- トライアル付き
-      'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00'    // 790円（月間プラン）
-    };
 
-    let selectedPaymentLink = paymentLinks[selectedPlan] || paymentLinks['half-year'];
-    
-    // Payment LinksにclientReferenceIdとしてuserIdを追加
-    if (userIdToPass) {
-      const separator = selectedPaymentLink.includes('?') ? '&' : '?';
-      selectedPaymentLink += `${separator}client_reference_id=${encodeURIComponent(userIdToPass)}`;
+    if (!userIdToPass) {
+      console.error('❌ User ID not found');
+      alert('ユーザーIDが取得できませんでした');
+      return;
     }
-    
-    console.log('🔗 Redirecting to payment link:', selectedPaymentLink);
-    window.location.href = selectedPaymentLink;
+
+    try {
+      console.log(`🔗 Creating checkout session for user: ${userIdToPass}, plan: ${selectedPlan}`);
+      
+      // Checkout Sessionを作成するAPIを呼び出し
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planType: selectedPlan,
+          userId: userIdToPass,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        console.log('✅ Redirecting to Stripe checkout:', data.url);
+        window.location.href = data.url;
+      } else {
+        console.error('❌ No checkout URL received:', data);
+        alert('決済ページの作成に失敗しました');
+      }
+    } catch (error) {
+      console.error('❌ Checkout creation failed:', error);
+      alert('エラーが発生しました');
+    }
   };
 
   if (!isLiffReady) {
