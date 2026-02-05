@@ -22,11 +22,23 @@ export default function TrialPage() {
   };
 
   const handleStartTrial = async () => {
+    // LIFFの初期化確認
+    if (!isLiffReady) {
+      alert('LINEアプリの初期化中です。しばらくお待ちください。');
+      return;
+    }
+
     // LINEのユーザーIDを取得
     let userIdToPass = '';
     if (typeof window !== 'undefined' && (window as any).liff?.getContext?.()?.userId) {
       userIdToPass = (window as any).liff.getContext().userId;
     }
+
+    console.log('🔍 Debug info:');
+    console.log('  isLiffReady:', isLiffReady);
+    console.log('  liff object exists:', !!(window as any).liff);
+    console.log('  getContext exists:', !!(window as any).liff?.getContext);
+    console.log('  userId:', userIdToPass);
 
     if (!userIdToPass) {
       alert('ユーザーIDが取得できませんでした');
