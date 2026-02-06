@@ -171,10 +171,18 @@ export async function POST(request: NextRequest) {
         const priceId = subscription.items.data[0]?.price?.id;
         let currentPlan = '月額プラン'; // デフォルト
         
-        if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID || priceId === 'price_1SxAFxHAuO7vhfyIs3ZQfnfi') {
+        console.log(`🔍 価格ID確認: ${priceId}`);
+        console.log(`🔍 本番半年ID: ${process.env.STRIPE_BIANNUAL_PRICE_ID}`);
+        console.log(`🔍 本番月額ID: ${process.env.STRIPE_MONTHLY_PRICE_ID}`);
+        
+        if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
           currentPlan = '半年プラン';
-        } else if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID || priceId === 'price_1SxAFZHAuO7vhfyIhLShYjMX') {
+          console.log('✅ 半年プラン認識');
+        } else if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
           currentPlan = '月額プラン';
+          console.log('✅ 月額プラン認識');
+        } else {
+          console.log('⚠️ 価格IDが一致しません。デフォルト月額プランを適用');
         }
         
         console.log(`💰 決済成功 - プラン: ${currentPlan}, priceId: ${priceId}`);
