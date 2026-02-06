@@ -135,11 +135,11 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       if (session.url) {
         window.location.href = session.url;
       } else {
-        alert(`${plans.find(p => p.id === planId)?.name}の決済を開始します`);
+        setError('決済URLの取得に失敗しました。本番環境でお試しください。');
       }
     } catch (err) {
       console.error('決済エラー:', err);
-      setError('決済処理でエラーが発生しました');
+      setError(err instanceof Error ? err.message : '決済処理でエラーが発生しました');
     } finally {
       setIsProcessing(false);
     }

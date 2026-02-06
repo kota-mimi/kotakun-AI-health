@@ -102,11 +102,17 @@ export async function createPaymentSession(
     }),
   });
 
+  const result = await response.json();
+
   if (!response.ok) {
-    throw new Error('Failed to create payment session');
+    // 開発環境での特別処理
+    if (result.dev_mode) {
+      throw new Error(result.error || '開発環境では決済機能を使用できません');
+    }
+    throw new Error(result.error || 'Failed to create payment session');
   }
 
-  return response.json();
+  return result;
 }
 
 // トライアル付き決済セッション作成（LP新規登録用）
