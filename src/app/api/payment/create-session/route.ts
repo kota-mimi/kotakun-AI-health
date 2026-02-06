@@ -17,6 +17,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('💳 Creating payment session:', { planId, userId, includeTrial });
+    
+    // 開発環境では決済セッション作成を無効化
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 開発環境: 決済セッション作成をスキップ');
+      return NextResponse.json({
+        error: '開発環境では決済機能を使用できません。本番環境でテストしてください。',
+        dev_mode: true
+      }, { status: 400 });
+    }
 
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
