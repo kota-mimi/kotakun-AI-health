@@ -18,11 +18,11 @@ export async function POST(request: NextRequest) {
 
     console.log('💳 Creating payment session:', { planId, userId, includeTrial });
     
-    // 開発環境では決済セッション作成を無効化
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 開発環境: 決済セッション作成をスキップ');
+    // 本番Stripe APIキーが設定されていない場合のみ制限
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
+      console.log('🔧 テスト環境: 決済セッション作成をスキップ');
       return NextResponse.json({
-        error: '開発環境では決済機能を使用できません。本番環境でテストしてください。',
+        error: '本番Stripe APIキーが設定されていません。',
         dev_mode: true
       }, { status: 400 });
     }
