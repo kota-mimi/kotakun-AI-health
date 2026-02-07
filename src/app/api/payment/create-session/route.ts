@@ -62,8 +62,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Payment session error:', error);
+    
+    // より詳細なエラー情報を返す（本番環境でもデバッグのため一時的に）
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const stripeError = error as any;
+    
     return NextResponse.json(
-      { error: 'Failed to create payment session' },
+      { 
+        error: 'Failed to create payment session',
+        details: errorMessage,
+        stripeError: stripeError?.type || 'unknown',
+        priceId: stripeError?.param === 'line_items.0.price' ? 'Price ID issue' : undefined
+      },
       { status: 500 }
     );
   }
