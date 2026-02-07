@@ -69,7 +69,7 @@ export default function TrialPage() {
 
       // プランに応じたPayment URLを設定
       const paymentUrls = {
-        'monthly': 'https://buy.stripe.com/aFafZib8Q3bI97D2hP67S00',  // 月額プラン
+        'monthly': 'https://buy.stripe.com/28EeVeb8Q5jQbfL2hP67S02',  // 月額プラン（新しく作成）
         'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01' // 半年プラン
       };
       const paymentUrl = paymentUrls[selectedPlan as keyof typeof paymentUrls] || paymentUrls['half-year'];
