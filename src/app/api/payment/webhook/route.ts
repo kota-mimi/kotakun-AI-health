@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         stripeCustomerId: session.customer,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         trialEndDate: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+        hasUsedTrial: subscription.trial_end ? true : false, // トライアルありの場合は履歴を記録
         updatedAt: new Date(),
       });
 

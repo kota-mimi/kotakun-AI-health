@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     const updateData = {
       trialEndDate: expiredDate,
       subscriptionStatus: 'inactive', // 期間終了後は無料プランに戻る
-      currentPlan: null,
+      currentPlan: '無料プラン', // トライアル終了後は無料プランに戻る
+      hasUsedTrial: true, // トライアル利用履歴を記録
       updatedAt: new Date(),
       updatedAtJST: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
     };
