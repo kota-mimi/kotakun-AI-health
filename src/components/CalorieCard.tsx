@@ -29,12 +29,11 @@ interface CalorieCardProps {
   targetCalories: number;
   pfc: PFCData;
   counselingResult?: CounselingResult | null;
-  exerciseData?: Array<{ calories: number; duration: number; type: string }>;
   selectedDate: Date;
   profileData?: any; // 🔄 統合プロフィールから受け取り
 }
 
-export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, exerciseData = [], selectedDate, profileData }: CalorieCardProps) {
+export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResult, selectedDate, profileData }: CalorieCardProps) {
   const [currentView, setCurrentView] = useState<'intake' | 'burn'>('intake');
   const [isMounted, setIsMounted] = useState(false);
   
@@ -66,11 +65,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
       ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 0.7) // フォールバック: 摂取カロリーの70%を基礎代謝とする
       : 0);
   
-  // 運動による消費カロリー（実際の運動データから計算）
-  const exerciseCalories = exerciseData.reduce((sum, exercise) => sum + (exercise.calories || 0), 0);
   
   const dailyActivityCalories = Math.round(basalMetabolismBase * 0.15); // 基礎代謝の15%を日常活動とする
-  const totalActivityCalories = exerciseCalories + dailyActivityCalories;
+  const totalActivityCalories = dailyActivityCalories;
   const burnedCalories = Math.round(basalMetabolismBase + totalActivityCalories);
   const targetBurnedCalories = counselingResult?.aiAnalysis?.nutritionPlan?.dailyCalories 
     ? Math.round(counselingResult.aiAnalysis.nutritionPlan.dailyCalories * 1.25) // 摂取目標の125%を消費目標とする
@@ -237,27 +234,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                       />
                     </div>
 
-                    {/* 運動による消費 */}
-                    {exerciseCalories > 0 && (
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#3B82F6'}}></div>
-                            <span className="text-sm text-slate-700">運動による消費</span>
-                          </div>
-                          <span className="text-sm">
-                            <span className="font-bold" style={{color: '#3B82F6'}}>{exerciseCalories}</span>
-                            <span className="text-slate-500"> kcal</span>
-                          </span>
-                        </div>
-                        <Progress 
-                          value={Number(((exerciseCalories / burnedCalories) * 100).toFixed(1))} 
-                          className="h-2" 
-                          color="#3B82F6"
-                          backgroundColor="rgba(59, 130, 246, 0.1)"
-                        />
-                      </div>
-                    )}
 
                   </div>
                 </div>

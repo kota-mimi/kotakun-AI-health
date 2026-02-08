@@ -6,12 +6,10 @@ import {
   ArrowLeft,
   Utensils,
   Scale,
-  Dumbbell,
   BarChart3
 } from 'lucide-react';
 import { MealAnalysisPage } from './MealAnalysisPage';
 import { WeightDetailPage } from './WeightDetailPage';
-import { ExercisePage } from './ExercisePage';
 import { WeightSettingsPage } from './WeightSettingsPage';
 import { NutritionSettingsPage } from './NutritionSettingsPage';
 
@@ -23,18 +21,9 @@ interface DataManagementPageProps {
   selectedNutrients: Record<string, boolean>;
   onNavigateToNutritionSettings?: () => void;
   onNutrientChange?: (nutrients: Record<string, boolean>) => void;
-  exerciseData?: any[];
-  onAddExercise?: (exercise: any) => void;
-  onDeleteExercise?: (exerciseId: string) => void;
-  onUpdateExercise?: (exerciseId: string, updates: any) => void;
-  workoutPlans?: any[];
-  onAddPlan?: (plan: any) => void;
-  onDeletePlan?: (planId: string) => void;
-  onAddExerciseToPlan?: (planId: string, exercise: any) => void;
-  onDeleteExerciseFromPlan?: (planId: string, exerciseId: string) => void;
 }
 
-type TabType = 'meal' | 'weight' | 'exercise';
+type TabType = 'meal' | 'weight';
 
 export function DataManagementPage({ 
   onBack, 
@@ -44,15 +33,6 @@ export function DataManagementPage({
   selectedNutrients,
   onNavigateToNutritionSettings,
   onNutrientChange,
-  exerciseData = [],
-  onAddExercise,
-  onDeleteExercise,
-  onUpdateExercise,
-  workoutPlans = [],
-  onAddPlan,
-  onDeletePlan,
-  onAddExerciseToPlan,
-  onDeleteExerciseFromPlan
 }: DataManagementPageProps) {
   const [activeTab, setActiveTab] = useState<TabType>('meal');
   const [showWeightSettings, setShowWeightSettings] = useState(false);
@@ -71,12 +51,6 @@ export function DataManagementPage({
       icon: Scale,
       color: '#10B981'
     },
-    {
-      id: 'exercise' as TabType,
-      label: '運動',
-      icon: Dumbbell,
-      color: '#F59E0B'
-    }
   ];
 
   const handleTabChange = (tabId: TabType) => {
@@ -186,25 +160,6 @@ export function DataManagementPage({
           </div>
         )}
         
-        {activeTab === 'exercise' && (
-          <div className="px-4 py-4 pb-20">
-            <ExercisePage 
-              onBack={onBack}
-              selectedDate={selectedDate}
-              onDateSelect={onDateSelect}
-              hideHeader={true}
-              exerciseData={exerciseData}
-              onAddExercise={onAddExercise}
-              onDeleteExercise={onDeleteExercise}
-              onUpdateExercise={onUpdateExercise}
-              workoutPlans={workoutPlans}
-              onAddPlan={onAddPlan}
-              onDeletePlan={onDeletePlan}
-              onAddExerciseToPlan={onAddExerciseToPlan}
-              onDeleteExerciseFromPlan={onDeleteExerciseFromPlan}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
