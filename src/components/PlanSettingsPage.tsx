@@ -307,7 +307,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         'AI会話・記録が使い放題',
         '1日のフィードバック機能',
         'アプリからAI記録機能',
-        '月額より37%お得！'
+        '月額より52%お得！'
       ]
     }
   ];
