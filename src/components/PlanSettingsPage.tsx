@@ -477,6 +477,16 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           </div>
         )}
 
+        {/* 説明セクション */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">プランの種類</h2>
+        </div>
+
+        {/* プラン一覧 */}
+        <div className="space-y-4 max-w-lg mx-auto mb-6">
+          {plans.map(plan => renderPlanCard(plan))}
+        </div>
+
         {/* 現在のプラン状況 */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">現在のプラン状況</h3>
@@ -569,16 +579,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
             )}
           </div>
         </Card>
-
-        {/* 説明セクション */}
-        <div className="text-center mb-6 mt-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">プランの種類</h2>
-        </div>
-
-        {/* プラン一覧 */}
-        <div className="space-y-4 max-w-lg mx-auto">
-          {plans.map(plan => renderPlanCard(plan))}
-        </div>
 
         <div className="h-4"></div>
 
