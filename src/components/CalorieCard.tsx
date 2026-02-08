@@ -69,8 +69,9 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 space-y-0">
-      {/* セグメントコントロール - 左寄せ */}
-      <div className="p-3 pb-0 flex justify-start">
+      {/* タイトル */}
+      <div className="p-3 pb-0">
+        <h3 className="text-lg font-medium text-slate-900">摂取カロリー</h3>
       </div>
 
       {/* コンテンツエリア */}
