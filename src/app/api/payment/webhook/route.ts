@@ -97,7 +97,9 @@ export async function POST(request: NextRequest) {
       const planId = session.metadata?.planId;
       let currentPlan = '月額プラン'; // デフォルト
       
-      if (planId === 'biannual') {
+      if (planId === 'annual') {
+        currentPlan = '年間プラン';
+      } else if (planId === 'biannual') {
         currentPlan = '半年プラン';
       } else if (planId === 'monthly') {
         currentPlan = '月額プラン';
@@ -176,7 +178,10 @@ export async function POST(request: NextRequest) {
         console.log(`🔍 本番半年ID: ${process.env.STRIPE_BIANNUAL_PRICE_ID}`);
         console.log(`🔍 本番月額ID: ${process.env.STRIPE_MONTHLY_PRICE_ID}`);
         
-        if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
+        if (priceId === process.env.STRIPE_ANNUAL_PRICE_ID) {
+          currentPlan = '年間プラン';
+          console.log('✅ 年間プラン認識');
+        } else if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
           currentPlan = '半年プラン';
           console.log('✅ 半年プラン認識');
         } else if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {

@@ -73,6 +73,22 @@ export const PLANS: PlanConfig[] = [
       'アプリからAI記録機能',
       '月額より37%お得！'
     ]
+  },
+  {
+    id: 'annual',
+    name: '年間プラン',
+    price: 4900,
+    period: '12ヶ月',
+    originalPrice: 9480,
+    discount: '48%OFF',
+    stripePriceId: process.env.STRIPE_ANNUAL_PRICE_ID || 'price_annual_placeholder',
+    features: [
+      'すべての機能が無制限',
+      'AI会話・記録が使い放題',
+      '1日のフィードバック機能',
+      'アプリからAI記録機能',
+      '月額より48%お得！'
+    ]
   }
 ];
 

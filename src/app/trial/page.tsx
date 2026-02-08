@@ -70,7 +70,8 @@ export default function TrialPage() {
       // プランに応じたPayment URLを設定
       const paymentUrls = {
         'monthly': 'https://buy.stripe.com/4gM28s1ygdQm3Nj7C967S03',  // 月額プラン（3日間トライアル設定済み）
-        'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01' // 半年プラン
+        'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 半年プラン
+        'annual': 'https://buy.stripe.com/annual-placeholder' // 年間プラン（後で更新）
       };
       const paymentUrl = paymentUrls[selectedPlan as keyof typeof paymentUrls] || paymentUrls['half-year'];
       
@@ -163,6 +164,84 @@ export default function TrialPage() {
             }}>
               健康管理を<span style={{ color: '#5BAFCE', fontFamily: "'Poppins', sans-serif" }}>AI</span>でサポート！
             </h2>
+          </div>
+
+          {/* 年間プラン */}
+          <div 
+            onClick={() => selectPlan('annual')}
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '20px',
+              marginBottom: '12px',
+              border: `2px solid ${selectedPlan === 'annual' ? '#5BAFCE' : 'transparent'}`,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              boxShadow: selectedPlan === 'annual' 
+                ? '0 4px 20px rgba(91, 175, 206, 0.15)' 
+                : '0 2px 12px rgba(0, 0, 0, 0.04)'
+            }}
+          >
+            <span style={{
+              position: 'absolute',
+              top: '-12px',
+              left: '20px',
+              background: '#FF6B6B',
+              color: 'white',
+              padding: '4px 16px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: 700,
+              boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
+            }}>
+              最安！
+            </span>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  border: `2px solid ${selectedPlan === 'annual' ? '#5BAFCE' : '#DDD'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease',
+                  background: selectedPlan === 'annual' ? '#5BAFCE' : 'transparent'
+                }}>
+                  {selectedPlan === 'annual' && (
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      background: 'white',
+                      borderRadius: '50%'
+                    }}></div>
+                  )}
+                </div>
+                <span style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: '#2C3E50'
+                }}>年間プラン</span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  color: '#2C3E50'
+                }}>
+                  408<span style={{ fontSize: '14px', fontWeight: 500 }}>円/月</span>
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  color: '#5BAFCE',
+                  fontWeight: 500
+                }}>12ヶ月 4,900円</div>
+              </div>
+            </div>
           </div>
 
           {/* 半年プラン */}
