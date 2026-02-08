@@ -477,122 +477,122 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
           </div>
         )}
 
-        {/* 説明セクション */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">プランの種類</h2>
-        </div>
+        <div className="space-y-4">
+          {/* 説明セクション */}
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">プランの種類</h2>
+          </div>
 
-        {/* プラン一覧 */}
-        <div className="space-y-4 max-w-lg mx-auto mb-12">
-          {plans.map(plan => renderPlanCard(plan))}
-        </div>
+          {/* プラン一覧 */}
+          <div className="space-y-4 max-w-lg mx-auto">
+            {plans.map(plan => renderPlanCard(plan))}
+          </div>
 
-        {/* 現在のプラン状況 */}
-        <div className="mb-12 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="font-semibold text-blue-900 mb-2">現在のプラン状況</h3>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className={
-                currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime' || currentPlan.status === 'trial' || (currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd)
-                  ? 'bg-green-100 text-green-700 border-green-300' 
-                  : 'bg-gray-100 text-gray-700'
-              }>
-                {currentPlan.planName}
-              </Badge>
+          {/* 現在のプラン状況 */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">現在のプラン状況</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className={
+                  currentPlan.status === 'active' || currentPlan.status === 'cancel_at_period_end' || currentPlan.status === 'lifetime' || currentPlan.status === 'trial' || (currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd)
+                    ? 'bg-green-100 text-green-700 border-green-300' 
+                    : 'bg-gray-100 text-gray-700'
+                }>
+                  {currentPlan.planName}
+                </Badge>
+                {currentPlan.plan !== 'free' && (
+                  <span className="text-sm text-blue-700">
+                    {currentPlan.status === 'active' && '有効'}
+                    {currentPlan.status === 'trial' && 'お試し期間中'}
+                    {currentPlan.status === 'lifetime' && '永続'}
+                    {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
+                    {currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd && '解約済み（期限内）'}
+                    {currentPlan.status === 'cancelled' && (!currentPlan.currentPeriodEnd || new Date() >= currentPlan.currentPeriodEnd) && '無効'}
+                    {currentPlan.status === 'inactive' && '無効'}
+                  </span>
+                )}
+              </div>
+              
+              {/* 有効期限表示 */}
               {currentPlan.plan !== 'free' && (
-                <span className="text-sm text-blue-700">
-                  {currentPlan.status === 'active' && '有効'}
-                  {currentPlan.status === 'trial' && 'お試し期間中'}
-                  {currentPlan.status === 'lifetime' && '永続'}
-                  {currentPlan.status === 'cancel_at_period_end' && '解約予定'}
-                  {currentPlan.status === 'cancelled' && currentPlan.currentPeriodEnd && new Date() < currentPlan.currentPeriodEnd && '解約済み（期限内）'}
-                  {currentPlan.status === 'cancelled' && (!currentPlan.currentPeriodEnd || new Date() >= currentPlan.currentPeriodEnd) && '無効'}
-                  {currentPlan.status === 'inactive' && '無効'}
-                </span>
+                <div className="text-sm text-blue-600">
+                  {currentPlan.status === 'lifetime' && (
+                    <>♾️ 永続利用プラン（期限なし）</>
+                  )}
+                  {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && !currentPlan.plan.startsWith('crowdfund') && (
+                    <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  )}
+                  {currentPlan.currentPeriodEnd && currentPlan.status === 'cancel_at_period_end' && (
+                    <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  )}
+                  {currentPlan.currentPeriodEnd && currentPlan.status === 'cancelled' && new Date() < currentPlan.currentPeriodEnd && (
+                    <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  )}
+                  {currentPlan.currentPeriodEnd && currentPlan.plan.startsWith('crowdfund') && currentPlan.status === 'active' && (
+                    <>📅 有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  )}
+                </div>
+              )}
+              
+              {/* 解約ボタン（有料プランかつアクティブまたはトライアルの場合、永続プランは除外） */}
+              {(currentPlan.status === 'active' || currentPlan.status === 'trial') && currentPlan.plan !== 'free' && currentPlan.status !== 'lifetime' && !currentPlan.plan.startsWith('crowdfund') && (
+                <div className="mt-3">
+                  <Button 
+                    onClick={handleCancel}
+                    disabled={isProcessing}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
+                  >
+                    {isProcessing ? '処理中...' : '❌ プランを解約する'}
+                  </Button>
+                </div>
               )}
             </div>
+          </div>
+
+          {/* クーポンコード入力セクション */}
+          <Card className="p-4 bg-gray-50 border border-gray-200 shadow-sm">
+            <h3 className="font-semibold text-gray-800 mb-3">クーポンコード</h3>
             
-            {/* 有効期限表示 */}
-            {currentPlan.plan !== 'free' && (
-              <div className="text-sm text-blue-600">
-                {currentPlan.status === 'lifetime' && (
-                  <>♾️ 永続利用プラン（期限なし）</>
-                )}
-                {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && !currentPlan.plan.startsWith('crowdfund') && (
-                  <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
-                )}
-                {currentPlan.currentPeriodEnd && currentPlan.status === 'cancel_at_period_end' && (
-                  <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
-                )}
-                {currentPlan.currentPeriodEnd && currentPlan.status === 'cancelled' && new Date() < currentPlan.currentPeriodEnd && (
-                  <>⏰ 利用終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
-                )}
-                {currentPlan.currentPeriodEnd && currentPlan.plan.startsWith('crowdfund') && currentPlan.status === 'active' && (
-                  <>📅 有効期限: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
-                )}
-              </div>
-            )}
-            
-            {/* 解約ボタン（有料プランかつアクティブまたはトライアルの場合、永続プランは除外） */}
-            {(currentPlan.status === 'active' || currentPlan.status === 'trial') && currentPlan.plan !== 'free' && currentPlan.status !== 'lifetime' && !currentPlan.plan.startsWith('crowdfund') && (
-              <div className="mt-3">
+            <div className="space-y-3">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="CF600-1M-001"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isCouponProcessing}
+                />
                 <Button 
-                  onClick={handleCancel}
-                  disabled={isProcessing}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
+                  onClick={handleCouponSubmit}
+                  disabled={isCouponProcessing || !couponCode.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
                 >
-                  {isProcessing ? '処理中...' : '❌ プランを解約する'}
+                  {isCouponProcessing ? '適用中...' : '適用'}
                 </Button>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* クーポンコード入力セクション */}
-        <Card className="p-4 bg-gray-50 border border-gray-200 shadow-sm mb-12">
-          <h3 className="font-semibold text-gray-800 mb-3">クーポンコード</h3>
-          
-          <div className="space-y-3">
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="CF600-1M-001"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={isCouponProcessing}
-              />
-              <Button 
-                onClick={handleCouponSubmit}
-                disabled={isCouponProcessing || !couponCode.trim()}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-              >
-                {isCouponProcessing ? '適用中...' : '適用'}
-              </Button>
+              
+              {couponSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
+                  <Check size={16} className="text-green-500" />
+                  <span className="text-green-700 text-sm">{couponSuccess}</span>
+                </div>
+              )}
             </div>
-            
-            {couponSuccess && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
-                <Check size={16} className="text-green-500" />
-                <span className="text-green-700 text-sm">{couponSuccess}</span>
-              </div>
-            )}
-          </div>
-        </Card>
+          </Card>
 
-        <div className="h-4"></div>
-
-        {/* 注意事項 */}
-        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
-          <h4 className="font-semibold text-gray-800 mb-3">プラン管理について</h4>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p>• <strong>❌ プランを解約する</strong>ボタンで、いつでも簡単に解約できます</p>
-            <p>• 解約後も期間終了まで全機能をご利用いただけます</p>
-            <p>• 期間終了後は自動的に無料プランに切り替わります</p>
-            <p>• 解約処理はStripe公式システムで安全に処理されます</p>
-            <p>• 支払い方法変更などのご相談はお問い合わせください</p>
-          </div>
-        </Card>
+          {/* 注意事項 */}
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-sm">
+            <h4 className="font-semibold text-gray-800 mb-3">プラン管理について</h4>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>• <strong>❌ プランを解約する</strong>ボタンで、いつでも簡単に解約できます</p>
+              <p>• 解約後も期間終了まで全機能をご利用いただけます</p>
+              <p>• 期間終了後は自動的に無料プランに切り替わります</p>
+              <p>• 解約処理はStripe公式システムで安全に処理されます</p>
+              <p>• 支払い方法変更などのご相談はお問い合わせください</p>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
