@@ -71,7 +71,7 @@ export default function TrialPage() {
       const paymentUrls = {
         'monthly': 'https://buy.stripe.com/4gM28s1ygdQm3Nj7C967S03',  // 月額プラン（3日間トライアル設定済み）
         'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 半年プラン
-        'annual': 'https://buy.stripe.com/annual-placeholder' // 年間プラン（後で更新）
+        'annual': 'https://buy.stripe.com/cNi3cw5OwdQmerX2hP67S04' // 年間プラン
       };
       const paymentUrl = paymentUrls[selectedPlan as keyof typeof paymentUrls] || paymentUrls['half-year'];
       

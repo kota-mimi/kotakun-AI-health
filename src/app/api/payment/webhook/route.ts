@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
         let currentPlan = '月額プラン'; // デフォルト
         
         console.log(`🔍 価格ID確認: ${priceId}`);
+        console.log(`🔍 本番年間ID: ${process.env.STRIPE_ANNUAL_PRICE_ID}`);
         console.log(`🔍 本番半年ID: ${process.env.STRIPE_BIANNUAL_PRICE_ID}`);
         console.log(`🔍 本番月額ID: ${process.env.STRIPE_MONTHLY_PRICE_ID}`);
         

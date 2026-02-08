@@ -24,6 +24,11 @@ export const USAGE_LIMITS = {
     recordsPerDay: -1,       // 無制限
     webAppAiAccess: true     // WebアプリAI機能あり
   },
+  annual: {
+    aiMessagesPerDay: -1,    // 無制限
+    recordsPerDay: -1,       // 無制限
+    webAppAiAccess: true     // WebアプリAI機能あり
+  },
   crowdfund_1m: {
     aiMessagesPerDay: -1,    // 無制限
     recordsPerDay: -1,       // 無制限
@@ -99,6 +104,7 @@ export async function getUserPlan(userId: string): Promise<string> {
       if (currentPlan === '月額プラン') return 'monthly';
       if (currentPlan === '3ヶ月プラン') return 'quarterly';
       if (currentPlan === '半年プラン') return 'biannual';
+      if (currentPlan === '年間プラン') return 'annual';
       
       // クーポン適用プランの場合
       if (userData?.couponUsed?.startsWith('CF')) {
