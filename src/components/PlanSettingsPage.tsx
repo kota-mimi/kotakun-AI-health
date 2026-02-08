@@ -483,12 +483,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* プラン一覧 */}
-        <div className="space-y-4 max-w-lg mx-auto mb-6">
+        <div className="space-y-4 max-w-lg mx-auto mb-12">
           {plans.map(plan => renderPlanCard(plan))}
         </div>
 
         {/* 現在のプラン状況 */}
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mb-12 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h3 className="font-semibold text-blue-900 mb-2">現在のプラン状況</h3>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
@@ -549,7 +549,7 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
         </div>
 
         {/* クーポンコード入力セクション */}
-        <Card className="p-4 bg-gray-50 border border-gray-200 shadow-sm mb-6">
+        <Card className="p-4 bg-gray-50 border border-gray-200 shadow-sm mb-12">
           <h3 className="font-semibold text-gray-800 mb-3">クーポンコード</h3>
           
           <div className="space-y-3">
