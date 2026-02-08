@@ -195,7 +195,7 @@ export default function TrialPage() {
               fontWeight: 700,
               boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
             }}>
-              最安！
+              最安！52%OFF
             </span>
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -233,13 +233,13 @@ export default function TrialPage() {
                   fontWeight: 700,
                   color: '#2C3E50'
                 }}>
-                  408<span style={{ fontSize: '14px', fontWeight: 500 }}>円/月</span>
+                  375<span style={{ fontSize: '14px', fontWeight: 500 }}>円/月</span>
                 </div>
                 <div style={{
                   fontSize: '13px',
                   color: '#5BAFCE',
                   fontWeight: 500
-                }}>12ヶ月 4,900円</div>
+                }}>12ヶ月 4,500円</div>
               </div>
             </div>
           </div>

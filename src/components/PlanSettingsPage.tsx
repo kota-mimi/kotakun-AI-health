@@ -17,7 +17,7 @@ interface PlanSettingsPageProps {
 }
 
 interface PlanInfo {
-  plan: 'free' | 'monthly' | 'quarterly' | 'biannual' | 'crowdfund_1m' | 'crowdfund_3m' | 'crowdfund_6m' | 'crowdfund_lifetime' | 'lifetime';
+  plan: 'free' | 'monthly' | 'quarterly' | 'biannual' | 'annual' | 'crowdfund_1m' | 'crowdfund_3m' | 'crowdfund_6m' | 'crowdfund_lifetime' | 'lifetime';
   planName: string;
   status: 'active' | 'inactive' | 'cancelled' | 'cancel_at_period_end' | 'lifetime';
   currentPeriodEnd?: Date;
@@ -276,6 +276,24 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       ]
     },
     {
+      id: 'annual',
+      name: '年間プラン',
+      price: 4500,
+      period: '12ヶ月',
+      originalPrice: 9480,
+      discount: '52%OFF',
+      monthlyPrice: 375,
+      stripePriceId: 'price_annual_placeholder',
+      isRecommended: true,
+      features: [
+        'すべての機能が無制限',
+        'AI会話・記録が使い放題',
+        '1日のフィードバック機能',
+        'アプリからAI記録機能',
+        '月額より52%お得！'
+      ]
+    },
+    {
       id: 'biannual',
       name: '半年プラン',
       price: 3000,
@@ -284,7 +302,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       discount: '37%OFF',
       monthlyPrice: 500,
       stripePriceId: 'price_1SWx4vKToWVElLyI2TyVD57H',
-      isRecommended: true,
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',

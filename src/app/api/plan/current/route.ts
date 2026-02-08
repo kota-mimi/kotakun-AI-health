@@ -93,6 +93,11 @@ export async function GET(request: NextRequest) {
             planName = subscriptionStatus === 'cancel_at_period_end' ? '半年プラン（解約予定）' 
                      : subscriptionStatus === 'cancelled' ? '半年プラン（解約済み）'
                      : '半年プラン';
+          } else if (currentPlan === '年間プラン') {
+            plan = 'annual';
+            planName = subscriptionStatus === 'cancel_at_period_end' ? '年間プラン（解約予定）' 
+                     : subscriptionStatus === 'cancelled' ? '年間プラン（解約済み）'
+                     : '年間プラン';
           } else if (currentPlan?.includes('1ヶ月プラン') && userData?.couponUsed?.startsWith('CF')) {
             // クーポン適用の1ヶ月プランの場合
             plan = 'crowdfund_1m';
