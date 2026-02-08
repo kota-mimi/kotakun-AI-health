@@ -276,24 +276,6 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       ]
     },
     {
-      id: 'annual',
-      name: '年間プラン',
-      price: 4500,
-      period: '12ヶ月',
-      originalPrice: 9480,
-      discount: '52%OFF',
-      monthlyPrice: 375,
-      stripePriceId: 'price_annual_placeholder',
-      isRecommended: true,
-      features: [
-        'すべての機能が無制限',
-        'AI会話・記録が使い放題',
-        '1日のフィードバック機能',
-        'アプリからAI記録機能',
-        '月額より52%お得！'
-      ]
-    },
-    {
       id: 'biannual',
       name: '半年プラン',
       price: 3000,
@@ -302,6 +284,24 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
       discount: '37%OFF',
       monthlyPrice: 500,
       stripePriceId: 'price_1SWx4vKToWVElLyI2TyVD57H',
+      isRecommended: true,
+      features: [
+        'すべての機能が無制限',
+        'AI会話・記録が使い放題',
+        '1日のフィードバック機能',
+        'アプリからAI記録機能',
+        '月額より37%お得！'
+      ]
+    },
+    {
+      id: 'annual',
+      name: '年間プラン',
+      price: 4500,
+      period: '12ヶ月',
+      originalPrice: 9480,
+      discount: '52%OFF',
+      monthlyPrice: 375,
+      stripePriceId: 'price_1SyQczKToWVElLyIbT6ib3Q1',
       features: [
         'すべての機能が無制限',
         'AI会話・記録が使い放題',
