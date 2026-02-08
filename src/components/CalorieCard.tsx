@@ -145,7 +145,6 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     </div>
                   </div>
                 </div>
-              </div>
         </div>
       </div>
     </div>
