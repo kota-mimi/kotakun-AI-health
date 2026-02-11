@@ -109,39 +109,25 @@ function PaymentSuccessContent() {
 
           {/* メインメッセージ */}
           <h1 className="text-2xl font-bold mb-4 text-gray-900">
-            決済完了
+            お試し登録完了
           </h1>
           
-          <div className="bg-green-50 rounded-lg p-4 mb-8 border border-green-200">
+          <div className="bg-blue-50 rounded-lg p-4 mb-8 border border-blue-200">
             <p className="text-gray-700 mb-3">
-              お支払いが正常に処理されました
+              3日間のお試し期間が開始されました
             </p>
             {sessionData?.planName && (
               <div className="bg-white rounded-lg p-3">
-                <p className="text-sm text-gray-600 mb-1">アップグレード完了</p>
-                <p className="text-lg font-bold text-green-700">
-                  {sessionData.planName}
+                <p className="text-sm text-gray-600 mb-1">お試しプラン</p>
+                <p className="text-lg font-bold text-blue-700">
+                  {sessionData.planName}（お試し期間中）
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  ※3日後に自動的に有料プランに移行します
                 </p>
               </div>
             )}
           </div>
-
-          {/* ウィンドウを閉じるボタン */}
-          <Button 
-            onClick={() => {
-              if (isInClient) {
-                closeWindow();
-              } else {
-                window.close();
-                setTimeout(() => {
-                  window.location.href = 'about:blank';
-                }, 500);
-              }
-            }}
-            className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
-          >
-            ページを閉じる
-          </Button>
         </div>
       </div>
     </div>
