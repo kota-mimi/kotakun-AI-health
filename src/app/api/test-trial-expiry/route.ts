@@ -26,6 +26,7 @@ export async function GET() {
     
     await admin.firestore().collection('users').doc(userId).update({
       trialEndDate: pastDate,
+      currentPeriodEnd: pastDate,
       updatedAt: new Date()
     });
     
