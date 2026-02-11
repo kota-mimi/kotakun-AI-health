@@ -517,6 +517,9 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                   {currentPlan.status === 'lifetime' && (
                     <>♾️ 永続利用プラン（期限なし）</>
                   )}
+                  {currentPlan.currentPeriodEnd && currentPlan.status === 'trial' && (
+                    <>⏰ お試し終了日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
+                  )}
                   {currentPlan.currentPeriodEnd && currentPlan.status === 'active' && !currentPlan.plan.startsWith('crowdfund') && (
                     <>📅 次回更新日: {currentPlan.currentPeriodEnd.toLocaleDateString('ja-JP')}</>
                   )}
@@ -540,7 +543,12 @@ export function PlanSettingsPage({ onBack }: PlanSettingsPageProps) {
                     disabled={isProcessing}
                     className="w-full bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
-                    {isProcessing ? '処理中...' : '❌ プランを解約する'}
+                    {isProcessing 
+                      ? '処理中...' 
+                      : currentPlan.status === 'trial' 
+                        ? '❌ お試しを終了する'
+                        : '❌ プランを解約する'
+                    }
                   </Button>
                 </div>
               )}
