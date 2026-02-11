@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { createPaymentSession } from '../lib/payment';
+import { createPaymentSession } from '@/lib/payment';
 
 export default function TrialPage() {
   const { isLiffReady, liffUser, isLoggedIn } = useAuth();
