@@ -136,15 +136,34 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ User updated:', userId, isTrialActive ? 'trial' : 'active');
 
+      // 詳細ログ出力
+      console.log('🔍 通知判定詳細:', {
+        userId,
+        isTrialActive,
+        subscriptionId: subscription.id,
+        trialEnd: subscription.trial_end,
+        currentTime: Date.now() / 1000,
+        shouldSendNotification: isTrialActive && userId
+      });
+
       // トライアル開始時のLINE通知を送信
       if (isTrialActive && userId) {
         try {
           console.log('📱 トライアル開始通知を送信中...', userId);
           await sendTrialStartNotification(userId, currentPlan, subscription.trial_end);
+          console.log('✅ トライアル開始通知送信完了:', userId);
         } catch (notificationError) {
           console.error('❌ トライアル開始通知エラー:', notificationError);
+          console.error('❌ エラー詳細:', notificationError.message);
+          console.error('❌ エラースタック:', notificationError.stack);
           // 通知エラーはWebhook処理を停止させない
         }
+      } else {
+        console.log('⚠️ 通知スキップ理由:', {
+          isTrialActive,
+          userId: !!userId,
+          reason: !isTrialActive ? 'トライアル無効' : !userId ? 'ユーザーID無し' : '不明'
+        });
       }
     }
 
@@ -263,13 +282,20 @@ async function sendTrialStartNotification(userId: string, planName: string, tria
     console.log('📱 トライアル開始通知送信開始:', { userId, planName, trialEndTimestamp });
 
     // ユーザー情報を取得（名前取得のため）
+    console.log('🔍 ユーザー情報取得中...', userId);
     const userDoc = await admin.firestore().collection('users').doc(userId).get();
     let userName = 'ユーザー';
     
     if (userDoc.exists) {
       const userData = userDoc.data();
       userName = userData?.profile?.name || userData?.lineDisplayName || 'ユーザー';
-      console.log('👤 ユーザー名取得:', userName);
+      console.log('👤 ユーザー名取得成功:', userName);
+      console.log('🔍 ユーザーデータ:', {
+        profile: userData?.profile,
+        lineDisplayName: userData?.lineDisplayName
+      });
+    } else {
+      console.log('⚠️ ユーザードキュメントが存在しません');
     }
 
     // トライアル終了日を計算
@@ -277,15 +303,22 @@ async function sendTrialStartNotification(userId: string, planName: string, tria
     console.log('📅 トライアル終了日:', trialEndDate.toLocaleDateString('ja-JP'));
 
     // FLEXメッセージを作成
+    console.log('🎨 FLEXメッセージ作成中...');
     const flexMessage = createTrialStartFlexMessage(userName, trialEndDate, planName);
+    console.log('🎨 FLEXメッセージ作成完了');
     
     // LINEメッセージを送信
+    console.log('📤 LINEメッセージ送信中...', userId);
     await pushMessage(userId, [flexMessage]);
+    console.log('📤 LINEメッセージ送信API呼び出し完了');
     
     console.log('✅ トライアル開始通知送信完了:', userId);
     
   } catch (error) {
     console.error('❌ トライアル開始通知送信エラー:', error);
+    console.error('❌ エラー名:', error.name);
+    console.error('❌ エラーメッセージ:', error.message);
+    console.error('❌ エラースタック:', error.stack);
     throw error;
   }
 }
