@@ -208,11 +208,23 @@ export async function POST(request: NextRequest) {
         
         console.log(`💰 決済成功 - プラン: ${currentPlan}, priceId: ${priceId}`);
         
+        // トライアル期間中かチェック
+        const isTrialActive = subscription.trial_end && subscription.trial_end > Date.now() / 1000;
+        const statusToSet = isTrialActive ? 'trial' : 'active';
+        
+        console.log('🔍 invoice.payment_succeeded - トライアル判定:', {
+          trialEnd: subscription.trial_end,
+          currentTime: Date.now() / 1000,
+          isTrialActive,
+          statusToSet
+        });
+
         await admin.firestore().collection('users').doc(userId).update({
-          subscriptionStatus: 'active',
+          subscriptionStatus: statusToSet,
           currentPlan: currentPlan,
           currentPeriodEnd: new Date(subscription.current_period_end * 1000),
           stripeSubscriptionId: subscription.id,
+          trialEndDate: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
           updatedAt: new Date(),
         });
         
