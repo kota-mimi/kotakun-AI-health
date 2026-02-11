@@ -288,14 +288,13 @@ async function sendSimpleTrialNotification(userId: string, planName: string, tri
     const endDateText = trialEndDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' });
     
     // シンプルなテキストメッセージを作成
-    const message = `🎉 ${userName}さん、${planName}のお試しが開始されました！
+    const message = `${userName}さん、${planName}のお試しが開始されました。
 
-✨ 3日間すべての機能が使い放題です
-📅 お試し終了日: ${endDateText}
-⚙️ プラン管理: https://kotakun-ai-health.vercel.app/settings
+3日間すべての機能が使い放題です
+お試し終了日: ${endDateText}
 
 お試し期間終了後は自動的に有料プランに移行します。
-解約はプラン管理からいつでも可能です。`;
+解約はプラン管理のページでいつでも可能です。`;
 
     // シンプルなテキストメッセージを送信
     const textMessage = {
