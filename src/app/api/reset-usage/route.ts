@@ -1,6 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/lib/firebase-admin';
 
+export async function GET() {
+  try {
+    const userId = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // 固定ID
+    
+    console.log('🔄 利用制限リセット開始:', userId);
+
+    const db = admin.firestore();
+    
+    // 1. usage_trackingの今日分を削除
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD形式
+    const todayUsageRef = db.collection('usage_tracking')
+      .doc(userId)
+      .collection('daily')
+      .doc(today);
+    
+    const usageDoc = await todayUsageRef.get();
+    let beforeData = null;
+    
+    if (usageDoc.exists) {
+      beforeData = usageDoc.data();
+      console.log('📊 削除前の使用回数:', beforeData);
+      await todayUsageRef.delete();
+      console.log(`✅ 本日(${today})の利用制限データを削除`);
+    }
+    
+    // 2. usage_trackingドキュメント自体もリセット
+    const usageRef = db.collection('usage_tracking').doc(userId);
+    await usageRef.delete();
+    console.log('✅ usage_trackingドキュメント削除');
+
+    return NextResponse.json({
+      success: true,
+      message: `✅ ${userId} の利用制限を完全リセットしました！`,
+      userId,
+      resetDate: today,
+      beforeData,
+      resetItems: [
+        '今日の利用制限データ削除',
+        'usage_tracking完全リセット'
+      ],
+      nextStep: '制限なしで利用可能です'
+    });
+
+  } catch (error: any) {
+    console.error('❌ リセットエラー:', error);
+    return NextResponse.json({
+      error: `リセット失敗: ${error.message}`,
+      success: false
+    }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
