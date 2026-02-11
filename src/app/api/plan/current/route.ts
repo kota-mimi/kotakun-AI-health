@@ -49,11 +49,12 @@ export async function GET(request: NextRequest) {
         let plan = 'free';
         let planName = '無料プラン';
         
-        // お試し期間中の場合（3日間無制限） - cancel_at_period_endを除外
-        if (subscriptionStatus === 'trial') {
-          const trialEnd = userData?.trialEndDate?.toDate();
+        // お試し期間中の場合（通常・解約予定両方）
+        if ((subscriptionStatus === 'trial' || subscriptionStatus === 'cancel_at_period_end') && 
+            userData?.trialEndDate?.toDate()) {
+          const trialEnd = userData.trialEndDate.toDate();
           if (trialEnd && new Date() < trialEnd) {
-            console.log('🎁 お試し期間中/解約予定: 実際のプランで表示', { userId, trialEnd, status: subscriptionStatus, actualPlan: currentPlan });
+            console.log('🎁 お試し期間中: 実際のプランで表示', { userId, trialEnd, status: subscriptionStatus, actualPlan: currentPlan });
             
             // 実際のプランに基づいてplan値を設定
             if (currentPlan === '年間プラン') {
@@ -99,26 +100,6 @@ export async function GET(request: NextRequest) {
         else if (subscriptionStatus === 'lifetime') {
           plan = 'lifetime';
           planName = currentPlan || '永久利用プラン';
-        }
-        // 解約予定トライアルの期間終了チェック（期限が過ぎた場合のみ）
-        else if (subscriptionStatus === 'cancel_at_period_end' && userData?.trialEndDate?.toDate()) {
-          const trialEnd = userData.trialEndDate.toDate();
-          if (trialEnd && new Date() >= trialEnd) {
-            // トライアル期間終了 → 無料プランに戻す
-            console.log('⏰ 解約予定トライアル期間終了: 無料プランに戻す', { userId, trialEnd });
-            plan = 'free';
-            planName = '無料プラン';
-            
-            return NextResponse.json({
-              success: true,
-              plan,
-              planName,
-              status: 'inactive',
-              currentPeriodEnd: null,
-              stripeSubscriptionId: null
-            });
-          }
-          // 期限内の場合は通常のアクティブプラン処理に進む
         }
         // 解約済み課金プランの期限終了チェック
         else if ((subscriptionStatus === 'cancelled' || subscriptionStatus === 'cancel_at_period_end') && 
