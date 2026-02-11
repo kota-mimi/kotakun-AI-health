@@ -5,20 +5,28 @@ import { useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { useLiff } from '@/contexts/LiffContext';
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [sessionData, setSessionData] = useState<any>(null);
+  const [countdown, setCountdown] = useState(5);
+  const { isInClient, closeWindow } = useLiff();
 
   useEffect(() => {
     if (sessionId) {
       verifyPayment(sessionId);
+      if (isInClient) {
+        setTimeout(() => {
+          closeWindow();
+        }, 3000);
+      }
     } else {
       setStatus('error');
     }
-  }, [sessionId]);
+  }, [sessionId, isInClient, closeWindow]);
 
   const verifyPayment = async (sessionId: string) => {
     try {
@@ -60,10 +68,16 @@ function PaymentSuccessContent() {
             決済の処理中にエラーが発生しました。
           </p>
           <Button 
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => {
+              if (isInClient) {
+                closeWindow();
+              } else {
+                window.open('https://line.me/ti/p/@kotakun', '_blank');
+              }
+            }}
             className="w-full"
           >
-            ホームに戻る
+            LINEに戻る
           </Button>
         </Card>
       </div>
@@ -101,12 +115,18 @@ function PaymentSuccessContent() {
             )}
           </div>
 
-          {/* アプリに戻るボタン */}
+          {/* LINEに戻るボタン */}
           <Button 
-            onClick={() => window.location.href = '/dashboard'}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg"
+            onClick={() => {
+              if (isInClient) {
+                closeWindow();
+              } else {
+                window.open('https://line.me/ti/p/@kotakun', '_blank');
+              }
+            }}
+            className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
           >
-            アプリに戻る
+            LINEに戻る
           </Button>
         </div>
       </div>
