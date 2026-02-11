@@ -13,7 +13,7 @@ if (!admin.apps.length) {
 
 const debugUserData = async () => {
   try {
-    const userId = 'U7fd12476d6263912e0d9c99fc3a6bef9';
+    const userId = 'U3a6b36f77d71d0ee539347f4fe1d6424';
     const db = admin.firestore();
     
     console.log('🔍 ユーザーデータ詳細確認:', userId);
