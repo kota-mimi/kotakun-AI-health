@@ -100,6 +100,25 @@ export async function GET(request: NextRequest) {
           plan = 'lifetime';
           planName = currentPlan || '永久利用プラン';
         }
+        // 解約予定トライアルの期間終了チェック
+        else if (subscriptionStatus === 'cancel_at_period_end' && userData?.trialEndDate?.toDate()) {
+          const trialEnd = userData.trialEndDate.toDate();
+          if (trialEnd && new Date() >= trialEnd) {
+            // トライアル期間終了 → 無料プランに戻す
+            console.log('⏰ 解約予定トライアル期間終了: 無料プランに戻す', { userId, trialEnd });
+            plan = 'free';
+            planName = '無料プラン';
+            
+            return NextResponse.json({
+              success: true,
+              plan,
+              planName,
+              status: 'inactive',
+              currentPeriodEnd: null,
+              stripeSubscriptionId: null
+            });
+          }
+        }
         // 通常のアクティブプランの場合
         else if (subscriptionStatus === 'active' || 
                  subscriptionStatus === 'cancel_at_period_end' ||
