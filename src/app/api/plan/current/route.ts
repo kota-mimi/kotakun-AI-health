@@ -53,11 +53,23 @@ export async function GET(request: NextRequest) {
         if (subscriptionStatus === 'trial') {
           const trialEnd = userData?.trialEndDate?.toDate();
           if (trialEnd && new Date() < trialEnd) {
-            console.log('🎁 お試し期間中/解約予定: 月額プラン扱い', { userId, trialEnd, status: subscriptionStatus });
-            plan = 'monthly';
+            console.log('🎁 お試し期間中/解約予定: 実際のプランで表示', { userId, trialEnd, status: subscriptionStatus, actualPlan: currentPlan });
+            
+            // 実際のプランに基づいてplan値を設定
+            if (currentPlan === '年間プラン') {
+              plan = 'annual';
+            } else if (currentPlan === '半年プラン') {
+              plan = 'biannual';
+            } else if (currentPlan === '3ヶ月プラン') {
+              plan = 'quarterly';
+            } else {
+              plan = 'monthly';
+            }
+            
+            // プラン名にお試し期間中を追加
             planName = subscriptionStatus === 'cancel_at_period_end' 
-              ? '月額プラン（お試し期間中・解約予定）'
-              : '月額プラン（お試し期間中）';
+              ? `${currentPlan}（お試し期間中・解約予定）`
+              : `${currentPlan}（お試し期間中）`;
             
             return NextResponse.json({
               success: true,
