@@ -65,14 +65,28 @@ export async function POST(request: NextRequest) {
             .get();
           
           if (!pendingTrialsSnapshot.empty) {
-            // 最新のpending trialを使用（簡単な実装）
-            const latestTrial = pendingTrialsSnapshot.docs[0];
-            const trialData = latestTrial.data();
-            userId = trialData.userId;
+            // 決済時刻と近いpendingTrialを探す（時刻マッチング）
+            const matchingTrial = pendingTrialsSnapshot.docs.find(doc => {
+              const data = doc.data();
+              const timeDiff = Math.abs(session.created * 1000 - data.createdAt.toMillis());
+              return timeDiff < 300000; // 5分以内
+            });
             
-            // pending trial を completed に更新
-            await latestTrial.ref.update({ status: 'completed' });
-            console.log(`💰 userId found from pending trial: ${userId}`);
+            if (matchingTrial) {
+              const trialData = matchingTrial.data();
+              userId = trialData.userId;
+              
+              // pending trial を completed に更新
+              await matchingTrial.ref.update({ status: 'completed' });
+              console.log(`💰 時刻マッチでuserID特定: ${userId} (時差: ${Math.abs(session.created * 1000 - trialData.createdAt.toMillis())}ms)`);
+            } else {
+              // フォールバック: 最新を使用
+              const latestTrial = pendingTrialsSnapshot.docs[0];
+              const trialData = latestTrial.data();
+              userId = trialData.userId;
+              await latestTrial.ref.update({ status: 'completed' });
+              console.log(`💰 フォールバック: 最新のuserID使用: ${userId}`);
+            }
           }
         } catch (err) {
           console.error('Failed to retrieve pending trials:', err);
