@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
           plan = 'lifetime';
           planName = currentPlan || '永久利用プラン';
         }
-        // 解約予定トライアルの期間終了チェック
+        // 解約予定トライアルの期間終了チェック（期限が過ぎた場合のみ）
         else if (subscriptionStatus === 'cancel_at_period_end' && userData?.trialEndDate?.toDate()) {
           const trialEnd = userData.trialEndDate.toDate();
           if (trialEnd && new Date() >= trialEnd) {
@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
               stripeSubscriptionId: null
             });
           }
+          // 期限内の場合は通常のアクティブプラン処理に進む
         }
         // 解約済み課金プランの期限終了チェック
         else if ((subscriptionStatus === 'cancelled' || subscriptionStatus === 'cancel_at_period_end') && 
