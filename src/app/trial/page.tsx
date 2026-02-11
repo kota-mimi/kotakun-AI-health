@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { createPaymentSession } from '../lib/payment';
 
 export default function TrialPage() {
   const { isLiffReady, liffUser, isLoggedIn } = useAuth();
@@ -25,69 +26,51 @@ export default function TrialPage() {
     try {
       console.log('🔗 トライアルボタン押下');
       
-      // ユーザーID取得（修正版）
-      let userIdToPass = '';
-      try {
-        if (liffUser?.userId) {
-          userIdToPass = liffUser.userId;
-          console.log('✅ ユーザーID取得成功:', userIdToPass);
-        } else {
-          console.log('⚠️ liffUser.userIdが取得できません');
-          console.log('liffUser:', liffUser);
-          console.log('isLoggedIn:', isLoggedIn);
-          console.log('isLiffReady:', isLiffReady);
-        }
-      } catch (error) {
-        console.log('⚠️ ユーザーID取得失敗:', error);
+      // ユーザー認証必須（プラン管理ページと同じロジック）
+      if (!liffUser?.userId) {
+        alert('LINEアプリでアクセスしてください。\n\nブラウザから直接アクセスした場合は、LINEアプリで当サービスを友達追加後、再度お試しください。');
+        return;
       }
+
+      console.log('✅ ユーザーID取得成功:', liffUser.userId);
       
-      if (!userIdToPass) {
-        userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック
-        console.log('🔧 テスト用ID使用:', userIdToPass);
-      }
-
-      // pendingTrialsに保存
-      try {
-        console.log('💾 トライアル準備中...', userIdToPass);
-        const response = await fetch('/api/prepare-trial', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: userIdToPass, 
-            planType: selectedPlan 
-          })
-        });
-        
-        if (response.ok) {
-          console.log('✅ トライアル準備完了');
-        } else {
-          console.log('⚠️ トライアル準備失敗、続行');
-        }
-      } catch (error) {
-        console.log('⚠️ トライアル準備エラー、続行:', error);
-      }
-
-      // プランに応じたPayment URLを設定
-      const paymentUrls = {
-        'monthly': 'https://buy.stripe.com/4gM28s1ygdQm3Nj7C967S03',  // 月額プラン（3日間トライアル設定済み）
-        'half-year': 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01', // 半年プラン
-        'annual': 'https://buy.stripe.com/cNi3cw5OwdQmerX2hP67S04' // 年間プラン
+      // プラン管理ページと同じcreatePaymentSession関数を使用
+      console.log('💳 決済セッション作成開始:', selectedPlan);
+      
+      // プランIDをStripe価格IDにマッピング
+      const planIdMapping = {
+        'monthly': 'monthly',
+        'half-year': 'biannual', 
+        'annual': 'annual'
       };
-      const paymentUrl = paymentUrls[selectedPlan as keyof typeof paymentUrls] || paymentUrls['half-year'];
+      const planId = planIdMapping[selectedPlan as keyof typeof planIdMapping] || 'biannual';
       
-      // プラン情報をローカルストレージに保存
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('trial_plan', selectedPlan);
-        localStorage.setItem('trial_timestamp', new Date().toISOString());
-        localStorage.setItem('trial_user_id', userIdToPass);
+      const session = await createPaymentSession(
+        planId,
+        liffUser.userId,
+        `${window.location.origin}/payment/success`,
+        `${window.location.origin}/payment/cancel`,
+        true  // includeTrial = true（3日間無料トライアル）
+      );
+
+      if (session.url) {
+        console.log('✅ 決済セッション作成成功、リダイレクト:', session.url);
+        window.location.href = session.url;
+      } else {
+        throw new Error('決済URLの取得に失敗しました');
       }
+    } catch (error) {
+      console.error('❌ トライアル処理エラー:', error);
       
-      console.log(`🔗 Redirecting to payment link for plan: ${selectedPlan}`);
-      window.location.href = paymentUrl;
-    } catch (mainError) {
-      console.error('❌ トライアル処理エラー:', mainError);
-      alert('エラーが発生しましたが、決済ページに進みます');
-      window.location.href = 'https://buy.stripe.com/dRmeVefp6cMi5Vrg8F67S01';
+      if (error instanceof Error) {
+        if (error.message.includes('本番Stripe APIキー')) {
+          alert('現在メンテナンス中です。しばらく経ってからお試しください。');
+        } else {
+          alert('エラーが発生しました: ' + error.message);
+        }
+      } else {
+        alert('予期しないエラーが発生しました。もう一度お試しください。');
+      }
     }
   };
 
