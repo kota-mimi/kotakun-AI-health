@@ -18,15 +18,10 @@ function PaymentSuccessContent() {
   useEffect(() => {
     if (sessionId) {
       verifyPayment(sessionId);
-      if (isInClient) {
-        setTimeout(() => {
-          closeWindow();
-        }, 3000);
-      }
     } else {
       setStatus('error');
     }
-  }, [sessionId, isInClient, closeWindow]);
+  }, [sessionId]);
 
   const verifyPayment = async (sessionId: string) => {
     try {
@@ -35,6 +30,19 @@ function PaymentSuccessContent() {
         const data = await response.json();
         setSessionData(data);
         setStatus('success');
+        
+        // 決済成功時、3秒後に自動でウィンドウを閉じる
+        setTimeout(() => {
+          if (isInClient) {
+            closeWindow();
+          } else {
+            window.close();
+            // ウィンドウが閉じれない場合のフォールバック
+            setTimeout(() => {
+              window.location.href = 'about:blank';
+            }, 1000);
+          }
+        }, 3000);
       } else {
         setStatus('error');
       }
@@ -72,12 +80,15 @@ function PaymentSuccessContent() {
               if (isInClient) {
                 closeWindow();
               } else {
-                window.open('https://line.me/ti/p/@kotakun', '_blank');
+                window.close();
+                setTimeout(() => {
+                  window.location.href = 'about:blank';
+                }, 500);
               }
             }}
             className="w-full"
           >
-            LINEに戻る
+            ページを閉じる
           </Button>
         </Card>
       </div>
@@ -115,18 +126,21 @@ function PaymentSuccessContent() {
             )}
           </div>
 
-          {/* LINEに戻るボタン */}
+          {/* ウィンドウを閉じるボタン */}
           <Button 
             onClick={() => {
               if (isInClient) {
                 closeWindow();
               } else {
-                window.open('https://line.me/ti/p/@kotakun', '_blank');
+                window.close();
+                setTimeout(() => {
+                  window.location.href = 'about:blank';
+                }, 500);
               }
             }}
             className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
           >
-            LINEに戻る
+            ページを閉じる
           </Button>
         </div>
       </div>
