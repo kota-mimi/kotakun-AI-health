@@ -287,6 +287,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // サブスクリプション削除時の処理（期間終了）
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
+      const userId = subscription.metadata?.userId;
+      
+      if (userId) {
+        console.log('🗑️ サブスクリプション削除 - 無料プランに戻す:', userId);
+        
+        // ユーザーを無料プランに戻す
+        await admin.firestore().collection('users').doc(userId).update({
+          subscriptionStatus: 'inactive',
+          currentPlan: null,
+          stripeSubscriptionId: null,
+          currentPeriodEnd: null,
+          trialEndDate: null,
+          updatedAt: new Date(),
+        });
+        
+        console.log('✅ ユーザーを無料プランに戻しました:', userId);
+      }
+    }
+
     return NextResponse.json({ received: true });
 
   } catch (error) {

@@ -119,6 +119,23 @@ export async function GET(request: NextRequest) {
             });
           }
         }
+        // 解約済み課金プランの期限終了チェック
+        else if ((subscriptionStatus === 'cancelled' || subscriptionStatus === 'cancel_at_period_end') && 
+                 currentPeriodEnd && new Date() >= currentPeriodEnd) {
+          // 課金プラン期間終了 → 無料プランに戻す
+          console.log('⏰ 課金プラン期間終了: 無料プランに戻す', { userId, currentPeriodEnd });
+          plan = 'free';
+          planName = '無料プラン';
+          
+          return NextResponse.json({
+            success: true,
+            plan,
+            planName,
+            status: 'inactive',
+            currentPeriodEnd: null,
+            stripeSubscriptionId: null
+          });
+        }
         // 通常のアクティブプランの場合
         else if (subscriptionStatus === 'active' || 
                  subscriptionStatus === 'cancel_at_period_end' ||
