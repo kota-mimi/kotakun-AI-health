@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { admin } from '@/lib/firebase-admin';
+import { pushMessage } from '@/lib/line';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -133,6 +134,17 @@ export async function POST(request: NextRequest) {
       });
 
       console.log('✅ User updated:', userId, isTrialActive ? 'trial' : 'active');
+
+      // トライアル開始時のシンプルなLINE通知を送信
+      if (isTrialActive && userId) {
+        try {
+          console.log('📱 トライアル開始通知を送信中...', userId);
+          await sendSimpleTrialNotification(userId, currentPlan, subscription.trial_end);
+        } catch (notificationError) {
+          console.error('❌ トライアル開始通知エラー:', notificationError);
+          // 通知エラーはWebhook処理を停止させない
+        }
+      }
     }
 
     // サブスクリプション更新（期間更新など）
@@ -253,5 +265,50 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Webhook processing error:', error);
     return NextResponse.json({ error: 'Webhook failed' }, { status: 500 });
+  }
+}
+
+// シンプルなトライアル開始通知をLINEで送信
+async function sendSimpleTrialNotification(userId: string, planName: string, trialEndTimestamp: number) {
+  try {
+    console.log('📱 シンプル通知送信開始:', { userId, planName, trialEndTimestamp });
+
+    // ユーザー情報を取得（名前取得のため）
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    let userName = 'ユーザー';
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      userName = userData?.profile?.name || userData?.lineDisplayName || 'ユーザー';
+      console.log('👤 ユーザー名取得:', userName);
+    }
+
+    // トライアル終了日を計算
+    const trialEndDate = new Date(trialEndTimestamp * 1000);
+    const endDateText = trialEndDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    
+    // シンプルなテキストメッセージを作成
+    const message = `🎉 ${userName}さん、${planName}のお試しが開始されました！
+
+✨ 3日間すべての機能が使い放題です
+📅 お試し終了日: ${endDateText}
+⚙️ プラン管理: https://kotakun-ai-health.vercel.app/settings
+
+お試し期間終了後は自動的に有料プランに移行します。
+解約はプラン管理からいつでも可能です。`;
+
+    // シンプルなテキストメッセージを送信
+    const textMessage = {
+      type: 'text',
+      text: message
+    };
+    
+    await pushMessage(userId, [textMessage]);
+    
+    console.log('✅ シンプル通知送信完了:', userId);
+    
+  } catch (error) {
+    console.error('❌ シンプル通知送信エラー:', error);
+    throw error;
   }
 }
