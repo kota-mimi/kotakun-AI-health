@@ -260,6 +260,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 決済失敗時の処理（トライアル期間終了時の決済失敗）
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = invoice.subscription;
+      
+      if (subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
+        const userId = subscription.metadata?.userId;
+        
+        if (userId) {
+          console.log('❌ 決済失敗 - トライアル終了処理:', userId);
+          
+          // ユーザーを無料プランに戻す
+          await admin.firestore().collection('users').doc(userId).update({
+            subscriptionStatus: 'inactive',
+            currentPlan: null,
+            stripeSubscriptionId: null,
+            currentPeriodEnd: null,
+            trialEndDate: null,
+            updatedAt: new Date(),
+          });
+          
+          console.log('✅ ユーザーを無料プランに戻しました:', userId);
+        }
+      }
+    }
+
     return NextResponse.json({ received: true });
 
   } catch (error) {

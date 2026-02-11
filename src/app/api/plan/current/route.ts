@@ -79,6 +79,20 @@ export async function GET(request: NextRequest) {
               currentPeriodEnd: trialEnd,
               stripeSubscriptionId
             });
+          } else if (trialEnd && new Date() >= trialEnd) {
+            // トライアル期間終了 → 無料プランに戻す
+            console.log('⏰ トライアル期間終了: 無料プランに戻す', { userId, trialEnd });
+            plan = 'free';
+            planName = '無料プラン';
+            
+            return NextResponse.json({
+              success: true,
+              plan,
+              planName,
+              status: 'inactive',
+              currentPeriodEnd: null,
+              stripeSubscriptionId: null
+            });
           }
         }
         // 永続プランの場合
