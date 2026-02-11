@@ -26,18 +26,51 @@ export default function TrialPage() {
     try {
       console.log('🔗 トライアルボタン押下');
       
-      // ユーザー認証必須（プラン管理ページと同じロジック）
-      if (!liffUser?.userId) {
-        alert('LINEアプリでアクセスしてください。\n\nブラウザから直接アクセスした場合は、LINEアプリで当サービスを友達追加後、再度お試しください。');
-        return;
+      // ユーザーID取得（元の方式）
+      let userIdToPass = '';
+      try {
+        if (liffUser?.userId) {
+          userIdToPass = liffUser.userId;
+          console.log('✅ ユーザーID取得成功:', userIdToPass);
+        } else {
+          console.log('⚠️ liffUser.userIdが取得できません');
+          console.log('liffUser:', liffUser);
+          console.log('isLoggedIn:', isLoggedIn);
+          console.log('isLiffReady:', isLiffReady);
+        }
+      } catch (error) {
+        console.log('⚠️ ユーザーID取得失敗:', error);
+      }
+      
+      if (!userIdToPass) {
+        userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック（元に戻す）
+        console.log('🔧 テスト用ID使用:', userIdToPass);
       }
 
-      console.log('✅ ユーザーID取得成功:', liffUser.userId);
-      
-      // プラン管理ページと同じcreatePaymentSession関数を使用
+      // pendingTrialsに保存（元の方式）
+      try {
+        console.log('💾 トライアル準備中...', userIdToPass);
+        const response = await fetch('/api/prepare-trial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: userIdToPass, 
+            planType: selectedPlan 
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ トライアル準備完了');
+        } else {
+          console.log('⚠️ トライアル準備失敗、続行');
+        }
+      } catch (error) {
+        console.log('⚠️ トライアル準備エラー、続行:', error);
+      }
+
+      // プラン管理ページと同じcreatePaymentSession関数を使用（修正版のまま）
       console.log('💳 決済セッション作成開始:', selectedPlan);
       
-      // プランIDをStripe価格IDにマッピング
       const planIdMapping = {
         'monthly': 'monthly',
         'half-year': 'biannual', 
@@ -47,7 +80,7 @@ export default function TrialPage() {
       
       const session = await createPaymentSession(
         planId,
-        liffUser.userId,
+        userIdToPass,
         `${window.location.origin}/payment/success`,
         `${window.location.origin}/payment/cancel`,
         true  // includeTrial = true（3日間無料トライアル）
