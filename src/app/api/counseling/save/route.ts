@@ -328,7 +328,7 @@ async function sendCounselingResultToLine(lineUserId: string, userProfile: any, 
     console.log('  - PFC:', results.pfc);
     console.log('  - mockAnalysis:', JSON.stringify(mockAnalysis, null, 2));
     
-    const flexMessage = createCounselingResultFlexMessage(mockAnalysis, userProfile, userId);
+    const flexMessage = createCounselingResultFlexMessage(mockAnalysis, userProfile, lineUserId);
     
     // 🚫 テキストメッセージのみ削除、flexメッセージは送信（ユーザー要望）
     console.log('送信中 - カウンセリング結果（Flexメッセージのみ）');
