@@ -26,25 +26,36 @@ export default function TrialPage() {
     try {
       console.log('🔗 トライアルボタン押下');
       
-      // ユーザーID取得（元の方式）
+      // ユーザーID取得（複数方法で試行）
       let userIdToPass = '';
-      try {
-        if (liffUser?.userId) {
-          userIdToPass = liffUser.userId;
-          console.log('✅ ユーザーID取得成功:', userIdToPass);
-        } else {
-          console.log('⚠️ liffUser.userIdが取得できません');
-          console.log('liffUser:', liffUser);
-          console.log('isLoggedIn:', isLoggedIn);
-          console.log('isLiffReady:', isLiffReady);
-        }
-      } catch (error) {
-        console.log('⚠️ ユーザーID取得失敗:', error);
-      }
       
-      if (!userIdToPass) {
-        userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック（元に戻す）
-        console.log('🔧 テスト用ID使用:', userIdToPass);
+      // 方法1: URLパラメータから取得（最優先）
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlUserId = urlParams.get('uid');
+      if (urlUserId) {
+        userIdToPass = urlUserId;
+        console.log('✅ URLパラメータからユーザーID取得:', userIdToPass);
+      } else {
+        // 方法2: LIFFから取得
+        try {
+          if (liffUser?.userId) {
+            userIdToPass = liffUser.userId;
+            console.log('✅ LIFFからユーザーID取得成功:', userIdToPass);
+          } else {
+            console.log('⚠️ liffUser.userIdが取得できません');
+            console.log('liffUser:', liffUser);
+            console.log('isLoggedIn:', isLoggedIn);
+            console.log('isLiffReady:', isLiffReady);
+          }
+        } catch (error) {
+          console.log('⚠️ ユーザーID取得失敗:', error);
+        }
+        
+        // 方法3: フォールバック
+        if (!userIdToPass) {
+          userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック
+          console.log('🔧 テスト用ID使用:', userIdToPass);
+        }
       }
 
       // pendingTrialsに保存（元の方式）

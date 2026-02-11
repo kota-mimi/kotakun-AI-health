@@ -73,7 +73,7 @@ async function sendAnalysisToLine(lineUserId: string, analysis: any, userProfile
     const userName = userProfile.name || 'ユーザー';
 
     // Flexメッセージでカウンセリング結果を送信
-    const flexMessage = createCounselingResultFlexMessage(analysis, userProfile);
+    const flexMessage = createCounselingResultFlexMessage(analysis, userProfile, lineUserId);
     
     await pushMessage(lineUserId, [flexMessage]);
 

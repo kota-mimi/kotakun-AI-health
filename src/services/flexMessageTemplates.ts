@@ -1,6 +1,6 @@
 // Flex Message Templates for Counseling Results
 
-export function createCounselingResultFlexMessage(analysis: any, userProfile: any) {
+export function createCounselingResultFlexMessage(analysis: any, userProfile: any, userId?: string) {
   const nutritionPlan = analysis.nutritionPlan || {};
   const userName = userProfile.name;
   const age = userProfile.age || 0;
@@ -433,7 +433,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                 action: {
                   type: 'uri',
                   label: '3日間無料トライアル',
-                  uri: 'https://kotakun-ai-health.vercel.app/trial'
+                  uri: userId ? `https://kotakun-ai-health.vercel.app/trial?uid=${userId}` : 'https://kotakun-ai-health.vercel.app/trial'
                 },
                 style: 'primary',
                 color: '#5BAFCE',
@@ -1264,7 +1264,7 @@ export async function createUsageLimitFlex(limitType: "ai" | "record" | "feedbac
             action: {
               type: "uri",
               label: "3日間無料トライアル",
-              uri: "https://kotakun-ai-health.vercel.app/trial"
+              uri: userId ? `https://kotakun-ai-health.vercel.app/trial?uid=${userId}` : "https://kotakun-ai-health.vercel.app/trial"
             },
             style: "primary",
             color: "#5BAFCE"
