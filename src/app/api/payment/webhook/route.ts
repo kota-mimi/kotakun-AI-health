@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { admin } from '@/lib/firebase-admin';
+import { pushMessage } from '@/lib/line';
+import { createTrialStartFlexMessage } from '@/services/flexMessageTemplates';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -133,6 +135,17 @@ export async function POST(request: NextRequest) {
       });
 
       console.log('✅ User updated:', userId, isTrialActive ? 'trial' : 'active');
+
+      // トライアル開始時のLINE通知を送信
+      if (isTrialActive && userId) {
+        try {
+          console.log('📱 トライアル開始通知を送信中...', userId);
+          await sendTrialStartNotification(userId, currentPlan, subscription.trial_end);
+        } catch (notificationError) {
+          console.error('❌ トライアル開始通知エラー:', notificationError);
+          // 通知エラーはWebhook処理を停止させない
+        }
+      }
     }
 
     // サブスクリプション更新（期間更新など）
@@ -241,5 +254,38 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Webhook processing error:', error);
     return NextResponse.json({ error: 'Webhook failed' }, { status: 500 });
+  }
+}
+
+// トライアル開始通知をLINEで送信
+async function sendTrialStartNotification(userId: string, planName: string, trialEndTimestamp: number) {
+  try {
+    console.log('📱 トライアル開始通知送信開始:', { userId, planName, trialEndTimestamp });
+
+    // ユーザー情報を取得（名前取得のため）
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    let userName = 'ユーザー';
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      userName = userData?.profile?.name || userData?.lineDisplayName || 'ユーザー';
+      console.log('👤 ユーザー名取得:', userName);
+    }
+
+    // トライアル終了日を計算
+    const trialEndDate = new Date(trialEndTimestamp * 1000);
+    console.log('📅 トライアル終了日:', trialEndDate.toLocaleDateString('ja-JP'));
+
+    // FLEXメッセージを作成
+    const flexMessage = createTrialStartFlexMessage(userName, trialEndDate, planName);
+    
+    // LINEメッセージを送信
+    await pushMessage(userId, [flexMessage]);
+    
+    console.log('✅ トライアル開始通知送信完了:', userId);
+    
+  } catch (error) {
+    console.error('❌ トライアル開始通知送信エラー:', error);
+    throw error;
   }
 }

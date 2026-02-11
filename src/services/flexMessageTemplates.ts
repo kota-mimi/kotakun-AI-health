@@ -1,5 +1,155 @@
 // Flex Message Templates for Counseling Results
 
+// トライアル登録完了通知用のFLEXメッセージ
+export function createTrialStartFlexMessage(userName?: string, trialEndDate?: Date, planName?: string) {
+  const displayName = userName || 'ユーザー';
+  const endDateText = trialEndDate 
+    ? trialEndDate.toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' })
+    : '3日後';
+  const displayPlanName = planName || '月額プラン';
+
+  return {
+    type: 'flex',
+    altText: `🎉 ${displayName}さん、トライアル開始完了！`,
+    contents: {
+      type: 'bubble',
+      size: 'mega',
+      action: {
+        type: 'uri',
+        uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+      },
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: '🎉 トライアル開始！',
+            weight: 'bold',
+            size: 'xl',
+            color: '#ffffff',
+            align: 'center'
+          }
+        ],
+        backgroundColor: '#4CAF50',
+        paddingAll: '20px'
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'text',
+            text: `${displayName}さん`,
+            weight: 'bold',
+            size: 'lg',
+            color: '#333333',
+            margin: 'md'
+          },
+          {
+            type: 'text',
+            text: `${displayPlanName}のトライアルが開始されました！`,
+            size: 'sm',
+            color: '#666666',
+            wrap: true,
+            margin: 'sm'
+          },
+          {
+            type: 'separator',
+            margin: 'lg'
+          },
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '✨ トライアル期間中は全機能無制限！',
+                weight: 'bold',
+                size: 'md',
+                color: '#4CAF50',
+                margin: 'lg'
+              },
+              {
+                type: 'text',
+                text: '• AI会話・記録が使い放題\n• 1日のフィードバック機能\n• アプリからAI記録機能',
+                size: 'sm',
+                color: '#666666',
+                wrap: true,
+                margin: 'sm'
+              }
+            ]
+          },
+          {
+            type: 'separator',
+            margin: 'lg'
+          },
+          {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '⏰ トライアル期間',
+                weight: 'bold',
+                size: 'sm',
+                color: '#333333',
+                margin: 'lg'
+              },
+              {
+                type: 'text',
+                text: `${endDateText}まで`,
+                size: 'md',
+                color: '#FF9800',
+                weight: 'bold',
+                margin: 'sm'
+              },
+              {
+                type: 'text',
+                text: 'トライアル終了後は自動的に有料プランに移行します',
+                size: 'xs',
+                color: '#999999',
+                wrap: true,
+                margin: 'sm'
+              }
+            ]
+          }
+        ],
+        paddingAll: '20px'
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [
+          {
+            type: 'button',
+            style: 'primary',
+            height: 'sm',
+            color: '#4CAF50',
+            action: {
+              type: 'uri',
+              uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/dashboard` : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+            },
+            label: '🍽️ 記録を始める'
+          },
+          {
+            type: 'button',
+            style: 'secondary',
+            height: 'sm',
+            action: {
+              type: 'uri',
+              uri: process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}/settings` : `${process.env.NEXT_PUBLIC_APP_URL}/settings`
+            },
+            label: '⚙️ プラン管理'
+          }
+        ],
+        spacing: 'sm',
+        paddingAll: '20px'
+      }
+    }
+  };
+}
+
 export function createCounselingResultFlexMessage(analysis: any, userProfile: any, userId?: string) {
   const nutritionPlan = analysis.nutritionPlan || {};
   const userName = userProfile.name;

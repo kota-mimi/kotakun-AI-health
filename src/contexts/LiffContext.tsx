@@ -68,7 +68,7 @@ export function LiffProvider({ children }: LiffProviderProps) {
             isReady: true,
             isLoggedIn: true, // テスト用にログイン状態にする
             user: {
-              userId: 'U7fd12476d6263912e0d9c99fc3a6bef9', // あなたのテスト用ID
+              userId: 'test_user_id', // 開発環境テスト用ID
               displayName: 'テストユーザー',
               pictureUrl: '',
               statusMessage: '',

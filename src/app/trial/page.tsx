@@ -51,10 +51,11 @@ export default function TrialPage() {
           console.log('⚠️ ユーザーID取得失敗:', error);
         }
         
-        // 方法3: フォールバック
+        // 方法3: フォールバック - 開発者ID特別扱い削除済み
         if (!userIdToPass) {
-          userIdToPass = 'U7fd12476d6263912e0d9c99fc3a6bef9'; // テスト用フォールバック
-          console.log('🔧 テスト用ID使用:', userIdToPass);
+          console.log('⚠️ ユーザーID取得失敗 - トライアルページにはLINEアプリからアクセスしてください');
+          setError('ユーザー認証に失敗しました。LINEアプリからアクセスしてください。');
+          return;
         }
       }
 
