@@ -16,13 +16,23 @@ export async function POST(request: NextRequest) {
 
     let event: Stripe.Event;
 
-    // Webhook署名検証を完全無効化
+    // Webhook署名検証（セキュリティ強化）
     try {
-      event = JSON.parse(body);
-      console.log('🔄 Webhook received:', event.type);
+      if (process.env.STRIPE_WEBHOOK_SECRET) {
+        event = stripe.webhooks.constructEvent(
+          body,
+          signature,
+          process.env.STRIPE_WEBHOOK_SECRET
+        );
+        console.log('✅ Verified webhook from Stripe:', event.type);
+      } else {
+        // 開発環境など、署名検証なしで実行
+        event = JSON.parse(body);
+        console.warn('⚠️ Webhook signature verification skipped (no secret configured)');
+      }
     } catch (err) {
-      console.error('❌ Webhook parsing failed:', err);
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+      console.error('❌ Webhook signature verification failed:', err);
+      return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
     }
 
     console.log('✅ Stripe webhook:', event.type);
