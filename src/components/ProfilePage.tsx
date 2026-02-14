@@ -12,7 +12,8 @@ import {
   Camera,
   Heart,
   FileText,
-  Shield
+  Shield,
+  Image
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,9 +24,10 @@ import { TargetSettingsModal } from './TargetSettingsModal';
 
 interface ProfilePageProps {
   onNavigateToSettings?: () => void;
+  onNavigateToBackgroundSettings?: () => void;
 }
 
-export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
+export function ProfilePage({ onNavigateToSettings, onNavigateToBackgroundSettings }: ProfilePageProps) {
   const { isLiffReady, isLoggedIn, liffUser } = useAuth();
   const [userLevel] = useState(12);
   const [userXP] = useState(2480);
@@ -73,6 +75,7 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
       description: `${targetValues.targetCalories}kcal・P${targetValues.macros.protein}g・F${targetValues.macros.fat}g・C${targetValues.macros.carbs}g`,
       onClick: () => setIsTargetModalOpen(true)
     },
+    { icon: Image, label: "背景設定", color: "#FF6B6B", description: "アプリの背景画像をカスタマイズ", onClick: onNavigateToBackgroundSettings },
     { icon: Calendar, label: "レポート", color: "#10B981", description: "週間・月間レポート" },
     { icon: Lock, label: "プライバシー", color: "#EF4444", description: "データ管理" },
     { icon: Settings, label: "アプリ設定", color: "#6B7280", description: "表示・操作設定" },
@@ -146,6 +149,7 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
                 className="w-full justify-start p-4 h-auto hover:bg-white/60 rounded-xl transition-all"
                 onClick={
                   item.label === 'アプリ設定' ? onNavigateToSettings :
+                  item.label === '背景設定' ? onNavigateToBackgroundSettings :
                   item.onClick ? item.onClick : undefined
                 }
               >

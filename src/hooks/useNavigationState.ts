@@ -16,6 +16,7 @@ export function useNavigationState() {
   const [showUserGuide, setShowUserGuide] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
+  const [showBackgroundSettings, setShowBackgroundSettings] = useState(false);
 
   // 栄養素設定をlocalStorageで永続化
   const selectedNutrientsStorage = useLocalStorage('healthApp_selectedNutrients', {
@@ -99,6 +100,14 @@ export function useNavigationState() {
     setShowContact(false);
   };
 
+  const handleNavigateToBackgroundSettings = () => {
+    setShowBackgroundSettings(true);
+  };
+
+  const handleBackFromBackgroundSettings = () => {
+    setShowBackgroundSettings(false);
+  };
+
 
 
   return {
@@ -115,6 +124,7 @@ export function useNavigationState() {
     showUserGuide,
     showContact,
     showWeightSettings,
+    showBackgroundSettings,
     selectedNutrients: selectedNutrientsStorage.value,
     
     // アクション
@@ -137,6 +147,8 @@ export function useNavigationState() {
     handleBackFromPaymentSettings,
     handleBackFromUserGuide,
     handleBackFromContact,
+    handleNavigateToBackgroundSettings,
+    handleBackFromBackgroundSettings,
     
     // セッター（必要に応じて）
     setSelectedDate,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LiffProvider } from "@/contexts/LiffContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BackgroundProvider } from "@/components/BackgroundProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -65,7 +66,9 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <LiffProvider>
-            {children}
+            <BackgroundProvider>
+              {children}
+            </BackgroundProvider>
           </LiffProvider>
         </ErrorBoundary>
       </body>

@@ -25,6 +25,7 @@ interface MyProfilePageProps {
   onNavigateToPlanSettings?: () => void;
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
+  onNavigateToBackgroundSettings?: () => void;
   onNavigateToCounseling?: () => void;
 }
 
@@ -34,6 +35,7 @@ export function MyProfilePage({
   onNavigateToPlanSettings,
   onNavigateToUserGuide,
   onNavigateToContact,
+  onNavigateToBackgroundSettings,
   onNavigateToCounseling
 }: MyProfilePageProps) {
   // 編集モーダルの状態
@@ -409,6 +411,14 @@ export function MyProfilePage({
     }
   ];
 
+  const customizationMenuItems = [
+    {
+      label: '背景設定',
+      color: '#FF6B6B',
+      action: onNavigateToBackgroundSettings || (() => {})
+    }
+  ];
+
   const supportMenuItems = [
     {
       label: '使い方ガイド',
@@ -555,7 +565,7 @@ export function MyProfilePage({
       <div className="mx-4">
         <Card className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="divide-y divide-slate-100">
-            {[...accountMenuItems, ...supportMenuItems].map((item, index) => {
+            {[...accountMenuItems, ...customizationMenuItems, ...supportMenuItems].map((item, index) => {
               return (
                 <Button
                   key={index}

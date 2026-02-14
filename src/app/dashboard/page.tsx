@@ -31,6 +31,7 @@ import { UserGuidePage } from '@/components/UserGuidePage';
 import { ContactPage } from '@/components/ContactPage';
 import { DataManagementModal } from '@/components/DataManagementModal';
 import { WeightCard } from '@/components/WeightCard';
+import { BackgroundSettingsPage } from '@/components/BackgroundSettingsPage';
 import { WeightEntryModal } from '@/components/WeightEntryModal';
 import { FloatingShortcutBar } from '@/components/FloatingShortcutBar';
 import { CalorieCardSkeleton, MealCardSkeleton } from '@/components/ui/skeleton';
@@ -408,7 +409,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (
         <>
-          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showUserGuide && !navigation.showContact ? (
+          {!navigation.showSettings && !navigation.showNutritionSettings && !navigation.showPlanSettings && !navigation.showUserGuide && !navigation.showContact && !navigation.showBackgroundSettings ? (
             <div className="relative py-4 pb-20 space-y-4">
               <MyProfilePage 
                 onNavigateToSettings={navigation.handleNavigateToSettings}
@@ -416,6 +417,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
                 onNavigateToPlanSettings={navigation.handleNavigateToPlanSettings}
                 onNavigateToUserGuide={navigation.handleNavigateToUserGuide}
                 onNavigateToContact={navigation.handleNavigateToContact}
+                onNavigateToBackgroundSettings={navigation.handleNavigateToBackgroundSettings}
                 onNavigateToCounseling={() => {
                   window.location.href = '/counseling';
                 }}
@@ -446,6 +448,12 @@ function DashboardContent({ onError }: { onError: () => void }) {
             <ContactPage 
               onBack={navigation.handleBackFromContact}
             />
+          ) : navigation.showBackgroundSettings ? (
+            <div className="relative px-4 py-4 pb-20 space-y-4">
+              <BackgroundSettingsPage 
+                onBack={navigation.handleBackFromBackgroundSettings}
+              />
+            </div>
           ) : null}
         </>
       )}
