@@ -46,13 +46,17 @@ export default function DashboardPage() {
 
   // サーバーサイドでは何も表示しない
   if (!isClient) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-100 via-slate-50 to-purple-100" />;
+    return <div className="min-h-screen" style={{
+      background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
+    }} />;
   }
 
   // エラーハンドリング
   if (hasError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-slate-50 to-purple-100 p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
+      }}>
         <div className="text-center">
           <h1 className="text-xl font-semibold mb-4">ホームページでエラーが発生しました</h1>
           <button 
@@ -71,7 +75,9 @@ export default function DashboardPage() {
   } catch (error) {
     console.error('Dashboard render error:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-slate-50 to-purple-100 p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
+      }}>
         <div className="text-center">
           <h1 className="text-xl font-semibold mb-4">ホームページの読み込みに失敗しました</h1>
           <button 
@@ -403,12 +409,13 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-blue-100 via-slate-50 to-purple-100">
-      {/* Aurora Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 -left-32 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 right-1/4 w-64 h-64 bg-pink-300/25 rounded-full blur-3xl animate-pulse delay-500"></div>
+    <div className="min-h-screen relative" style={{
+      background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
+    }}>
+      {/* iPhone Folder Frame Effect */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-4 rounded-[3rem] border border-white/30 backdrop-blur-sm bg-white/5"></div>
+        <div className="absolute inset-6 rounded-[2.5rem] border border-white/20 backdrop-blur-sm bg-white/3"></div>
       </div>
       
       {/* プロフィール・設定タブ */}

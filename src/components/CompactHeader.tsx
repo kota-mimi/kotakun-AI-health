@@ -172,8 +172,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                   onClick={() => onDateSelect(date)}
                   className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
                     isSameDate(date, currentDate)
-                      ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/50 backdrop-blur-sm'
-                      : 'text-slate-600 hover:bg-white/40 hover:backdrop-blur-md'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-slate-700 hover:bg-white/30'
                   }`}
                   style={{
                     ...(hasRecords && {
