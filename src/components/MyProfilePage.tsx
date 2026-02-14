@@ -441,16 +441,16 @@ export function MyProfilePage({
         <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">{title}</h3>
       </div>
       
-      {/* メニューカード - iOS風 */}
+      {/* メニューカード - すりガラス風 */}
       <div className="mx-4">
-        <Card className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <Card className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               return (
                 <Button
                   key={index}
                   variant="ghost"
-                  className="w-full justify-start p-0 h-auto hover:bg-slate-50 rounded-none"
+                  className="w-full justify-start p-0 h-auto hover:bg-white/30 rounded-none"
                   onClick={item.action}
                 >
                   <div className="flex items-center py-4 px-4 w-full">
@@ -471,9 +471,9 @@ export function MyProfilePage({
 
   return (
     <div key={`${refreshKey}-${latestProfile?.changeDate || 'default'}`} className="space-y-8 pb-4">
-      {/* プロフィールヘッダー - iOS風アバター付き */}
+      {/* プロフィールヘッダー - すりガラス風 */}
       <div className="px-4">
-        <Card className={`relative bg-white rounded-xl shadow-sm border border-gray-200 p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
+        <Card className={`relative bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
@@ -501,7 +501,7 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 shadow-sm"
+                className="flex-1 text-center p-3 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl hover:bg-blue-500/20 hover:border-blue-400/60 transition-all duration-200 shadow-md"
               >
                 <div className="text-xs text-slate-500">体重</div>
                 <div className="font-bold text-slate-900 text-lg">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
@@ -519,7 +519,7 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 shadow-sm"
+                className="flex-1 text-center p-3 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl hover:bg-blue-500/20 hover:border-blue-400/60 transition-all duration-200 shadow-md"
               >
                 <div className="text-xs text-slate-500">カロリー</div>
                 <div className="font-bold text-blue-600 text-base">{finalCalories}</div>

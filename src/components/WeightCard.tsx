@@ -77,15 +77,15 @@ export function WeightCard({
 		: 0;
 
 	return (
-		<Card className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
+		<Card className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl overflow-hidden">
 			<div className="p-2">
 				<div className="grid grid-cols-3 gap-1.5">
 					{/* 現在の体重 */}
 					<div
-						className="text-center p-2 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-blue-500/20 backdrop-blur-md rounded-2xl border border-blue-300/40 cursor-pointer hover:bg-blue-500/30 hover:shadow-lg transition-all"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">
 							現在
 						</div>
 						<div className="text-lg font-bold text-slate-900">
@@ -104,10 +104,10 @@ export function WeightCard({
 
 					{/* 前日比 */}
 					<div
-						className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-green-500/20 backdrop-blur-md rounded-2xl border border-green-300/40 cursor-pointer hover:bg-green-500/30 hover:shadow-lg transition-all"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">
 							前回比
 						</div>
 						<div
@@ -135,10 +135,10 @@ export function WeightCard({
 
 					{/* 目標まで */}
 					<div
-						className="text-center p-2 bg-green-50 rounded-xl border border-green-200 cursor-pointer hover:shadow-sm transition-shadow"
+						className="text-center p-2 bg-purple-500/20 backdrop-blur-md rounded-2xl border border-purple-300/40 cursor-pointer hover:bg-purple-500/30 hover:shadow-lg transition-all"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-semibold text-purple-700 mb-1 uppercase tracking-wide">
 							目標まで
 						</div>
 						<div className="text-lg font-bold">

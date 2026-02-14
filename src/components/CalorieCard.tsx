@@ -68,7 +68,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 space-y-0">
+    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl space-y-0">
       {/* タイトル */}
       <div className="p-3 pb-0">
         <h3 className="text-lg font-medium text-slate-900">摂取カロリー</h3>
@@ -101,11 +101,11 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                   {/* 3列グリッドレイアウト */}
                   <div className="grid grid-cols-3 gap-3">
                     {/* タンパク質 */}
-                    <div className="text-center">
-                      <div className="text-xs text-slate-600 mb-1">タンパク質</div>
+                    <div className="text-center bg-red-500/20 backdrop-blur-md rounded-2xl p-3 border border-red-300/30">
+                      <div className="text-xs text-red-700 font-semibold mb-1">タンパク質</div>
                       <div className="text-lg font-bold mb-2">
-                        <span className="text-nutrition-protein">{displayPfc.protein}</span>
-                        <span className="text-xs text-slate-400">/{finalProteinTarget}g</span>
+                        <span className="text-red-600">{displayPfc.protein}</span>
+                        <span className="text-xs text-red-400">/{finalProteinTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(proteinProgress, 100)} 
@@ -116,11 +116,11 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     </div>
 
                     {/* 炭水化物 */}
-                    <div className="text-center">
-                      <div className="text-xs text-slate-600 mb-1">炭水化物</div>
+                    <div className="text-center bg-green-500/20 backdrop-blur-md rounded-2xl p-3 border border-green-300/30">
+                      <div className="text-xs text-green-700 font-semibold mb-1">炭水化物</div>
                       <div className="text-lg font-bold mb-2">
-                        <span className="text-nutrition-carbs">{displayPfc.carbs}</span>
-                        <span className="text-xs text-slate-400">/{finalCarbsTarget}g</span>
+                        <span className="text-green-600">{displayPfc.carbs}</span>
+                        <span className="text-xs text-green-400">/{finalCarbsTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(carbsProgress, 100)} 
@@ -131,11 +131,11 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     </div>
 
                     {/* 脂質 */}
-                    <div className="text-center">
-                      <div className="text-xs text-slate-600 mb-1">脂質</div>
+                    <div className="text-center bg-orange-500/20 backdrop-blur-md rounded-2xl p-3 border border-orange-300/30">
+                      <div className="text-xs text-orange-700 font-semibold mb-1">脂質</div>
                       <div className="text-lg font-bold mb-2">
-                        <span className="text-nutrition-fat">{displayPfc.fat}</span>
-                        <span className="text-xs text-slate-400">/{finalFatTarget}g</span>
+                        <span className="text-orange-600">{displayPfc.fat}</span>
+                        <span className="text-xs text-orange-400">/{finalFatTarget}g</span>
                       </div>
                       <Progress 
                         value={Math.min(fatProgress, 100)} 

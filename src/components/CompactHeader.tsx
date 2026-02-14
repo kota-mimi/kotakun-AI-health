@@ -114,13 +114,13 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
   });
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
+    <div className="bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-lg">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
         {/* 共有ボタン（左）- 常に表示 */}
         <button
           onClick={onShareRecord || (() => console.log('Share clicked but no handler'))}
-          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl transition-all bg-transparent border-none cursor-pointer flex items-center justify-center"
+          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-white/40 hover:backdrop-blur-md rounded-xl transition-all bg-transparent border-none cursor-pointer flex items-center justify-center"
           title="記録を共有"
         >
           <Share2 size={20} />
@@ -136,7 +136,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
           variant="ghost"
           size="sm"
           onClick={onCalendar}
-          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl"
+          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-white/40 hover:backdrop-blur-md rounded-xl"
         >
           <Calendar size={20} />
         </Button>
@@ -153,7 +153,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               prevWeek.setDate(currentDate.getDate() - 7);
               onDateSelect(prevWeek);
             }}
-            className="w-8 h-8 p-0 rounded-lg hover:bg-slate-100/80 text-slate-600"
+            className="w-8 h-8 p-0 rounded-lg hover:bg-white/40 hover:backdrop-blur-md text-slate-600"
           >
             <ChevronLeft size={16} />
           </Button>
@@ -172,8 +172,8 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
                   onClick={() => onDateSelect(date)}
                   className={`h-12 flex flex-col p-1 rounded-xl transition-all ${
                     isSameDate(date, currentDate)
-                      ? 'bg-health-primary text-white shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-100/60'
+                      ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/50 backdrop-blur-sm'
+                      : 'text-slate-600 hover:bg-white/40 hover:backdrop-blur-md'
                   }`}
                   style={{
                     ...(hasRecords && {
@@ -199,7 +199,7 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
               nextWeek.setDate(currentDate.getDate() + 7);
               onDateSelect(nextWeek);
             }}
-            className="w-8 h-8 p-0 rounded-lg hover:bg-slate-100/80 text-slate-600"
+            className="w-8 h-8 p-0 rounded-lg hover:bg-white/40 hover:backdrop-blur-md text-slate-600"
           >
             <ChevronRight size={16} />
           </Button>
