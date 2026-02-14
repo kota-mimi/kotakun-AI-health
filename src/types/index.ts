@@ -133,21 +133,6 @@ export interface AIAnalysis {
   timestamp: Date;
 }
 
-export interface NotificationSettings {
-  mealReminders: boolean;
-  exerciseReminders: boolean;
-  waterReminders: boolean;
-  weeklyReports: boolean;
-  customReminders: CustomReminder[];
-}
-
-export interface CustomReminder {
-  id: string;
-  message: string;
-  time: string; // HH:MM
-  days: number[]; // 0=Sunday, 1=Monday, ...
-  active: boolean;
-}
 
 // API関連の型
 export interface APIResponse<T = unknown> {
