@@ -55,36 +55,65 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
   }, []);
 
   const applyBackground = (backgroundId: string, customUrl?: string) => {
-    const body = document.body;
+    // 既存のスタイルをクリア
+    const existingStyle = document.getElementById('app-background-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
     
-    // 既存の背景スタイルをクリア
-    body.style.background = '';
-    body.style.backgroundImage = '';
-    body.style.backgroundSize = '';
-    body.style.backgroundPosition = '';
-    body.style.backgroundAttachment = '';
+    // 新しいスタイルシートを作成
+    const style = document.createElement('style');
+    style.id = 'app-background-style';
+    
+    let backgroundCSS = '';
     
     if (backgroundId === 'custom' && customUrl) {
-      body.style.backgroundImage = `url(${customUrl})`;
-      body.style.backgroundSize = 'cover';
-      body.style.backgroundPosition = 'center';
-      body.style.backgroundAttachment = 'fixed';
-      body.style.minHeight = '100vh';
+      backgroundCSS = `
+        body {
+          background-image: url(${customUrl}) !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-attachment: fixed !important;
+          background-repeat: no-repeat !important;
+          min-height: 100vh !important;
+        }
+        .min-h-screen {
+          background: transparent !important;
+        }
+      `;
     } else {
       const preset = PRESET_BACKGROUNDS.find(bg => bg.id === backgroundId);
       if (preset) {
         if (preset.isGradient) {
-          body.style.background = preset.url;
-          body.style.minHeight = '100vh';
+          backgroundCSS = `
+            body {
+              background: ${preset.url} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
         } else {
-          body.style.backgroundImage = `url(${preset.url})`;
-          body.style.backgroundSize = 'cover';
-          body.style.backgroundPosition = 'center';
-          body.style.backgroundAttachment = 'fixed';
-          body.style.minHeight = '100vh';
+          backgroundCSS = `
+            body {
+              background-image: url(${preset.url}) !important;
+              background-size: cover !important;
+              background-position: center !important;
+              background-attachment: fixed !important;
+              background-repeat: no-repeat !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
         }
       }
     }
+    
+    style.textContent = backgroundCSS;
+    document.head.appendChild(style);
   };
 
   return <>{children}</>;
