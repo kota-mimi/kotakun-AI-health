@@ -25,7 +25,6 @@ interface MyProfilePageProps {
   onNavigateToPlanSettings?: () => void;
   onNavigateToUserGuide?: () => void;
   onNavigateToContact?: () => void;
-  onNavigateToReminderSettings?: () => void;
   onNavigateToCounseling?: () => void;
 }
 
@@ -35,7 +34,6 @@ export function MyProfilePage({
   onNavigateToPlanSettings,
   onNavigateToUserGuide,
   onNavigateToContact,
-  onNavigateToReminderSettings,
   onNavigateToCounseling
 }: MyProfilePageProps) {
   // 編集モーダルの状態
@@ -404,11 +402,6 @@ export function MyProfilePage({
 
 
   const accountMenuItems = [
-    {
-      label: 'リマインダー設定',
-      color: '#8B5CF6',
-      action: onNavigateToReminderSettings || (() => {})
-    },
     {
       label: 'プラン・サブスクリプション',
       color: '#FBBF24',

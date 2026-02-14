@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Users,
   Heart,
-  Clock,
   Image,
   Zap
 } from 'lucide-react';
@@ -691,7 +690,7 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
           </div>
 
           {/* プロフィール編集 */}
-          <div className="mb-20">
+          <div className="mb-32">
             <div className="section">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 プロフィール編集
@@ -701,31 +700,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
               </p>
               <p className="text-gray-800 mb-16">
                 プロフィールを編集すると、自動でカロリーやPFCが再分析されて、ホームのグラフなどに反映されます
-              </p>
-            </div>
-          </div>
-
-          {/* リマインダー設定 */}
-          <div className="mb-32">
-            <div className="section">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                リマインダー設定
-              </h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                リマインダー設定から、好きな時間に通知を受け取れます
-              </p>
-              <div className="space-y-3 text-gray-800 mb-4">
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>通知の内容を自由に設定できる</span>
-                </div>
-                <div className="flex items-start">
-                  <span className="mr-3">⚫︎</span>
-                  <span>通知の時間を自由に設定できる</span>
-                </div>
-              </div>
-              <p className="text-gray-700 mb-16">
-                例：「朝食の時間だよ！」を朝7時に設定
               </p>
             </div>
           </div>
@@ -944,14 +918,6 @@ export function UserGuidePage({ onBack }: UserGuidePageProps) {
                 </p>
               </div>
 
-              <div className="mb-6">
-                <div className="bg-gray-100 p-4 rounded-lg mb-3">
-                  <h3 className="font-bold text-gray-800">Q. リマインダーの通知が来ません</h3>
-                </div>
-                <p className="text-gray-700 pl-3 mb-16">
-                  A. スマートフォンの通知設定を確認してください。また、アプリのリマインダー設定が正しく保存されているかご確認ください。
-                </p>
-              </div>
 
               <div className="mb-6">
                 <div className="bg-gray-100 p-4 rounded-lg mb-3">

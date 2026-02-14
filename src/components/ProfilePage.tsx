@@ -6,7 +6,6 @@ import {
   Target, 
   Calendar,
   Settings,
-  Bell,
   Lock,
   HelpCircle,
   ChevronRight,
@@ -75,7 +74,6 @@ export function ProfilePage({ onNavigateToSettings }: ProfilePageProps) {
       onClick: () => setIsTargetModalOpen(true)
     },
     { icon: Calendar, label: "レポート", color: "#10B981", description: "週間・月間レポート" },
-    { icon: Bell, label: "通知設定", color: "#F59E0B", description: "リマインダー設定" },
     { icon: Lock, label: "プライバシー", color: "#EF4444", description: "データ管理" },
     { icon: Settings, label: "アプリ設定", color: "#6B7280", description: "表示・操作設定" },
     { icon: HelpCircle, label: "ヘルプ", color: "#8B5CF6", description: "使い方・FAQ" }
