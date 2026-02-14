@@ -109,21 +109,21 @@ function PaymentSuccessContent() {
 
           {/* メインメッセージ */}
           <h1 className="text-2xl font-bold mb-4 text-gray-900">
-            お試し登録完了
+            決済完了
           </h1>
           
           <div className="bg-blue-50 rounded-lg p-4 mb-8 border border-blue-200">
             <p className="text-gray-700 mb-3">
-              3日間のお試し期間が開始されました
+              有料プランが開始されました
             </p>
             {sessionData?.planName && (
               <div className="bg-white rounded-lg p-3">
-                <p className="text-sm text-gray-600 mb-1">お試しプラン</p>
+                <p className="text-sm text-gray-600 mb-1">ご契約プラン</p>
                 <p className="text-lg font-bold text-blue-700">
-                  {sessionData.planName}（お試し期間中）
+                  {sessionData.planName}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  ※3日後に自動的に有料プランに移行します
+                  すべての機能をご利用いただけます
                 </p>
               </div>
             )}

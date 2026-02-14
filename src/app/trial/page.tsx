@@ -482,7 +482,7 @@ export default function TrialPage() {
             marginBottom: '24px',
             color: '#2C3E50'
           }}>
-            3日間で<span style={{ color: '#5BAFCE' }}>全機能</span>使い放題！
+            <span style={{ color: '#5BAFCE' }}>全機能</span>使い放題！
           </h2>
 
           <div style={{

@@ -432,7 +432,7 @@ export function createCounselingResultFlexMessage(analysis: any, userProfile: an
                 type: 'button',
                 action: {
                   type: 'uri',
-                  label: '3日間無料トライアル',
+                  label: '有料プランを見る',
                   uri: userId ? `https://kotakun-ai-health.vercel.app/trial?uid=${userId}` : 'https://kotakun-ai-health.vercel.app/trial'
                 },
                 style: 'primary',
@@ -1263,7 +1263,7 @@ export async function createUsageLimitFlex(limitType: "ai" | "record" | "feedbac
             type: "button",
             action: {
               type: "uri",
-              label: "3日間無料トライアル",
+              label: "有料プランを見る",
               uri: userId ? `https://kotakun-ai-health.vercel.app/trial?uid=${userId}` : "https://kotakun-ai-health.vercel.app/trial"
             },
             style: "primary",
