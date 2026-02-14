@@ -22,9 +22,9 @@ export default function TrialPage() {
     setCurrentSlide(index);
   };
 
-  const handleStartTrial = async () => {
+  const handleStartPlan = async () => {
     try {
-      console.log('🔗 トライアルボタン押下');
+      console.log('🔗 有料プラン開始ボタン押下');
       
       // ユーザーID取得（複数方法で試行）
       let userIdToPass = '';
@@ -94,8 +94,7 @@ export default function TrialPage() {
         planId,
         userIdToPass,
         `${window.location.origin}/payment/success`,
-        `${window.location.origin}/payment/cancel`,
-        true  // includeTrial = true（3日間無料トライアル）
+        `${window.location.origin}/payment/cancel`
       );
 
       if (session.url) {
@@ -415,7 +414,7 @@ export default function TrialPage() {
             lineHeight: 1.3,
             color: '#5A6C7D'
           }}>
-            3日間無料実施中！<span style={{
+            今すぐ始める！<span style={{
               background: '#D6EEF5',
               padding: '2px 6px',
               borderRadius: '4px',
@@ -430,7 +429,7 @@ export default function TrialPage() {
               console.log('🔘 トライアルボタンクリック検出');
               e.preventDefault();
               e.stopPropagation();
-              handleStartTrial();
+              handleStartPlan();
             }}
             onTouchStart={() => {
               console.log('👆 トライアルボタンタッチ検出');
@@ -461,7 +460,7 @@ export default function TrialPage() {
               e.currentTarget.style.boxShadow = '0 8px 24px rgba(91, 175, 206, 0.3)';
             }}
           >
-            無料で3日間試してみる
+            プランを開始する
           </button>
           
           <p style={{
@@ -470,7 +469,7 @@ export default function TrialPage() {
             color: '#95A5B5',
             marginTop: '12px'
           }}>
-            ※既にご利用された方は、3日間無料期間の対象外です。
+            ※すぐに有料プランが開始されます。
           </p>
         </section>
 
@@ -541,7 +540,7 @@ export default function TrialPage() {
             boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
             marginBottom: '32px'
           }}>
-            <span style={{ color: '#2C3E50' }}>トライアル期間中は</span>
+            <span style={{ color: '#2C3E50' }}>有料プランでは</span>
             <span style={{ color: '#5BAFCE', fontWeight: 700 }}>すべての機能</span>
             <span style={{ color: '#2C3E50' }}>が使えます</span>
           </div>
@@ -711,7 +710,7 @@ export default function TrialPage() {
             lineHeight: 1.3,
             color: '#5A6C7D'
           }}>
-            3日間無料実施中！<span style={{
+            今すぐ始める！<span style={{
               background: '#D6EEF5',
               padding: '2px 6px',
               borderRadius: '4px',
@@ -725,7 +724,7 @@ export default function TrialPage() {
               console.log('🔘 2つ目のトライアルボタンクリック検出');
               e.preventDefault();
               e.stopPropagation();
-              handleStartTrial();
+              handleStartPlan();
             }}
             style={{
               width: '100%',
@@ -744,7 +743,7 @@ export default function TrialPage() {
               touchAction: 'manipulation'
             }}
           >
-            無料で3日間試してみる
+            プランを開始する
           </button>
           <p style={{
             textAlign: 'center',
@@ -752,7 +751,7 @@ export default function TrialPage() {
             color: '#95A5B5',
             marginTop: '12px'
           }}>
-            ※既にご利用された方は、3日間無料期間の対象外です。
+            ※すぐに有料プランが開始されます。
           </p>
         </section>
 
@@ -770,8 +769,8 @@ export default function TrialPage() {
 
           {[
             {
-              q: "本当に無料で使えますか？",
-              a: "最初の3日間は完全無料でご利用いただけます。トライアル期間中にキャンセルすれば、料金は一切かかりません。"
+              q: "利用制限はありますか？",
+              a: "現在、無料プランでは1日の利用回数に制限があります。有料プランではすべての機能を無制限でご利用いただけます。"
             },
             {
               q: "アプリのインストールは必要ですか？",
@@ -783,11 +782,11 @@ export default function TrialPage() {
             },
             {
               q: "解約はいつでもできますか？",
-              a: "解約した場合、解約手続きの次回決済時までご利用いただけます。また、無料お試し期間中でも通常プランに変更可能ですので、ご気軽にお試しください。"
+              a: "解約した場合、解約手続きの次回決済時までご利用いただけます。"
             },
             {
               q: "領収書は発行できますか？",
-              a: "無料お試し期間の終了後、いつでも簡単に発行いただけます。"
+              a: "決済完了後、いつでも簡単に発行いただけます。"
             }
           ].map((faq, index) => (
             <div 
@@ -887,9 +886,8 @@ export default function TrialPage() {
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {[
                 "このサブスクリプションを開始すると、その時点からAIとの会話無制限、カロリー分析、健康記録などすべての機能をご利用いただけます。",
-                "無料トライアルは1度だけご利用いただけます。",
-                "3日間の無料期間終了後、自動的に選択したプランに移行します。",
-                "無料トライアル終了後、プレミアムプランに自動移行します。継続を希望されない場合は、トライアル期間中にキャンセルしてください。",
+                "決済完了と同時に選択したプランが開始されます。",
+                "継続を希望されない場合は、プラン管理ページからいつでも解約できます。",
                 "お支払いはLINE Payまたはクレジットカードをご利用いただけます。"
               ].map((item, index) => (
                 <li 
@@ -934,7 +932,7 @@ export default function TrialPage() {
             marginBottom: '8px',
             lineHeight: 1.2
           }}>
-            3日間無料実施中！<span style={{
+            今すぐ始める！<span style={{
               background: '#D6EEF5',
               padding: '1px 6px',
               borderRadius: '3px',
@@ -948,7 +946,7 @@ export default function TrialPage() {
               console.log('🔘 3つ目の固定ボタンクリック検出');
               e.preventDefault();
               e.stopPropagation();
-              handleStartTrial();
+              handleStartPlan();
             }}
             style={{
               width: '100%',
@@ -966,7 +964,7 @@ export default function TrialPage() {
               touchAction: 'manipulation'
             }}
           >
-            無料で3日間試してみる
+            プランを開始する
           </button>
           <p style={{
             textAlign: 'center',
@@ -974,7 +972,7 @@ export default function TrialPage() {
             color: '#95A5B5',
             marginTop: '8px'
           }}>
-            ※既にご利用された方は、3日間無料期間の対象外です。
+            ※すぐに有料プランが開始されます。
           </p>
         </div>
       </div>

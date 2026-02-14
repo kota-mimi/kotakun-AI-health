@@ -116,7 +116,6 @@ export async function POST(request: NextRequest) {
 
       // サブスクリプション情報を取得
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-      const isTrialActive = subscription.trial_end && subscription.trial_end > Date.now() / 1000;
 
       // metadataからplanIdを取得してプラン名を決定
       const planId = session.metadata?.planId;
@@ -133,26 +132,26 @@ export async function POST(request: NextRequest) {
       console.log(`💰 checkout完了 - planId: ${planId}, プラン: ${currentPlan}`);
 
       await admin.firestore().collection('users').doc(userId).update({
-        subscriptionStatus: isTrialActive ? 'trial' : 'active',
+        subscriptionStatus: 'active',
         currentPlan: currentPlan,
         stripeSubscriptionId: subscription.id,
         stripeCustomerId: session.customer,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        trialEndDate: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-        hasUsedTrial: subscription.trial_end ? true : false, // トライアルありの場合は履歴を記録
         updatedAt: new Date(),
       });
 
-      console.log('✅ User updated:', userId, isTrialActive ? 'trial' : 'active');
+      console.log('✅ User updated:', userId, 'active');
 
-      // トライアル開始時のシンプルなLINE通知を送信
-      if (isTrialActive && userId) {
+      // 有料プラン開始通知を送信
+      if (userId) {
         try {
-          console.log('📱 トライアル開始通知を送信中...', userId);
-          await sendSimpleTrialNotification(userId, currentPlan, subscription.trial_end);
-        } catch (notificationError) {
-          console.error('❌ トライアル開始通知エラー:', notificationError);
-          // 通知エラーはWebhook処理を停止させない
+          await pushMessage(userId, {
+            type: 'text',
+            text: '🎉 有料プランが開始されました！\n\nAI機能を無制限でご利用いただけます。'
+          });
+          console.log('✅ 有料プラン開始通知送信完了:', userId);
+        } catch (error) {
+          console.error('❌ 有料プラン開始通知送信失敗:', error);
         }
       }
     }
@@ -292,16 +291,14 @@ export async function POST(request: NextRequest) {
             console.log('⚠️ 価格IDが一致しません。デフォルト月額プランを適用');
           }
 
-          const isTrialActive = subscription.trial_end && subscription.trial_end > Date.now() / 1000;
-          
           await admin.firestore().collection('users').doc(userId).update({
-            subscriptionStatus: isTrialActive ? 'trial' : 'active',
+            subscriptionStatus: 'active',
             currentPlan: currentPlan,
             updatedAt: new Date(),
             currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
           });
 
-          console.log(`✅ サブスクリプション更新完了: ${userId}, プラン: ${currentPlan}, ステータス: ${isTrialActive ? 'trial' : 'active'}`);
+          console.log(`✅ サブスクリプション更新完了: ${userId}, プラン: ${currentPlan}, ステータス: active`);
         }
       }
     }
@@ -347,7 +344,6 @@ export async function POST(request: NextRequest) {
           currentPlan: null,
           stripeSubscriptionId: null,
           currentPeriodEnd: null,
-          trialEndDate: null,
           updatedAt: new Date(),
         });
         

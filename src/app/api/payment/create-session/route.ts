@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { planId, userId, priceId, includeTrial = false } = await request.json();
+    const { planId, userId, priceId } = await request.json();
 
     if (!planId || !userId || !priceId) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('💳 Creating payment session:', { planId, userId, includeTrial });
+    console.log('💳 Creating payment session:', { planId, userId });
     
     // 本番Stripe APIキーが設定されていない場合のみ制限
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.startsWith('sk_test_')) {
@@ -43,12 +43,7 @@ export async function POST(request: NextRequest) {
       locale: 'ja',
     };
 
-    // トライアル期間を追加（新規ユーザーのみ）
-    if (includeTrial) {
-      sessionConfig.subscription_data = {
-        trial_period_days: 3,
-      };
-    }
+    // トライアル機能削除：即課金開始
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
