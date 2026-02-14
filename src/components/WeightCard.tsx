@@ -138,7 +138,7 @@ export function WeightCard({
 						className="text-center p-2 bg-white/20 backdrop-blur-md rounded-2xl border border-white/40 cursor-pointer hover:bg-white/30 hover:shadow-lg transition-all"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-semibold text-purple-700 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wide">
 							目標まで
 						</div>
 						<div className="text-lg font-bold">
