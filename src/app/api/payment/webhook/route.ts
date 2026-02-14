@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
         const priceId = subscription.items.data[0]?.price?.id;
         let currentPlan = '月額プラン'; // デフォルト
         
-        console.log(`🔍 価格ID確認: ${priceId}`);
+        console.log(`🔍 🚨緊急デバッグ🚨 価格ID確認: ${priceId}`);
         console.log(`🔍 年間ID (4500円): ${process.env.STRIPE_ANNUAL_PRICE_ID}`);
         console.log(`🔍 半年ID (3000円): ${process.env.STRIPE_BIANNUAL_PRICE_ID}`);
         console.log(`🔍 月額ID (790円): ${process.env.STRIPE_MONTHLY_PRICE_ID}`);
@@ -254,19 +254,55 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // サブスクリプション解約
+    // サブスクリプション更新（解約予約・プラン変更・トライアル終了等）
     if (event.type === 'customer.subscription.updated') {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
 
-      if (userId && subscription.cancel_at_period_end) {
-        await admin.firestore().collection('users').doc(userId).update({
-          subscriptionStatus: 'cancel_at_period_end',
-          cancelledAt: new Date(),
-          updatedAt: new Date(),
-        });
+      if (userId) {
+        // 解約予約の処理
+        if (subscription.cancel_at_period_end) {
+          await admin.firestore().collection('users').doc(userId).update({
+            subscriptionStatus: 'cancel_at_period_end',
+            cancelledAt: new Date(),
+            updatedAt: new Date(),
+          });
 
-        console.log('✅ Subscription set to cancel:', userId);
+          console.log('✅ Subscription set to cancel:', userId);
+        } else {
+          // プラン判定処理（トライアル終了・プラン変更時）
+          const priceId = subscription.items.data[0]?.price?.id;
+          let currentPlan = '月額プラン'; // デフォルト
+          
+          console.log(`🔍 サブスクリプション更新 - 価格ID確認: ${priceId}`);
+          console.log(`🔍 年間ID (4500円): ${process.env.STRIPE_ANNUAL_PRICE_ID}`);
+          console.log(`🔍 半年ID (3000円): ${process.env.STRIPE_BIANNUAL_PRICE_ID}`);
+          console.log(`🔍 月額ID (790円): ${process.env.STRIPE_MONTHLY_PRICE_ID}`);
+          
+          if (priceId === process.env.STRIPE_ANNUAL_PRICE_ID) {
+            currentPlan = '年間プラン';
+            console.log('✅ 年間プラン認識');
+          } else if (priceId === process.env.STRIPE_BIANNUAL_PRICE_ID) {
+            currentPlan = '半年プラン';
+            console.log('✅ 半年プラン認識');
+          } else if (priceId === process.env.STRIPE_MONTHLY_PRICE_ID) {
+            currentPlan = '月額プラン';
+            console.log('✅ 月額プラン認識');
+          } else {
+            console.log('⚠️ 価格IDが一致しません。デフォルト月額プランを適用');
+          }
+
+          const isTrialActive = subscription.trial_end && subscription.trial_end > Date.now() / 1000;
+          
+          await admin.firestore().collection('users').doc(userId).update({
+            subscriptionStatus: isTrialActive ? 'trial' : 'active',
+            currentPlan: currentPlan,
+            updatedAt: new Date(),
+            currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
+          });
+
+          console.log(`✅ サブスクリプション更新完了: ${userId}, プラン: ${currentPlan}, ステータス: ${isTrialActive ? 'trial' : 'active'}`);
+        }
       }
     }
 
