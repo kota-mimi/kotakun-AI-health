@@ -220,11 +220,11 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
           </Button>
         </div>
         
-        <div className="grid grid-cols-6 gap-2 mb-3">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           {BASIC_COLORS.map((color) => (
             <button
               key={color.id}
-              className={`w-12 h-12 rounded-xl border-2 transition-all ${
+              className={`h-16 rounded-xl border-2 transition-all flex items-center justify-center ${
                 selectedBackground === color.id 
                   ? 'border-blue-500 ring-2 ring-blue-200' 
                   : 'border-slate-200 hover:border-slate-300'
@@ -236,9 +236,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
               onClick={() => saveBackground(color.id)}
             >
               {selectedBackground === color.id && (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Check size={16} className="text-white drop-shadow-sm" />
-                </div>
+                <Check size={20} className={color.id === 'white' ? 'text-gray-600' : 'text-white'} />
               )}
             </button>
           ))}
@@ -254,11 +252,11 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
         </Button>
 
         {showExtendedColors && (
-          <div className="grid grid-cols-4 gap-2 mt-3">
+          <div className="grid grid-cols-3 gap-3 mt-3">
             {EXTENDED_COLORS.map((color) => (
               <button
                 key={color.id}
-                className={`h-12 rounded-lg border-2 transition-all relative overflow-hidden ${
+                className={`h-14 rounded-xl border-2 transition-all relative overflow-hidden ${
                   selectedBackground === color.id 
                     ? 'border-blue-500 ring-2 ring-blue-200' 
                     : 'border-slate-200 hover:border-slate-300'
@@ -270,10 +268,10 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
               >
                 {selectedBackground === color.id && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <Check size={16} className="text-white drop-shadow-sm" />
+                    <Check size={18} className="text-white drop-shadow-sm" />
                   </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2">
+                <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs py-1 px-2 text-center font-medium">
                   {color.name}
                 </div>
               </button>
