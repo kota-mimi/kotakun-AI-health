@@ -26,8 +26,6 @@ interface WeightSettings {
   targetWeight: number;
   goalDeadline?: string;
   weightUnit: 'kg' | 'lbs';
-  reminderTime?: string;
-  reminderEnabled: boolean;
 }
 
 export function useWeightData(selectedDate: Date, dateBasedData: any, updateDateData: (updates: any) => void, counselingResult?: any, sharedProfile?: { latestProfile: any; getProfileForDate: (date: Date) => any }, dashboardWeightData?: any[]) {
@@ -159,8 +157,6 @@ export function useWeightData(selectedDate: Date, dateBasedData: any, updateDate
     targetWeight: 0,
     goalDeadline: undefined,
     weightUnit: 'kg',
-    reminderTime: '07:00',
-    reminderEnabled: true,
   });
 
   // 現在選択されている日付のデータを取得

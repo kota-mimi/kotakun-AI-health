@@ -57,28 +57,6 @@ export class LineBotService {
   // 健康関連のテンプレートメッセージを生成
   createHealthTemplates() {
     return {
-      // 毎日のリマインダー
-      dailyReminder: (userName: string): LineMessage => ({
-        type: 'template',
-        altText: '今日の健康記録はいかがですか？',
-        template: {
-          type: 'buttons',
-          title: `${userName}さん、お疲れさまです！`,
-          text: '今日の健康記録はいかがですか？',
-          actions: [
-            {
-              type: 'uri',
-              label: '今日の記録を見る',
-              uri: `${process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}` : process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-            },
-            {
-              type: 'uri',
-              label: '食事を記録',
-              uri: `${process.env.NEXT_PUBLIC_LIFF_ID ? `https://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID}` : process.env.NEXT_PUBLIC_APP_URL}/meals/add`
-            }
-          ]
-        }
-      }),
 
       // 週次レポート
       weeklyReport: (userName: string, weeklyData: any): LineMessage => ({
