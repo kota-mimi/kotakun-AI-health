@@ -16,53 +16,48 @@ interface BackgroundSettingsPageProps {
   onBack: () => void;
 }
 
-const PRESET_BACKGROUNDS = [
-  {
-    id: 'gradient1',
-    name: 'ヘルシーグラデーション',
-    url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    isGradient: true
-  },
-  {
-    id: 'gradient2',
-    name: 'フレッシュグリーン',
-    url: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    isGradient: true
-  },
-  {
-    id: 'gradient3',
-    name: 'オーシャンブルー',
-    url: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    isGradient: true
-  },
-  {
-    id: 'unsplash1',
-    name: 'モーニングヨガ',
-    url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  },
-  {
-    id: 'unsplash2',
-    name: 'フレッシュサラダ',
-    url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  },
-  {
-    id: 'unsplash3',
-    name: 'トレーニング',
-    url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  }
+const BASIC_COLORS = [
+  { id: 'white', name: '白', color: '#ffffff' },
+  { id: 'light-gray', name: 'ライトグレー', color: '#f3f4f6' },
+  { id: 'blue', name: 'ブルー', color: '#3b82f6' },
+  { id: 'green', name: 'グリーン', color: '#10b981' },
+  { id: 'purple', name: 'パープル', color: '#8b5cf6' },
+  { id: 'pink', name: 'ピンク', color: '#ec4899' },
+];
+
+const EXTENDED_COLORS = [
+  // グラデーション
+  { id: 'gradient-ocean', name: 'オーシャン', url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', isGradient: true },
+  { id: 'gradient-sunset', name: 'サンセット', url: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', isGradient: true },
+  { id: 'gradient-nature', name: 'ネイチャー', url: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', isGradient: true },
+  { id: 'gradient-warm', name: 'ウォーム', url: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', isGradient: true },
+  { id: 'gradient-cool', name: 'クール', url: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', isGradient: true },
+  { id: 'gradient-dark', name: 'ダーク', url: 'linear-gradient(135deg, #2c3e50 0%, #4a6741 100%)', isGradient: true },
+  
+  // 単色
+  { id: 'navy', name: 'ネイビー', color: '#1e293b' },
+  { id: 'emerald', name: 'エメラルド', color: '#059669' },
+  { id: 'amber', name: 'アンバー', color: '#f59e0b' },
+  { id: 'red', name: 'レッド', color: '#ef4444' },
+  { id: 'indigo', name: 'インディゴ', color: '#6366f1' },
+  { id: 'teal', name: 'ティール', color: '#14b8a6' },
+  { id: 'rose', name: 'ローズ', color: '#f43f5e' },
+  { id: 'cyan', name: 'シアン', color: '#06b6d4' },
+  { id: 'lime', name: 'ライム', color: '#84cc16' },
+  { id: 'orange', name: 'オレンジ', color: '#f97316' },
+  { id: 'violet', name: 'バイオレット', color: '#7c3aed' },
+  { id: 'slate', name: 'スレート', color: '#475569' },
 ];
 
 export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) {
   const [selectedBackground, setSelectedBackground] = useState<string>('');
   const [customImageUrl, setCustomImageUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
+  const [showExtendedColors, setShowExtendedColors] = useState(false);
 
   // 現在の背景設定を読み込み
   useEffect(() => {
-    const savedBackground = localStorage.getItem('app-background') || 'gradient1';
+    const savedBackground = localStorage.getItem('app-background') || 'white';
     setSelectedBackground(savedBackground);
   }, []);
 
@@ -110,12 +105,22 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
         }
       `;
     } else {
-      const preset = PRESET_BACKGROUNDS.find(bg => bg.id === backgroundId);
+      const preset = [...BASIC_COLORS, ...EXTENDED_COLORS].find(bg => bg.id === backgroundId);
       if (preset) {
         if (preset.isGradient) {
           backgroundCSS = `
             body {
               background: ${preset.url} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        } else if (preset.color) {
+          backgroundCSS = `
+            body {
+              background: ${preset.color} !important;
               min-height: 100vh !important;
             }
             .min-h-screen {
@@ -167,7 +172,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
 
   // デフォルトに戻す
   const resetToDefault = () => {
-    saveBackground('gradient1');
+    saveBackground('white');
     setCustomImageUrl('');
     localStorage.removeItem('app-background-custom-url');
   };
@@ -176,7 +181,8 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
     if (selectedBackground === 'custom') {
       return localStorage.getItem('app-background-custom-url') || '';
     }
-    return PRESET_BACKGROUNDS.find(bg => bg.id === selectedBackground)?.url || '';
+    const preset = [...BASIC_COLORS, ...EXTENDED_COLORS].find(bg => bg.id === selectedBackground);
+    return preset?.url || preset?.color || '';
   };
 
   return (
@@ -199,34 +205,10 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
         </div>
       </Card>
 
-      {/* 現在の背景プレビュー */}
-      <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">現在の背景</h2>
-        <div 
-          className="w-full h-32 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center"
-          style={{
-            background: selectedBackground === 'custom' ? 
-              `url(${getCurrentBackground()})` : 
-              PRESET_BACKGROUNDS.find(bg => bg.id === selectedBackground)?.isGradient ? 
-                PRESET_BACKGROUNDS.find(bg => bg.id === selectedBackground)?.url :
-                `url(${getCurrentBackground()})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          {!getCurrentBackground() && (
-            <div className="text-center text-slate-500">
-              <ImageIcon size={32} className="mx-auto mb-2" />
-              <p className="text-sm">背景未設定</p>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* プリセット背景 */}
+      {/* 基本色パレット */}
       <Card className="backdrop-blur-xl bg-white/80 shadow-lg border border-white/30 rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-slate-800">プリセット背景</h2>
+          <h2 className="text-lg font-semibold text-slate-800">背景色</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -234,40 +216,70 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
             className="text-slate-600 hover:text-slate-800"
           >
             <RefreshCw size={16} className="mr-1" />
-            デフォルト
+            白に戻す
           </Button>
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
-          {PRESET_BACKGROUNDS.map((bg) => (
-            <Button
-              key={bg.id}
-              variant="ghost"
-              className={`relative h-20 p-1 rounded-xl border-2 transition-all ${
-                selectedBackground === bg.id 
+        <div className="grid grid-cols-6 gap-2 mb-3">
+          {BASIC_COLORS.map((color) => (
+            <button
+              key={color.id}
+              className={`w-12 h-12 rounded-xl border-2 transition-all ${
+                selectedBackground === color.id 
                   ? 'border-blue-500 ring-2 ring-blue-200' 
                   : 'border-slate-200 hover:border-slate-300'
               }`}
-              onClick={() => saveBackground(bg.id)}
+              style={{
+                backgroundColor: color.color,
+                boxShadow: color.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
+              }}
+              onClick={() => saveBackground(color.id)}
             >
-              <div 
-                className="w-full h-full rounded-lg"
-                style={{
-                  background: bg.isGradient ? bg.url : `url(${bg.url})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                {selectedBackground === bg.id && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
-                    <Check size={20} className="text-white" />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-slate-600 mt-1">{bg.name}</p>
-            </Button>
+              {selectedBackground === color.id && (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Check size={16} className="text-white drop-shadow-sm" />
+                </div>
+              )}
+            </button>
           ))}
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setShowExtendedColors(!showExtendedColors)}
+        >
+          {showExtendedColors ? '基本色のみ表示' : 'もっと多くの色を表示'}
+        </Button>
+
+        {showExtendedColors && (
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            {EXTENDED_COLORS.map((color) => (
+              <button
+                key={color.id}
+                className={`h-12 rounded-lg border-2 transition-all relative overflow-hidden ${
+                  selectedBackground === color.id 
+                    ? 'border-blue-500 ring-2 ring-blue-200' 
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+                style={{
+                  background: color.isGradient ? color.url : color.color
+                }}
+                onClick={() => saveBackground(color.id)}
+              >
+                {selectedBackground === color.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <Check size={16} className="text-white drop-shadow-sm" />
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2">
+                  {color.name}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* カスタム画像アップロード */}

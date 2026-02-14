@@ -2,43 +2,37 @@
 
 import { useEffect } from 'react';
 
-const PRESET_BACKGROUNDS = [
-  {
-    id: 'gradient1',
-    name: 'ヘルシーグラデーション',
-    url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    isGradient: true
-  },
-  {
-    id: 'gradient2',
-    name: 'フレッシュグリーン',
-    url: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    isGradient: true
-  },
-  {
-    id: 'gradient3',
-    name: 'オーシャンブルー',
-    url: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    isGradient: true
-  },
-  {
-    id: 'unsplash1',
-    name: 'モーニングヨガ',
-    url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  },
-  {
-    id: 'unsplash2',
-    name: 'フレッシュサラダ',
-    url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  },
-  {
-    id: 'unsplash3',
-    name: 'トレーニング',
-    url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    isGradient: false
-  }
+const BASIC_COLORS = [
+  { id: 'white', name: '白', color: '#ffffff' },
+  { id: 'light-gray', name: 'ライトグレー', color: '#f3f4f6' },
+  { id: 'blue', name: 'ブルー', color: '#3b82f6' },
+  { id: 'green', name: 'グリーン', color: '#10b981' },
+  { id: 'purple', name: 'パープル', color: '#8b5cf6' },
+  { id: 'pink', name: 'ピンク', color: '#ec4899' },
+];
+
+const EXTENDED_COLORS = [
+  // グラデーション
+  { id: 'gradient-ocean', name: 'オーシャン', url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', isGradient: true },
+  { id: 'gradient-sunset', name: 'サンセット', url: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', isGradient: true },
+  { id: 'gradient-nature', name: 'ネイチャー', url: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', isGradient: true },
+  { id: 'gradient-warm', name: 'ウォーム', url: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', isGradient: true },
+  { id: 'gradient-cool', name: 'クール', url: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', isGradient: true },
+  { id: 'gradient-dark', name: 'ダーク', url: 'linear-gradient(135deg, #2c3e50 0%, #4a6741 100%)', isGradient: true },
+  
+  // 単色
+  { id: 'navy', name: 'ネイビー', color: '#1e293b' },
+  { id: 'emerald', name: 'エメラルド', color: '#059669' },
+  { id: 'amber', name: 'アンバー', color: '#f59e0b' },
+  { id: 'red', name: 'レッド', color: '#ef4444' },
+  { id: 'indigo', name: 'インディゴ', color: '#6366f1' },
+  { id: 'teal', name: 'ティール', color: '#14b8a6' },
+  { id: 'rose', name: 'ローズ', color: '#f43f5e' },
+  { id: 'cyan', name: 'シアン', color: '#06b6d4' },
+  { id: 'lime', name: 'ライム', color: '#84cc16' },
+  { id: 'orange', name: 'オレンジ', color: '#f97316' },
+  { id: 'violet', name: 'バイオレット', color: '#7c3aed' },
+  { id: 'slate', name: 'スレート', color: '#475569' },
 ];
 
 interface BackgroundProviderProps {
@@ -48,7 +42,7 @@ interface BackgroundProviderProps {
 export function BackgroundProvider({ children }: BackgroundProviderProps) {
   useEffect(() => {
     // 保存された背景設定を読み込み
-    const savedBackground = localStorage.getItem('app-background') || 'gradient1';
+    const savedBackground = localStorage.getItem('app-background') || 'white';
     const customUrl = localStorage.getItem('app-background-custom-url');
     
     applyBackground(savedBackground, customUrl || undefined);
@@ -82,12 +76,22 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
         }
       `;
     } else {
-      const preset = PRESET_BACKGROUNDS.find(bg => bg.id === backgroundId);
+      const preset = [...BASIC_COLORS, ...EXTENDED_COLORS].find(bg => bg.id === backgroundId);
       if (preset) {
         if (preset.isGradient) {
           backgroundCSS = `
             body {
               background: ${preset.url} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        } else if (preset.color) {
+          backgroundCSS = `
+            body {
+              background: ${preset.color} !important;
               min-height: 100vh !important;
             }
             .min-h-screen {
