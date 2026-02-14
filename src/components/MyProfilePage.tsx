@@ -551,11 +551,29 @@ export function MyProfilePage({
       </div>
 
 
-      {/* アカウント・プラン */}
-      {renderSection('アカウント・プラン', accountMenuItems)}
-
-      {/* サポート */}
-      {renderSection('サポート', supportMenuItems)}
+      {/* 全メニュー項目を1つのカードに統合 */}
+      <div className="mx-4">
+        <Card className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="divide-y divide-slate-100">
+            {[...accountMenuItems, ...supportMenuItems].map((item, index) => {
+              return (
+                <Button
+                  key={index}
+                  variant="ghost"
+                  className="w-full justify-start p-0 h-auto hover:bg-slate-50 rounded-none"
+                  onClick={item.action}
+                >
+                  <div className="flex items-center py-4 px-4 w-full">
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="font-medium text-slate-900">{item.label}</p>
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
 
       {/* プロフィール編集モーダル */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
