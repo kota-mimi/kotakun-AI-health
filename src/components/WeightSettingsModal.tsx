@@ -1,16 +1,13 @@
-import { Calendar, Clock, Scale, Target, X } from "lucide-react";
+import { Calendar, Scale, Target, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Switch } from "./ui/switch";
 
 interface WeightSettings {
 	targetWeight: number;
 	goalDeadline?: string;
 	weightUnit: "kg" | "lbs";
-	reminderTime?: string;
-	reminderEnabled: boolean;
 }
 
 interface WeightSettingsModalProps {
@@ -33,12 +30,6 @@ export function WeightSettingsModal({
 		currentSettings.goalDeadline || "",
 	);
 	const [weightUnit, setWeightUnit] = useState(currentSettings.weightUnit);
-	const [reminderTime, setReminderTime] = useState(
-		currentSettings.reminderTime || "07:00",
-	);
-	const [reminderEnabled, setReminderEnabled] = useState(
-		currentSettings.reminderEnabled,
-	);
 
 	if (!isOpen) return null;
 
@@ -59,8 +50,6 @@ export function WeightSettingsModal({
 			targetWeight: targetWeightValue,
 			goalDeadline: goalDeadline || undefined,
 			weightUnit,
-			reminderTime: reminderEnabled ? reminderTime : undefined,
-			reminderEnabled,
 		});
 
 		onClose();
@@ -212,38 +201,6 @@ export function WeightSettingsModal({
 						/>
 					</div>
 
-					{/* リマインダー設定 */}
-					<div className="space-y-4">
-						<Label className="flex items-center space-x-2 text-slate-700">
-							<Clock size={16} style={{ color: "#F59E0B" }} />
-							<span>記録リマインダー</span>
-						</Label>
-
-						{/* リマインダーON/OFF */}
-						<div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-							<div>
-								<p className="font-medium text-slate-700">毎日の記録を促す</p>
-								<p className="text-sm text-slate-500">指定した時間に通知</p>
-							</div>
-							<Switch
-								checked={reminderEnabled}
-								onCheckedChange={setReminderEnabled}
-							/>
-						</div>
-
-						{/* リマインダー時間設定 */}
-						{reminderEnabled && (
-							<div className="space-y-2">
-								<Label className="text-sm text-slate-600">通知時間</Label>
-								<Input
-									type="time"
-									value={reminderTime}
-									onChange={(e) => setReminderTime(e.target.value)}
-									className="rounded-xl border border-slate-200 focus:border-amber-400"
-								/>
-							</div>
-						)}
-					</div>
 
 					{/* 送信ボタン */}
 					<div className="flex space-x-3 pt-4">
