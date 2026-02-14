@@ -46,17 +46,13 @@ export default function DashboardPage() {
 
   // サーバーサイドでは何も表示しない
   if (!isClient) {
-    return <div className="min-h-screen" style={{
-      background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
-    }} />;
+    return <div className="min-h-screen bg-gray-50" />;
   }
 
   // エラーハンドリング
   if (hasError) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{
-        background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
-      }}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
           <h1 className="text-xl font-semibold mb-4">ホームページでエラーが発生しました</h1>
           <button 
@@ -75,9 +71,7 @@ export default function DashboardPage() {
   } catch (error) {
     console.error('Dashboard render error:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{
-        background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
-      }}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
           <h1 className="text-xl font-semibold mb-4">ホームページの読み込みに失敗しました</h1>
           <button 
@@ -409,14 +403,7 @@ function DashboardContent({ onError }: { onError: () => void }) {
 
 
   return (
-    <div className="min-h-screen relative" style={{
-      background: `linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 25%, #fdf4ff 50%, #fef3c7 75%, #ecfdf5 100%)`
-    }}>
-      {/* iPhone Folder Frame Effect */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-4 rounded-[3rem] border border-white/30 backdrop-blur-sm bg-white/5"></div>
-        <div className="absolute inset-6 rounded-[2.5rem] border border-white/20 backdrop-blur-sm bg-white/3"></div>
-      </div>
+    <div className="min-h-screen relative bg-gray-50">
       
       {/* プロフィール・設定タブ */}
       {navigation.activeTab === 'profile' && (

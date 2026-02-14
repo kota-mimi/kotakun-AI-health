@@ -25,7 +25,7 @@ const tabs = [
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (
     <div className="fixed bottom-0 left-0 w-full" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="bg-white/60 backdrop-blur-xl border-t border-white/50 shadow-2xl">
+      <div className="bg-white/20 backdrop-blur-xl border-t border-white/40 shadow-2xl">
         {/* セーフエリア対応のパディング */}
         <div className="px-0 pt-2 pb-6">
           <div className="flex w-full">

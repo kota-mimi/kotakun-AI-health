@@ -443,7 +443,7 @@ export function MyProfilePage({
       
       {/* メニューカード - すりガラス風 */}
       <div className="mx-4">
-        <Card className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl overflow-hidden">
+        <Card className="bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-3xl overflow-hidden">
           <div className="divide-y divide-slate-100">
             {items.map((item, index) => {
               return (
@@ -473,7 +473,7 @@ export function MyProfilePage({
     <div key={`${refreshKey}-${latestProfile?.changeDate || 'default'}`} className="space-y-8 pb-4">
       {/* プロフィールヘッダー - すりガラス風 */}
       <div className="px-4">
-        <Card className={`relative bg-white/60 backdrop-blur-xl border border-white/50 shadow-lg rounded-3xl p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
+        <Card className={`relative bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-3xl p-3 transition-opacity duration-300 ${isSaving ? 'opacity-50' : ''}`}>
           <div className="flex items-center justify-between mb-2">
             {/* ユーザー情報 */}
             <div className="flex-1">
@@ -501,7 +501,7 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={handleOpenEditModal}
-                className="flex-1 text-center p-3 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl hover:bg-blue-500/20 hover:border-blue-400/60 transition-all duration-200 shadow-md"
+                className="flex-1 text-center p-3 bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/30 hover:border-white/60 transition-all duration-200 shadow-md"
               >
                 <div className="text-xs text-slate-500">体重</div>
                 <div className="font-bold text-slate-900 text-lg">{userProfile.currentWeight ? `${userProfile.currentWeight}kg` : '-'}</div>
@@ -519,7 +519,7 @@ export function MyProfilePage({
             <div className="flex space-x-2">
               <button 
                 onClick={() => setIsTargetModalOpen(true)}
-                className="flex-1 text-center p-3 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl hover:bg-blue-500/20 hover:border-blue-400/60 transition-all duration-200 shadow-md"
+                className="flex-1 text-center p-3 bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/30 hover:border-white/60 transition-all duration-200 shadow-md"
               >
                 <div className="text-xs text-slate-500">カロリー</div>
                 <div className="font-bold text-blue-600 text-base">{finalCalories}</div>
