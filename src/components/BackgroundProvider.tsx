@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 const BASIC_COLORS = [
   { id: 'white', name: '白', color: '#ffffff' },
@@ -40,13 +41,50 @@ interface BackgroundProviderProps {
 }
 
 export function BackgroundProvider({ children }: BackgroundProviderProps) {
+  const { liffUser } = useAuth();
+
   useEffect(() => {
-    // 保存された背景設定を読み込み
-    const savedBackground = localStorage.getItem('app-background') || 'white';
-    const customUrl = localStorage.getItem('app-background-custom-url');
-    
-    applyBackground(savedBackground, customUrl || undefined);
-  }, []);
+    loadAndApplyBackground();
+  }, [liffUser]);
+
+  const loadAndApplyBackground = async () => {
+    try {
+      if (!liffUser?.userId) {
+        // LIFF未認証時はlocalStorageから読み込み
+        const savedBackground = localStorage.getItem('app-background') || 'white';
+        const customUrl = localStorage.getItem('app-background-custom-url');
+        applyBackground(savedBackground, customUrl || undefined);
+        return;
+      }
+
+      // Firebase から背景設定を取得
+      const response = await fetch(`/api/background/settings?userId=${liffUser.userId}`);
+      if (response.ok) {
+        const { backgroundSettings } = await response.json();
+        
+        // localStorageも同期
+        localStorage.setItem('app-background', backgroundSettings.type);
+        if (backgroundSettings.imageUrl) {
+          localStorage.setItem('app-background-custom-url', backgroundSettings.imageUrl);
+        } else {
+          localStorage.removeItem('app-background-custom-url');
+        }
+        
+        applyBackground(backgroundSettings.type, backgroundSettings.imageUrl);
+      } else {
+        // API失敗時はlocalStorageにフォールバック
+        const savedBackground = localStorage.getItem('app-background') || 'white';
+        const customUrl = localStorage.getItem('app-background-custom-url');
+        applyBackground(savedBackground, customUrl || undefined);
+      }
+    } catch (error) {
+      console.error('Failed to load background from Firebase:', error);
+      // エラー時はlocalStorageにフォールバック
+      const savedBackground = localStorage.getItem('app-background') || 'white';
+      const customUrl = localStorage.getItem('app-background-custom-url');
+      applyBackground(savedBackground, customUrl || undefined);
+    }
+  };
 
   const applyBackground = (backgroundId: string, customUrl?: string) => {
     // 既存のスタイルをクリア

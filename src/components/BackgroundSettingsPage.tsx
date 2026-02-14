@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   RefreshCw
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BackgroundSettingsPageProps {
   onBack: () => void;
@@ -54,26 +55,84 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
   const [customImageUrl, setCustomImageUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [showExtendedColors, setShowExtendedColors] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { liffUser } = useAuth();
 
-  // 現在の背景設定を読み込み
+  // Firebase から背景設定を読み込み
   useEffect(() => {
-    const savedBackground = localStorage.getItem('app-background') || 'white';
-    setSelectedBackground(savedBackground);
-  }, []);
+    loadBackgroundSettings();
+  }, [liffUser]);
+
+  const loadBackgroundSettings = async () => {
+    try {
+      if (!liffUser?.userId) {
+        // LIFF未認証時はlocalStorageから読み込み
+        const savedBackground = localStorage.getItem('app-background') || 'white';
+        setSelectedBackground(savedBackground);
+        const customUrl = localStorage.getItem('app-background-custom-url');
+        if (customUrl) setCustomImageUrl(customUrl);
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch(`/api/background/settings?userId=${liffUser.userId}`);
+      if (response.ok) {
+        const { backgroundSettings } = await response.json();
+        setSelectedBackground(backgroundSettings.type);
+        if (backgroundSettings.imageUrl) {
+          setCustomImageUrl(backgroundSettings.imageUrl);
+        }
+        
+        // localStorageも同期
+        localStorage.setItem('app-background', backgroundSettings.type);
+        if (backgroundSettings.imageUrl) {
+          localStorage.setItem('app-background-custom-url', backgroundSettings.imageUrl);
+        }
+        
+        // 背景を即座に適用
+        applyBackground(backgroundSettings.type, backgroundSettings.imageUrl);
+      }
+    } catch (error) {
+      console.error('Failed to load background settings:', error);
+      // エラー時はlocalStorageにフォールバック
+      const savedBackground = localStorage.getItem('app-background') || 'white';
+      setSelectedBackground(savedBackground);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 背景を保存
-  const saveBackground = (backgroundId: string, customUrl?: string) => {
-    if (customUrl) {
-      localStorage.setItem('app-background', 'custom');
-      localStorage.setItem('app-background-custom-url', customUrl);
-    } else {
-      localStorage.setItem('app-background', backgroundId);
-      localStorage.removeItem('app-background-custom-url');
+  const saveBackground = async (backgroundId: string, customUrl?: string) => {
+    try {
+      // ローカルに即座に適用
+      if (customUrl) {
+        localStorage.setItem('app-background', 'custom');
+        localStorage.setItem('app-background-custom-url', customUrl);
+      } else {
+        localStorage.setItem('app-background', backgroundId);
+        localStorage.removeItem('app-background-custom-url');
+      }
+      setSelectedBackground(backgroundId);
+      
+      // 背景をすぐに適用
+      applyBackground(backgroundId, customUrl);
+
+      // Firebase に保存
+      if (liffUser?.userId) {
+        await fetch('/api/background/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: liffUser.userId,
+            backgroundType: customUrl ? 'custom' : backgroundId,
+            imageUrl: customUrl || null
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Failed to save background settings:', error);
     }
-    setSelectedBackground(backgroundId);
-    
-    // 背景をすぐに適用
-    applyBackground(backgroundId, customUrl);
   };
 
   // 背景を適用
@@ -150,7 +209,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
   };
 
   // カスタム画像アップロード
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -159,20 +218,47 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
       return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+      alert('ファイルサイズは5MB以下にしてください');
+      return;
+    }
+
+    if (!liffUser?.userId) {
+      alert('LINE認証が必要です');
+      return;
+    }
+
     setIsUploading(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setCustomImageUrl(result);
-      saveBackground('custom', result);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('userId', liffUser.userId);
+
+      const response = await fetch('/api/background/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const { imageUrl } = await response.json();
+        setCustomImageUrl(imageUrl);
+        await saveBackground('custom', imageUrl);
+      } else {
+        const errorData = await response.json();
+        alert(`アップロードに失敗しました: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('アップロードに失敗しました');
+    } finally {
       setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // デフォルトに戻す
-  const resetToDefault = () => {
-    saveBackground('white');
+  const resetToDefault = async () => {
+    await saveBackground('white');
     setCustomImageUrl('');
     localStorage.removeItem('app-background-custom-url');
   };
@@ -184,6 +270,16 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
     const preset = [...BASIC_COLORS, ...EXTENDED_COLORS].find(bg => bg.id === selectedBackground);
     return preset?.url || preset?.color || '';
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-20 bg-gray-200 rounded-xl"></div>
+        <div className="h-40 bg-gray-200 rounded-xl"></div>
+        <div className="h-32 bg-gray-200 rounded-xl"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
