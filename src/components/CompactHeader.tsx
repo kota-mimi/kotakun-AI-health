@@ -117,11 +117,12 @@ export function CompactHeader({ currentDate, onDateSelect, onCalendar, onNavigat
     <div className="bg-white border-b border-gray-200 shadow-sm">
       {/* メインヘッダー */}
       <div className="px-4 py-4 flex items-center justify-between">
-        {/* 共有ボタン（左）- 常に表示 */}
+        {/* 共有ボタン（左）- 無効化 */}
         <button
-          onClick={onShareRecord || (() => console.log('Share clicked but no handler'))}
-          className="w-10 h-10 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100/80 rounded-xl transition-all bg-transparent border-none cursor-pointer flex items-center justify-center"
-          title="記録を共有"
+          onClick={() => {}}
+          disabled={true}
+          className="w-10 h-10 p-0 text-slate-400 rounded-xl transition-all bg-transparent border-none cursor-not-allowed flex items-center justify-center opacity-50"
+          title="共有機能は無効になっています"
         >
           <Share2 size={20} />
         </button>
