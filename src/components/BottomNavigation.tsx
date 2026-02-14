@@ -25,7 +25,7 @@ const tabs = [
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (
     <div className="fixed bottom-0 left-0 w-full" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      <div className="bg-white/20 backdrop-blur-xl border-t border-white/40 shadow-2xl">
+      <div className="bg-white border-t border-gray-200 shadow-lg">
         {/* セーフエリア対応のパディング */}
         <div className="px-0 pt-2 pb-6">
           <div className="flex w-full">
@@ -40,8 +40,8 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
                   onClick={() => onTabChange(tab.id)}
                   className={`h-14 flex-1 flex flex-col items-center justify-center space-y-0.5 rounded-2xl mx-2 transition-all duration-200 ${
                     isActive 
-                      ? 'bg-blue-600/30 backdrop-blur-md text-blue-700 shadow-lg border border-blue-400/40' 
-                      : 'text-slate-500 hover:text-slate-700 hover:bg-white/40 hover:backdrop-blur-md'
+                      ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200' 
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-gray-100'
                   }`}
                 >
                   <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>

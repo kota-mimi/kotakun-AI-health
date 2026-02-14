@@ -68,7 +68,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
   };
 
   return (
-    <div className="bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-3xl space-y-0">
+    <div className="bg-white rounded-3xl shadow-lg space-y-0">
       {/* タイトル */}
       <div className="p-3 pb-0">
         <h3 className="text-lg font-medium text-slate-900">摂取カロリー</h3>
@@ -101,7 +101,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                   {/* 3列グリッドレイアウト */}
                   <div className="grid grid-cols-3 gap-3">
                     {/* タンパク質 */}
-                    <div className="text-center bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+                    <div className="text-center bg-gray-50 rounded-2xl p-3">
                       <div className="text-xs text-red-700 font-semibold mb-1">タンパク質</div>
                       <div className="text-lg font-bold mb-2">
                         <span className="text-red-600">{displayPfc.protein}</span>
@@ -116,7 +116,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     </div>
 
                     {/* 炭水化物 */}
-                    <div className="text-center bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+                    <div className="text-center bg-gray-50 rounded-2xl p-3">
                       <div className="text-xs text-green-700 font-semibold mb-1">炭水化物</div>
                       <div className="text-lg font-bold mb-2">
                         <span className="text-green-600">{displayPfc.carbs}</span>
@@ -131,7 +131,7 @@ export function CalorieCard({ totalCalories, targetCalories, pfc, counselingResu
                     </div>
 
                     {/* 脂質 */}
-                    <div className="text-center bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+                    <div className="text-center bg-gray-50 rounded-2xl p-3">
                       <div className="text-xs text-orange-700 font-semibold mb-1">脂質</div>
                       <div className="text-lg font-bold mb-2">
                         <span className="text-orange-600">{displayPfc.fat}</span>

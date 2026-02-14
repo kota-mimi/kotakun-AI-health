@@ -77,12 +77,12 @@ export function WeightCard({
 		: 0;
 
 	return (
-		<Card className="bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-3xl overflow-hidden">
+		<Card className="bg-white rounded-3xl shadow-lg overflow-hidden">
 			<div className="p-2">
 				<div className="grid grid-cols-3 gap-1.5">
 					{/* 現在の体重 */}
 					<div
-						className="text-center p-2 bg-white/20 backdrop-blur-md rounded-2xl border border-white/40 cursor-pointer hover:bg-white/30 hover:shadow-lg transition-all"
+						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">
@@ -104,7 +104,7 @@ export function WeightCard({
 
 					{/* 前日比 */}
 					<div
-						className="text-center p-2 bg-white/20 backdrop-blur-md rounded-2xl border border-white/40 cursor-pointer hover:bg-white/30 hover:shadow-lg transition-all"
+						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">
@@ -135,7 +135,7 @@ export function WeightCard({
 
 					{/* 目標まで */}
 					<div
-						className="text-center p-2 bg-white/20 backdrop-blur-md rounded-2xl border border-white/40 cursor-pointer hover:bg-white/30 hover:shadow-lg transition-all"
+						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
 						onClick={onNavigateToWeight}
 					>
 						<div className="text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wide">
