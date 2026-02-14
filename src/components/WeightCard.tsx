@@ -77,15 +77,15 @@ export function WeightCard({
 		: 0;
 
 	return (
-		<Card className="bg-white rounded-3xl shadow-lg overflow-hidden">
+		<Card className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
 			<div className="p-2">
 				<div className="grid grid-cols-3 gap-1.5">
 					{/* 現在の体重 */}
 					<div
-						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
+						className="text-center p-2 bg-gradient-to-br from-slate-50 to-slate-100/80 rounded-xl border border-slate-200/50 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-medium text-slate-500 mb-1 uppercase tracking-wide">
 							現在
 						</div>
 						<div className="text-lg font-bold text-slate-900">
@@ -104,10 +104,10 @@ export function WeightCard({
 
 					{/* 前日比 */}
 					<div
-						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
+						className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/50 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-medium text-slate-600 mb-1 uppercase tracking-wide">
 							前回比
 						</div>
 						<div
@@ -135,10 +135,10 @@ export function WeightCard({
 
 					{/* 目標まで */}
 					<div
-						className="text-center p-2 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-all"
+						className="text-center p-2 bg-green-50 rounded-xl border border-green-200 cursor-pointer hover:shadow-sm transition-shadow"
 						onClick={onNavigateToWeight}
 					>
-						<div className="text-xs font-semibold text-orange-700 mb-1 uppercase tracking-wide">
+						<div className="text-xs font-medium text-orange-700 mb-1 uppercase tracking-wide">
 							目標まで
 						</div>
 						<div className="text-lg font-bold">
