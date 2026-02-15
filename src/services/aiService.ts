@@ -1848,8 +1848,22 @@ ${languageSpecificPrompt}`;
       cleanText = cleanText.replace(/^\s*[-\*\+]\s*/gm, ''); // - リストマーカーを除去
       cleanText = cleanText.replace(/^\s*\d+\.\s*/gm, ''); // 1. 番号リストを除去
       cleanText = cleanText.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [リンクテキスト](URL)をテキストのみに
-      // 自然な改行処理（シンプルに）
+      // 人間らしい自然な改行を追加（句点・感嘆符で改行、空行なし）
       cleanText = cleanText.replace(/\n\s*\n/g, '\n'); // 複数改行を1つに
+      cleanText = cleanText.replace(/。(?!\s*$)/g, '。\n');
+      cleanText = cleanText.replace(/！(?!\s*$)/g, '！\n');
+      cleanText = cleanText.replace(/よ。/g, 'よ。\n');
+      cleanText = cleanText.replace(/ね。/g, 'ね。\n');
+      cleanText = cleanText.replace(/だよ。/g, 'だよ。\n');
+      cleanText = cleanText.replace(/だね。/g, 'だね。\n');
+      cleanText = cleanText.replace(/です。/g, 'です。\n');
+      cleanText = cleanText.replace(/ます。/g, 'ます。\n');
+      cleanText = cleanText.replace(/から。/g, 'から。\n');
+      cleanText = cleanText.replace(/よ！/g, 'よ！\n');
+      cleanText = cleanText.replace(/ね！/g, 'ね！\n');
+      cleanText = cleanText.replace(/だよ！/g, 'だよ！\n');
+      cleanText = cleanText.replace(/だね！/g, 'だね！\n');
+      cleanText = cleanText.replace(/\n\s*\n/g, '\n');
       
       // キャラクター名を強制削除
       cleanText = cleanText.replace(/^ヘルシーくん[：:]\s*/g, ''); // 冒頭のヘルシーくん：を削除
