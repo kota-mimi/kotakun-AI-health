@@ -38,8 +38,10 @@ const GRADIENT_COLORS = [
 
 export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) {
   const [selectedBackground, setSelectedBackground] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'solid' | 'gradient'>('solid');
+  const [activeTab, setActiveTab] = useState<'solid' | 'gradient' | 'custom'>('solid');
   const [isLoading, setIsLoading] = useState(true);
+  const [customColor, setCustomColor] = useState<string>('#ffffff');
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const { liffUser } = useAuth();
 
   // Firebase から背景設定を読み込み
@@ -79,14 +81,22 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
   };
 
   // 背景を保存
-  const saveBackground = async (backgroundId: string) => {
+  const saveBackground = async (backgroundId: string, customColorValue?: string) => {
     try {
       // ローカルに即座に適用
-      localStorage.setItem('app-background', backgroundId);
-      setSelectedBackground(backgroundId);
+      if (customColorValue) {
+        localStorage.setItem('app-background', 'custom');
+        localStorage.setItem('app-background-custom-color', customColorValue);
+        setSelectedBackground('custom');
+        setCustomColor(customColorValue);
+      } else {
+        localStorage.setItem('app-background', backgroundId);
+        localStorage.removeItem('app-background-custom-color');
+        setSelectedBackground(backgroundId);
+      }
       
       // 背景をすぐに適用
-      applyBackground(backgroundId);
+      applyBackground(backgroundId, customColorValue);
 
       // Firebase に保存
       if (liffUser?.userId) {
@@ -95,8 +105,8 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: liffUser.userId,
-            backgroundType: backgroundId,
-            imageUrl: null
+            backgroundType: customColorValue ? 'custom' : backgroundId,
+            customColor: customColorValue || null
           })
         });
       }
@@ -106,7 +116,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
   };
 
   // 背景を適用
-  const applyBackground = (backgroundId: string) => {
+  const applyBackground = (backgroundId: string, customColorValue?: string) => {
     // 既存のスタイルをクリア
     const existingStyle = document.getElementById('app-background-style');
     if (existingStyle) {
@@ -119,28 +129,40 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
     
     let backgroundCSS = '';
     
-    const preset = [...SOLID_COLORS, ...GRADIENT_COLORS].find(bg => bg.id === backgroundId);
-    if (preset) {
-      if (preset.isGradient) {
-        backgroundCSS = `
-          body {
-            background: ${preset.url} !important;
-            min-height: 100vh !important;
-          }
-          .min-h-screen {
-            background: transparent !important;
-          }
-        `;
-      } else if (preset.color) {
-        backgroundCSS = `
-          body {
-            background: ${preset.color} !important;
-            min-height: 100vh !important;
-          }
-          .min-h-screen {
-            background: transparent !important;
-          }
-        `;
+    if (backgroundId === 'custom' && customColorValue) {
+      backgroundCSS = `
+        body {
+          background: ${customColorValue} !important;
+          min-height: 100vh !important;
+        }
+        .min-h-screen {
+          background: transparent !important;
+        }
+      `;
+    } else {
+      const preset = [...SOLID_COLORS, ...GRADIENT_COLORS].find(bg => bg.id === backgroundId);
+      if (preset) {
+        if (preset.isGradient) {
+          backgroundCSS = `
+            body {
+              background: ${preset.url} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        } else if (preset.color) {
+          backgroundCSS = `
+            body {
+              background: ${preset.color} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        }
       }
     }
     
@@ -201,7 +223,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
         {/* タブナビゲーション */}
         <div className="flex mb-4 bg-slate-100 rounded-lg p-1">
           <button
-            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
               activeTab === 'solid'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600 hover:text-slate-800'
@@ -211,7 +233,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
             単色
           </button>
           <button
-            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
               activeTab === 'gradient'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600 hover:text-slate-800'
@@ -220,37 +242,92 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
           >
             グラデーション
           </button>
+          <button
+            className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+              activeTab === 'custom'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            onClick={() => setActiveTab('custom')}
+          >
+            カスタム
+          </button>
         </div>
 
-        {/* カラーグリッド */}
-        <div className="grid grid-cols-4 gap-3">
-          {(activeTab === 'solid' ? SOLID_COLORS : GRADIENT_COLORS).map((color) => (
-            <button
-              key={color.id}
-              className={`h-16 rounded-xl border-2 transition-all flex items-center justify-center relative overflow-hidden ${
-                selectedBackground === color.id 
-                  ? 'border-blue-500 ring-2 ring-blue-200' 
-                  : 'border-slate-200 hover:border-slate-300'
-              }`}
-              style={{
-                background: color.isGradient ? color.url : color.color,
-                boxShadow: color.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
-              }}
-              onClick={() => saveBackground(color.id)}
-            >
-              {selectedBackground === color.id && (
-                <div className={`absolute inset-0 flex items-center justify-center ${color.isGradient ? 'bg-black/20' : ''}`}>
-                  <Check size={20} className={color.id === 'white' ? 'text-gray-600' : 'text-white drop-shadow-sm'} />
-                </div>
-              )}
-              <div className="absolute bottom-1 left-1 right-1 text-center">
-                <div className="bg-black/70 text-white text-xs py-1 px-1 rounded font-medium">
-                  {color.name}
-                </div>
+        {/* カラーグリッドまたはカスタムカラーピッカー */}
+        {activeTab === 'custom' ? (
+          <div className="space-y-4">
+            {/* カラープレビュー */}
+            <div className="flex items-center space-x-3">
+              <div 
+                className="w-16 h-16 rounded-xl border-2 border-slate-200" 
+                style={{ backgroundColor: customColor }}
+              />
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  カラーコード
+                </label>
+                <input
+                  type="text"
+                  value={customColor}
+                  onChange={(e) => setCustomColor(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  placeholder="#ffffff"
+                />
               </div>
-            </button>
-          ))}
-        </div>
+            </div>
+
+            {/* HTML5カラーピッカー */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                カラーピッカー
+              </label>
+              <input
+                type="color"
+                value={customColor}
+                onChange={(e) => setCustomColor(e.target.value)}
+                className="w-full h-12 rounded-lg border border-slate-300 cursor-pointer"
+              />
+            </div>
+
+            {/* 適用ボタン */}
+            <Button
+              onClick={() => saveBackground('custom', customColor)}
+              className="w-full"
+            >
+              この色を適用
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-3">
+            {(activeTab === 'solid' ? SOLID_COLORS : GRADIENT_COLORS).map((color) => (
+              <button
+                key={color.id}
+                className={`h-16 rounded-xl border-2 transition-all flex items-center justify-center relative overflow-hidden ${
+                  selectedBackground === color.id 
+                    ? 'border-blue-500 ring-2 ring-blue-200' 
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+                style={{
+                  background: color.isGradient ? color.url : color.color,
+                  boxShadow: color.id === 'white' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
+                }}
+                onClick={() => saveBackground(color.id)}
+              >
+                {selectedBackground === color.id && (
+                  <div className={`absolute inset-0 flex items-center justify-center ${color.isGradient ? 'bg-black/20' : ''}`}>
+                    <Check size={20} className={color.id === 'white' ? 'text-gray-600' : 'text-white drop-shadow-sm'} />
+                  </div>
+                )}
+                <div className="absolute bottom-1 left-1 right-1 text-center">
+                  <div className="bg-black/70 text-white text-xs py-1 px-1 rounded font-medium">
+                    {color.name}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </Card>
 
 

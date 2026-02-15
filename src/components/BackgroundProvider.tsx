@@ -41,7 +41,8 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       if (!liffUser?.userId) {
         // LIFF未認証時はlocalStorageから読み込み
         const savedBackground = localStorage.getItem('app-background') || 'white';
-        applyBackground(savedBackground);
+        const customColor = localStorage.getItem('app-background-custom-color');
+        applyBackground(savedBackground, customColor || undefined);
         return;
       }
 
@@ -52,22 +53,27 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
         
         // localStorageも同期
         localStorage.setItem('app-background', backgroundSettings.type);
+        if (backgroundSettings.customColor) {
+          localStorage.setItem('app-background-custom-color', backgroundSettings.customColor);
+        }
         
-        applyBackground(backgroundSettings.type);
+        applyBackground(backgroundSettings.type, backgroundSettings.customColor);
       } else {
         // API失敗時はlocalStorageにフォールバック
         const savedBackground = localStorage.getItem('app-background') || 'white';
-        applyBackground(savedBackground);
+        const customColor = localStorage.getItem('app-background-custom-color');
+        applyBackground(savedBackground, customColor || undefined);
       }
     } catch (error) {
       console.error('Failed to load background from Firebase:', error);
       // エラー時はlocalStorageにフォールバック
       const savedBackground = localStorage.getItem('app-background') || 'white';
-      applyBackground(savedBackground);
+      const customColor = localStorage.getItem('app-background-custom-color');
+      applyBackground(savedBackground, customColor || undefined);
     }
   };
 
-  const applyBackground = (backgroundId: string) => {
+  const applyBackground = (backgroundId: string, customColor?: string) => {
     // 既存のスタイルをクリア
     const existingStyle = document.getElementById('app-background-style');
     if (existingStyle) {
@@ -80,28 +86,40 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     
     let backgroundCSS = '';
     
-    const preset = [...SOLID_COLORS, ...GRADIENT_COLORS].find(bg => bg.id === backgroundId);
-    if (preset) {
-      if (preset.isGradient) {
-        backgroundCSS = `
-          body {
-            background: ${preset.url} !important;
-            min-height: 100vh !important;
-          }
-          .min-h-screen {
-            background: transparent !important;
-          }
-        `;
-      } else if (preset.color) {
-        backgroundCSS = `
-          body {
-            background: ${preset.color} !important;
-            min-height: 100vh !important;
-          }
-          .min-h-screen {
-            background: transparent !important;
-          }
-        `;
+    if (backgroundId === 'custom' && customColor) {
+      backgroundCSS = `
+        body {
+          background: ${customColor} !important;
+          min-height: 100vh !important;
+        }
+        .min-h-screen {
+          background: transparent !important;
+        }
+      `;
+    } else {
+      const preset = [...SOLID_COLORS, ...GRADIENT_COLORS].find(bg => bg.id === backgroundId);
+      if (preset) {
+        if (preset.isGradient) {
+          backgroundCSS = `
+            body {
+              background: ${preset.url} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        } else if (preset.color) {
+          backgroundCSS = `
+            body {
+              background: ${preset.color} !important;
+              min-height: 100vh !important;
+            }
+            .min-h-screen {
+              background: transparent !important;
+            }
+          `;
+        }
       }
     }
     
