@@ -300,7 +300,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-3">
-            {(activeTab === 'solid' ? SOLID_COLORS : GRADIENT_COLORS).map((color) => (
+            {SOLID_COLORS.map((color) => (
               <button
                 key={color.id}
                 className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden ${
