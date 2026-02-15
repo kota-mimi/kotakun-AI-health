@@ -303,7 +303,7 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
             {SOLID_COLORS.map((color) => (
               <button
                 key={color.id}
-                className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden ${
+                className={`w-16 h-16 rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden ${
                   selectedBackground === color.id 
                     ? 'border-blue-500 ring-2 ring-blue-200' 
                     : 'border-slate-200 hover:border-slate-300'
