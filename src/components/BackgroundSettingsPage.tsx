@@ -299,11 +299,11 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {(activeTab === 'solid' ? SOLID_COLORS : GRADIENT_COLORS).map((color) => (
               <button
                 key={color.id}
-                className={`h-14 rounded-xl border-2 transition-all flex items-center justify-center relative overflow-hidden ${
+                className={`h-12 rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden ${
                   selectedBackground === color.id 
                     ? 'border-blue-500 ring-2 ring-blue-200' 
                     : 'border-slate-200 hover:border-slate-300'
@@ -316,10 +316,10 @@ export function BackgroundSettingsPage({ onBack }: BackgroundSettingsPageProps) 
               >
                 {selectedBackground === color.id && (
                   <div className={`absolute inset-0 flex items-center justify-center ${color.isGradient ? 'bg-black/20' : ''}`}>
-                    <Check size={18} className={color.id === 'white' ? 'text-gray-600' : 'text-white drop-shadow-sm'} />
+                    <Check size={16} className={color.id === 'white' ? 'text-gray-600' : 'text-white drop-shadow-sm'} />
                   </div>
                 )}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs py-1 px-2 text-center font-medium">
+                <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs py-0.5 px-1 text-center font-medium">
                   {color.name}
                 </div>
               </button>
