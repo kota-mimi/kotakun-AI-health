@@ -3,37 +3,26 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
-const BASIC_COLORS = [
+const SOLID_COLORS = [
   { id: 'white', name: '白', color: '#ffffff' },
   { id: 'light-gray', name: 'ライトグレー', color: '#f3f4f6' },
   { id: 'blue', name: 'ブルー', color: '#3b82f6' },
   { id: 'green', name: 'グリーン', color: '#10b981' },
   { id: 'purple', name: 'パープル', color: '#8b5cf6' },
   { id: 'pink', name: 'ピンク', color: '#ec4899' },
+  { id: 'red', name: 'レッド', color: '#ef4444' },
+  { id: 'orange', name: 'オレンジ', color: '#f97316' },
 ];
 
-const EXTENDED_COLORS = [
-  // グラデーション
+const GRADIENT_COLORS = [
   { id: 'gradient-ocean', name: 'オーシャン', url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', isGradient: true },
   { id: 'gradient-sunset', name: 'サンセット', url: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', isGradient: true },
   { id: 'gradient-nature', name: 'ネイチャー', url: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', isGradient: true },
   { id: 'gradient-warm', name: 'ウォーム', url: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', isGradient: true },
   { id: 'gradient-cool', name: 'クール', url: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', isGradient: true },
   { id: 'gradient-dark', name: 'ダーク', url: 'linear-gradient(135deg, #2c3e50 0%, #4a6741 100%)', isGradient: true },
-  
-  // 単色
-  { id: 'navy', name: 'ネイビー', color: '#1e293b' },
-  { id: 'emerald', name: 'エメラルド', color: '#059669' },
-  { id: 'amber', name: 'アンバー', color: '#f59e0b' },
-  { id: 'red', name: 'レッド', color: '#ef4444' },
-  { id: 'indigo', name: 'インディゴ', color: '#6366f1' },
-  { id: 'teal', name: 'ティール', color: '#14b8a6' },
-  { id: 'rose', name: 'ローズ', color: '#f43f5e' },
-  { id: 'cyan', name: 'シアン', color: '#06b6d4' },
-  { id: 'lime', name: 'ライム', color: '#84cc16' },
-  { id: 'orange', name: 'オレンジ', color: '#f97316' },
-  { id: 'violet', name: 'バイオレット', color: '#7c3aed' },
-  { id: 'slate', name: 'スレート', color: '#475569' },
+  { id: 'gradient-purple', name: 'パープル', url: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', isGradient: true },
+  { id: 'gradient-pink', name: 'ピンク', url: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', isGradient: true },
 ];
 
 interface BackgroundProviderProps {
@@ -52,8 +41,7 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
       if (!liffUser?.userId) {
         // LIFF未認証時はlocalStorageから読み込み
         const savedBackground = localStorage.getItem('app-background') || 'white';
-        const customUrl = localStorage.getItem('app-background-custom-url');
-        applyBackground(savedBackground, customUrl || undefined);
+        applyBackground(savedBackground);
         return;
       }
 
@@ -64,29 +52,22 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
         
         // localStorageも同期
         localStorage.setItem('app-background', backgroundSettings.type);
-        if (backgroundSettings.imageUrl) {
-          localStorage.setItem('app-background-custom-url', backgroundSettings.imageUrl);
-        } else {
-          localStorage.removeItem('app-background-custom-url');
-        }
         
-        applyBackground(backgroundSettings.type, backgroundSettings.imageUrl);
+        applyBackground(backgroundSettings.type);
       } else {
         // API失敗時はlocalStorageにフォールバック
         const savedBackground = localStorage.getItem('app-background') || 'white';
-        const customUrl = localStorage.getItem('app-background-custom-url');
-        applyBackground(savedBackground, customUrl || undefined);
+        applyBackground(savedBackground);
       }
     } catch (error) {
       console.error('Failed to load background from Firebase:', error);
       // エラー時はlocalStorageにフォールバック
       const savedBackground = localStorage.getItem('app-background') || 'white';
-      const customUrl = localStorage.getItem('app-background-custom-url');
-      applyBackground(savedBackground, customUrl || undefined);
+      applyBackground(savedBackground);
     }
   };
 
-  const applyBackground = (backgroundId: string, customUrl?: string) => {
+  const applyBackground = (backgroundId: string) => {
     // 既存のスタイルをクリア
     const existingStyle = document.getElementById('app-background-style');
     if (existingStyle) {
@@ -99,58 +80,28 @@ export function BackgroundProvider({ children }: BackgroundProviderProps) {
     
     let backgroundCSS = '';
     
-    if (backgroundId === 'custom' && customUrl) {
-      backgroundCSS = `
-        body {
-          background-image: url(${customUrl}) !important;
-          background-size: cover !important;
-          background-position: center !important;
-          background-attachment: fixed !important;
-          background-repeat: no-repeat !important;
-          min-height: 100vh !important;
-        }
-        .min-h-screen {
-          background: transparent !important;
-        }
-      `;
-    } else {
-      const preset = [...BASIC_COLORS, ...EXTENDED_COLORS].find(bg => bg.id === backgroundId);
-      if (preset) {
-        if (preset.isGradient) {
-          backgroundCSS = `
-            body {
-              background: ${preset.url} !important;
-              min-height: 100vh !important;
-            }
-            .min-h-screen {
-              background: transparent !important;
-            }
-          `;
-        } else if (preset.color) {
-          backgroundCSS = `
-            body {
-              background: ${preset.color} !important;
-              min-height: 100vh !important;
-            }
-            .min-h-screen {
-              background: transparent !important;
-            }
-          `;
-        } else {
-          backgroundCSS = `
-            body {
-              background-image: url(${preset.url}) !important;
-              background-size: cover !important;
-              background-position: center !important;
-              background-attachment: fixed !important;
-              background-repeat: no-repeat !important;
-              min-height: 100vh !important;
-            }
-            .min-h-screen {
-              background: transparent !important;
-            }
-          `;
-        }
+    const preset = [...SOLID_COLORS, ...GRADIENT_COLORS].find(bg => bg.id === backgroundId);
+    if (preset) {
+      if (preset.isGradient) {
+        backgroundCSS = `
+          body {
+            background: ${preset.url} !important;
+            min-height: 100vh !important;
+          }
+          .min-h-screen {
+            background: transparent !important;
+          }
+        `;
+      } else if (preset.color) {
+        backgroundCSS = `
+          body {
+            background: ${preset.color} !important;
+            min-height: 100vh !important;
+          }
+          .min-h-screen {
+            background: transparent !important;
+          }
+        `;
       }
     }
     

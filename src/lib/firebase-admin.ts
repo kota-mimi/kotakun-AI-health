@@ -33,6 +33,15 @@ function initializeFirebaseAdmin() {
     // Private Key の改行文字を正しく処理
     const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
     
+    // Storage bucket設定
+    const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.appspot.com`;
+    
+    console.log('🔧 Firebase設定:', {
+      projectId,
+      storageBucket,
+      clientEmail: clientEmail ? 'present' : 'missing'
+    });
+
     // 認証情報で初期化
     initializeApp({
       credential: cert({
@@ -41,7 +50,7 @@ function initializeFirebaseAdmin() {
         privateKey: formattedPrivateKey,
       }),
       projectId,
-      storageBucket: `${projectId}.appspot.com`,
+      storageBucket,
     });
     
     if (process.env.NODE_ENV === 'production') {
@@ -113,13 +122,17 @@ export const admin = {
   },
   storage: () => {
     try {
-      return getStorage();
+      if (getApps().length === 0) {
+        throw new Error('Firebase Admin app not initialized');
+      }
+      const storage = getStorage();
+      console.log('✅ Firebase Storage取得成功');
+      return storage;
     } catch (error) {
+      console.error('❌ Firebase Storage取得エラー:', error);
       if (process.env.NODE_ENV === 'development') {
         console.log('🔧 開発環境：Storage エラーを無視');
         return null;
-      } else {
-        console.error('❌ 本番環境 Firebase Admin Storage取得エラー:', error);
       }
       throw error;
     }
