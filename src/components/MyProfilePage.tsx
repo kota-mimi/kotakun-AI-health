@@ -411,13 +411,7 @@ export function MyProfilePage({
     }
   ];
 
-  const customizationMenuItems = [
-    {
-      label: '背景設定',
-      color: '#FF6B6B',
-      action: onNavigateToBackgroundSettings || (() => {})
-    }
-  ];
+  const customizationMenuItems = [];
 
   const supportMenuItems = [
     {
